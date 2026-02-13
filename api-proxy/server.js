@@ -61,6 +61,24 @@ const CONFIG = {
   BALANCE_CACHE_TTL: 5 * 60 * 1000, // 5 minutes
 };
 
+const PROVIDER_AVAILABLE = {
+  claude: !!CONFIG.ANTHROPIC_API_KEY,
+  gemini: !!CONFIG.GOOGLE_API_KEY,
+  openai: !!CONFIG.OPENAI_API_KEY,
+};
+
+function getProviderForModel(model) {
+  if (model.startsWith('claude')) return 'claude';
+  if (model.startsWith('gemini')) return 'gemini';
+  if (model.startsWith('gpt-')) return 'openai';
+  return null;
+}
+
+function isModelAvailable(model) {
+  const provider = getProviderForModel(model);
+  return provider ? PROVIDER_AVAILABLE[provider] : false;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────
 
 function generateApiKey() {
@@ -302,12 +320,14 @@ app.post('/auth/register', async (req, res) => {
       const existing = apiKeys.get(apiKey);
       existing.tier = tier;
       existing.balance = balance;
+      const allModels = CONFIG.TIERS[tier].models;
       return res.json({
         apiKey,
         tier: CONFIG.TIERS[tier].label,
         balance,
         dailyLimit: CONFIG.TIERS[tier].dailyLimit,
-        models: CONFIG.TIERS[tier].models,
+        models: allModels.filter(isModelAvailable),
+        comingSoon: allModels.filter(m => !isModelAvailable(m)),
         message: 'Existing key returned. Tier updated.'
       });
     }
@@ -322,12 +342,14 @@ app.post('/auth/register', async (req, res) => {
     });
     walletKeys.set(wallet, apiKey);
 
+    const allModels = CONFIG.TIERS[tier].models;
     res.json({
       apiKey,
       tier: CONFIG.TIERS[tier].label,
       balance,
       dailyLimit: CONFIG.TIERS[tier].dailyLimit,
-      models: CONFIG.TIERS[tier].models,
+      models: allModels.filter(isModelAvailable),
+      comingSoon: allModels.filter(m => !isModelAvailable(m)),
       message: 'API key generated. Keep it safe.'
     });
 
@@ -349,7 +371,8 @@ app.get('/auth/status', authenticateApiKey, (req, res) => {
       limit: tierConfig.dailyLimit,
       remaining: tierConfig.dailyLimit - usage.count
     },
-    models: tierConfig.models
+    models: tierConfig.models.filter(isModelAvailable),
+    comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
   });
 });
 
@@ -369,6 +392,14 @@ app.post('/v1/chat', authenticateApiKey, async (req, res) => {
       error: 'model_not_available',
       message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
       availableModels: tierConfig.models
+    });
+  }
+
+  if (!isModelAvailable(requestedModel)) {
+    return res.status(503).json({
+      error: 'model_coming_soon',
+      message: `${requestedModel} is coming soon. Stay tuned.`,
+      availableModels: tierConfig.models.filter(isModelAvailable),
     });
   }
 
@@ -542,6 +573,14 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
       error: 'model_not_available',
       message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
       availableModels: tierConfig.models
+    });
+  }
+
+  if (!isModelAvailable(requestedModel)) {
+    return res.status(503).json({
+      error: 'model_coming_soon',
+      message: `${requestedModel} is coming soon. Stay tuned.`,
+      availableModels: tierConfig.models.filter(isModelAvailable),
     });
   }
 
