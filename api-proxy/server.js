@@ -27,6 +27,7 @@ const apiKeys = new Map();      // apiKey -> { wallet, tier, createdAt }
 const walletKeys = new Map();   // wallet -> apiKey
 const usageCounts = new Map();  // apiKey -> { date, count, tokens }
 const balanceCache = new Map(); // wallet -> { balance, checkedAt }
+const videoOperations = new Map(); // operationName -> { apiKey, prompt, status, result }
 
 // ─── Config ──────────────────────────────────────────────────
 const CONFIG = {
@@ -35,24 +36,25 @@ const CONFIG = {
   TOKEN_MINT: process.env.INFINITE_TOKEN_MINT || '',
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {
     architect: {
       min: parseInt(process.env.TIER_ARCHITECT_MIN || '1000000'),
       dailyLimit: parseInt(process.env.TIER_ARCHITECT_DAILY_LIMIT || '999999'),
-      models: ['claude-sonnet-4-5-20250929', 'claude-opus-4-6', 'gemini-2.5-pro', 'gemini-2.5-flash'],
+      models: ['claude-sonnet-4-5-20250929', 'claude-opus-4-6', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
       label: 'Architect'
     },
     operator: {
       min: parseInt(process.env.TIER_OPERATOR_MIN || '100000'),
       dailyLimit: parseInt(process.env.TIER_OPERATOR_DAILY_LIMIT || '10000'),
-      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash'],
+      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
       label: 'Operator'
     },
     signal: {
       min: parseInt(process.env.TIER_SIGNAL_MIN || '10000'),
       dailyLimit: parseInt(process.env.TIER_SIGNAL_DAILY_LIMIT || '1000'),
-      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'],
+      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash', 'gpt-4o-mini'],
       label: 'Signal'
     }
   },
@@ -90,6 +92,64 @@ function getUsage(apiKey) {
     return fresh;
   }
   return usage;
+}
+
+// ─── Video + Trading Config ──────────────────────────────────
+
+const VIDEO_ALLOWED_TIERS = ['operator', 'architect'];
+const VIDEO_CALL_COST = 10;
+
+const TRADING_SYSTEM_PROMPT = `You are an expert Solana blockchain trading analyst. You have deep knowledge of:
+- Token fundamentals: liquidity, market cap, holder distribution, supply mechanics
+- DeFi protocols: Raydium, Jupiter, Orca, Pump.fun, PumpSwap
+- On-chain analysis: wallet tracking, smart money flows, whale movements
+- Risk assessment: rug pull indicators, honeypot detection, contract audits
+- Market microstructure: order flow, MEV, slippage, priority fees
+
+When analyzing tokens:
+1. Always assess risk level (LOW / MEDIUM / HIGH / CRITICAL)
+2. Provide specific entry/exit zones when relevant
+3. Flag any red flags immediately (frozen mint authority, low liquidity, concentrated holders)
+4. Use data-driven reasoning, not hype
+5. Include relevant on-chain metrics when available
+
+Format responses with clear sections, use markdown. Be direct and actionable.
+Never provide financial advice — frame everything as analysis and education.`;
+
+async function fetchTokenInfo(address) {
+  const info = { address, name: null, symbol: null, price: null, marketCap: null, liquidity: null, change24h: null };
+
+  const [assetResult, priceResult, dexResult] = await Promise.allSettled([
+    fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 'token-info', method: 'getAsset', params: { id: address } })
+    }).then(r => r.json()),
+    fetch(`https://api.jup.ag/price/v2?ids=${address}`).then(r => r.json()),
+    fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`).then(r => r.json()),
+  ]);
+
+  if (assetResult.status === 'fulfilled' && assetResult.value.result) {
+    const asset = assetResult.value.result;
+    info.name = asset.content?.metadata?.name || null;
+    info.symbol = asset.content?.metadata?.symbol || null;
+  }
+
+  if (priceResult.status === 'fulfilled' && priceResult.value.data?.[address]) {
+    info.price = parseFloat(priceResult.value.data[address].price) || null;
+  }
+
+  if (dexResult.status === 'fulfilled' && dexResult.value.pairs?.length > 0) {
+    const pair = dexResult.value.pairs[0];
+    info.marketCap = pair.marketCap || null;
+    info.liquidity = pair.liquidity?.usd || null;
+    info.change24h = pair.priceChange?.h24 || null;
+    if (!info.price && pair.priceUsd) info.price = parseFloat(pair.priceUsd);
+    if (!info.name && pair.baseToken?.name) info.name = pair.baseToken.name;
+    if (!info.symbol && pair.baseToken?.symbol) info.symbol = pair.baseToken.symbol;
+  }
+
+  return info;
 }
 
 // ─── Helius: Check Token Balance ─────────────────────────────
@@ -326,6 +386,8 @@ app.post('/v1/chat', authenticateApiKey, async (req, res) => {
       result = await proxyAnthropic(requestedModel, messages, max_tokens || 1024, temperature);
     } else if (requestedModel.startsWith('gemini')) {
       result = await proxyGemini(requestedModel, messages, max_tokens || 1024, temperature);
+    } else if (requestedModel.startsWith('gpt-')) {
+      result = await proxyOpenAI(requestedModel, messages, max_tokens || 1024, temperature);
     } else {
       return res.status(400).json({ error: 'unknown_model', message: `Unknown model: ${requestedModel}` });
     }
@@ -431,6 +493,642 @@ async function proxyGemini(model, messages, maxTokens, temperature) {
       totalTokens: data.usageMetadata?.totalTokenCount || 0
     }
   };
+}
+
+async function proxyOpenAI(model, messages, maxTokens, temperature) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: Math.min(maxTokens, 4096),
+      temperature: temperature ?? 0.7,
+      messages,
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI ${response.status}: ${err}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content || '';
+
+  return {
+    content: [{ type: 'text', text }],
+    usage: {
+      inputTokens: data.usage?.prompt_tokens || 0,
+      outputTokens: data.usage?.completion_tokens || 0,
+      totalTokens: data.usage?.total_tokens || 0,
+    }
+  };
+}
+
+// ─── Streaming Chat Endpoint ─────────────────────────────────
+
+// POST /v1/chat/stream — SSE streaming proxy to Claude or Gemini
+app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
+  const { model, messages, max_tokens, temperature } = req.body;
+  const { tierConfig, usage } = req.infinite;
+
+  const requestedModel = model || tierConfig.models[0];
+
+  if (!tierConfig.models.includes(requestedModel)) {
+    return res.status(403).json({
+      error: 'model_not_available',
+      message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
+      availableModels: tierConfig.models
+    });
+  }
+
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+
+  try {
+    if (requestedModel.startsWith('claude')) {
+      await streamAnthropic(requestedModel, messages, max_tokens || 4096, temperature, res);
+    } else if (requestedModel.startsWith('gemini')) {
+      await streamGemini(requestedModel, messages, max_tokens || 4096, temperature, res);
+    } else if (requestedModel.startsWith('gpt-')) {
+      await streamOpenAI(requestedModel, messages, max_tokens || 4096, temperature, res);
+    } else {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
+    }
+
+    usage.count++;
+    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    res.end();
+  } catch (err) {
+    console.error('Stream error:', err.message);
+    res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+    res.end();
+  }
+});
+
+async function streamAnthropic(model, messages, maxTokens, temperature, res) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CONFIG.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages,
+      stream: true
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Anthropic ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      try {
+        const event = JSON.parse(jsonStr);
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+async function streamGemini(model, messages, maxTokens, temperature, res) {
+  const geminiContents = messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text).join('') }]
+  }));
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: geminiContents,
+        generationConfig: {
+          maxOutputTokens: Math.min(maxTokens, 8192),
+          temperature: temperature ?? 0.7
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Gemini ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr) continue;
+
+      try {
+        const data = JSON.parse(jsonStr);
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+async function streamOpenAI(model, messages, maxTokens, temperature, res) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages,
+      stream: true,
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      try {
+        const data = JSON.parse(jsonStr);
+        const text = data.choices?.[0]?.delta?.content;
+        if (text) {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+// ─── Image Generation Endpoint ──────────────────────────────
+
+// POST /v1/image — Generate image via Gemini
+app.post('/v1/image', authenticateApiKey, async (req, res) => {
+  const { prompt } = req.body;
+  const { tierConfig, usage } = req.infinite;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'invalid_request', message: 'prompt is required' });
+  }
+
+  try {
+    const imageModel = process.env.IMAGE_MODEL || 'gemini-2.0-flash-exp';
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:generateContent?key=${CONFIG.GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ['IMAGE', 'TEXT']
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini Image ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+
+    const images = [];
+    let text = '';
+
+    for (const part of parts) {
+      if (part.inlineData) {
+        images.push({
+          mimeType: part.inlineData.mimeType,
+          data: part.inlineData.data
+        });
+      }
+      if (part.text) {
+        text += part.text;
+      }
+    }
+
+    if (images.length === 0) {
+      return res.status(422).json({
+        error: 'no_image_generated',
+        message: text || 'The model did not return an image. Try a different prompt.',
+      });
+    }
+
+    usage.count++;
+
+    res.json({
+      id: `inf-img-${crypto.randomBytes(8).toString('hex')}`,
+      images,
+      text,
+      usage: { cost: '$0.00 — funded by $INFINITE treasury' }
+    });
+
+  } catch (err) {
+    console.error('Image generation error:', err.message);
+    res.status(502).json({
+      error: 'upstream_error',
+      message: 'Image generation failed. Try a different prompt.',
+      detail: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// ─── Video Generation Endpoints ──────────────────────────────
+
+// POST /v1/video/generate — Start async video generation via Veo 2
+app.post('/v1/video/generate', authenticateApiKey, async (req, res) => {
+  const { prompt, aspectRatio, duration } = req.body;
+  const { tierConfig, usage, apiKey, tier } = req.infinite;
+
+  if (!VIDEO_ALLOWED_TIERS.includes(tier)) {
+    return res.status(403).json({
+      error: 'tier_restricted',
+      message: 'Video generation requires Operator tier or above.',
+      requiredTier: 'Operator',
+      currentTier: tierConfig.label,
+    });
+  }
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'invalid_request', message: 'prompt is required' });
+  }
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key=${CONFIG.GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: {
+            aspectRatio: aspectRatio || '16:9',
+            durationSeconds: duration || 5,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Veo ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    const operationName = data.name;
+
+    if (!operationName) {
+      throw new Error('No operation name returned from Veo API');
+    }
+
+    videoOperations.set(operationName, { apiKey, prompt, status: 'pending', createdAt: Date.now() });
+
+    usage.count += VIDEO_CALL_COST;
+
+    res.json({
+      operationName,
+      status: 'pending',
+      message: 'Video generation started. Poll /v1/video/status/:operationName for updates.',
+      estimatedTime: '1-3 minutes',
+    });
+  } catch (err) {
+    console.error('Video generation error:', err.message);
+    res.status(502).json({
+      error: 'upstream_error',
+      message: 'Video generation failed. Try a different prompt.',
+      detail: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+});
+
+// GET /v1/video/status/:operationName — Poll video generation status
+app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) => {
+  const { operationName } = req.params;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${CONFIG.GOOGLE_API_KEY}`
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Veo status ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+
+    if (data.done) {
+      if (data.error) {
+        videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'failed', error: data.error.message });
+        return res.json({ status: 'failed', error: data.error.message });
+      }
+
+      const video = data.response?.generateVideoResponse?.generatedSamples?.[0]?.video;
+      videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'complete', video });
+
+      return res.json({
+        status: 'complete',
+        video: video ? { uri: video.uri, mimeType: video.mimeType || 'video/mp4' } : null,
+      });
+    }
+
+    res.json({ status: 'pending', metadata: data.metadata || null });
+  } catch (err) {
+    console.error('Video status error:', err.message);
+    res.status(502).json({ error: 'upstream_error', message: err.message });
+  }
+});
+
+// ─── Trading Agent Endpoints ─────────────────────────────────
+
+// POST /v1/trading/analyze — AI trading analysis with optional token context
+app.post('/v1/trading/analyze', authenticateApiKey, async (req, res) => {
+  const { query, tokenAddress, messages: clientMessages, model } = req.body;
+  const { tierConfig, usage } = req.infinite;
+
+  if (!query && (!clientMessages || !clientMessages.length)) {
+    return res.status(400).json({ error: 'invalid_request', message: 'query or messages required' });
+  }
+
+  const requestedModel = model || tierConfig.models[0];
+  if (!tierConfig.models.includes(requestedModel)) {
+    return res.status(403).json({
+      error: 'model_not_available',
+      message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
+      availableModels: tierConfig.models,
+    });
+  }
+
+  let tokenContext = '';
+  if (tokenAddress) {
+    try {
+      const info = await fetchTokenInfo(tokenAddress);
+      const parts = [`Token: ${info.name || 'Unknown'} (${info.symbol || '?'})`, `Address: ${info.address}`];
+      if (info.price) parts.push(`Price: $${info.price}`);
+      if (info.marketCap) parts.push(`Market Cap: $${info.marketCap.toLocaleString()}`);
+      if (info.liquidity) parts.push(`Liquidity: $${info.liquidity.toLocaleString()}`);
+      if (info.change24h !== null) parts.push(`24h Change: ${info.change24h}%`);
+      tokenContext = `\n\nLive token data:\n${parts.join('\n')}`;
+    } catch {}
+  }
+
+  const messages = clientMessages || [{ role: 'user', content: query }];
+
+  // Inject system prompt as first user context if using Anthropic-style messages
+  const systemMsg = TRADING_SYSTEM_PROMPT + tokenContext;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+
+  try {
+    if (requestedModel.startsWith('claude')) {
+      await streamAnthropicWithSystem(requestedModel, systemMsg, messages, 4096, 0.7, res);
+    } else if (requestedModel.startsWith('gemini')) {
+      await streamGeminiWithSystem(requestedModel, systemMsg, messages, 4096, 0.7, res);
+    } else if (requestedModel.startsWith('gpt-')) {
+      await streamOpenAIWithSystem(requestedModel, systemMsg, messages, 4096, 0.7, res);
+    }
+
+    usage.count++;
+    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    res.end();
+  } catch (err) {
+    console.error('Trading analysis error:', err.message);
+    res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+    res.end();
+  }
+});
+
+// GET /v1/trading/token/:address — Fetch token info
+app.get('/v1/trading/token/:address', authenticateApiKey, async (req, res) => {
+  try {
+    const info = await fetchTokenInfo(req.params.address);
+    res.json(info);
+  } catch (err) {
+    console.error('Token lookup error:', err.message);
+    res.status(502).json({ error: 'lookup_failed', message: err.message });
+  }
+});
+
+// Streaming helpers with system prompt injection
+async function streamAnthropicWithSystem(model, systemPrompt, messages, maxTokens, temperature, res) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CONFIG.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      system: systemPrompt,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages,
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Anthropic ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+      try {
+        const event = JSON.parse(jsonStr);
+        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+async function streamGeminiWithSystem(model, systemPrompt, messages, maxTokens, temperature, res) {
+  const geminiContents = messages.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text).join('') }],
+  }));
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: geminiContents,
+        generationConfig: {
+          maxOutputTokens: Math.min(maxTokens, 8192),
+          temperature: temperature ?? 0.7,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Gemini ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr) continue;
+      try {
+        const data = JSON.parse(jsonStr);
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+async function streamOpenAIWithSystem(model, systemPrompt, messages, maxTokens, temperature, res) {
+  const openaiMessages = [{ role: 'system', content: systemPrompt }, ...messages];
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages: openaiMessages,
+      stream: true,
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+      try {
+        const data = JSON.parse(jsonStr);
+        const text = data.choices?.[0]?.delta?.content;
+        if (text) {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+        }
+      } catch {}
+    }
+  }
 }
 
 // ─── Routes: Treasury & Stats ────────────────────────────────
