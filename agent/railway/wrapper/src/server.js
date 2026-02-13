@@ -236,6 +236,7 @@ app.get("/setup/api/status", requireSetupAuth, async (_req, res) => {
     openclawVersion: version,
     stateDir: STATE_DIR,
     workspaceDir: WORKSPACE_DIR,
+    gatewayToken: OPENCLAW_GATEWAY_TOKEN,
   });
 });
 
@@ -416,6 +417,10 @@ app.use(async (req, res) => {
     } catch (err) {
       return res.status(503).type("text/plain").send(`Gateway not ready: ${String(err)}`);
     }
+  }
+
+  if (req.path === "/" && !req.query.token) {
+    return res.redirect(`/?token=${OPENCLAW_GATEWAY_TOKEN}`);
   }
 
   if (req.path === "/openclaw" && !req.query.token) {
