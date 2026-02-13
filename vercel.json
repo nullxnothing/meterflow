@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/proxy/:path*", "destination": "https://infinite-api-proxy-production.up.railway.app/:path*" },
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/", "destination": "/site/index.html" }
