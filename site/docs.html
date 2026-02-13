@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITE — Documentation</title>
+<link rel="icon" type="image/png" href="/site/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<style>
+/* Subtle grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: repeating-conic-gradient(rgba(255,255,255,0.008) 0%, transparent 0.5%, transparent 1%);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+}
+
+/* ═══════════ NAV ═══════════ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo .infinity {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover { color: var(--accent); }
+
+/* ═══════════ DOCS LAYOUT ═══════════ */
+.docs-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+  padding-top: 80px; /* Nav height */
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .docs-container { grid-template-columns: 1fr; }
+}
+
+/* Sidebar */
+.docs-sidebar {
+  padding: 40px;
+  border-right: 1px solid var(--border);
+  height: calc(100vh - 80px);
+  position: sticky;
+  top: 80px;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+@media (max-width: 900px) {
+  .docs-sidebar { display: none; } /* Hide on mobile for now */
+}
+
+.sidebar-group { margin-bottom: 32px; }
+
+.sidebar-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.sidebar-link {
+  display: block;
+  font-size: 14px;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 8px 0;
+  transition: all 0.2s;
+}
+
+.sidebar-link:hover { color: var(--accent); }
+.sidebar-link.active { color: var(--accent); font-weight: 500; }
+
+/* Main Content */
+.docs-content {
+  padding: 80px 60px;
+  max-width: 900px;
+  margin: 0 auto; /* Centers the content */
+}
+
+@media (max-width: 900px) {
+  .docs-content { padding: 40px 20px; }
+}
+
+.docs-header { margin-bottom: 60px; }
+
+.docs-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+
+.docs-intro {
+  font-size: 18px;
+  color: var(--text-dim);
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.doc-section {
+  margin-bottom: 60px;
+  padding-bottom: 60px;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-section:last-child { border-bottom: none; }
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.section-text {
+  font-size: 16px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.code-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 4px;
+  margin: 24px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  overflow-x: auto;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.feature-card {
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.3s;
+}
+
+.feature-card:hover {
+  border-color: var(--accent);
+}
+
+.feature-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+
+.feature-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    INFINITE
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#how">How it works</a>
+    <a href="/#tools">Tools</a>
+    <a href="#" style="color: var(--accent);">Docs</a>
+  </div>
+</nav>
+
+<div class="docs-container">
+  <!-- SIDEBAR -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-group">
+      <span class="sidebar-title">Getting Started</span>
+      <a href="#intro" class="sidebar-link active">Introduction</a>
+      <a href="#quickstart" class="sidebar-link">Quickstart</a>
+      <a href="#keys" class="sidebar-link">API Keys</a>
+    </div>
+    <div class="sidebar-group">
+      <span class="sidebar-title">Features</span>
+      <a href="#chat" class="sidebar-link">Chat & Agents</a>
+      <a href="#trading" class="sidebar-link">Trading Tools</a>
+      <a href="#research" class="sidebar-link">Deep Research</a>
+    </div>
+    <div class="sidebar-group">
+      <span class="sidebar-title">Resources</span>
+      <a href="#pricing" class="sidebar-link">Token Gating</a>
+      <a href="#community" class="sidebar-link">Community Vault</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="docs-content">
+    <div class="docs-header" id="intro">
+      <h1 class="docs-title">Infinite Documentation</h1>
+      <p class="docs-intro">Learn how to access decentralized AI infrastructure, trading agents, and premium tools just by holding the $INFINITE token.</p>
+    </div>
+
+    <!-- QUICKSTART -->
+    <div class="doc-section" id="quickstart">
+      <h2 class="section-title">Quickstart</h2>
+      <p class="section-text">Get up and running with Infinite tools in under 5 minutes. No subscription needed.</p>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-title">1. Buy $INFINITE</div>
+          <p class="feature-desc">Purchase token on PumpSwap. Tiered access starts at 10K $INFINITE.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">2. Connect Wallet</div>
+          <p class="feature-desc">Log into the dashboard with your Solana wallet. Access is instant.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">3. Generate Keys</div>
+          <p class="feature-desc">Create your unified API key that routes to Anthropic, Gemini, and X.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">4. Build / Use</div>
+          <p class="feature-desc">Use the pre-built UI or plug the key into your own agents.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- API EXAMPLE -->
+    <div class="doc-section" id="keys">
+      <h2 class="section-title">Using the API</h2>
+      <p class="section-text">The Infinite proxy sits between you and major AI providers. You make a standard request, we handle the auth and billing via the treasury.</p>
+      
+      <div class="code-block">
+curl https://api.infinite.sh/v1/chat \
+  -H "Authorization: Bearer YOUR_INFINITE_KEY" \
+  -d '{
+    "model": "claude-3-5-sonnet",
+    "messages": [{"role": "user", "content": "Analyze this ticker..."}]
+  }'
+      </div>
+      
+      <p class="section-text">We currently support mapped endpoints for:</p>
+      <ul style="list-style: disc; margin-left: 20px; color: var(--text-dim); line-height: 1.8;">
+        <li>Anthropic (Claude 3.5 Sonnet & Haiku)</li>
+        <li>Google (Gemini 1.5 Pro & Flash)</li>
+        <li>X API (Search, Trends, Posts)</li>
+        <li>Flux (Image Generation)</li>
+      </ul>
+    </div>
+
+    <!-- CHAT & AGENTS -->
+    <div class="doc-section" id="chat">
+      <h2 class="section-title">Chat & Agents</h2>
+      <p class="section-text">
+        Infinite provides unified access to the world's best LLMs. You don't need separate subscriptions.
+        Your API key routes requests intelligently to the provider you specify.
+      </p>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-title">Claude 3.5 Sonnet</div>
+          <p class="feature-desc">Best for coding, complex reasoning, and nuance. The default model for most agents.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">Gemini 1.5 Pro</div>
+          <p class="feature-desc">Massive context window (2M tokens). Perfect for analyzing entire codebases or large documents.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRADING TOOLS -->
+    <div class="doc-section" id="trading">
+      <h2 class="section-title">Trading Tools</h2>
+      <p class="section-text">
+        We've built specialized agents for Solana traders. These run on our infrastructure but are controlled by you.
+      </p>
+      <ul style="list-style: none; padding: 0;">
+        <li style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
+          <strong style="color: var(--accent); font-family: var(--font-mono);">Wallet Monitor</strong><br>
+          <span style="color: var(--text-dim); font-size: 14px;">Tracks specific wallets for movement. Alerts you on Discord or Telegram when a "smart money" wallet buys.</span>
+        </li>
+        <li style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
+          <strong style="color: var(--accent); font-family: var(--font-mono);">Trend Scanner</strong><br>
+          <span style="color: var(--text-dim); font-size: 14px;">Uses X API to scan for ticker mentions. Correlates social volume with price action to find early breakouts.</span>
+        </li>
+        <li>
+          <strong style="color: var(--accent); font-family: var(--font-mono);">Sentiment Analyzer</strong><br>
+          <span style="color: var(--text-dim); font-size: 14px;">Feeds 100+ recent tweets about a token into Claude to get a qualitative analysis of community sentiment (bullish/bearish/scam).</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- DEEP RESEARCH -->
+    <div class="doc-section" id="research">
+      <h2 class="section-title">Deep Research</h2>
+      <p class="section-text">
+        Stop reading whitepapers manually. Our Research Agent can digest PDFs, GitHub repos, and documentation sites in seconds.
+      </p>
+      <div class="code-block">
+POST /v1/research
+{
+  "target": "https://github.com/solana-labs/solana",
+  "query": "Explain the consensus mechanism in simple terms"
+}
+      </div>
+    </div>
+
+    <!-- TOKEN GATING -->
+    <div class="doc-section" id="pricing">
+      <h2 class="section-title">Token Gating</h2>
+      <p class="section-text">
+        API limits are determined by your $INFINITE holdings on Solana. We take a snapshot every 5 minutes.
+      </p>
+      
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted);">
+              <th style="padding: 12px 0;">Tier</th>
+              <th style="padding: 12px 12px;">Holdings</th>
+              <th style="padding: 12px 0;">Daily Limit</th>
+              <th style="padding: 12px 0;">Models</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border-light);">
+              <td style="padding: 16px 0; color: var(--accent);">Signal</td>
+              <td style="padding: 16px 12px;">10,000 $INFINITE</td>
+              <td style="padding: 16px 0;">1,000 calls</td>
+              <td style="padding: 16px 0;">Sonnet, Flash</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-light);">
+              <td style="padding: 16px 0; color: var(--accent);">Operator</td>
+              <td style="padding: 16px 12px;">100,000 $INFINITE</td>
+              <td style="padding: 16px 0;">10,000 calls</td>
+              <td style="padding: 16px 0;">+ Gemini Pro</td>
+            </tr>
+            <tr>
+              <td style="padding: 16px 0; color: var(--text);">Architect</td>
+              <td style="padding: 16px 12px;">1,000,000 $INFINITE</td>
+              <td style="padding: 16px 0;">Unlimited</td>
+              <td style="padding: 16px 0;">+ Opus, Ultra</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMMUNITY VAULT -->
+    <div class="doc-section" id="community">
+      <h2 class="section-title">Community Vault</h2>
+      <p class="section-text">
+        The Community Vault is a repository of tools built by the community. If you build a useful agent or script, you can submit it to the vault.
+        If approved by DAO vote, it gets hosted on our infrastructure and available to all holders.
+      </p>
+      <p class="section-text">
+        <a href="#" style="color: var(--accent);">Submit a tool</a>
+      </p>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

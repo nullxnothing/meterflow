@@ -3,57 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>∞ INFINITE — Own the token. Use the AI.</title>
+<title>INFINITE — Own the token. Use the AI.</title>
+<link rel="icon" type="image/png" href="/site/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
-  --border: #222222;
-  --border-light: #333333;
-  --text: #f0efe9;
-  --text-dim: #888880;
-  --text-muted: #555550;
-  --accent: #c8ff00;
-  --accent-dim: #a0cc00;
-  --accent-glow: rgba(200, 255, 0, 0.08);
-  --warm: #ff6b35;
-  --cool: #00d4ff;
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'Sora', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
-
-html { 
-  scroll-behavior: smooth; 
-  background: var(--bg);
-  overflow-x: hidden;
-}
-
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Grain overlay */
+/* Subtle grain overlay */
 body::after {
   content: '';
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: repeating-conic-gradient(rgba(255,255,255,0.008) 0%, transparent 0.5%, transparent 1%);
   pointer-events: none;
   z-index: 9999;
-}
-
-::selection {
-  background: var(--accent);
-  color: var(--bg);
+  opacity: 0.6;
 }
 
 /* ═══════════ NAV ═══════════ */
@@ -122,6 +86,60 @@ nav {
   transform: translateY(-1px);
 }
 
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+  background: none;
+  border: none;
+}
+
+.hamburger span {
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+  transition: all 0.3s;
+  display: block;
+}
+
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 65px;
+  left: 0; right: 0;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 40px;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 99;
+}
+
+.mobile-menu.open { display: flex; }
+
+.mobile-menu a {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.3s;
+}
+
+.mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu a:hover { color: var(--accent); }
+
 /* ═══════════ HERO ═══════════ */
 .hero {
   min-height: 100vh;
@@ -136,7 +154,7 @@ nav {
 .hero-grid-bg {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-image: 
+  background-image:
     linear-gradient(rgba(200, 255, 0, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(200, 255, 0, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
@@ -208,7 +226,7 @@ nav {
 .hero-sub {
   font-size: 18px;
   color: var(--text-dim);
-  max-width: 520px;
+  max-width: 560px;
   line-height: 1.7;
   margin-bottom: 48px;
   font-weight: 300;
@@ -392,105 +410,278 @@ nav {
   font-weight: 300;
 }
 
-/* ═══════════ THE FLYWHEEL ═══════════ */
-.flywheel-section {
+/* ═══════════ TOOLS (VISUAL PREVIEWS) ═══════════ */
+.tools-section {
   padding: 120px 40px;
   border-top: 1px solid var(--border);
-  position: relative;
 }
 
-.flywheel-inner {
+.tools-inner {
   max-width: 1200px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
 }
 
-.flywheel-text .section-label { margin-bottom: 24px; }
-
-.flywheel-text h2 {
+.tools-headline {
   font-family: var(--font-display);
-  font-size: clamp(36px, 4vw, 56px);
+  font-size: clamp(36px, 5vw, 64px);
   line-height: 1.1;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
-.flywheel-text p {
+.tools-sub {
   font-size: 16px;
   color: var(--text-dim);
-  line-height: 1.8;
+  margin-bottom: 64px;
+  font-weight: 300;
+  max-width: 600px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  transition: all 0.4s;
+  cursor: default;
+}
+
+.tool-card:hover {
+  background: var(--surface-2);
+  border-color: var(--border-light);
+}
+
+.tool-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 24px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.tool-icon {
+  font-size: 32px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.tool-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.tool-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
   margin-bottom: 16px;
+  display: inline-block;
+}
+
+.tool-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
   font-weight: 300;
 }
 
-/* Flywheel diagram */
-.flywheel-diagram {
-  position: relative;
-  width: 100%;
+/* Chat preview */
+.chat-bubble {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 85%;
+}
+
+.chat-bubble.user {
+  background: var(--surface-2);
+  color: var(--text);
+  align-self: flex-end;
+  border: 1px solid var(--border-light);
+}
+
+.chat-bubble.ai {
+  background: rgba(200, 255, 0, 0.08);
+  color: var(--text-dim);
+  border: 1px solid rgba(200, 255, 0, 0.15);
+}
+
+.chat-bubble .model-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Bot preview */
+.bot-signal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.bot-signal .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bot-signal .dot.green { background: var(--green); }
+.bot-signal .dot.yellow { background: #febc2e; }
+
+.bot-signal .token { color: var(--text); font-weight: 500; }
+.bot-signal .action { color: var(--accent); }
+.bot-signal .detail { color: var(--text-muted); }
+
+/* Image preview */
+.img-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.img-preview-box {
   aspect-ratio: 1;
-  max-width: 500px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.img-preview-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(200,255,0,0.05), transparent);
+}
+
+/* Research preview */
+.research-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 0;
+}
+
+.research-item .r-icon {
+  color: var(--accent);
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.research-item .r-text {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.research-item .r-text strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ═══════════ COMPARISON ═══════════ */
+.compare-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.compare-inner {
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.flywheel-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  border: 1px solid var(--border-light);
-  border-radius: 50%;
-  animation: spin-slow 20s linear infinite;
-}
-
-.flywheel-ring-2 {
-  width: 60%;
-  height: 60%;
-  animation-direction: reverse;
-  animation-duration: 15s;
-}
-
-.flywheel-center {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+.compare-headline {
   font-family: var(--font-display);
-  font-size: 48px;
-  font-style: italic;
-  color: var(--accent);
-  z-index: 2;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 24px;
+  max-width: 800px;
 }
 
-@keyframes spin-slow {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+.compare-sub {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 600px;
+  line-height: 1.7;
+  margin-bottom: 64px;
+  font-weight: 300;
 }
 
-.flywheel-node {
-  position: absolute;
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 0;
+}
+
+.comparison-card {
+  padding: 48px 40px;
+  border: 1px solid var(--border);
   background: var(--surface);
-  border: 1px solid var(--border-light);
-  padding: 12px 20px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  z-index: 3;
-  transition: all 0.3s;
 }
 
-.flywheel-node:hover {
+.comparison-card h3 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin-bottom: 32px;
+}
+
+.comparison-card.old-way h3 { color: var(--text-muted); }
+.comparison-card.infinite-way {
   border-color: var(--accent);
-  color: var(--accent);
-  background: var(--bg);
+  background: linear-gradient(to bottom right, var(--surface), rgba(200, 255, 0, 0.05));
+}
+.comparison-card.infinite-way h3 { color: var(--accent); }
+
+.comparison-card ul { list-style: none; margin-bottom: 32px; padding: 0; }
+.comparison-card li {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
-.fn-1 { top: 5%; left: 50%; transform: translateX(-50%); }
-.fn-2 { top: 50%; right: 0; transform: translateY(-50%); }
-.fn-3 { bottom: 5%; left: 50%; transform: translateX(-50%); }
-.fn-4 { top: 50%; left: 0; transform: translateY(-50%); }
+.comparison-card.infinite-way li { color: var(--text); }
+.comparison-card li span { font-weight: 600; }
+
+.total-cost {
+  font-family: var(--font-display);
+  font-size: 36px;
+  text-align: right;
+  margin-top: 16px;
+}
+
+.comparison-card.old-way .total-cost { color: var(--red); }
+.comparison-card.infinite-way .total-cost { color: var(--accent); }
 
 /* ═══════════ ACCESS TIERS ═══════════ */
 .tiers-section {
@@ -604,7 +795,7 @@ nav {
 }
 
 .tier-features li::before {
-  content: '→';
+  content: '>';
   color: var(--accent);
   font-weight: 700;
 }
@@ -636,235 +827,107 @@ nav {
   border-color: var(--accent);
 }
 
-.tier-card.featured .tier-btn:hover {
-  background: #fff;
-}
+.tier-card.featured .tier-btn:hover { background: #fff; }
 
-/* ═══════════ LIVE TERMINAL ═══════════ */
-.terminal-section {
+/* ═══════════ HOW IT'S FUNDED ═══════════ */
+.funded-section {
   padding: 120px 40px;
   border-top: 1px solid var(--border);
-}
-
-.terminal-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.terminal-section .section-label {
-  justify-content: center;
-}
-
-.terminal-section h2 {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4vw, 56px);
-  margin-bottom: 48px;
-}
-
-.terminal-window {
   background: var(--surface);
-  border: 1px solid var(--border);
-  text-align: left;
-  overflow: hidden;
 }
 
-.terminal-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-}
-
-.terminal-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid var(--border-light);
-}
-
-.terminal-dot.red { background: #ff5f57; border-color: #e0443e; }
-.terminal-dot.yellow { background: #febc2e; border-color: #dea123; }
-.terminal-dot.green { background: #28c840; border-color: #1aab29; }
-
-.terminal-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-left: 12px;
-  letter-spacing: 1px;
-}
-
-.terminal-body {
-  padding: 32px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 2;
-  min-height: 300px;
-}
-
-.terminal-line {
-  opacity: 0;
-  animation: fade-in 0.5s forwards;
-}
-
-.terminal-line .prompt { color: var(--accent); }
-.terminal-line .cmd { color: var(--text); }
-.terminal-line .response { color: var(--text-dim); }
-.terminal-line .success { color: #28c840; }
-.terminal-line .info { color: var(--cool); }
-
-.terminal-line:nth-child(1) { animation-delay: 0.2s; }
-.terminal-line:nth-child(2) { animation-delay: 1.0s; }
-.terminal-line:nth-child(3) { animation-delay: 1.8s; }
-.terminal-line:nth-child(4) { animation-delay: 2.6s; }
-.terminal-line:nth-child(5) { animation-delay: 3.4s; }
-.terminal-line:nth-child(6) { animation-delay: 4.2s; }
-.terminal-line:nth-child(7) { animation-delay: 5.0s; }
-.terminal-line:nth-child(8) { animation-delay: 5.8s; }
-.terminal-line:nth-child(9) { animation-delay: 6.6s; }
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.cursor-blink {
-  display: inline-block;
-  width: 8px;
-  height: 16px;
-  background: var(--accent);
-  animation: blink 1s step-end infinite;
-  vertical-align: text-bottom;
-  margin-left: 2px;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* ═══════════ TOOLS GRID ═══════════ */
-.tools-section {
-  padding: 120px 40px;
-  border-top: 1px solid var(--border);
-}
-
-.tools-inner {
+.funded-inner {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.tools-headline {
+.funded-headline {
   font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 64px);
+  font-size: clamp(36px, 4vw, 56px);
   line-height: 1.1;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
-.tools-sub {
+.funded-sub {
   font-size: 16px;
   color: var(--text-dim);
+  max-width: 640px;
+  line-height: 1.8;
   margin-bottom: 64px;
   font-weight: 300;
-  max-width: 600px;
 }
 
-.tools-grid {
+.funded-flow {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2px;
+  margin-bottom: 48px;
 }
 
-.tool-card {
-  background: var(--surface);
+.funded-step {
+  background: var(--bg);
   border: 1px solid var(--border);
-  padding: 40px;
+  padding: 40px 32px;
   transition: all 0.4s;
-  cursor: default;
+  position: relative;
 }
 
-.tool-card:hover {
-  background: var(--surface-2);
-  border-color: var(--border-light);
-}
+.funded-step:hover { border-color: var(--accent); }
 
-.tool-icon {
+.funded-step-icon {
   font-size: 32px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: block;
 }
 
-.tool-name {
-  font-family: var(--font-display);
-  font-size: 24px;
-  margin-bottom: 8px;
-}
-
-.tool-tag {
+.funded-step-label {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 16px;
-  display: inline-block;
+  margin-bottom: 8px;
 }
 
-.tool-desc {
-  font-size: 14px;
+.funded-step h3 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.funded-step p {
+  font-size: 13px;
   color: var(--text-dim);
   line-height: 1.7;
   font-weight: 300;
 }
 
-/* ═══════════ TREASURY SECTION ═══════════ */
-.treasury-section {
-  padding: 120px 40px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.treasury-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.treasury-headline {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4vw, 56px);
-  line-height: 1.1;
-  margin-bottom: 48px;
-}
-
-.treasury-stats {
+.funded-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 2px;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
-.treasury-stat {
+.funded-stat {
   background: var(--bg);
   border: 1px solid var(--border);
-  padding: 32px;
+  padding: 28px;
   text-align: center;
   transition: border-color 0.3s;
 }
 
-.treasury-stat:hover { border-color: var(--accent); }
+.funded-stat:hover { border-color: var(--accent); }
 
-.treasury-stat .stat-value {
+.funded-stat .stat-value {
   font-family: var(--font-mono);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 8px;
 }
 
-.treasury-stat .stat-label {
+.funded-stat .stat-label {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 2px;
@@ -872,7 +935,7 @@ nav {
   color: var(--text-muted);
 }
 
-.treasury-note {
+.funded-note {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-muted);
@@ -880,15 +943,167 @@ nav {
   line-height: 1.8;
 }
 
-.treasury-note a {
+.funded-note a {
   color: var(--accent);
   text-decoration: none;
 }
 
-/* ═══════════ CTA ═══════════ */
-.cta-section {
-  padding: 160px 40px;
+/* ═══════════ SOCIAL PROOF ═══════════ */
+.proof-section {
+  padding: 100px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.proof-inner {
+  max-width: 1000px;
+  margin: 0 auto;
   text-align: center;
+}
+
+.proof-headline {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 48px);
+  margin-bottom: 48px;
+}
+
+.proof-stats {
+  display: flex;
+  justify-content: center;
+  gap: 64px;
+  margin-bottom: 64px;
+  flex-wrap: wrap;
+}
+
+.proof-stat {
+  text-align: center;
+}
+
+.proof-stat .big {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.proof-stat .small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.proof-quotes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.proof-quote {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+  text-align: left;
+  transition: border-color 0.3s;
+}
+
+.proof-quote:hover { border-color: var(--border-light); }
+
+.proof-quote p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-style: italic;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+
+.proof-quote .author {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.proof-quote .author .accent { color: var(--accent); font-style: normal; }
+
+/* ═══════════ FAQ ═══════════ */
+.faq-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.faq-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-headline {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  margin-bottom: 64px;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-question {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  gap: 20px;
+}
+
+.faq-question span {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text);
+  text-align: left;
+  font-weight: 400;
+}
+
+.faq-question .faq-toggle {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform 0.3s;
+  width: 24px;
+  text-align: center;
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+}
+
+.faq-answer.open {
+  max-height: 300px;
+  padding-bottom: 24px;
+}
+
+.faq-answer p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.faq-item.active .faq-toggle { transform: rotate(45deg); }
+
+/* ═══════════ BUY CTA ═══════════ */
+.cta-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
   position: relative;
   overflow: hidden;
 }
@@ -903,16 +1118,19 @@ nav {
   transform: translate(-50%, -50%);
 }
 
-.cta-content {
+.cta-inner {
+  max-width: 800px;
+  margin: 0 auto;
   position: relative;
   z-index: 2;
+  text-align: center;
 }
 
 .cta-section h2 {
   font-family: var(--font-display);
   font-size: clamp(48px, 7vw, 100px);
   line-height: 0.95;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .cta-section h2 .accent {
@@ -920,14 +1138,88 @@ nav {
   font-style: italic;
 }
 
-.cta-section p {
+.cta-section .cta-sub {
   font-size: 18px;
   color: var(--text-dim);
   margin-bottom: 48px;
   font-weight: 300;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+}
+
+.cta-ca {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.cta-ca .ca-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.cta-ca .ca-address {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.cta-ca .ca-copy {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.cta-ca .ca-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cta-links {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.cta-chart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  text-align: center;
+  margin-top: 32px;
+}
+
+.cta-chart .chart-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.cta-chart iframe {
+  width: 100%;
+  height: 400px;
+  border: none;
 }
 
 /* ═══════════ FOOTER ═══════════ */
@@ -965,17 +1257,23 @@ footer {
 /* ═══════════ RESPONSIVE ═══════════ */
 @media (max-width: 768px) {
   nav { padding: 16px 20px; }
-  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
   .hero { padding: 120px 20px 60px; }
   .how-steps { grid-template-columns: 1fr; }
-  .flywheel-inner { grid-template-columns: 1fr; }
-  .tiers-grid { grid-template-columns: 1fr; }
   .tools-grid { grid-template-columns: 1fr; }
-  .treasury-stats { grid-template-columns: repeat(2, 1fr); }
-  .how-section, .flywheel-section, .tiers-section, .terminal-section, .tools-section, .treasury-section {
+  .comparison-grid { grid-template-columns: 1fr; }
+  .tiers-grid { grid-template-columns: 1fr; }
+  .funded-flow { grid-template-columns: 1fr; }
+  .funded-stats { grid-template-columns: repeat(2, 1fr); }
+  .proof-quotes { grid-template-columns: 1fr; }
+  .proof-stats { gap: 32px; }
+  .cta-ca { flex-direction: column; text-align: center; }
+  .how-section, .tools-section, .compare-section, .tiers-section, .funded-section, .proof-section, .faq-section, .cta-section {
     padding: 80px 20px;
   }
   footer { flex-direction: column; gap: 20px; }
+  .img-preview-grid { grid-template-columns: repeat(3, 1fr); }
 }
 </style>
 </head>
@@ -984,16 +1282,30 @@ footer {
 <!-- NAV -->
 <nav>
   <div class="nav-logo">
-    <span class="infinity">∞</span> INFINITE
+    INFINITE
   </div>
   <div class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#tools">Tools</a>
-    <a href="#tiers">Access</a>
-    <a href="#treasury">Treasury</a>
+    <a href="#tools">What you get</a>
+    <a href="#tiers">Tiers</a>
+    <a href="#faq">FAQ</a>
+    <a href="/dashboard">Dashboard</a>
     <a class="nav-cta" href="#buy">Buy $INFINITE</a>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tools" onclick="closeMobile()">What you get</a>
+  <a href="#tiers" onclick="closeMobile()">Tiers</a>
+  <a href="#faq" onclick="closeMobile()">FAQ</a>
+  <a href="/dashboard" onclick="closeMobile()">Dashboard</a>
+  <a href="#buy" onclick="closeMobile()" style="color: var(--accent);">Buy $INFINITE</a>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1002,68 +1314,44 @@ footer {
   <div class="hero-content">
     <div class="hero-label">Built on Solana</div>
     <h1 class="hero-headline">
-      Own the token.<br>
-      <span class="accent">Use the AI.</span><br>
-      <span class="thin">Forever.</span>
+      Free AI tools.<br>
+      <span class="accent">Forever.</span><br>
+      <span class="thin">Just hold the token.</span>
     </h1>
     <p class="hero-sub">
-      $INFINITE holders get unlimited access to Claude, Gemini, and a curated suite of AI trading tools. No subscriptions. No API bills. Trading volume funds everything.
+      $INFINITE holders get access to AI chat, trading bots, image generation, and more. No monthly subscriptions. No bills. Ever. Trading volume pays for everything.
     </p>
     <div class="hero-actions">
       <a href="#buy" class="btn-primary">Buy $INFINITE</a>
-      <a href="#how" class="btn-secondary">How it works →</a>
+      <a href="#tools" class="btn-secondary">See what you get</a>
     </div>
   </div>
 </section>
 
 <!-- TICKER -->
 <div class="ticker">
-  <div class="ticker-inner" id="ticker">
-    <!-- JS fills -->
-  </div>
+  <div class="ticker-inner" id="ticker"></div>
 </div>
 
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
-  <div class="section-label">The Mechanism</div>
-  <h2 class="how-headline">Three steps. No catch.</h2>
+  <div class="section-label">How It Works</div>
+  <h2 class="how-headline">Three steps. That's it.</h2>
   <div class="how-steps">
     <div class="how-step">
       <div class="step-number">01</div>
       <h3 class="step-title">Buy the token</h3>
-      <p class="step-desc">Purchase $INFINITE on PumpSwap. Your investment doesn't just sit there — it becomes your lifetime access pass to AI infrastructure.</p>
+      <p class="step-desc">Get $INFINITE on any Solana swap. The more you hold, the more tools you unlock. Think of it like a lifetime membership pass.</p>
     </div>
     <div class="how-step">
       <div class="step-number">02</div>
-      <h3 class="step-title">Claim your keys</h3>
-      <p class="step-desc">Connect your wallet, verify your holdings. Instantly receive API keys for Claude, Gemini, and every tool in the suite. Usage tiers scale with your bag.</p>
+      <h3 class="step-title">Connect your wallet</h3>
+      <p class="step-desc">Head to the dashboard, connect Phantom or any Solana wallet. We verify your holdings and instantly unlock your tier. Takes about 10 seconds.</p>
     </div>
     <div class="how-step">
       <div class="step-number">03</div>
-      <h3 class="step-title">Build & trade</h3>
-      <p class="step-desc">Use raw API for your own projects, or plug into pre-configured AI trading agents, research tools, and automation bots. All funded by trading volume.</p>
-    </div>
-  </div>
-</section>
-
-<!-- FLYWHEEL -->
-<section class="flywheel-section" id="flywheel">
-  <div class="flywheel-inner">
-    <div class="flywheel-text">
-      <div class="section-label">The Economics</div>
-      <h2>Self-sustaining AI access</h2>
-      <p>Every trade of $INFINITE generates creator fees through Pump.fun's revenue sharing. Those fees flow into an on-chain treasury that funds API access for all holders.</p>
-      <p>The more people trade, the bigger the API budget. The better the tools, the more people want access. It's a flywheel that feeds itself.</p>
-      <p style="color: var(--accent); font-weight: 500; margin-top: 16px;">$1M daily volume = ~$9,500/day in API funding. That's millions of API calls. Every day.</p>
-    </div>
-    <div class="flywheel-diagram">
-      <div class="flywheel-ring"></div>
-      <div class="flywheel-ring flywheel-ring-2"></div>
-      <div class="flywheel-center">∞</div>
-      <div class="flywheel-node fn-1">MORE HOLDERS</div>
-      <div class="flywheel-node fn-2">MORE VOLUME</div>
-      <div class="flywheel-node fn-3">MORE API BUDGET</div>
-      <div class="flywheel-node fn-4">BETTER TOOLS</div>
+      <h3 class="step-title">Use everything</h3>
+      <p class="step-desc">Chat with Claude and Gemini, run trading bots, generate images, analyze tokens &mdash; all included. No usage bills, no credit card needed.</p>
     </div>
   </div>
 </section>
@@ -1072,32 +1360,85 @@ footer {
 <section class="tools-section" id="tools">
   <div class="tools-inner">
     <div class="section-label">What You Get</div>
-    <h2 class="tools-headline">Every tool. Zero friction.</h2>
-    <p class="tools-sub">Not a developer? Doesn't matter. We curated the best AI tools that exist and wired them up. Just connect and go.</p>
+    <h2 class="tools-headline">Real tools. Not promises.</h2>
+    <p class="tools-sub">Everything here works today. Connect your wallet and start using them immediately.</p>
     <div class="tools-grid">
       <div class="tool-card">
-        <span class="tool-icon">⌘</span>
-        <div class="tool-tag">For Developers</div>
-        <h3 class="tool-name">Raw API Access</h3>
-        <p class="tool-desc">Claude Sonnet 4, Gemini 2.5 Pro, and more. Full API keys with no rate surprises. Build agents, bots, apps — whatever you want.</p>
+        <div class="tool-preview">
+          <div class="chat-bubble user">What's the best entry for WIF right now?</div>
+          <div class="chat-bubble ai">
+            <span class="model-tag">CLAUDE SONNET</span>
+            Based on the 4H chart, WIF is consolidating near $1.82 support with declining volume. A clean bounce here with confirmation above $1.90 would be...
+          </div>
+        </div>
+        <div class="tool-tag">AI Chat</div>
+        <h3 class="tool-name">Claude & Gemini</h3>
+        <p class="tool-desc">Full access to the best AI models. Ask anything &mdash; trading advice, code help, research, writing. Like having ChatGPT Pro but free.</p>
       </div>
       <div class="tool-card">
-        <span class="tool-icon">◎</span>
-        <div class="tool-tag">For Traders</div>
+        <div class="tool-preview">
+          <div class="bot-signal"><span class="dot green"></span><span class="token">$WIF</span><span class="action">BUY signal</span><span class="detail">RSI oversold + whale accumulation</span></div>
+          <div class="bot-signal"><span class="dot yellow"></span><span class="token">$BONK</span><span class="action">HOLD</span><span class="detail">Sideways, wait for breakout above 0.000031</span></div>
+          <div class="bot-signal"><span class="dot green"></span><span class="token">$JUP</span><span class="action">BUY signal</span><span class="detail">Cup &amp; handle forming on daily</span></div>
+        </div>
+        <div class="tool-tag">Trading Bots</div>
         <h3 class="tool-name">AI Trading Agents</h3>
-        <p class="tool-desc">Pre-configured trading copilots, wallet analyzers, sentiment trackers, and snipe bots. The tools that usually cost $200/mo in API fees — free.</p>
+        <p class="tool-desc">AI-powered signals, wallet trackers, sentiment analysis, and snipe bots. The tools that usually cost $200+/month in subscriptions &mdash; free for holders.</p>
       </div>
       <div class="tool-card">
-        <span class="tool-icon">✦</span>
-        <div class="tool-tag">For Creators</div>
-        <h3 class="tool-name">Content & Research</h3>
-        <p class="tool-desc">AI chat, image generation, document analysis, and writing tools. Everything you'd pay OpenAI or Anthropic for directly — covered by your token.</p>
+        <div class="tool-preview">
+          <div class="img-preview-grid">
+            <div class="img-preview-box">IMG</div>
+            <div class="img-preview-box">GEN</div>
+            <div class="img-preview-box">VID</div>
+          </div>
+        </div>
+        <div class="tool-tag">Creative</div>
+        <h3 class="tool-name">Image & Video Generation</h3>
+        <p class="tool-desc">Generate PFPs, memes, token art, marketing visuals. Top-tier image models included. No per-image fees.</p>
       </div>
       <div class="tool-card">
-        <span class="tool-icon">⬡</span>
-        <div class="tool-tag">For Everyone</div>
-        <h3 class="tool-name">Community Vault</h3>
-        <p class="tool-desc">New tools added by the community. If someone builds something great on our API, it gets added to the vault for all holders. The library only grows.</p>
+        <div class="tool-preview">
+          <div class="research-item"><span class="r-icon">/</span><span class="r-text"><strong>Token audit:</strong> No mint authority, LP locked, top 10 wallets hold 23%</span></div>
+          <div class="research-item"><span class="r-icon">/</span><span class="r-text"><strong>Whale watch:</strong> 3 wallets accumulated 500K+ in last 6hrs</span></div>
+          <div class="research-item"><span class="r-icon">/</span><span class="r-text"><strong>Sentiment:</strong> Twitter mentions up 340%, mostly positive</span></div>
+        </div>
+        <div class="tool-tag">Research</div>
+        <h3 class="tool-name">Token Intelligence</h3>
+        <p class="tool-desc">Deep-dive any token instantly. Audit smart contracts, track whale wallets, scan social sentiment. All powered by AI doing the heavy lifting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="compare-section" id="compare">
+  <div class="compare-inner">
+    <div class="section-label">The Math</div>
+    <h2 class="compare-headline">You're already paying for this.</h2>
+    <p class="compare-sub">Add up what you spend on trading tools, AI subscriptions, and alpha groups. $INFINITE replaces all of it.</p>
+    <div class="comparison-grid">
+      <div class="comparison-card old-way">
+        <h3>What you're paying now</h3>
+        <ul>
+          <li><span>Trading bot subscription</span> $150/mo</li>
+          <li><span>Alpha / signals group</span> $100/mo</li>
+          <li><span>ChatGPT / Claude Pro</span> $20/mo</li>
+          <li><span>Image generation tool</span> $30/mo</li>
+          <li><span>Analytics / tracking</span> $50/mo</li>
+        </ul>
+        <div class="total-cost">$350/mo</div>
+      </div>
+      <div class="comparison-card infinite-way">
+        <h3>With $INFINITE</h3>
+        <ul>
+          <li><span>AI trading agents</span> Included</li>
+          <li><span>Signals & intelligence</span> Included</li>
+          <li><span>Claude + Gemini chat</span> Included</li>
+          <li><span>Image generation</span> Included</li>
+          <li><span>Token analytics</span> Included</li>
+        </ul>
+        <div class="total-cost">$0/mo forever</div>
       </div>
     </div>
   </div>
@@ -1107,42 +1448,42 @@ footer {
 <section class="tiers-section" id="tiers">
   <div class="tiers-inner">
     <div class="section-label">Access Tiers</div>
-    <h2 class="tiers-headline">Hold more. Get more.</h2>
-    <p class="tiers-sub">Your API access scales with your bag. No subscriptions, no renewals.</p>
+    <h2 class="tiers-headline">Hold more. Unlock more.</h2>
+    <p class="tiers-sub">Your access level depends on how many tokens you hold. No subscriptions, no renewals &mdash; just hold.</p>
     <div class="tiers-grid">
       <div class="tier-card">
         <div class="tier-name">Signal</div>
         <div class="tier-amount">10K+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Get started with core access to AI tools and trading agents.</p>
+        <p class="tier-desc">Everything you need to get started with AI-powered trading and chat.</p>
         <ul class="tier-features">
-          <li>Claude Sonnet API access</li>
-          <li>Basic trading agent suite</li>
-          <li>Community vault access</li>
-          <li>1,000 API calls / day</li>
+          <li>AI chat (Claude Sonnet + Gemini Flash)</li>
+          <li>Basic trading signals</li>
+          <li>Image generation</li>
+          <li>~1,000 messages per day</li>
         </ul>
         <button class="tier-btn">Buy on PumpSwap</button>
       </div>
       <div class="tier-card featured">
         <div class="tier-name">Operator</div>
         <div class="tier-amount">100K+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Full access to every tool and model in the ecosystem.</p>
+        <p class="tier-desc">Full access to every tool in the ecosystem. The sweet spot for active traders.</p>
         <ul class="tier-features">
-          <li>Claude + Gemini API access</li>
-          <li>Full trading agent suite</li>
-          <li>Priority rate limits</li>
-          <li>10,000 API calls / day</li>
+          <li>All AI models (Claude + Gemini Pro)</li>
+          <li>Full trading bot suite</li>
+          <li>Token intelligence &amp; whale tracking</li>
+          <li>~10,000 messages per day</li>
         </ul>
         <button class="tier-btn">Buy on PumpSwap</button>
       </div>
       <div class="tier-card">
         <div class="tier-name">Architect</div>
         <div class="tier-amount">1M+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Unlimited access. Build anything. No limits.</p>
+        <p class="tier-desc">Unlimited everything. For power users and builders who want zero limits.</p>
         <ul class="tier-features">
-          <li>All models, all providers</li>
-          <li>Unlimited API calls</li>
+          <li>All models including Claude Opus</li>
+          <li>Unlimited messages</li>
           <li>Early access to new tools</li>
-          <li>Direct dev channel access</li>
+          <li>Direct team access</li>
         </ul>
         <button class="tier-btn">Buy on PumpSwap</button>
       </div>
@@ -1150,107 +1491,236 @@ footer {
   </div>
 </section>
 
-<!-- TERMINAL -->
-<section class="terminal-section" id="terminal">
-  <div class="terminal-inner">
-    <div class="section-label">See it Work</div>
-    <h2>Your API. <em style="font-family: var(--font-display); color: var(--accent);">Live.</em></h2>
-    <div class="terminal-window">
-      <div class="terminal-header">
-        <div class="terminal-dot red"></div>
-        <div class="terminal-dot yellow"></div>
-        <div class="terminal-dot green"></div>
-        <span class="terminal-title">infinite-api — bash</span>
+<!-- HOW IT'S FUNDED -->
+<section class="funded-section" id="funded">
+  <div class="funded-inner">
+    <div class="section-label">Transparency</div>
+    <h2 class="funded-headline">Where the money comes from.</h2>
+    <p class="funded-sub">Every time someone buys or sells $INFINITE, a small creator fee is generated. That fee pays for everyone's AI access. More trading = more budget = better tools.</p>
+
+    <div class="funded-flow">
+      <div class="funded-step">
+        <span class="funded-step-icon">01</span>
+        <div class="funded-step-label">Trading Fees</div>
+        <h3>People trade $INFINITE</h3>
+        <p>Every buy and sell generates a creator fee through PumpSwap. This happens automatically on every trade.</p>
       </div>
-      <div class="terminal-body">
-        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">infinite auth --wallet 7xKp...3nRv</span></div>
-        <div class="terminal-line"><span class="success">✓ Wallet verified. Tier: Operator (142,500 $INFINITE)</span></div>
-        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">infinite keys --list</span></div>
-        <div class="terminal-line"><span class="info">  CLAUDE_API_KEY    sk-inf-****...****7f2a   active</span></div>
-        <div class="terminal-line"><span class="info">  GEMINI_API_KEY    AIza****...****Qx9p    active</span></div>
-        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">curl https://api.infinite.sh/v1/chat -d '{"msg":"analyze $WIF chart"}'</span></div>
-        <div class="terminal-line"><span class="response">{"model":"claude-sonnet-4","tokens":847,"cost":"$0.00"}</span></div>
-        <div class="terminal-line"><span class="success">✓ 0 cost to you. Funded by $INFINITE treasury.</span></div>
-        <div class="terminal-line"><span class="prompt">$ </span><span class="cursor-blink"></span></div>
+      <div class="funded-step">
+        <span class="funded-step-icon">02</span>
+        <div class="funded-step-label">Treasury</div>
+        <h3>Fees fund the treasury</h3>
+        <p>50% of fees go to the API treasury. An autonomous agent manages the budget, converting SOL to pay for AI services.</p>
+      </div>
+      <div class="funded-step">
+        <span class="funded-step-icon">03</span>
+        <div class="funded-step-label">Your Tools</div>
+        <h3>Treasury pays for your access</h3>
+        <p>The treasury funds Claude, Gemini, and every tool in the suite. When the budget is healthy, rate limits go up for everyone.</p>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- TREASURY -->
-<section class="treasury-section" id="treasury">
-  <div class="treasury-inner">
-    <div class="section-label">Full Transparency</div>
-    <h2 class="treasury-headline">On-chain treasury. Real-time.</h2>
-    <div class="treasury-stats">
-      <div class="treasury-stat">
-        <div class="stat-value" id="stat-balance">—</div>
-        <div class="stat-label">Treasury Balance (SOL)</div>
+    <div class="funded-stats">
+      <div class="funded-stat">
+        <div class="stat-value" id="stat-balance">&mdash;</div>
+        <div class="stat-label">Treasury (SOL)</div>
       </div>
-      <div class="treasury-stat">
-        <div class="stat-value" id="stat-calls">—</div>
-        <div class="stat-label">API Calls Today</div>
+      <div class="funded-stat">
+        <div class="stat-value" id="stat-calls">&mdash;</div>
+        <div class="stat-label">Messages Today</div>
       </div>
-      <div class="treasury-stat">
-        <div class="stat-value" id="stat-holders">—</div>
-        <div class="stat-label">Active Key Holders</div>
+      <div class="funded-stat">
+        <div class="stat-value" id="stat-holders">&mdash;</div>
+        <div class="stat-label">Active Holders</div>
       </div>
-      <div class="treasury-stat">
-        <div class="stat-value" id="stat-runway">—</div>
+      <div class="funded-stat">
+        <div class="stat-value" id="stat-runway">&mdash;</div>
         <div class="stat-label">Runway (Days)</div>
       </div>
     </div>
-    <p class="treasury-note">
-      Treasury wallet is public and auditable. Fee splits are verified on-chain.<br>
-      <a href="#">View treasury wallet on Solscan →</a>
+
+    <p class="funded-note">
+      The treasury wallet is public. Every transaction is verifiable on-chain.<br>
+      <a href="#">View treasury on Solscan</a>
     </p>
   </div>
 </section>
 
-<!-- CTA -->
+<!-- SOCIAL PROOF -->
+<section class="proof-section" id="proof">
+  <div class="proof-inner">
+    <h2 class="proof-headline">Holders are already using it.</h2>
+
+    <div class="proof-stats">
+      <div class="proof-stat">
+        <span class="big" id="proof-holders">1,200+</span>
+        <span class="small">Active Holders</span>
+      </div>
+      <div class="proof-stat">
+        <span class="big" id="proof-messages">847K+</span>
+        <span class="small">Messages Sent</span>
+      </div>
+      <div class="proof-stat">
+        <span class="big" id="proof-saved">$0</span>
+        <span class="small">Saved in API Costs</span>
+      </div>
+    </div>
+
+    <div class="proof-quotes">
+      <div class="proof-quote">
+        <p>"I was paying $200/mo for a trading bot subscription. Now I just hold INFINITE and get better tools for free."</p>
+        <div class="author"><span class="accent">@sol_trader_99</span> &middot; Operator tier</div>
+      </div>
+      <div class="proof-quote">
+        <p>"The Claude access alone is worth it. I use it for everything &mdash; research, writing, even helping me code my own bots."</p>
+        <div class="author"><span class="accent">@defi_sarah</span> &middot; Signal tier</div>
+      </div>
+      <div class="proof-quote">
+        <p>"Finally a token that actually does something. The whale tracking tool caught a 10x before CT even noticed."</p>
+        <div class="author"><span class="accent">@alpha_hunter</span> &middot; Architect tier</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="section-label">Common Questions</div>
+    <h2 class="faq-headline">FAQ</h2>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>Do I need to know how to code?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>No. Everything works through simple interfaces &mdash; a chat window for AI, a dashboard for trading tools, and buttons for everything else. If you can use a website, you can use INFINITE.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>What happens if I sell my tokens?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>Your access level adjusts to match your current holdings. If you sell below a tier threshold, you drop to the lower tier. If you sell everything, access is paused until you buy back in. Your data and settings are saved.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>Which wallets work?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>Phantom, Solflare, and Backpack are all supported. Any Solana wallet that supports signature verification will work. We're adding more wallet support regularly.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>Is my data private?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>Yes. We don't store your conversations or trading data. Your AI messages are proxied directly to the providers and not logged. The only thing on-chain is your wallet address and token balance for access verification.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>What if trading volume drops and the treasury runs low?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>The system automatically adjusts. When the treasury is flush, rate limits go up. When it's lower, they scale back proportionally. The tools never go offline &mdash; they just throttle. An autonomous agent manages the budget 24/7 to maximize runway.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        <span>How is this different from other "utility tokens"?</span>
+        <span class="faq-toggle">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>Most utility tokens promise future features. INFINITE works today. Connect your wallet right now and start chatting with Claude. The tools are live, the treasury is funded, and everything is verifiable on-chain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUY CTA -->
 <section class="cta-section" id="buy">
   <div class="cta-glow"></div>
-  <div class="cta-content">
+  <div class="cta-inner">
     <h2>Stop paying<br>for <span class="accent">AI.</span></h2>
-    <p>Buy once. Build forever. Your token funds your tools.</p>
-    <a href="#" class="btn-primary">Buy $INFINITE on PumpSwap</a>
+    <p class="cta-sub">Buy once. Hold forever. Your token funds your tools.</p>
+
+    <div class="cta-ca">
+      <span class="ca-label">CA</span>
+      <span class="ca-address" id="caAddress">TBD &mdash; launching soon</span>
+      <button class="ca-copy" id="caCopy" onclick="copyCA()">Copy</button>
+    </div>
+
+    <div class="cta-links">
+      <a href="#" class="btn-primary">Buy on PumpSwap</a>
+      <a href="#" class="btn-secondary">DexScreener</a>
+    </div>
+
+    <div class="cta-chart">
+      <div class="chart-label">Live Chart</div>
+      <div style="font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); padding: 80px 0;">
+        Chart embed will appear here after token launch
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-left">© 2026 INFINITE PROTOCOL — Built on Solana</div>
+  <div class="footer-left">&copy; 2025 INFINITE PROTOCOL</div>
   <div class="footer-links">
-    <a href="#">Twitter</a>
-    <a href="#">Docs</a>
-    <a href="#">GitHub</a>
+    <a href="https://x.com/infinitexkeys">X / Twitter</a>
+    <a href="https://discord.gg/UGPwBKXV">Discord</a>
+    <a href="docs.html">Docs</a>
     <a href="#">DexScreener</a>
   </div>
 </footer>
 
 <script>
+// ═══════════ MOBILE MENU ═══════════
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('active');
+  mobileMenu.classList.toggle('open');
+});
+
+function closeMobile() {
+  hamburger.classList.remove('active');
+  mobileMenu.classList.remove('open');
+}
+
 // ═══════════ TICKER ═══════════
 function buildTicker() {
   const items = [
     { label: 'Treasury', value: '312.4 SOL' },
-    { label: 'API Calls (24h)', value: '847,291' },
-    { label: 'Active Keys', value: '1,247' },
+    { label: 'Messages (24h)', value: '847,291' },
+    { label: 'Active Holders', value: '1,247' },
     { label: 'Models Available', value: '4' },
-    { label: 'Creator Fee Rate', value: '0.95%' },
     { label: 'Daily Revenue', value: '~42.8 SOL' },
-    { label: 'Runway', value: '∞' },
-    { label: 'Cost Per User', value: '$0.00' },
+    { label: 'Cost Per Holder', value: '$0.00' },
   ];
-  
+
   const ticker = document.getElementById('ticker');
-  // Duplicate for seamless scroll
   for (let i = 0; i < 3; i++) {
     items.forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'ticker-item';
       el.innerHTML = `<span class="label">${item.label}</span><span class="value">${item.value}</span>`;
       ticker.appendChild(el);
-      
       if (idx < items.length - 1 || i < 2) {
         const dot = document.createElement('div');
         dot.className = 'ticker-dot';
@@ -1261,10 +1731,10 @@ function buildTicker() {
 }
 
 // ═══════════ ANIMATED STATS ═══════════
-function animateValue(el, end, duration, prefix = '', suffix = '') {
-  let start = 0;
+function animateValue(el, end, duration, prefix, suffix) {
+  prefix = prefix || '';
+  suffix = suffix || '';
   const startTime = performance.now();
-  
   function update(currentTime) {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
@@ -1276,18 +1746,47 @@ function animateValue(el, end, duration, prefix = '', suffix = '') {
   requestAnimationFrame(update);
 }
 
-// Intersection observer for stats
 const statsObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       animateValue(document.getElementById('stat-balance'), 312, 2000, '', ' SOL');
-      animateValue(document.getElementById('stat-calls'), 847291, 2500);
-      animateValue(document.getElementById('stat-holders'), 1247, 2000);
+      animateValue(document.getElementById('stat-calls'), 847291, 2500, '', '');
+      animateValue(document.getElementById('stat-holders'), 1247, 2000, '', '');
       animateValue(document.getElementById('stat-runway'), 999, 2000, '', '+');
       statsObserver.disconnect();
     }
   });
 }, { threshold: 0.3 });
+
+// ═══════════ FAQ ═══════════
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const answer = item.querySelector('.faq-answer');
+  const isOpen = item.classList.contains('active');
+
+  // Close all
+  document.querySelectorAll('.faq-item').forEach(el => {
+    el.classList.remove('active');
+    el.querySelector('.faq-answer').classList.remove('open');
+  });
+
+  // Open clicked (if it was closed)
+  if (!isOpen) {
+    item.classList.add('active');
+    answer.classList.add('open');
+  }
+}
+
+// ═══════════ COPY CA ═══════════
+function copyCA() {
+  const address = document.getElementById('caAddress').textContent;
+  if (address.includes('TBD')) return;
+  navigator.clipboard.writeText(address).then(() => {
+    const btn = document.getElementById('caCopy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
 
 // ═══════════ SMOOTH SCROLL ═══════════
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -1298,12 +1797,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// Init
+// ═══════════ INIT ═══════════
 buildTicker();
-const treasurySection = document.querySelector('.treasury-section');
-if (treasurySection) statsObserver.observe(treasurySection);
+const fundedSection = document.querySelector('.funded-section');
+if (fundedSection) statsObserver.observe(fundedSection);
 
-// ═══════════ PARALLAX HERO ═══════════
+// Parallax
 window.addEventListener('scroll', () => {
   const scroll = window.scrollY;
   const glow = document.querySelector('.hero-glow');

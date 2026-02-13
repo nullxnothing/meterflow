@@ -1571,7 +1571,7 @@ function appendMessageToDOM(msg) {
   const el = document.createElement('div');
   el.className = `chat-message ${msg.role}`;
   el.innerHTML = `
-    <div class="chat-msg-avatar">${msg.role === 'user' ? '&#9673;' : '&#8734;'}</div>
+    <div class="chat-msg-avatar">${msg.role === 'user' ? 'You' : 'AI'}</div>
     <div class="chat-msg-body">
       <div class="chat-msg-name">${msg.role === 'user' ? 'You' : (msg.model || 'AI')}</div>
       <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
@@ -1591,7 +1591,7 @@ function showTypingIndicator() {
   el.className = 'chat-message assistant';
   el.id = 'typingIndicator';
   el.innerHTML = `
-    <div class="chat-msg-avatar">&#8734;</div>
+    <div class="chat-msg-avatar">AI</div>
     <div class="chat-msg-body">
       <div class="chat-typing">
         <span class="typing-dot"></span>
@@ -1767,7 +1767,7 @@ function renderConnectScreen() {
   return `
     <div class="connect-screen">
       <div class="connect-box">
-        <div class="logo">&infin;</div>
+        <div class="logo">INF</div>
         <h1>INFINITE Dashboard</h1>
         <p>Connect your wallet to access AI chat, image generation, trading tools, and raw API keys.</p>
         ${STATE.error ? `<div class="connect-error">${escapeHtml(STATE.error)}</div>` : ''}
@@ -1791,20 +1791,20 @@ function renderDashboard() {
   const isChat = STATE.activeTab === 'chat' || STATE.activeTab === 'trading';
   return `
     <aside class="sidebar">
-      <div class="sidebar-logo"><span class="inf">&infin;</span> INFINITE</div>
+      <div class="sidebar-logo">INFINITE</div>
       <nav class="sidebar-nav">
         <div class="nav-group-label">Dashboard</div>
-        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview"><span class="icon">&#9673;</span> Overview</div>
-        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys"><span class="icon">&#8984;</span> API Keys</div>
-        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models"><span class="icon">&#9672;</span> Models</div>
+        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
+        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
+        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models">Models</div>
         <div class="nav-group-label">Tools</div>
-        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat"><span class="icon">&#9657;</span> AI Chat</div>
-        <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images"><span class="icon">&#9726;</span> Image Lab</div>
-        <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video"><span class="icon">&#9654;</span> Video Lab</div>
-        <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading"><span class="icon">&#9651;</span> Trading Agent</div>
-        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents"><span class="icon">&#9678;</span> Tools Hub</div>
+        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
+        <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
+        <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
+        <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading">Trading Agent</div>
+        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
         <div class="nav-group-label">Protocol</div>
-        <div class="nav-item ${STATE.activeTab === 'treasury' ? 'active' : ''}" data-tab="treasury"><span class="icon">&#9670;</span> Treasury</div>
+        <div class="nav-item ${STATE.activeTab === 'treasury' ? 'active' : ''}" data-tab="treasury">Treasury</div>
       </nav>
       <div class="sidebar-footer">
         <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier || '—'} Tier — ${STATE.balance.toLocaleString()} $INF</div>
@@ -1870,12 +1870,12 @@ function renderOverview() {
     <div class="section">
       <div class="section-title">Quick Access</div>
       <div class="tools-grid">
-        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-icon">&#9657;</span><span class="tool-status">LIVE</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.</div><div class="tool-launch">Open &rarr;</div></div>
-        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-icon">&#9726;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">Generate high-quality images with Gemini. Describe anything and get instant results.</div><div class="tool-launch">Open &rarr;</div></div>
-        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-icon">&#9654;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.${isVideoTierAllowed() ? '' : ' Operator+ only.'}</div><div class="tool-launch">Open &rarr;</div></div>
-        <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-icon">&#9651;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Trading Agent</div><div class="tool-desc">AI-powered Solana token analysis. Real-time data, risk assessment, market intelligence.</div><div class="tool-launch">Open &rarr;</div></div>
-        <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-icon">&#9678;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open &rarr;</div></div>
-        <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-icon">&#8984;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">Generate high-quality images with Gemini. Describe anything and get instant results.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.${isVideoTierAllowed() ? '' : ' Operator+ only.'}</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Trading Agent</div><div class="tool-desc">AI-powered Solana token analysis. Real-time data, risk assessment, market intelligence.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key</div></div>
       </div>
     </div>
   `;
@@ -2000,13 +2000,13 @@ function renderChat() {
       <div class="chat-messages" id="chatMessages">
         ${messages.length === 0 ? `
           <div class="chat-empty">
-            <div class="chat-empty-icon">&infin;</div>
+            <div class="chat-empty-icon">/</div>
             <div class="chat-empty-title">Start a conversation</div>
             <div class="chat-empty-sub">Chat with Claude and Gemini. Free, no billing, powered by $INFINITE treasury.</div>
           </div>
         ` : messages.map(m => `
           <div class="chat-message ${m.role}">
-            <div class="chat-msg-avatar">${m.role === 'user' ? '&#9673;' : '&#8734;'}</div>
+            <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
             <div class="chat-msg-body">
               <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
               <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
@@ -2309,13 +2309,13 @@ function renderTrading() {
         <div class="trading-chat-messages" id="tradingMessages">
           ${messages.length === 0 ? `
             <div class="chat-empty">
-              <div class="chat-empty-icon">&#9651;</div>
+              <div class="chat-empty-icon">/</div>
               <div class="chat-empty-title">Trading Agent</div>
               <div class="chat-empty-sub">AI-powered Solana trading analysis. Ask about tokens, market conditions, risk assessment, or use the quick actions on the left.</div>
             </div>
           ` : messages.map(m => `
             <div class="chat-message ${m.role}">
-              <div class="chat-msg-avatar">${m.role === 'user' ? '&#9673;' : '&#9651;'}</div>
+              <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
               <div class="chat-msg-body">
                 <div class="chat-msg-name">${m.role === 'user' ? 'You' : 'Trading Agent'}</div>
                 <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
@@ -2506,7 +2506,7 @@ function appendTradingMessageToDOM(msg) {
   const el = document.createElement('div');
   el.className = `chat-message ${msg.role}`;
   el.innerHTML = `
-    <div class="chat-msg-avatar">${msg.role === 'user' ? '&#9673;' : '&#9651;'}</div>
+    <div class="chat-msg-avatar">${msg.role === 'user' ? 'You' : 'AI'}</div>
     <div class="chat-msg-body">
       <div class="chat-msg-name">${msg.role === 'user' ? 'You' : 'Trading Agent'}</div>
       <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
@@ -2526,7 +2526,7 @@ function showTradingTypingIndicator() {
   el.className = 'chat-message assistant';
   el.id = 'tradingTypingIndicator';
   el.innerHTML = `
-    <div class="chat-msg-avatar">&#9651;</div>
+    <div class="chat-msg-avatar">AI</div>
     <div class="chat-msg-body">
       <div class="chat-typing">
         <span class="typing-dot"></span>
@@ -2588,7 +2588,7 @@ function renderAgents() {
       items: [
         {
           name: 'aider',
-          icon: '&#9657;',
+          icon: '',
           desc: 'AI pair programming in your terminal. Edit code across entire repos with Claude or Gemini.',
           github: 'https://github.com/Aider-AI/aider',
           config: `# Install\npip install aider-chat\n\n# Run with INFINITE\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-5-20250929`,
@@ -2596,7 +2596,7 @@ function renderAgents() {
         },
         {
           name: 'Continue',
-          icon: '&#9655;',
+          icon: '',
           desc: 'Open-source AI coding agent for VS Code & JetBrains. Autocomplete, chat, and edit in your IDE.',
           github: 'https://github.com/continuedev/continue',
           config: `// ~/.continue/config.json\n{\n  "models": [{\n    "provider": "anthropic",\n    "model": "claude-sonnet-4-5-20250929",\n    "apiKey": "${key}",\n    "apiBase": "${base}"\n  }]\n}`,
@@ -2604,7 +2604,7 @@ function renderAgents() {
         },
         {
           name: 'Open WebUI',
-          icon: '&#9635;',
+          icon: '',
           desc: 'Self-hosted ChatGPT-like interface. Connect to any LLM API with a beautiful web UI.',
           github: 'https://github.com/open-webui/open-webui',
           config: `# Docker setup\ndocker run -d -p 3000:8080 \\\n  -e OPENAI_API_BASE_URL=${base}/v1 \\\n  -e OPENAI_API_KEY=${key} \\\n  ghcr.io/open-webui/open-webui:main`,
@@ -2612,7 +2612,7 @@ function renderAgents() {
         },
         {
           name: 'Tabby',
-          icon: '&#9655;',
+          icon: '',
           desc: 'Self-hosted AI coding assistant. Open-source GitHub Copilot alternative — runs on consumer GPUs.',
           github: 'https://github.com/TabbyML/tabby',
           config: `# Docker setup\ndocker run -d -p 8080:8080 \\\n  tabbyml/tabby serve \\\n  --model TabbyML/StarCoder-1B\n\n# Connect to INFINITE for chat\n# Settings > Model > Custom API\n# Base URL: ${base}\n# API Key: ${key}`,
@@ -2625,7 +2625,7 @@ function renderAgents() {
       items: [
         {
           name: 'CrewAI',
-          icon: '&#9733;',
+          icon: '',
           desc: 'Multi-agent AI framework. Build teams of AI agents that collaborate on complex tasks.',
           github: 'https://github.com/crewAIInc/crewAI',
           config: `# Install\npip install crewai\n\n# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\n\n# Usage\nfrom crewai import Agent, Crew\nagent = Agent(\n  role="Analyst",\n  llm="anthropic/claude-sonnet-4-5-20250929"\n)`,
@@ -2633,7 +2633,7 @@ function renderAgents() {
         },
         {
           name: 'LangChain',
-          icon: '&#9741;',
+          icon: '',
           desc: 'Build LLM-powered applications with chains, agents, and retrieval. Supports custom API endpoints.',
           github: 'https://github.com/langchain-ai/langchain',
           config: `pip install langchain-anthropic\n\nfrom langchain_anthropic import ChatAnthropic\n\nllm = ChatAnthropic(\n  model="claude-sonnet-4-5-20250929",\n  api_key="${key}",\n  base_url="${base}"\n)`,
@@ -2641,7 +2641,7 @@ function renderAgents() {
         },
         {
           name: 'AutoGPT',
-          icon: '&#9881;',
+          icon: '',
           desc: 'Autonomous AI agent platform. Create agents that complete tasks independently.',
           github: 'https://github.com/Significant-Gravitas/AutoGPT',
           config: `# .env in AutoGPT directory\nANTHROPIC_API_KEY=${key}\n\n# Configure in settings\n# Set Claude as your default model\n# Point API base to INFINITE proxy`,
@@ -2649,7 +2649,7 @@ function renderAgents() {
         },
         {
           name: 'Eliza (ElizaOS)',
-          icon: '&#9733;',
+          icon: '',
           desc: 'Web3-native AI agent framework with Solana support. Build agents that trade, chat, and execute on-chain.',
           github: 'https://github.com/elizaOS/eliza',
           config: `# .env\nANTHROPIC_API_KEY=${key}\nGOOGLE_GENERATIVE_AI_API_KEY=${key}\nSOLANA_PRIVATE_KEY=your_key\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\n\n# Install & run\nnpx eliza --character=your_agent.json`,
@@ -2662,7 +2662,7 @@ function renderAgents() {
       items: [
         {
           name: 'Copy Trading Bot',
-          icon: '&#9673;',
+          icon: '',
           desc: 'Mirror trades from any wallet in real-time. Uses Helius WebSocket for 0.3ms latency filtering.',
           github: 'https://github.com/metaggdev/Copy-trading-bot',
           config: `# .env\nHELIUS_API_KEY=your_helius_key\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_wallet_key\nTARGET_WALLET=wallet_to_copy\n\n# AI Analysis (uses your INFINITE key)\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}`,
@@ -2670,7 +2670,7 @@ function renderAgents() {
         },
         {
           name: 'Solana Sniper Bot',
-          icon: '&#9650;',
+          icon: '',
           desc: 'Automated token sniper for Raydium and Pump.fun. Configurable buy/sell logic with AI-assisted filtering.',
           github: 'https://github.com/fdundjer/solana-sniper-bot',
           config: `# .env\nRPC_ENDPOINT=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_key\nQUOTE_MINT=SOL\nQUOTE_AMOUNT=0.1\nAUTO_SELL=true\nSTOP_LOSS=30\nTAKE_PROFIT=50`,
@@ -2678,7 +2678,7 @@ function renderAgents() {
         },
         {
           name: 'Solana Trade Bot',
-          icon: '&#9830;',
+          icon: '',
           desc: 'Multi-DEX trading bot for Raydium, Pumpfun, Orca, Moonshot, and Jupiter with SDK integration.',
           github: 'https://github.com/YZYLAB/solana-trade-bot',
           config: `# .env\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_private_key\nSLIPPAGE=10\nPRIORITY_FEE=0.001`,
@@ -2686,7 +2686,7 @@ function renderAgents() {
         },
         {
           name: 'Solana Agent Kit',
-          icon: '&#9889;',
+          icon: '',
           desc: 'AI agent framework for Solana. Execute trades, check balances, and chain tools with natural language.',
           github: 'https://github.com/truemagic-coder/solana-agent',
           config: `# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_key`,
@@ -2694,7 +2694,7 @@ function renderAgents() {
         },
         {
           name: 'Pump.fun Sniper',
-          icon: '&#9733;',
+          icon: '',
           desc: 'Open-source Pump.fun sniper bot for new Solana token launches. Configurable buy/sell with priority fees.',
           github: 'https://github.com/TreeCityWes/Pump-Fun-Trading-Bot-Solana',
           config: `# .env\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nWALLET_PRIVATE_KEY=your_key\nQUOTE_MINT=SOL\nPRIORITY_FEE=0.001\nSLIPPAGE=10`,
@@ -2702,7 +2702,7 @@ function renderAgents() {
         },
         {
           name: 'Multi-Tool Bot',
-          icon: '&#9830;',
+          icon: '',
           desc: 'All-in-one: Raydium sniper, Pumpfun bundler, volume bot, copy trading, and wallet tracker in one package.',
           github: 'https://github.com/Immutal0/solana-trading-bot',
           config: `# .env\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEYS=["your_key"]\nBOT_MODE=sniper\nTELEGRAM_BOT_TOKEN=optional\nSLIPPAGE=15`,
@@ -2732,7 +2732,7 @@ function renderAgents() {
               <div class="tool-config-box">${escapeHtml(t.config)}</div>
               <div class="tool-card-actions">
                 <a href="#" onclick="copyText(${JSON.stringify(t.config).replace(/"/g, '&quot;')});return false;">Copy Config</a>
-                <a href="${t.github}" target="_blank" rel="noopener">GitHub &rarr;</a>
+                <a href="${t.github}" target="_blank" rel="noopener">GitHub</a>
               </div>
             </div>
           `).join('')}
@@ -2766,9 +2766,9 @@ function renderTreasury() {
       <div class="api-key-box">
         <div class="api-key-hint" style="line-height:2;">
           Creator fees from the $INFINITE token on pump.fun are split:<br>
-          <strong style="color:var(--text)">50%</strong> &rarr; API treasury (pays for Claude + Gemini calls)<br>
-          <strong style="color:var(--text)">40%</strong> &rarr; Dev operations<br>
-          <strong style="color:var(--text)">10%</strong> &rarr; Community fund<br><br>
+          <strong style="color:var(--text)">50%</strong> - API treasury (pays for Claude + Gemini calls)<br>
+          <strong style="color:var(--text)">40%</strong> - Dev operations<br>
+          <strong style="color:var(--text)">10%</strong> - Community fund<br><br>
           The treasury agent monitors the balance, calculates runway, and dynamically adjusts rate limits.
         </div>
       </div>
