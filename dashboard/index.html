@@ -85,6 +85,31 @@
   border-top: 1px solid var(--border);
 }
 
+.sidebar-socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sidebar-social-link {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  padding: 6px 0;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.sidebar-social-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .wallet-info {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -2125,6 +2150,10 @@ function renderDashboard() {
         </div>
         <div style="margin-top:8px;">
           <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
+        </div>
+        <div class="sidebar-socials">
+          <a href="https://x.com/infiniteonsol" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
+          <a href="https://discord.gg/infinite" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
         </div>
       </div>
     </aside>
