@@ -15,12 +15,12 @@ RUN npm install -g openclaw@latest
 
 WORKDIR /app
 
-COPY agent/railway/wrapper/package.json agent/railway/wrapper/pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile --prod
+COPY agent/railway/wrapper/package.json agent/railway/wrapper/package-lock.json ./
+RUN npm ci --omit=dev
 
 COPY agent/railway/wrapper/src ./src
 COPY agent/railway/wrapper/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 COPY agent/openclaw.json /app/agent-config/openclaw.json
 COPY agent/skills /app/agent-config/skills
