@@ -1118,9 +1118,9 @@ app.post('/v1/video/generate', authenticateApiKey, async (req, res) => {
   }
 });
 
-// GET /v1/video/status/:operationName — Poll video generation status
-app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) => {
-  const { operationName } = req.params;
+// GET /v1/video/status/* — Poll video generation status
+app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
+  const operationName = req.params[0];
 
   try {
     const response = await fetch(

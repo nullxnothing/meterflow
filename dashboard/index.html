@@ -2551,9 +2551,13 @@ async function generateVideo() {
 function startVideoPolling(entry) {
   if (!entry.operationName) return;
 
+  let failures = 0;
+  const MAX_FAILURES = 36; // 3 minutes at 5s intervals
+
   const intervalId = setInterval(async () => {
     try {
       const data = await api(`/v1/video/status/${entry.operationName}`);
+      failures = 0;
 
       if (data.status === 'complete') {
         entry.status = 'complete';
@@ -2572,8 +2576,17 @@ function startVideoPolling(entry) {
         saveVideoHistory();
         renderVideoState();
       }
-    } catch {
-      // Keep polling on transient errors
+    } catch (err) {
+      failures++;
+      console.error('Video poll error:', err.message, `(${failures}/${MAX_FAILURES})`);
+      if (failures >= MAX_FAILURES) {
+        entry.status = 'failed';
+        entry.error = 'Timed out waiting for video';
+        clearInterval(intervalId);
+        VIDEOS.pollIntervals.delete(entry.operationName);
+        VIDEOS.isGenerating = false;
+        renderVideoState();
+      }
     }
   }, 5000);
 
