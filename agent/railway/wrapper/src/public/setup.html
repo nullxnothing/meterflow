@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITE Agent Setup</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --border: #222222;
+  --text: #f0efe9;
+  --text-dim: #888880;
+  --text-muted: #555550;
+  --accent: #c8ff00;
+  --red: #ff5f57;
+  --green: #28c840;
+  --font: 'Courier New', monospace;
+}
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.container { max-width: 560px; width: 100%; }
+.logo { font-size: 48px; color: var(--accent); text-align: center; margin-bottom: 16px; }
+h1 { text-align: center; font-size: 20px; margin-bottom: 8px; }
+.sub { text-align: center; font-size: 12px; color: var(--text-dim); margin-bottom: 32px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card h2 { font-size: 12px; letter-spacing: 2px; color: var(--accent); margin-bottom: 16px; text-transform: uppercase; }
+label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 1px; }
+select, input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+select:focus, input:focus { outline: none; border-color: var(--accent); }
+.hint { font-size: 10px; color: var(--text-muted); margin-top: -12px; margin-bottom: 16px; }
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.btn:hover { background: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger:hover { border-color: var(--red); color: var(--red); }
+.output {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px;
+  font-size: 11px;
+  line-height: 1.6;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--text-dim);
+  display: none;
+  margin-top: 16px;
+}
+.output.visible { display: block; }
+.status { text-align: center; margin-top: 16px; font-size: 12px; }
+.status.ok { color: var(--green); }
+.status.err { color: var(--red); }
+.status.loading { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">&#8734;</div>
+  <h1>INFINITE Agent Setup</h1>
+  <p class="sub">Self-sustaining AI agent on Solana</p>
+
+  <div id="status-card" class="card">
+    <h2>Status</h2>
+    <div id="status-text" class="status loading">Checking...</div>
+  </div>
+
+  <div id="setup-form">
+    <div class="card">
+      <h2>LLM Provider</h2>
+      <label>Auth Method</label>
+      <select id="authChoice">
+        <option value="apiKey">Anthropic API Key</option>
+        <option value="token">Anthropic Token (Claude Code CLI)</option>
+        <option value="openai-api-key">OpenAI API Key</option>
+        <option value="gemini-api-key">Google Gemini API Key</option>
+        <option value="openrouter-api-key">OpenRouter API Key</option>
+      </select>
+      <label>API Key / Token</label>
+      <input type="password" id="authSecret" placeholder="sk-ant-... or paste token">
+      <div class="hint">This key is used by OpenClaw to power the agent's reasoning.</div>
+      <label>Model (optional)</label>
+      <input type="text" id="model" placeholder="anthropic/claude-sonnet-4-5" value="anthropic/claude-sonnet-4-5">
+    </div>
+
+    <div class="card">
+      <h2>Monitoring (Optional)</h2>
+      <label>Telegram Bot Token</label>
+      <input type="password" id="telegramToken" placeholder="123456789:AA...">
+      <label>Discord Bot Token</label>
+      <input type="password" id="discordToken" placeholder="MTIz...">
+      <div class="hint">Set up bots to receive health reports and interact with the agent.</div>
+    </div>
+
+    <button class="btn" id="runBtn" onclick="runSetup()">Deploy Agent</button>
+    <button class="btn btn-secondary" onclick="runDoctor()">Run Doctor</button>
+    <button class="btn btn-secondary btn-danger" onclick="resetConfig()">Reset Config</button>
+  </div>
+
+  <div id="output" class="output"></div>
+</div>
+
+<script>
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+  });
+  return res.json();
+}
+
+async function checkStatus() {
+  try {
+    const data = await api('/setup/api/status');
+    const el = document.getElementById('status-text');
+    if (data.configured) {
+      el.textContent = `Configured | OpenClaw ${data.openclawVersion} | Gateway ${data.gatewayRunning ? 'Running' : 'Stopped'}`;
+      el.className = 'status ok';
+    } else {
+      el.textContent = `Not configured | OpenClaw ${data.openclawVersion}`;
+      el.className = 'status';
+    }
+  } catch (err) {
+    document.getElementById('status-text').textContent = 'Failed to connect';
+    document.getElementById('status-text').className = 'status err';
+  }
+}
+
+async function runSetup() {
+  const btn = document.getElementById('runBtn');
+  const out = document.getElementById('output');
+  btn.disabled = true;
+  btn.textContent = 'Deploying...';
+  out.className = 'output visible';
+  out.textContent = 'Starting onboarding...\n';
+
+  try {
+    const data = await api('/setup/api/run', {
+      method: 'POST',
+      body: JSON.stringify({
+        flow: 'quickstart',
+        authChoice: document.getElementById('authChoice').value,
+        authSecret: document.getElementById('authSecret').value,
+        model: document.getElementById('model').value,
+        telegramToken: document.getElementById('telegramToken').value,
+        discordToken: document.getElementById('discordToken').value,
+      }),
+    });
+    out.textContent += data.output || 'Done.';
+    if (data.ok) {
+      out.textContent += '\n\nAgent is live. Visit / to access the OpenClaw UI.';
+    }
+  } catch (err) {
+    out.textContent += '\nError: ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Deploy Agent';
+  checkStatus();
+}
+
+async function runDoctor() {
+  const out = document.getElementById('output');
+  out.className = 'output visible';
+  out.textContent = 'Running doctor...\n';
+  try {
+    const data = await api('/setup/api/doctor', { method: 'POST' });
+    out.textContent += data.output || 'Done.';
+  } catch (err) {
+    out.textContent += 'Error: ' + err.message;
+  }
+}
+
+async function resetConfig() {
+  if (!confirm('This will delete the current config. Continue?')) return;
+  const out = document.getElementById('output');
+  out.className = 'output visible';
+  try {
+    const res = await fetch('/setup/api/reset', { method: 'POST' });
+    out.textContent = await res.text();
+  } catch (err) {
+    out.textContent = 'Error: ' + err.message;
+  }
+  checkStatus();
+}
+
+checkStatus();
+</script>
+</body>
+</html>

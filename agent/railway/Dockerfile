@@ -1,23 +1,49 @@
-FROM node:20-slim
+FROM node:22-bookworm
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    gosu \
+    procps \
+    python3 \
+    build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g openclaw
-
-RUN mkdir -p /data/.openclaw /data/workspace
-
-COPY agent/openclaw.json /app/openclaw.json
-COPY agent/skills /app/skills
+RUN npm install -g openclaw@latest
 
 WORKDIR /app
 
-ENV OPENCLAW_STATE_DIR=/data/.openclaw
-ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
-ENV PORT=18789
+COPY agent/railway/wrapper/package.json agent/railway/wrapper/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --prod
 
-EXPOSE 18789
+COPY agent/railway/wrapper/src ./src
+COPY agent/railway/wrapper/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:18789/ || exit 1
+COPY agent/openclaw.json /app/agent-config/openclaw.json
+COPY agent/skills /app/agent-config/skills
 
-CMD ["openclaw", "gateway", "--port", "18789", "--config", "/app/openclaw.json"]
+RUN useradd -m -s /bin/bash openclaw \
+  && chown -R openclaw:openclaw /app \
+  && mkdir -p /data && chown openclaw:openclaw /data \
+  && mkdir -p /home/linuxbrew/.linuxbrew && chown -R openclaw:openclaw /home/linuxbrew
+
+USER openclaw
+RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+ENV HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+ENV HOMEBREW_CELLAR="/home/linuxbrew/.linuxbrew/Cellar"
+ENV HOMEBREW_REPOSITORY="/home/linuxbrew/.linuxbrew/Homebrew"
+
+ENV PORT=8080
+ENV OPENCLAW_ENTRY=/usr/local/lib/node_modules/openclaw/dist/entry.js
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD curl -f http://localhost:8080/setup/healthz || exit 1
+
+USER root
+ENTRYPOINT ["./entrypoint.sh"]
