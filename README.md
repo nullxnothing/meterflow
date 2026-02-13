@@ -67,17 +67,36 @@ Token-gated AI API access on Solana. Holders get unlimited Claude, Gemini, and a
 | Operator   | 100,000 $INF  | 10,000      | + Gemini Pro                    |
 | Architect  | 1,000,000 $INF| Unlimited   | + Claude Opus, all future       |
 
+## Self-Sustaining Agent
+
+INFINITE includes an autonomous OpenClaw agent that funds its own existence. The agent launches tokens on pump.fun, earns creator rewards, swaps SOL to USDC via Jupiter, and uses Skyfire to autonomously purchase its own API credits. Deploy to Railway with one click.
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template?template=https://github.com/kaelxsol/infinite-protocol&envs=OPENCLAW_GATEWAY_TOKEN,SKYFIRE_API_KEY,SOLANA_PRIVATE_KEY,HELIUS_API_KEY,ANTHROPIC_API_KEY)
+
+[-> Agent Setup Guide](./agent/README.md)
+
 ## Project Structure
 
 ```
-infinite/
-├── index.html              # Landing page (infinite.sh)
-├── api-proxy/
-│   ├── server.js           # Express proxy server
-│   ├── .env.example        # Config template
-│   └── package.json
+infinite-protocol/
+├── site/
+│   ├── index.html              # Landing page (infinite.sh)
+│   └── how-it-works.html       # Explainer page
 ├── dashboard/
-│   └── index.html          # Holder dashboard (app.infinite.sh)
+│   └── index.html              # Holder dashboard (app.infinite.sh)
+├── api-proxy/
+│   ├── server.js               # Express proxy server
+│   ├── .env.example            # Config template
+│   └── package.json
+├── agent/
+│   ├── openclaw.json           # OpenClaw agent config + crons
+│   ├── skills/                 # SKILL.md files for each capability
+│   ├── railway/                # Dockerfile + Railway deployment
+│   ├── index.js                # Treasury agent daemon (legacy)
+│   └── .env.example
+├── assets/                     # Brand + social graphics
+├── docs/                       # Growth strategy + tweet copy
+├── vercel.json                 # Vercel routing rewrites
 └── README.md
 ```
 

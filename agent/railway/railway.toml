@@ -1,0 +1,13 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "agent/railway/Dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[[volumes]]
+name = "openclaw-data"
+mountPath = "/data"

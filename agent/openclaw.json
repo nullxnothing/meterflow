@@ -1,0 +1,52 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "infinite",
+        "model": "anthropic/claude-sonnet-4-5",
+        "systemPrompt": "You are INFINITE, a self-sustaining AI agent on Solana. Your purpose is to identify trending tech narratives, launch tokens on pump.fun, earn creator rewards, and use those rewards to fund your own API credits via Skyfire. You operate autonomously. Be strategic about launches — quality over quantity. Track your P&L meticulously.",
+        "mcp": {
+          "servers": [
+            {
+              "name": "skyfire",
+              "command": "npx",
+              "args": [
+                "-y",
+                "mcp-remote",
+                "https://mcp.skyfire.xyz/mcp",
+                "--header",
+                "skyfire-api-key: ${SKYFIRE_API_KEY}"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "cron": [
+    {
+      "id": "check-revenue",
+      "schedule": "*/15 * * * *",
+      "agent": "infinite",
+      "prompt": "Run the wallet-monitor skill. Check the agent wallet SOL balance using Helius RPC. If balance exceeds the swap threshold (SOL_SWAP_THRESHOLD, default 0.5 SOL), calculate the amount to swap while keeping MIN_WALLET_RESERVE (0.1 SOL). Then run the jupiter-swap skill to convert excess SOL to USDC. Finally, run the skyfire-fund skill to deposit USDC into the Skyfire wallet if the Skyfire balance is below $10. Log all actions with timestamps and amounts."
+    },
+    {
+      "id": "scan-trends",
+      "schedule": "0 */2 * * *",
+      "agent": "infinite",
+      "prompt": "Run the trend-scanner skill. Scan Google Trends, Reddit (r/technology, r/programming, r/artificial), and Hacker News for trending tech topics. Score each by recency, virality, crypto-relevance, and naming potential. Filter out anything political, offensive, or too niche. If a topic scores above 7/10, create a structured token concept with name, ticker, description, and narrative. Store prepared concepts for the next auto-launch window. Keep a maximum of 3 prepared concepts in queue."
+    },
+    {
+      "id": "health-check",
+      "schedule": "0 8 * * *",
+      "agent": "infinite",
+      "prompt": "Generate a full health report. Check: (1) Agent wallet SOL balance via Helius RPC, (2) Skyfire USDC balance via get-wallet-balance, (3) Estimated API credits remaining, (4) Total tokens launched to date, (5) Total SOL revenue earned from creator fees, (6) Net P&L since inception. Format as a clean status report. If any metric is critical (SOL < 0.1, Skyfire < $2, no revenue in 48h), flag it prominently."
+    },
+    {
+      "id": "auto-launch",
+      "schedule": "0 */4 * * *",
+      "agent": "infinite",
+      "prompt": "Check if conditions are met for a token launch: (1) A prepared token concept exists from trend-scanner, (2) Wallet has at least 0.15 SOL (0.02 deploy + 0.05 initial buy + 0.08 buffer), (3) At least 30 minutes have passed since the last deploy (DEPLOY_COOLDOWN_MINUTES), (4) It is not between 2am-6am UTC (low activity hours). If all conditions pass, run the pump-deployer skill with the highest-scored prepared concept. Log the contract address, pump.fun URL, and deployment cost. Remove the launched concept from the queue."
+    }
+  ]
+}
