@@ -1145,7 +1145,7 @@ app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) 
 
       // Build a proxied download URL so the API key isn't exposed to the client
       const videoUri = video?.uri
-        ? `/v1/video/download/${encodeURIComponent(operationName)}`
+        ? `/v1/video/download/${operationName}`
         : null;
 
       return res.json({
@@ -1161,10 +1161,10 @@ app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) 
   }
 });
 
-// GET /v1/video/download/:operationName — Proxy video file download (hides API key)
-app.get('/v1/video/download/:operationName', async (req, res) => {
-  const { operationName } = req.params;
-  const op = videoOperations.get(decodeURIComponent(operationName));
+// GET /v1/video/download/* — Proxy video file download (hides API key)
+app.get('/v1/video/download/*', async (req, res) => {
+  const operationName = req.params[0];
+  const op = videoOperations.get(operationName);
 
   if (!op?.video?.uri) {
     return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });

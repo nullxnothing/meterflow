@@ -2557,7 +2557,7 @@ function startVideoPolling(entry) {
 
       if (data.status === 'complete') {
         entry.status = 'complete';
-        entry.uri = data.video?.uri || null;
+        entry.uri = data.video?.uri ? `${API_BASE}${data.video.uri}` : null;
         clearInterval(intervalId);
         VIDEOS.pollIntervals.delete(entry.operationName);
         VIDEOS.isGenerating = false;
