@@ -1144,17 +1144,21 @@ app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
         return res.json({ status: 'failed', error: data.error.message });
       }
 
-      const video = data.response?.generateVideoResponse?.generatedSamples?.[0]?.video;
-      videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'complete', video });
+      // Gemini API uses generatedVideos, Vertex AI uses generateVideoResponse.generatedSamples
+      const video = data.response?.generatedVideos?.[0]?.video
+        || data.response?.generateVideoResponse?.generatedSamples?.[0]?.video;
 
-      // Build a proxied download URL so the API key isn't exposed to the client
-      const videoUri = video?.uri
-        ? `/v1/video/download/${operationName}`
-        : null;
+      if (!video?.uri) {
+        console.error('[Veo] No video URI in response:', JSON.stringify(data.response).slice(0, 500));
+        videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'failed', error: 'No video in response' });
+        return res.json({ status: 'failed', error: 'Video generation completed but no video was returned.' });
+      }
+
+      videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'complete', video });
 
       return res.json({
         status: 'complete',
-        video: videoUri ? { uri: videoUri, mimeType: video.mimeType || 'video/mp4' } : null,
+        video: { uri: `/v1/video/download/${operationName}`, mimeType: video.mimeType || 'video/mp4' },
       });
     }
 
