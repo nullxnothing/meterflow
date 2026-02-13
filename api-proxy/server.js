@@ -37,6 +37,7 @@ const CONFIG = {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  TREASURY_WALLET: process.env.TREASURY_WALLET || '',
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {
     architect: {
@@ -1440,6 +1441,55 @@ app.post('/auth/rotate', authenticateApiKey, async (req, res) => {
   });
 });
 
+// ─── Treasury Balance ────────────────────────────────────────
+
+const treasuryBalanceCache = { sol: 0, usd: 0, solPrice: 0, checkedAt: 0 };
+const TREASURY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getTreasuryBalance() {
+  if (!CONFIG.TREASURY_WALLET || !CONFIG.HELIUS_API_KEY) {
+    return treasuryBalanceCache;
+  }
+
+  if (Date.now() - treasuryBalanceCache.checkedAt < TREASURY_CACHE_TTL) {
+    return treasuryBalanceCache;
+  }
+
+  try {
+    // Fetch SOL balance and price in parallel
+    const [balanceRes, priceRes] = await Promise.allSettled([
+      fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 'treasury-balance',
+          method: 'getBalance',
+          params: [CONFIG.TREASURY_WALLET]
+        })
+      }).then(r => r.json()),
+      fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112')
+        .then(r => r.json()),
+    ]);
+
+    if (balanceRes.status === 'fulfilled' && balanceRes.value.result?.value !== undefined) {
+      const lamports = balanceRes.value.result.value;
+      treasuryBalanceCache.sol = lamports / 1_000_000_000;
+    }
+
+    if (priceRes.status === 'fulfilled') {
+      const price = parseFloat(priceRes.value?.data?.['So11111111111111111111111111111111111111112']?.price);
+      if (price > 0) treasuryBalanceCache.solPrice = price;
+    }
+
+    treasuryBalanceCache.usd = treasuryBalanceCache.sol * treasuryBalanceCache.solPrice;
+    treasuryBalanceCache.checkedAt = Date.now();
+  } catch (err) {
+    console.error('[Treasury] Balance check failed:', err.message);
+  }
+
+  return treasuryBalanceCache;
+}
+
 // ─── Admin: Treasury Agent ───────────────────────────────────
 // The treasury agent pushes rate limit adjustments here
 
@@ -1479,8 +1529,15 @@ app.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
 });
 
 // Public treasury status (for dashboard)
-app.get('/treasury', (req, res) => {
-  res.json(treasuryState);
+app.get('/treasury', async (req, res) => {
+  const balance = await getTreasuryBalance();
+  res.json({
+    ...treasuryState,
+    treasuryBalanceSol: balance.sol,
+    treasuryBalanceUsd: balance.usd,
+    solPrice: balance.solPrice,
+    wallet: CONFIG.TREASURY_WALLET ? CONFIG.TREASURY_WALLET.slice(0, 8) + '...' : null,
+  });
 });
 
 // ─── Provider Status ─────────────────────────────────────────

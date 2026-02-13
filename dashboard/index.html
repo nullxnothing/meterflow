@@ -1344,7 +1344,7 @@ const STATE = {
   balance: 0,
   usage: { today: 0, limit: 0, remaining: 0 },
   models: [],
-  treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0 },
+  treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, solPrice: 0 },
   providers: { claude: false, gemini: false, openai: false },
   activeTab: 'overview',
   keyVisible: false,
@@ -3109,6 +3109,10 @@ function renderAgents() {
 
 function renderTreasury() {
   const t = STATE.treasury;
+  const hasSol = t.treasuryBalanceSol > 0;
+  const solDisplay = hasSol ? t.treasuryBalanceSol.toFixed(4) : '0';
+  const usdDisplay = hasSol ? '$' + t.treasuryBalanceUsd.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '$0';
+  const priceDisplay = t.solPrice > 0 ? '$' + t.solPrice.toFixed(2) : '—';
   const statusColor = {
     surplus: 'var(--green)', healthy: 'var(--accent)', cautious: '#febc2e',
     critical: 'var(--red)', unknown: 'var(--text-muted)'
@@ -3116,13 +3120,13 @@ function renderTreasury() {
   return `
     <div class="page-header">
       <h1 class="page-title">Treasury</h1>
-      <p class="page-sub">Live protocol treasury health. Funded by pump.fun creator fees.</p>
+      <p class="page-sub">Live protocol treasury balance. Funded by pump.fun creator fees.</p>
     </div>
     <div class="stats-row">
+      <div class="stat-card"><div class="label">SOL Balance</div><div class="value accent">${solDisplay}</div><div class="sub">${usdDisplay} USD${t.wallet ? ' &middot; ' + t.wallet : ''}</div></div>
+      <div class="stat-card"><div class="label">SOL Price</div><div class="value">${priceDisplay}</div><div class="sub">via Jupiter</div></div>
       <div class="stat-card"><div class="label">Health Status</div><div class="value" style="color:${statusColor};text-transform:uppercase;">${t.healthStatus}</div><div class="sub">rate multiplier: ${t.multiplier}x</div></div>
       <div class="stat-card"><div class="label">Runway</div><div class="value">${t.runwayDays || '—'}</div><div class="sub">days at current usage</div></div>
-      <div class="stat-card"><div class="label">Treasury Balance</div><div class="value accent">${t.treasuryBalanceUsd ? '$' + t.treasuryBalanceUsd.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</div><div class="sub">USD value</div></div>
-      <div class="stat-card"><div class="label">Daily Budget</div><div class="value">${t.dailyBudget ? '$' + t.dailyBudget.toFixed(2) : '—'}</div><div class="sub">API spend / day</div></div>
     </div>
     <div class="section">
       <div class="section-title">How Treasury Works</div>
@@ -3132,7 +3136,7 @@ function renderTreasury() {
           <strong style="color:var(--text)">50%</strong> - API treasury (pays for Claude + Gemini calls)<br>
           <strong style="color:var(--text)">40%</strong> - Dev operations<br>
           <strong style="color:var(--text)">10%</strong> - Community fund<br><br>
-          The treasury agent monitors the balance, calculates runway, and dynamically adjusts rate limits.
+          You claim fees and move them to the treasury wallet. The balance updates every 5 minutes.
         </div>
       </div>
     </div>
