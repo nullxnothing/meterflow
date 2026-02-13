@@ -443,6 +443,8 @@ const server = app.listen(PORT, () => {
 });
 
 server.on("upgrade", async (req, socket, head) => {
+  console.log(`[ws-upgrade] incoming: ${req.url}`);
+
   if (!isConfigured()) {
     socket.destroy();
     return;
@@ -454,14 +456,14 @@ server.on("upgrade", async (req, socket, head) => {
     return;
   }
 
-  // Browsers cannot send Authorization headers on WebSocket connections.
-  // Inject the gateway token as a query parameter so the gateway accepts it.
-  const parsed = new URL(req.url, GATEWAY_TARGET);
-  if (!parsed.searchParams.has("token")) {
-    parsed.searchParams.set("token", OPENCLAW_GATEWAY_TOKEN);
-    req.url = parsed.pathname + parsed.search;
+  // Browsers cannot send custom headers on WebSocket upgrade requests.
+  // Inject the gateway token as a query parameter before proxying.
+  if (!req.url.includes("token=")) {
+    const sep = req.url.includes("?") ? "&" : "?";
+    req.url = `${req.url}${sep}token=${OPENCLAW_GATEWAY_TOKEN}`;
   }
 
+  console.log(`[ws-upgrade] proxying to: ${GATEWAY_TARGET}${req.url}`);
   proxy.ws(req, socket, head, { target: GATEWAY_TARGET });
 });
 
