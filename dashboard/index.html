@@ -2533,6 +2533,13 @@ function renderVideoGallery() {
         </div>
       `;
     }
+    if (!v.uri) {
+      return `
+        <div class="video-card" style="border-color:var(--red);">
+          <div style="padding:40px;text-align:center;color:var(--red);font-family:var(--font-mono);font-size:12px;">No video data returned</div>
+          <div class="video-card-footer"><div class="video-card-prompt">${escapeHtml(v.prompt)}</div></div>
+        </div>`;
+    }
     return `
       <div class="video-card">
         <video controls preload="metadata" src="${v.uri}"></video>
@@ -2642,9 +2649,10 @@ function downloadVideo(uri) {
 
 function saveVideoHistory() {
   try {
-    const toSave = VIDEOS.gallery.filter(v => v.status === 'complete').slice(0, 20).map(v => ({
-      prompt: v.prompt, uri: v.uri, status: v.status, createdAt: v.createdAt,
-    }));
+    const toSave = VIDEOS.gallery
+      .filter(v => v.status === 'complete' && v.uri)
+      .slice(0, 20)
+      .map(v => ({ prompt: v.prompt, uri: v.uri, status: v.status, createdAt: v.createdAt }));
     localStorage.setItem('infinite_videos', JSON.stringify(toSave));
   } catch {}
 }
@@ -2654,7 +2662,7 @@ function loadVideoHistory() {
     const raw = localStorage.getItem('infinite_videos');
     if (!raw) return;
     const data = JSON.parse(raw);
-    VIDEOS.gallery = data || [];
+    VIDEOS.gallery = (data || []).filter(v => v.uri);
   } catch {}
 }
 

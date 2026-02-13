@@ -1121,22 +1121,34 @@ app.post('/v1/video/generate', authenticateApiKey, async (req, res) => {
   }
 });
 
+// Helper: fetch raw operation status from Google
+async function fetchVeoOperation(operationName) {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
+    { headers: { 'x-goog-api-key': CONFIG.GOOGLE_API_KEY } }
+  );
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Veo status ${response.status}: ${err}`);
+  }
+  return response.json();
+}
+
+// Helper: extract video object from Google's response (handles multiple formats)
+function extractVideoFromResponse(data) {
+  // Try all known response structures
+  return data.response?.generatedVideos?.[0]?.video
+    || data.response?.generateVideoResponse?.generatedSamples?.[0]?.video
+    || data.response?.videos?.[0]
+    || null;
+}
+
 // GET /v1/video/status/* — Poll video generation status
 app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
   const operationName = req.params[0];
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
-      { headers: { 'x-goog-api-key': CONFIG.GOOGLE_API_KEY } }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Veo status ${response.status}: ${err}`);
-    }
-
-    const data = await response.json();
+    const data = await fetchVeoOperation(operationName);
 
     if (data.done) {
       if (data.error) {
@@ -1144,12 +1156,17 @@ app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
         return res.json({ status: 'failed', error: data.error.message });
       }
 
-      // Gemini API uses generatedVideos, Vertex AI uses generateVideoResponse.generatedSamples
-      const video = data.response?.generatedVideos?.[0]?.video
-        || data.response?.generateVideoResponse?.generatedSamples?.[0]?.video;
+      const video = extractVideoFromResponse(data);
+
+      // Log the full response structure for debugging
+      const responseKeys = data.response ? Object.keys(data.response) : [];
+      console.log('[Veo] Operation complete. Response keys:', responseKeys);
+      console.log('[Veo] Extracted video:', video ? JSON.stringify(video).slice(0, 300) : 'null');
+      if (!video) {
+        console.error('[Veo] Full response:', JSON.stringify(data.response).slice(0, 1000));
+      }
 
       if (!video?.uri) {
-        console.error('[Veo] No video URI in response:', JSON.stringify(data.response).slice(0, 500));
         videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'failed', error: 'No video in response' });
         return res.json({ status: 'failed', error: 'Video generation completed but no video was returned.' });
       }
@@ -1166,6 +1183,23 @@ app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
   } catch (err) {
     console.error('Video status error:', err.message);
     res.status(502).json({ error: 'upstream_error', message: err.message });
+  }
+});
+
+// GET /v1/video/debug/* — Debug: show raw Google response for an operation
+app.get('/v1/video/debug/*', authenticateAdmin, async (req, res) => {
+  const operationName = req.params[0];
+  try {
+    const data = await fetchVeoOperation(operationName);
+    const video = extractVideoFromResponse(data);
+    res.json({
+      raw: data,
+      extractedVideo: video,
+      responseKeys: data.response ? Object.keys(data.response) : [],
+      inMemory: videoOperations.get(operationName) || null,
+    });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
   }
 });
 
