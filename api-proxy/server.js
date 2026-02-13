@@ -1072,15 +1072,18 @@ app.post('/v1/video/generate', authenticateApiKey, async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key=${CONFIG.GOOGLE_API_KEY}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': CONFIG.GOOGLE_API_KEY,
+        },
         body: JSON.stringify({
           instances: [{ prompt }],
           parameters: {
             aspectRatio: aspectRatio || '16:9',
-            durationSeconds: duration || 5,
+            resolution: '720p',
           },
         }),
       }
@@ -1124,7 +1127,8 @@ app.get('/v1/video/status/*', authenticateApiKey, async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${CONFIG.GOOGLE_API_KEY}`
+      `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
+      { headers: { 'x-goog-api-key': CONFIG.GOOGLE_API_KEY } }
     );
 
     if (!response.ok) {
@@ -1171,15 +1175,21 @@ app.get('/v1/video/download/*', async (req, res) => {
   }
 
   try {
-    const separator = op.video.uri.includes('?') ? '&' : '?';
-    const videoRes = await fetch(`${op.video.uri}${separator}key=${CONFIG.GOOGLE_API_KEY}`, { redirect: 'follow' });
+    const videoRes = await fetch(op.video.uri, {
+      headers: { 'x-goog-api-key': CONFIG.GOOGLE_API_KEY },
+      redirect: 'follow',
+    });
 
     if (!videoRes.ok) {
+      const errBody = await videoRes.text().catch(() => '');
+      console.error('Video download upstream error:', videoRes.status, errBody.slice(0, 200));
       return res.status(502).json({ error: 'download_failed', message: `Upstream returned ${videoRes.status}` });
     }
 
     res.setHeader('Content-Type', videoRes.headers.get('content-type') || 'video/mp4');
     res.setHeader('Cache-Control', 'public, max-age=86400');
+    const contentLength = videoRes.headers.get('content-length');
+    if (contentLength) res.setHeader('Content-Length', contentLength);
     const arrayBuffer = await videoRes.arrayBuffer();
     res.send(Buffer.from(arrayBuffer));
   } catch (err) {
