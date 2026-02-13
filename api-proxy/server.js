@@ -1143,9 +1143,14 @@ app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) 
       const video = data.response?.generateVideoResponse?.generatedSamples?.[0]?.video;
       videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'complete', video });
 
+      // Build a proxied download URL so the API key isn't exposed to the client
+      const videoUri = video?.uri
+        ? `/v1/video/download/${encodeURIComponent(operationName)}`
+        : null;
+
       return res.json({
         status: 'complete',
-        video: video ? { uri: video.uri, mimeType: video.mimeType || 'video/mp4' } : null,
+        video: videoUri ? { uri: videoUri, mimeType: video.mimeType || 'video/mp4' } : null,
       });
     }
 
@@ -1153,6 +1158,33 @@ app.get('/v1/video/status/:operationName', authenticateApiKey, async (req, res) 
   } catch (err) {
     console.error('Video status error:', err.message);
     res.status(502).json({ error: 'upstream_error', message: err.message });
+  }
+});
+
+// GET /v1/video/download/:operationName — Proxy video file download (hides API key)
+app.get('/v1/video/download/:operationName', async (req, res) => {
+  const { operationName } = req.params;
+  const op = videoOperations.get(decodeURIComponent(operationName));
+
+  if (!op?.video?.uri) {
+    return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
+  }
+
+  try {
+    const separator = op.video.uri.includes('?') ? '&' : '?';
+    const videoRes = await fetch(`${op.video.uri}${separator}key=${CONFIG.GOOGLE_API_KEY}`, { redirect: 'follow' });
+
+    if (!videoRes.ok) {
+      return res.status(502).json({ error: 'download_failed', message: `Upstream returned ${videoRes.status}` });
+    }
+
+    res.setHeader('Content-Type', videoRes.headers.get('content-type') || 'video/mp4');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    const arrayBuffer = await videoRes.arrayBuffer();
+    res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    console.error('Video download error:', err.message);
+    res.status(502).json({ error: 'download_failed', message: err.message });
   }
 });
 
