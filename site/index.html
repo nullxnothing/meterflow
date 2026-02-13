@@ -1526,11 +1526,11 @@ footer {
       </div>
       <div class="funded-stat">
         <div class="stat-value" id="stat-calls">&mdash;</div>
-        <div class="stat-label">Messages Today</div>
+        <div class="stat-label">API Calls Today</div>
       </div>
       <div class="funded-stat">
         <div class="stat-value" id="stat-holders">&mdash;</div>
-        <div class="stat-label">Active Holders</div>
+        <div class="stat-label">Active Keys</div>
       </div>
       <div class="funded-stat">
         <div class="stat-value" id="stat-runway">&mdash;</div>
@@ -1667,18 +1667,33 @@ function closeMobile() {
   mobileMenu.classList.remove('open');
 }
 
+// ═══════════ LIVE DATA ═══════════
+const PROXY_BASE = '/proxy';
+let liveStats = { totalCallsToday: 0, activeKeys: 0 };
+let liveTreasury = { runwayDays: 0, treasuryBalanceUsd: 0 };
+
+async function fetchLiveData() {
+  try {
+    const [statsRes, treasuryRes] = await Promise.allSettled([
+      fetch(`${PROXY_BASE}/stats`).then(r => r.json()),
+      fetch(`${PROXY_BASE}/treasury`).then(r => r.json()),
+    ]);
+    if (statsRes.status === 'fulfilled') liveStats = statsRes.value;
+    if (treasuryRes.status === 'fulfilled') liveTreasury = treasuryRes.value;
+  } catch {}
+}
+
 // ═══════════ TICKER ═══════════
 function buildTicker() {
   const items = [
-    { label: 'Treasury', value: '312.4 SOL' },
-    { label: 'Messages (24h)', value: '847,291' },
-    { label: 'Active Holders', value: '1,247' },
-    { label: 'Models Available', value: '4' },
-    { label: 'Daily Revenue', value: '~42.8 SOL' },
+    { label: 'Messages Today', value: liveStats.totalCallsToday?.toLocaleString() || '0' },
+    { label: 'Active Keys', value: liveStats.activeKeys?.toLocaleString() || '0' },
+    { label: 'Models Available', value: (liveStats.tiers?.[0]?.models?.length || 0).toString() },
     { label: 'Cost Per Holder', value: '$0.00' },
   ];
 
   const ticker = document.getElementById('ticker');
+  ticker.innerHTML = '';
   for (let i = 0; i < 3; i++) {
     items.forEach((item, idx) => {
       const el = document.createElement('div');
@@ -1698,6 +1713,7 @@ function buildTicker() {
 function animateValue(el, end, duration, prefix, suffix) {
   prefix = prefix || '';
   suffix = suffix || '';
+  if (end === 0) { el.textContent = prefix + '0' + suffix; return; }
   const startTime = performance.now();
   function update(currentTime) {
     const elapsed = currentTime - startTime;
@@ -1710,13 +1726,24 @@ function animateValue(el, end, duration, prefix, suffix) {
   requestAnimationFrame(update);
 }
 
+function populateStats() {
+  const calls = liveStats.totalCallsToday || 0;
+  const keys = liveStats.activeKeys || 0;
+  const runway = liveTreasury.runwayDays || 0;
+  const balSol = liveTreasury.treasuryBalanceUsd
+    ? Math.round(liveTreasury.treasuryBalanceUsd / 150)
+    : 0;
+
+  animateValue(document.getElementById('stat-balance'), balSol, 2000, '', ' SOL');
+  animateValue(document.getElementById('stat-calls'), calls, 2500, '', '');
+  animateValue(document.getElementById('stat-holders'), keys, 2000, '', '');
+  animateValue(document.getElementById('stat-runway'), runway, 2000, '', runway > 0 ? '+' : '');
+}
+
 const statsObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      animateValue(document.getElementById('stat-balance'), 312, 2000, '', ' SOL');
-      animateValue(document.getElementById('stat-calls'), 847291, 2500, '', '');
-      animateValue(document.getElementById('stat-holders'), 1247, 2000, '', '');
-      animateValue(document.getElementById('stat-runway'), 999, 2000, '', '+');
+      populateStats();
       statsObserver.disconnect();
     }
   });
@@ -1762,9 +1789,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ═══════════ INIT ═══════════
-buildTicker();
-const fundedSection = document.querySelector('.funded-section');
-if (fundedSection) statsObserver.observe(fundedSection);
+fetchLiveData().then(() => {
+  buildTicker();
+  const fundedSection = document.querySelector('.funded-section');
+  if (fundedSection) statsObserver.observe(fundedSection);
+});
 
 // Parallax
 window.addEventListener('scroll', () => {
