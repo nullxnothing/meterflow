@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>∞ INFINITE — Own the token. Use the AI.</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --border: #222222;
+  --border-light: #333333;
+  --text: #f0efe9;
+  --text-dim: #888880;
+  --text-muted: #555550;
+  --accent: #c8ff00;
+  --accent-dim: #a0cc00;
+  --accent-glow: rgba(200, 255, 0, 0.08);
+  --warm: #ff6b35;
+  --cool: #00d4ff;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Sora', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { 
+  scroll-behavior: smooth; 
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ═══════════ NAV ═══════════ */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo .infinity {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover { color: var(--accent); }
+
+.nav-cta {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 2px !important;
+  padding: 10px 24px !important;
+  background: var(--accent) !important;
+  color: var(--bg) !important;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.nav-cta:hover {
+  background: #fff !important;
+  transform: translateY(-1px);
+}
+
+/* ═══════════ HERO ═══════════ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 140px 40px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-grid-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(rgba(200, 255, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 255, 0, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 70%);
+}
+
+.hero-glow {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 255, 0, 0.04) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  animation: pulse-glow 8s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-label::before {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 8vw, 120px);
+  line-height: 0.95;
+  letter-spacing: -2px;
+  margin-bottom: 40px;
+  max-width: 900px;
+}
+
+.hero-headline .accent {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.hero-headline .thin {
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.hero-sub {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  font-weight: 300;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 18px 40px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(200, 255, 0, 0.2);
+}
+
+.btn-secondary {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 18px 40px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ═══════════ LIVE STATS TICKER ═══════════ */
+.ticker {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-inner {
+  display: flex;
+  gap: 60px;
+  animation: scroll-ticker 30s linear infinite;
+}
+
+@keyframes scroll-ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ticker-item .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ticker-item .value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ticker-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ═══════════ HOW IT WORKS ═══════════ */
+.how-section {
+  padding: 120px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label::before {
+  content: '';
+  width: 40px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.how-headline {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 80px;
+  max-width: 700px;
+}
+
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.how-step {
+  background: var(--surface);
+  padding: 48px 40px;
+  position: relative;
+  transition: all 0.4s;
+  border: 1px solid var(--border);
+}
+
+.how-step:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--border);
+  line-height: 1;
+  margin-bottom: 24px;
+  transition: color 0.4s;
+}
+
+.how-step:hover .step-number { color: var(--accent); }
+
+.step-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin-bottom: 16px;
+}
+
+.step-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ═══════════ THE FLYWHEEL ═══════════ */
+.flywheel-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+
+.flywheel-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.flywheel-text .section-label { margin-bottom: 24px; }
+
+.flywheel-text h2 {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.1;
+  margin-bottom: 32px;
+}
+
+.flywheel-text p {
+  font-size: 16px;
+  color: var(--text-dim);
+  line-height: 1.8;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+
+/* Flywheel diagram */
+.flywheel-diagram {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.flywheel-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  animation: spin-slow 20s linear infinite;
+}
+
+.flywheel-ring-2 {
+  width: 60%;
+  height: 60%;
+  animation-direction: reverse;
+  animation-duration: 15s;
+}
+
+.flywheel-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-style: italic;
+  color: var(--accent);
+  z-index: 2;
+}
+
+@keyframes spin-slow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.flywheel-node {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  z-index: 3;
+  transition: all 0.3s;
+}
+
+.flywheel-node:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg);
+}
+
+.fn-1 { top: 5%; left: 50%; transform: translateX(-50%); }
+.fn-2 { top: 50%; right: 0; transform: translateY(-50%); }
+.fn-3 { bottom: 5%; left: 50%; transform: translateX(-50%); }
+.fn-4 { top: 50%; left: 0; transform: translateY(-50%); }
+
+/* ═══════════ ACCESS TIERS ═══════════ */
+.tiers-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.tiers-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tiers-headline {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.tiers-sub {
+  font-size: 16px;
+  color: var(--text-dim);
+  margin-bottom: 64px;
+  font-weight: 300;
+}
+
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.tier-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 48px 36px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s;
+  position: relative;
+}
+
+.tier-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.tier-card.featured {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.tier-card.featured::before {
+  content: 'MOST POPULAR';
+  position: absolute;
+  top: -1px; left: 36px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 4px 12px;
+  font-weight: 700;
+}
+
+.tier-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.tier-amount {
+  font-family: var(--font-display);
+  font-size: 42px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.tier-amount span {
+  font-size: 16px;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+}
+
+.tier-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.tier-features {
+  list-style: none;
+  flex: 1;
+  margin-bottom: 32px;
+}
+
+.tier-features li {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tier-features li::before {
+  content: '→';
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.tier-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 16px 32px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  width: 100%;
+}
+
+.tier-btn:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.tier-card.featured .tier-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.tier-card.featured .tier-btn:hover {
+  background: #fff;
+}
+
+/* ═══════════ LIVE TERMINAL ═══════════ */
+.terminal-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.terminal-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.terminal-section .section-label {
+  justify-content: center;
+}
+
+.terminal-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  margin-bottom: 48px;
+}
+
+.terminal-window {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-align: left;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+}
+
+.terminal-dot.red { background: #ff5f57; border-color: #e0443e; }
+.terminal-dot.yellow { background: #febc2e; border-color: #dea123; }
+.terminal-dot.green { background: #28c840; border-color: #1aab29; }
+
+.terminal-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 12px;
+  letter-spacing: 1px;
+}
+
+.terminal-body {
+  padding: 32px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 2;
+  min-height: 300px;
+}
+
+.terminal-line {
+  opacity: 0;
+  animation: fade-in 0.5s forwards;
+}
+
+.terminal-line .prompt { color: var(--accent); }
+.terminal-line .cmd { color: var(--text); }
+.terminal-line .response { color: var(--text-dim); }
+.terminal-line .success { color: #28c840; }
+.terminal-line .info { color: var(--cool); }
+
+.terminal-line:nth-child(1) { animation-delay: 0.2s; }
+.terminal-line:nth-child(2) { animation-delay: 1.0s; }
+.terminal-line:nth-child(3) { animation-delay: 1.8s; }
+.terminal-line:nth-child(4) { animation-delay: 2.6s; }
+.terminal-line:nth-child(5) { animation-delay: 3.4s; }
+.terminal-line:nth-child(6) { animation-delay: 4.2s; }
+.terminal-line:nth-child(7) { animation-delay: 5.0s; }
+.terminal-line:nth-child(8) { animation-delay: 5.8s; }
+.terminal-line:nth-child(9) { animation-delay: 6.6s; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background: var(--accent);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ═══════════ TOOLS GRID ═══════════ */
+.tools-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+}
+
+.tools-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tools-headline {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.tools-sub {
+  font-size: 16px;
+  color: var(--text-dim);
+  margin-bottom: 64px;
+  font-weight: 300;
+  max-width: 600px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  transition: all 0.4s;
+  cursor: default;
+}
+
+.tool-card:hover {
+  background: var(--surface-2);
+  border-color: var(--border-light);
+}
+
+.tool-icon {
+  font-size: 32px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.tool-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.tool-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.tool-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ═══════════ TREASURY SECTION ═══════════ */
+.treasury-section {
+  padding: 120px 40px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.treasury-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.treasury-headline {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.1;
+  margin-bottom: 48px;
+}
+
+.treasury-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-bottom: 48px;
+}
+
+.treasury-stat {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.treasury-stat:hover { border-color: var(--accent); }
+
+.treasury-stat .stat-value {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.treasury-stat .stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.treasury-note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.8;
+}
+
+.treasury-note a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ═══════════ CTA ═══════════ */
+.cta-section {
+  padding: 160px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 255, 0, 0.06) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cta-content {
+  position: relative;
+  z-index: 2;
+}
+
+.cta-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 100px);
+  line-height: 0.95;
+  margin-bottom: 32px;
+}
+
+.cta-section h2 .accent {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.cta-section p {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 48px;
+  font-weight: 300;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ═══════════ FOOTER ═══════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-left {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--accent); }
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .nav-links a:not(.nav-cta) { display: none; }
+  .hero { padding: 120px 20px 60px; }
+  .how-steps { grid-template-columns: 1fr; }
+  .flywheel-inner { grid-template-columns: 1fr; }
+  .tiers-grid { grid-template-columns: 1fr; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .treasury-stats { grid-template-columns: repeat(2, 1fr); }
+  .how-section, .flywheel-section, .tiers-section, .terminal-section, .tools-section, .treasury-section {
+    padding: 80px 20px;
+  }
+  footer { flex-direction: column; gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span class="infinity">∞</span> INFINITE
+  </div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#tools">Tools</a>
+    <a href="#tiers">Access</a>
+    <a href="#treasury">Treasury</a>
+    <a class="nav-cta" href="#buy">Buy $INFINITE</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-label">Built on Solana</div>
+    <h1 class="hero-headline">
+      Own the token.<br>
+      <span class="accent">Use the AI.</span><br>
+      <span class="thin">Forever.</span>
+    </h1>
+    <p class="hero-sub">
+      $INFINITE holders get unlimited access to Claude, Gemini, and a curated suite of AI trading tools. No subscriptions. No API bills. Trading volume funds everything.
+    </p>
+    <div class="hero-actions">
+      <a href="#buy" class="btn-primary">Buy $INFINITE</a>
+      <a href="#how" class="btn-secondary">How it works →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <!-- JS fills -->
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-label">The Mechanism</div>
+  <h2 class="how-headline">Three steps. No catch.</h2>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="step-number">01</div>
+      <h3 class="step-title">Buy the token</h3>
+      <p class="step-desc">Purchase $INFINITE on PumpSwap. Your investment doesn't just sit there — it becomes your lifetime access pass to AI infrastructure.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-number">02</div>
+      <h3 class="step-title">Claim your keys</h3>
+      <p class="step-desc">Connect your wallet, verify your holdings. Instantly receive API keys for Claude, Gemini, and every tool in the suite. Usage tiers scale with your bag.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-number">03</div>
+      <h3 class="step-title">Build & trade</h3>
+      <p class="step-desc">Use raw API for your own projects, or plug into pre-configured AI trading agents, research tools, and automation bots. All funded by trading volume.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FLYWHEEL -->
+<section class="flywheel-section" id="flywheel">
+  <div class="flywheel-inner">
+    <div class="flywheel-text">
+      <div class="section-label">The Economics</div>
+      <h2>Self-sustaining AI access</h2>
+      <p>Every trade of $INFINITE generates creator fees through Pump.fun's revenue sharing. Those fees flow into an on-chain treasury that funds API access for all holders.</p>
+      <p>The more people trade, the bigger the API budget. The better the tools, the more people want access. It's a flywheel that feeds itself.</p>
+      <p style="color: var(--accent); font-weight: 500; margin-top: 16px;">$1M daily volume = ~$9,500/day in API funding. That's millions of API calls. Every day.</p>
+    </div>
+    <div class="flywheel-diagram">
+      <div class="flywheel-ring"></div>
+      <div class="flywheel-ring flywheel-ring-2"></div>
+      <div class="flywheel-center">∞</div>
+      <div class="flywheel-node fn-1">MORE HOLDERS</div>
+      <div class="flywheel-node fn-2">MORE VOLUME</div>
+      <div class="flywheel-node fn-3">MORE API BUDGET</div>
+      <div class="flywheel-node fn-4">BETTER TOOLS</div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="tools-section" id="tools">
+  <div class="tools-inner">
+    <div class="section-label">What You Get</div>
+    <h2 class="tools-headline">Every tool. Zero friction.</h2>
+    <p class="tools-sub">Not a developer? Doesn't matter. We curated the best AI tools that exist and wired them up. Just connect and go.</p>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <span class="tool-icon">⌘</span>
+        <div class="tool-tag">For Developers</div>
+        <h3 class="tool-name">Raw API Access</h3>
+        <p class="tool-desc">Claude Sonnet 4, Gemini 2.5 Pro, and more. Full API keys with no rate surprises. Build agents, bots, apps — whatever you want.</p>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">◎</span>
+        <div class="tool-tag">For Traders</div>
+        <h3 class="tool-name">AI Trading Agents</h3>
+        <p class="tool-desc">Pre-configured trading copilots, wallet analyzers, sentiment trackers, and snipe bots. The tools that usually cost $200/mo in API fees — free.</p>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">✦</span>
+        <div class="tool-tag">For Creators</div>
+        <h3 class="tool-name">Content & Research</h3>
+        <p class="tool-desc">AI chat, image generation, document analysis, and writing tools. Everything you'd pay OpenAI or Anthropic for directly — covered by your token.</p>
+      </div>
+      <div class="tool-card">
+        <span class="tool-icon">⬡</span>
+        <div class="tool-tag">For Everyone</div>
+        <h3 class="tool-name">Community Vault</h3>
+        <p class="tool-desc">New tools added by the community. If someone builds something great on our API, it gets added to the vault for all holders. The library only grows.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIERS -->
+<section class="tiers-section" id="tiers">
+  <div class="tiers-inner">
+    <div class="section-label">Access Tiers</div>
+    <h2 class="tiers-headline">Hold more. Get more.</h2>
+    <p class="tiers-sub">Your API access scales with your bag. No subscriptions, no renewals.</p>
+    <div class="tiers-grid">
+      <div class="tier-card">
+        <div class="tier-name">Signal</div>
+        <div class="tier-amount">10K+ <span>$INFINITE</span></div>
+        <p class="tier-desc">Get started with core access to AI tools and trading agents.</p>
+        <ul class="tier-features">
+          <li>Claude Sonnet API access</li>
+          <li>Basic trading agent suite</li>
+          <li>Community vault access</li>
+          <li>1,000 API calls / day</li>
+        </ul>
+        <button class="tier-btn">Buy on PumpSwap</button>
+      </div>
+      <div class="tier-card featured">
+        <div class="tier-name">Operator</div>
+        <div class="tier-amount">100K+ <span>$INFINITE</span></div>
+        <p class="tier-desc">Full access to every tool and model in the ecosystem.</p>
+        <ul class="tier-features">
+          <li>Claude + Gemini API access</li>
+          <li>Full trading agent suite</li>
+          <li>Priority rate limits</li>
+          <li>10,000 API calls / day</li>
+        </ul>
+        <button class="tier-btn">Buy on PumpSwap</button>
+      </div>
+      <div class="tier-card">
+        <div class="tier-name">Architect</div>
+        <div class="tier-amount">1M+ <span>$INFINITE</span></div>
+        <p class="tier-desc">Unlimited access. Build anything. No limits.</p>
+        <ul class="tier-features">
+          <li>All models, all providers</li>
+          <li>Unlimited API calls</li>
+          <li>Early access to new tools</li>
+          <li>Direct dev channel access</li>
+        </ul>
+        <button class="tier-btn">Buy on PumpSwap</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL -->
+<section class="terminal-section" id="terminal">
+  <div class="terminal-inner">
+    <div class="section-label">See it Work</div>
+    <h2>Your API. <em style="font-family: var(--font-display); color: var(--accent);">Live.</em></h2>
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">infinite-api — bash</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">infinite auth --wallet 7xKp...3nRv</span></div>
+        <div class="terminal-line"><span class="success">✓ Wallet verified. Tier: Operator (142,500 $INFINITE)</span></div>
+        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">infinite keys --list</span></div>
+        <div class="terminal-line"><span class="info">  CLAUDE_API_KEY    sk-inf-****...****7f2a   active</span></div>
+        <div class="terminal-line"><span class="info">  GEMINI_API_KEY    AIza****...****Qx9p    active</span></div>
+        <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">curl https://api.infinite.sh/v1/chat -d '{"msg":"analyze $WIF chart"}'</span></div>
+        <div class="terminal-line"><span class="response">{"model":"claude-sonnet-4","tokens":847,"cost":"$0.00"}</span></div>
+        <div class="terminal-line"><span class="success">✓ 0 cost to you. Funded by $INFINITE treasury.</span></div>
+        <div class="terminal-line"><span class="prompt">$ </span><span class="cursor-blink"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TREASURY -->
+<section class="treasury-section" id="treasury">
+  <div class="treasury-inner">
+    <div class="section-label">Full Transparency</div>
+    <h2 class="treasury-headline">On-chain treasury. Real-time.</h2>
+    <div class="treasury-stats">
+      <div class="treasury-stat">
+        <div class="stat-value" id="stat-balance">—</div>
+        <div class="stat-label">Treasury Balance (SOL)</div>
+      </div>
+      <div class="treasury-stat">
+        <div class="stat-value" id="stat-calls">—</div>
+        <div class="stat-label">API Calls Today</div>
+      </div>
+      <div class="treasury-stat">
+        <div class="stat-value" id="stat-holders">—</div>
+        <div class="stat-label">Active Key Holders</div>
+      </div>
+      <div class="treasury-stat">
+        <div class="stat-value" id="stat-runway">—</div>
+        <div class="stat-label">Runway (Days)</div>
+      </div>
+    </div>
+    <p class="treasury-note">
+      Treasury wallet is public and auditable. Fee splits are verified on-chain.<br>
+      <a href="#">View treasury wallet on Solscan →</a>
+    </p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="buy">
+  <div class="cta-glow"></div>
+  <div class="cta-content">
+    <h2>Stop paying<br>for <span class="accent">AI.</span></h2>
+    <p>Buy once. Build forever. Your token funds your tools.</p>
+    <a href="#" class="btn-primary">Buy $INFINITE on PumpSwap</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">© 2026 INFINITE PROTOCOL — Built on Solana</div>
+  <div class="footer-links">
+    <a href="#">Twitter</a>
+    <a href="#">Docs</a>
+    <a href="#">GitHub</a>
+    <a href="#">DexScreener</a>
+  </div>
+</footer>
+
+<script>
+// ═══════════ TICKER ═══════════
+function buildTicker() {
+  const items = [
+    { label: 'Treasury', value: '312.4 SOL' },
+    { label: 'API Calls (24h)', value: '847,291' },
+    { label: 'Active Keys', value: '1,247' },
+    { label: 'Models Available', value: '4' },
+    { label: 'Creator Fee Rate', value: '0.95%' },
+    { label: 'Daily Revenue', value: '~42.8 SOL' },
+    { label: 'Runway', value: '∞' },
+    { label: 'Cost Per User', value: '$0.00' },
+  ];
+  
+  const ticker = document.getElementById('ticker');
+  // Duplicate for seamless scroll
+  for (let i = 0; i < 3; i++) {
+    items.forEach((item, idx) => {
+      const el = document.createElement('div');
+      el.className = 'ticker-item';
+      el.innerHTML = `<span class="label">${item.label}</span><span class="value">${item.value}</span>`;
+      ticker.appendChild(el);
+      
+      if (idx < items.length - 1 || i < 2) {
+        const dot = document.createElement('div');
+        dot.className = 'ticker-dot';
+        ticker.appendChild(dot);
+      }
+    });
+  }
+}
+
+// ═══════════ ANIMATED STATS ═══════════
+function animateValue(el, end, duration, prefix = '', suffix = '') {
+  let start = 0;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(eased * end);
+    el.textContent = prefix + current.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// Intersection observer for stats
+const statsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      animateValue(document.getElementById('stat-balance'), 312, 2000, '', ' SOL');
+      animateValue(document.getElementById('stat-calls'), 847291, 2500);
+      animateValue(document.getElementById('stat-holders'), 1247, 2000);
+      animateValue(document.getElementById('stat-runway'), 999, 2000, '', '+');
+      statsObserver.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+
+// ═══════════ SMOOTH SCROLL ═══════════
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Init
+buildTicker();
+const treasurySection = document.querySelector('.treasury-section');
+if (treasurySection) statsObserver.observe(treasurySection);
+
+// ═══════════ PARALLAX HERO ═══════════
+window.addEventListener('scroll', () => {
+  const scroll = window.scrollY;
+  const glow = document.querySelector('.hero-glow');
+  if (glow) glow.style.transform = `translate(0, ${scroll * 0.3}px)`;
+});
+</script>
+
+</body>
+</html>

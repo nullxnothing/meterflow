@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c8ff00" stroke-width="0.2" opacity="0.06"/>
+    </pattern>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1');
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700');
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600');
+    </style>
+  </defs>
+  
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  
+  <!-- Header -->
+  <text x="60" y="70" font-family="'JetBrains Mono', monospace" font-size="11" fill="#c8ff00" letter-spacing="4">∞ INFINITE — THE ECONOMICS</text>
+  <line x1="60" y1="90" x2="1140" y2="90" stroke="#222" stroke-width="1"/>
+  
+  <!-- Column Headers -->
+  <text x="80" y="135" font-family="'JetBrains Mono', monospace" font-size="10" fill="#555" letter-spacing="3">DAILY VOLUME</text>
+  <text x="380" y="135" font-family="'JetBrains Mono', monospace" font-size="10" fill="#555" letter-spacing="3">CREATOR FEES</text>
+  <text x="650" y="135" font-family="'JetBrains Mono', monospace" font-size="10" fill="#555" letter-spacing="3">API TREASURY</text>
+  <text x="920" y="135" font-family="'JetBrains Mono', monospace" font-size="10" fill="#555" letter-spacing="3">FREE API CALLS</text>
+  
+  <line x1="60" y1="155" x2="1140" y2="155" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Row 1 -->
+  <rect x="60" y="165" width="1080" height="60" fill="#111" rx="0"/>
+  <text x="80" y="202" font-family="'JetBrains Mono', monospace" font-size="22" fill="#888" font-weight="400">$100K</text>
+  <text x="380" y="202" font-family="'JetBrains Mono', monospace" font-size="22" fill="#888" font-weight="400">$950/day</text>
+  <text x="650" y="202" font-family="'JetBrains Mono', monospace" font-size="22" fill="#888" font-weight="400">$475/day</text>
+  <text x="920" y="202" font-family="'JetBrains Mono', monospace" font-size="22" fill="#c8ff00" font-weight="700">23,750</text>
+  
+  <!-- Row 2 -->
+  <rect x="60" y="235" width="1080" height="60" fill="#0f0f0f" rx="0"/>
+  <text x="80" y="272" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$500K</text>
+  <text x="380" y="272" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$4,750/day</text>
+  <text x="650" y="272" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$2,375/day</text>
+  <text x="920" y="272" font-family="'JetBrains Mono', monospace" font-size="22" fill="#c8ff00" font-weight="700">118,750</text>
+  
+  <!-- Row 3 — highlighted -->
+  <rect x="60" y="305" width="1080" height="64" fill="#141400" rx="0" stroke="#c8ff00" stroke-width="1" opacity="0.8"/>
+  <text x="80" y="344" font-family="'JetBrains Mono', monospace" font-size="24" fill="#f0efe9" font-weight="700">$1M</text>
+  <text x="380" y="344" font-family="'JetBrains Mono', monospace" font-size="24" fill="#f0efe9" font-weight="700">$9,500/day</text>
+  <text x="650" y="344" font-family="'JetBrains Mono', monospace" font-size="24" fill="#f0efe9" font-weight="700">$4,750/day</text>
+  <text x="920" y="344" font-family="'JetBrains Mono', monospace" font-size="26" fill="#c8ff00" font-weight="700">237,500</text>
+  
+  <!-- Row 4 -->
+  <rect x="60" y="379" width="1080" height="60" fill="#0f0f0f" rx="0"/>
+  <text x="80" y="416" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$5M</text>
+  <text x="380" y="416" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$47,500/day</text>
+  <text x="650" y="416" font-family="'JetBrains Mono', monospace" font-size="22" fill="#aaa" font-weight="400">$23,750/day</text>
+  <text x="920" y="416" font-family="'JetBrains Mono', monospace" font-size="22" fill="#c8ff00" font-weight="700">1,187,500</text>
+
+  <!-- Divider -->
+  <line x1="60" y1="460" x2="1140" y2="460" stroke="#222" stroke-width="1"/>
+  
+  <!-- Bottom explanation -->
+  <text x="60" y="500" font-family="'Sora', sans-serif" font-size="16" fill="#888" font-weight="300">pump.fun creator fee (0.95%) → 50% to API treasury → funds Claude + Gemini API calls</text>
+  <text x="60" y="530" font-family="'Sora', sans-serif" font-size="16" fill="#888" font-weight="300">avg API call cost: ~$0.02 | treasury is on-chain, fully auditable</text>
+  
+  <!-- Tagline -->
+  <text x="60" y="600" font-family="'DM Serif Display', Georgia, serif" font-size="36" fill="#f0efe9" font-style="italic">Own the token. Use the AI. Forever.</text>
+  <text x="60" y="640" font-family="'JetBrains Mono', monospace" font-size="12" fill="#555" letter-spacing="2">$INFINITE ON SOLANA</text>
+  
+  <!-- Logo -->
+  <text x="1100" y="640" font-family="'JetBrains Mono', monospace" font-size="24" fill="#c8ff00" font-weight="700">∞</text>
+
+  <rect width="1200" height="675" filter="url(#grain)" opacity="0.3"/>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c8ff00" stroke-width="0.2" opacity="0.06"/>
+    </pattern>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1');
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700');
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600');
+    </style>
+  </defs>
+  
+  <rect width="1200" height="675" fill="#0a0a0a"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  
+  <!-- Header -->
+  <text x="60" y="70" font-family="'JetBrains Mono', monospace" font-size="11" fill="#c8ff00" letter-spacing="4">∞ INFINITE — STOP PAYING FOR AI</text>
+  <line x1="60" y1="90" x2="1140" y2="90" stroke="#222" stroke-width="1"/>
+  
+  <!-- Two columns -->
+  <!-- LEFT: Traditional -->
+  <text x="200" y="135" font-family="'JetBrains Mono', monospace" font-size="11" fill="#ff5f57" letter-spacing="3" text-anchor="middle">TRADITIONAL</text>
+  
+  <rect x="60" y="155" width="510" height="70" fill="#111" stroke="#222" stroke-width="1"/>
+  <text x="80" y="195" font-family="'Sora', sans-serif" font-size="15" fill="#888">ChatGPT Plus</text>
+  <text x="540" y="195" font-family="'JetBrains Mono', monospace" font-size="20" fill="#ff5f57" text-anchor="end" font-weight="700">$20/mo</text>
+  
+  <rect x="60" y="230" width="510" height="70" fill="#0f0f0f" stroke="#222" stroke-width="1"/>
+  <text x="80" y="270" font-family="'Sora', sans-serif" font-size="15" fill="#888">Claude Pro</text>
+  <text x="540" y="270" font-family="'JetBrains Mono', monospace" font-size="20" fill="#ff5f57" text-anchor="end" font-weight="700">$20/mo</text>
+  
+  <rect x="60" y="305" width="510" height="70" fill="#111" stroke="#222" stroke-width="1"/>
+  <text x="80" y="345" font-family="'Sora', sans-serif" font-size="15" fill="#888">API (building agents)</text>
+  <text x="540" y="345" font-family="'JetBrains Mono', monospace" font-size="20" fill="#ff5f57" text-anchor="end" font-weight="700">$200/mo</text>
+  
+  <rect x="60" y="380" width="510" height="70" fill="#1a0000" stroke="#ff5f57" stroke-width="1" opacity="0.6"/>
+  <text x="80" y="422" font-family="'JetBrains Mono', monospace" font-size="13" fill="#ff5f57" letter-spacing="2">ANNUAL TOTAL</text>
+  <text x="540" y="422" font-family="'JetBrains Mono', monospace" font-size="28" fill="#ff5f57" text-anchor="end" font-weight="700">$2,880</text>
+  
+  <!-- RIGHT: INFINITE -->
+  <text x="890" y="135" font-family="'JetBrains Mono', monospace" font-size="11" fill="#c8ff00" letter-spacing="3" text-anchor="middle">$INFINITE</text>
+  
+  <rect x="630" y="155" width="510" height="70" fill="#111" stroke="#222" stroke-width="1"/>
+  <text x="650" y="195" font-family="'Sora', sans-serif" font-size="15" fill="#888">ChatGPT-level AI chat</text>
+  <text x="1110" y="195" font-family="'JetBrains Mono', monospace" font-size="20" fill="#c8ff00" text-anchor="end" font-weight="700">$0/mo</text>
+  
+  <rect x="630" y="230" width="510" height="70" fill="#0f0f0f" stroke="#222" stroke-width="1"/>
+  <text x="650" y="270" font-family="'Sora', sans-serif" font-size="15" fill="#888">Claude + Gemini API</text>
+  <text x="1110" y="270" font-family="'JetBrains Mono', monospace" font-size="20" fill="#c8ff00" text-anchor="end" font-weight="700">$0/mo</text>
+  
+  <rect x="630" y="305" width="510" height="70" fill="#111" stroke="#222" stroke-width="1"/>
+  <text x="650" y="345" font-family="'Sora', sans-serif" font-size="15" fill="#888">AI trading agents + tools</text>
+  <text x="1110" y="345" font-family="'JetBrains Mono', monospace" font-size="20" fill="#c8ff00" text-anchor="end" font-weight="700">$0/mo</text>
+  
+  <rect x="630" y="380" width="510" height="70" fill="#0a0f00" stroke="#c8ff00" stroke-width="1"/>
+  <text x="650" y="422" font-family="'JetBrains Mono', monospace" font-size="13" fill="#c8ff00" letter-spacing="2">ANNUAL TOTAL</text>
+  <text x="1110" y="422" font-family="'JetBrains Mono', monospace" font-size="28" fill="#c8ff00" text-anchor="end" font-weight="700">$0</text>
+  
+  <!-- VS divider -->
+  <line x1="600" y1="155" x2="600" y2="450" stroke="#333" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="580" y="270" width="40" height="30" fill="#0a0a0a"/>
+  <text x="600" y="292" font-family="'JetBrains Mono', monospace" font-size="14" fill="#555" text-anchor="middle" letter-spacing="2">VS</text>
+  
+  <!-- Bottom -->
+  <line x1="60" y1="475" x2="1140" y2="475" stroke="#222" stroke-width="1"/>
+  
+  <text x="60" y="520" font-family="'Sora', sans-serif" font-size="16" fill="#888" font-weight="300">How? Trading volume generates creator fees. Fees fund the API treasury.</text>
+  <text x="60" y="550" font-family="'Sora', sans-serif" font-size="16" fill="#888" font-weight="300">You buy the token once. Your AI access is funded forever.</text>
+  
+  <text x="60" y="620" font-family="'DM Serif Display', Georgia, serif" font-size="36" fill="#f0efe9" font-style="italic">Own the token. Use the AI. Forever.</text>
+  <text x="60" y="655" font-family="'JetBrains Mono', monospace" font-size="12" fill="#555" letter-spacing="2">$INFINITE ON SOLANA</text>
+  <text x="1100" y="655" font-family="'JetBrains Mono', monospace" font-size="24" fill="#c8ff00" font-weight="700">∞</text>
+
+  <rect width="1200" height="675" filter="url(#grain)" opacity="0.3"/>
+</svg>

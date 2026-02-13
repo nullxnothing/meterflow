@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>∞ INFINITE — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --surface-3: #141414;
+  --border: #222222;
+  --border-light: #333333;
+  --text: #f0efe9;
+  --text-dim: #888880;
+  --text-muted: #555550;
+  --accent: #c8ff00;
+  --accent-dim: #a0cc00;
+  --green: #28c840;
+  --red: #ff5f57;
+  --blue: #00d4ff;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Sora', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { background: var(--bg); }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* ─── Layout ─── */
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 48px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo .inf { font-size: 22px; }
+
+.sidebar-nav { flex: 1; }
+
+.nav-group-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-top: 28px;
+}
+
+.nav-group-label:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active { background: var(--surface-2); color: var(--accent); }
+.nav-item .icon { font-size: 14px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.wallet-info {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.wallet-addr {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.wallet-addr:hover { border-color: var(--accent); }
+.wallet-addr .copy { color: var(--accent); font-size: 10px; }
+
+/* ─── Main ─── */
+.main {
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.page-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 300;
+}
+
+/* ─── Stats Row ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  transition: border-color 0.3s;
+}
+
+.stat-card:hover { border-color: var(--border-light); }
+
+.stat-card .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.stat-card .value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stat-card .value.accent { color: var(--accent); }
+.stat-card .value.green { color: var(--green); }
+
+.stat-card .sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ─── API Key Section ─── */
+.section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.api-key-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.api-key-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.api-key-value {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  letter-spacing: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 20px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-sm:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-sm.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-sm.primary:hover { background: #fff; }
+
+.btn-sm.danger:hover { border-color: var(--red); color: var(--red); }
+
+.api-key-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.api-key-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.api-key-hint code {
+  background: var(--bg);
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ─── Usage Chart ─── */
+.usage-bar-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.usage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.usage-count {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.usage-count span { color: var(--text-muted); }
+
+.usage-bar-track {
+  height: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.usage-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 1s ease-out;
+}
+
+.usage-bar-fill.warning { background: #febc2e; }
+.usage-bar-fill.danger { background: var(--red); }
+
+.usage-legend {
+  display: flex;
+  gap: 24px;
+}
+
+.usage-legend-item {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.usage-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ─── Tools Grid ─── */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.tool-card .tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.tool-card .tool-icon { font-size: 24px; }
+
+.tool-card .tool-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+
+.tool-card .tool-status.coming {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+
+.tool-card .tool-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.tool-card .tool-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 300;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.tool-card .tool-launch {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-top: 16px;
+  letter-spacing: 1px;
+}
+
+/* ─── Models List ─── */
+.models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.model-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr 120px 100px 80px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: border-color 0.2s;
+}
+
+.model-row:hover { border-color: var(--border-light); }
+
+.model-name { color: var(--text); font-weight: 500; }
+.model-provider { color: var(--text-muted); }
+.model-tier { color: var(--text-dim); }
+.model-status { text-align: right; }
+
+.model-status .live {
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.model-status .live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── Connect Screen ─── */
+.connect-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.connect-box {
+  text-align: center;
+  max-width: 440px;
+}
+
+.connect-box .logo {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+
+.connect-box h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.connect-box p {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 36px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.connect-btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 18px 48px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.connect-btn:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.connect-note {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .tools-grid { grid-template-columns: 1fr; }
+  .model-row { grid-template-columns: 1fr 1fr; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- JS renders connect screen or dashboard -->
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// INFINITE Dashboard — Client App
+// ═══════════════════════════════════════════
+
+const API_BASE = 'https://api.infinite.sh'; // Change to your proxy URL
+const STATE = {
+  connected: false,
+  wallet: null,
+  apiKey: null,
+  tier: null,
+  balance: 0,
+  usage: { today: 0, limit: 0, remaining: 0 },
+  models: [],
+  activeTab: 'overview'
+};
+
+// ─── Mock data for demo ───
+const DEMO = {
+  wallet: '7xKp9Tz4mNqR8bVyH2wLfG6cJdEa5kXnPo3',
+  apiKey: 'inf_8a3f2c91e7d04b6...hidden',
+  apiKeyFull: 'inf_8a3f2c91e7d04b6f9a1c82de5703f8b4a29e61c0d7f5',
+  tier: 'Operator',
+  balance: 142500,
+  usage: { today: 2847, limit: 10000, remaining: 7153 },
+  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash']
+};
+
+function render() {
+  const app = document.getElementById('app');
+  
+  if (!STATE.connected) {
+    app.innerHTML = renderConnectScreen();
+  } else {
+    app.innerHTML = renderDashboard();
+  }
+  
+  bindEvents();
+}
+
+function renderConnectScreen() {
+  return `
+    <div class="connect-screen">
+      <div class="connect-box">
+        <div class="logo">∞</div>
+        <h1>INFINITE Dashboard</h1>
+        <p>Connect your wallet to access your API keys, manage usage, and launch AI tools. Requires minimum 10,000 $INFINITE.</p>
+        <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+        <div class="connect-note">Supports Phantom, Backpack, Solflare</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDashboard() {
+  const usagePct = (STATE.usage.today / STATE.usage.limit) * 100;
+  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+  
+  return `
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="inf">∞</span> INFINITE
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">Dashboard</div>
+        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview">
+          <span class="icon">◉</span> Overview
+        </div>
+        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys">
+          <span class="icon">⌘</span> API Keys
+        </div>
+        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models">
+          <span class="icon">◈</span> Models
+        </div>
+
+        <div class="nav-group-label">Tools</div>
+        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">
+          <span class="icon">▹</span> AI Chat
+        </div>
+        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">
+          <span class="icon">◎</span> Trading Agents
+        </div>
+        <div class="nav-item ${STATE.activeTab === 'vault' ? 'active' : ''}" data-tab="vault">
+          <span class="icon">⬡</span> Community Vault
+        </div>
+
+        <div class="nav-group-label">Protocol</div>
+        <div class="nav-item" data-tab="treasury">
+          <span class="icon">◆</span> Treasury
+        </div>
+        <div class="nav-item" onclick="window.open('https://docs.infinite.sh')">
+          <span class="icon">↗</span> Docs
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="wallet-info">${STATE.tier} Tier — ${STATE.balance.toLocaleString()} $INF</div>
+        <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
+          ${STATE.wallet.slice(0, 6)}...${STATE.wallet.slice(-4)}
+          <span class="copy">COPY</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      ${renderTab()}
+    </main>
+  `;
+}
+
+function renderTab() {
+  switch (STATE.activeTab) {
+    case 'overview': return renderOverview();
+    case 'keys': return renderKeys();
+    case 'models': return renderModels();
+    case 'agents': return renderAgents();
+    default: return renderOverview();
+  }
+}
+
+function renderOverview() {
+  const usagePct = (STATE.usage.today / STATE.usage.limit) * 100;
+  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Welcome back</h1>
+      <p class="page-sub">${STATE.tier} tier — ${STATE.usage.remaining.toLocaleString()} API calls remaining today</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="label">Your Tier</div>
+        <div class="value accent">${STATE.tier}</div>
+        <div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Calls Today</div>
+        <div class="value">${STATE.usage.today.toLocaleString()}</div>
+        <div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Models Available</div>
+        <div class="value green">${STATE.models.length}</div>
+        <div class="sub">AI providers active</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Your Cost</div>
+        <div class="value accent">$0</div>
+        <div class="sub">funded by treasury</div>
+      </div>
+    </div>
+
+    <!-- Usage Bar -->
+    <div class="section">
+      <div class="section-title">Daily Usage</div>
+      <div class="usage-bar-container">
+        <div class="usage-header">
+          <div class="usage-count">${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} calls</span></div>
+          <div class="usage-count">${Math.round(usagePct)}%</div>
+        </div>
+        <div class="usage-bar-track">
+          <div class="usage-bar-fill ${barClass}" style="width: ${usagePct}%"></div>
+        </div>
+        <div class="usage-legend">
+          <div class="usage-legend-item">
+            <div class="usage-legend-dot" style="background: var(--accent)"></div>
+            Used
+          </div>
+          <div class="usage-legend-item">
+            <div class="usage-legend-dot" style="background: var(--border)"></div>
+            Remaining
+          </div>
+          <div class="usage-legend-item" style="margin-left: auto">
+            Resets at 00:00 UTC
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Access Tools -->
+    <div class="section">
+      <div class="section-title">Quick Access</div>
+      <div class="tools-grid">
+        <div class="tool-card" onclick="setTab('chat')">
+          <div class="tool-header">
+            <span class="tool-icon">▹</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">AI Chat</div>
+          <div class="tool-desc">Chat with Claude and Gemini directly. No account needed, no billing. Just ask.</div>
+          <div class="tool-launch">Open →</div>
+        </div>
+        <div class="tool-card" onclick="setTab('agents')">
+          <div class="tool-header">
+            <span class="tool-icon">◎</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">Trading Agents</div>
+          <div class="tool-desc">AI-powered wallet trackers, sentiment bots, and snipe agents. Pre-configured and ready.</div>
+          <div class="tool-launch">Open →</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">⌘</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">Raw API</div>
+          <div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div>
+          <div class="tool-launch">View Key →</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">⬡</span>
+            <span class="tool-status coming">SOON</span>
+          </div>
+          <div class="tool-name">Community Vault</div>
+          <div class="tool-desc">Tools built by holders, for holders. Submit your own or use what others have built.</div>
+          <div class="tool-launch" style="color: var(--text-muted)">Coming soon</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderKeys() {
+  return `
+    <div class="page-header">
+      <h1 class="page-title">API Keys</h1>
+      <p class="page-sub">Your key works as a drop-in replacement for Anthropic and Google API keys</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Your API Key</div>
+      <div class="api-key-box">
+        <div class="api-key-display">
+          <div class="api-key-value" id="apiKeyDisplay">${STATE.apiKey}</div>
+          <button class="btn-sm primary" onclick="copyText('${DEMO.apiKeyFull}')">Copy</button>
+        </div>
+        <div class="api-key-actions">
+          <button class="btn-sm" onclick="toggleKeyVisibility()">Show / Hide</button>
+          <button class="btn-sm" onclick="rotateKey()">Rotate Key</button>
+          <button class="btn-sm danger" onclick="revokeKey()">Revoke</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Quick Start</div>
+      <div class="api-key-box">
+        <div class="api-key-hint" style="margin-bottom: 16px;">
+          Use your INFINITE API key exactly like you'd use a Claude or Gemini key. Just point to our endpoint:
+        </div>
+        <div class="api-key-value" style="font-size: 12px; line-height: 1.8; white-space: pre-wrap; margin-bottom: 16px; padding: 20px;">
+<span style="color: var(--text-muted);">// Works with any HTTP client</span>
+<span style="color: var(--blue);">curl</span> https://api.infinite.sh/v1/chat \\
+  -H <span style="color: var(--accent);">"Authorization: Bearer inf_your_key"</span> \\
+  -d <span style="color: var(--accent);">'{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":"Hello"}]}'</span>
+
+<span style="color: var(--text-muted);">// Response includes $0.00 cost</span>
+<span style="color: var(--green);">{"content":[...],"usage":{"cost":"$0.00 — funded by $INFINITE treasury"}}</span></div>
+        <div class="api-key-hint">
+          <strong style="color: var(--text);">Supported SDKs:</strong> Works with the official Anthropic Python/Node SDK — just override the <code>base_url</code> to <code>https://api.infinite.sh</code> and use your INFINITE key.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderModels() {
+  const allModels = [
+    { name: 'claude-sonnet-4-5', provider: 'Anthropic', tier: 'Signal+', live: true },
+    { name: 'claude-opus-4-6', provider: 'Anthropic', tier: 'Architect', live: true },
+    { name: 'gemini-2.5-pro', provider: 'Google', tier: 'Operator+', live: true },
+    { name: 'gemini-2.5-flash', provider: 'Google', tier: 'Signal+', live: true },
+  ];
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Available Models</h1>
+      <p class="page-sub">Access depends on your tier. Upgrade by holding more $INFINITE.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">AI Models</div>
+      <div class="models-list">
+        <div class="model-row" style="background: transparent; border-color: transparent;">
+          <div class="model-name" style="color: var(--text-muted); font-size: 10px; letter-spacing: 2px;">MODEL</div>
+          <div class="model-provider" style="font-size: 10px; letter-spacing: 2px;">PROVIDER</div>
+          <div class="model-tier" style="font-size: 10px; letter-spacing: 2px;">MIN TIER</div>
+          <div class="model-status" style="font-size: 10px; letter-spacing: 2px;">STATUS</div>
+        </div>
+        ${allModels.map(m => `
+          <div class="model-row">
+            <div class="model-name">${m.name}</div>
+            <div class="model-provider">${m.provider}</div>
+            <div class="model-tier">${m.tier}</div>
+            <div class="model-status">
+              ${m.live ? '<span class="live">LIVE</span>' : '<span style="color:var(--text-muted)">SOON</span>'}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderAgents() {
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Trading Agents</h1>
+      <p class="page-sub">Pre-configured AI agents powered by your INFINITE API access. No setup required.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Available Agents</div>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">◎</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">Wallet Stalker</div>
+          <div class="tool-desc">Monitor any wallet for trades. Get AI-generated analysis of what they're buying and why. Alerts via Telegram or the dashboard.</div>
+          <div class="tool-launch">Configure →</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">▲</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">Launch Scanner</div>
+          <div class="tool-desc">Scans every new pump.fun launch in real-time. AI evaluates the narrative, socials, and deployer history. Surfaces only high-signal launches.</div>
+          <div class="tool-launch">Configure →</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">◇</span>
+            <span class="tool-status">LIVE</span>
+          </div>
+          <div class="tool-name">Sentiment Engine</div>
+          <div class="tool-desc">AI reads CT in real-time. Tracks mentions, sentiment shifts, and emerging narratives before they hit the chart. Custom watchlists.</div>
+          <div class="tool-launch">Configure →</div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header">
+            <span class="tool-icon">⚡</span>
+            <span class="tool-status coming">SOON</span>
+          </div>
+          <div class="tool-name">Auto Trader</div>
+          <div class="tool-desc">Delegated trading agent. Set your strategy, risk limits, and let the AI execute. Requires wallet approval for each action class.</div>
+          <div class="tool-launch" style="color: var(--text-muted)">Coming soon</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Actions ───
+
+function connectWallet() {
+  // In production: use @solana/wallet-adapter
+  // For demo, simulate connection
+  Object.assign(STATE, {
+    connected: true,
+    wallet: DEMO.wallet,
+    apiKey: DEMO.apiKey,
+    tier: DEMO.tier,
+    balance: DEMO.balance,
+    usage: DEMO.usage,
+    models: DEMO.models
+  });
+  render();
+}
+
+function setTab(tab) {
+  STATE.activeTab = tab;
+  render();
+}
+
+function copyText(text) {
+  navigator.clipboard?.writeText(text);
+  // Could add toast notification
+}
+
+function toggleKeyVisibility() {
+  const el = document.getElementById('apiKeyDisplay');
+  if (el) {
+    if (el.textContent.includes('...')) {
+      el.textContent = DEMO.apiKeyFull;
+    } else {
+      el.textContent = DEMO.apiKey;
+    }
+  }
+}
+
+function rotateKey() {
+  if (confirm('Rotate your API key? The old key will stop working immediately.')) {
+    STATE.apiKey = 'inf_' + Math.random().toString(36).substring(2, 15) + '...new';
+    render();
+  }
+}
+
+function revokeKey() {
+  if (confirm('Revoke your API key? All active sessions will be terminated.')) {
+    STATE.apiKey = null;
+    render();
+  }
+}
+
+// ─── Event Binding ───
+
+function bindEvents() {
+  document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+    item.addEventListener('click', () => setTab(item.dataset.tab));
+  });
+}
+
+// ─── Init ───
+render();
+</script>
+
+</body>
+</html>
