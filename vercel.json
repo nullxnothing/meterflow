@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/", "destination": "/site/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}
