@@ -19,7 +19,7 @@ config();
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 // ─── In-Memory Store (swap for Redis in production) ──────────
 // For production, replace these Maps with Redis calls
@@ -77,6 +77,65 @@ function getProviderForModel(model) {
 function isModelAvailable(model) {
   const provider = getProviderForModel(model);
   return provider ? PROVIDER_AVAILABLE[provider] : false;
+}
+
+// ─── Tool Translation ────────────────────────────────────────
+
+function translateToolsForProvider(provider, tools) {
+  if (!tools || !Array.isArray(tools) || tools.length === 0) return null;
+  const has = (name) => tools.includes(name);
+
+  if (provider === 'claude') {
+    const out = [];
+    if (has('web_search')) out.push({ type: 'web_search_20250305', name: 'web_search', max_uses: 5 });
+    return out.length ? out : null;
+  }
+  if (provider === 'gemini') {
+    const out = [];
+    if (has('web_search')) out.push({ google_search: {} });
+    return out.length ? out : null;
+  }
+  if (provider === 'openai') {
+    const out = [];
+    if (has('web_search')) out.push({ type: 'web_search' });
+    return out.length ? out : null;
+  }
+  return null;
+}
+
+function injectImagesIntoMessages(provider, messages, images) {
+  if (!images || !Array.isArray(images) || images.length === 0) return messages;
+  const msgs = messages.map(m => ({ ...m }));
+  const lastUserIdx = msgs.findLastIndex(m => m.role === 'user');
+  if (lastUserIdx === -1) return msgs;
+
+  const lastMsg = msgs[lastUserIdx];
+  const textContent = typeof lastMsg.content === 'string' ? lastMsg.content : lastMsg.content.map(c => c.text || '').join('');
+
+  if (provider === 'claude') {
+    const blocks = images.map(img => ({
+      type: 'image',
+      source: { type: 'base64', media_type: img.mimeType, data: img.data },
+    }));
+    blocks.push({ type: 'text', text: textContent });
+    msgs[lastUserIdx] = { role: 'user', content: blocks };
+  } else if (provider === 'gemini') {
+    // Gemini uses inline_data parts — handled in stream function since format differs
+    msgs[lastUserIdx] = {
+      role: 'user',
+      content: textContent,
+      _images: images,
+    };
+  } else if (provider === 'openai') {
+    const parts = images.map(img => ({
+      type: 'image_url',
+      image_url: { url: `data:${img.mimeType};base64,${img.data}` },
+    }));
+    parts.push({ type: 'text', text: textContent });
+    msgs[lastUserIdx] = { role: 'user', content: parts };
+  }
+
+  return msgs;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -563,7 +622,7 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
 
 // POST /v1/chat/stream — SSE streaming proxy to Claude or Gemini
 app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
-  const { model, messages, max_tokens, temperature } = req.body;
+  const { model, messages, max_tokens, temperature, tools, images } = req.body;
   const { tierConfig, usage } = req.infinite;
 
   const requestedModel = model || tierConfig.models[0];
@@ -588,18 +647,22 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
     return res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
   }
 
+  const provider = getProviderForModel(requestedModel);
+  const translatedTools = translateToolsForProvider(provider, tools);
+  const processedMessages = injectImagesIntoMessages(provider, messages, images);
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
 
   try {
-    if (requestedModel.startsWith('claude')) {
-      await streamAnthropic(requestedModel, messages, max_tokens || 4096, temperature, res);
-    } else if (requestedModel.startsWith('gemini')) {
-      await streamGemini(requestedModel, messages, max_tokens || 4096, temperature, res);
-    } else if (requestedModel.startsWith('gpt-')) {
-      await streamOpenAI(requestedModel, messages, max_tokens || 4096, temperature, res);
+    if (provider === 'claude') {
+      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
+    } else if (provider === 'gemini') {
+      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
+    } else if (provider === 'openai') {
+      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
     } else {
       res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
     }
@@ -614,7 +677,16 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
   }
 });
 
-async function streamAnthropic(model, messages, maxTokens, temperature, res) {
+async function streamAnthropic(model, messages, maxTokens, temperature, res, tools) {
+  const body = {
+    model,
+    max_tokens: Math.min(maxTokens, 8192),
+    temperature: temperature ?? 0.7,
+    messages,
+    stream: true,
+  };
+  if (tools) body.tools = tools;
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -622,13 +694,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res) {
       'x-api-key': CONFIG.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: Math.min(maxTokens, 8192),
-      temperature: temperature ?? 0.7,
-      messages,
-      stream: true
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -655,6 +721,19 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res) {
 
       try {
         const event = JSON.parse(jsonStr);
+
+        if (event.type === 'content_block_start') {
+          if (event.content_block?.type === 'server_tool_use') {
+            res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
+          } else if (event.content_block?.type === 'web_search_tool_result') {
+            const sources = (event.content_block.content || [])
+              .filter(c => c.type === 'web_search_result')
+              .slice(0, 6)
+              .map(c => ({ title: c.title || '', url: c.url || '', snippet: c.encrypted_content ? '' : (c.page_content || '').slice(0, 120) }));
+            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+          }
+        }
+
         if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
           res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
         }
@@ -663,24 +742,35 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res) {
   }
 }
 
-async function streamGemini(model, messages, maxTokens, temperature, res) {
-  const geminiContents = messages.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text).join('') }]
-  }));
+async function streamGemini(model, messages, maxTokens, temperature, res, tools) {
+  const geminiContents = messages.map(m => {
+    const parts = [];
+    // Handle injected images
+    if (m._images) {
+      for (const img of m._images) {
+        parts.push({ inline_data: { mime_type: img.mimeType, data: img.data } });
+      }
+    }
+    const text = typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.map(c => c.text || '').join('') : '');
+    if (text) parts.push({ text });
+    return { role: m.role === 'assistant' ? 'model' : 'user', parts };
+  });
+
+  const body = {
+    contents: geminiContents,
+    generationConfig: {
+      maxOutputTokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7
+    }
+  };
+  if (tools) body.tools = tools;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: geminiContents,
-        generationConfig: {
-          maxOutputTokens: Math.min(maxTokens, 8192),
-          temperature: temperature ?? 0.7
-        }
-      })
+      body: JSON.stringify(body)
     }
   );
 
@@ -692,6 +782,7 @@ async function streamGemini(model, messages, maxTokens, temperature, res) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let emittedGroundingStart = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -712,12 +803,40 @@ async function streamGemini(model, messages, maxTokens, temperature, res) {
         if (text) {
           res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
         }
+
+        // Grounding metadata from Google Search
+        const grounding = data.candidates?.[0]?.groundingMetadata;
+        if (grounding) {
+          if (!emittedGroundingStart && grounding.searchEntryPoint) {
+            const query = grounding.webSearchQueries?.[0] || '';
+            res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query })}\n\n`);
+            emittedGroundingStart = true;
+          }
+          const chunks = grounding.groundingChunks || [];
+          if (chunks.length > 0) {
+            const sources = chunks.slice(0, 6).map(c => ({
+              title: c.web?.title || '',
+              url: c.web?.uri || '',
+              snippet: '',
+            }));
+            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+          }
+        }
       } catch {}
     }
   }
 }
 
-async function streamOpenAI(model, messages, maxTokens, temperature, res) {
+async function streamOpenAI(model, messages, maxTokens, temperature, res, tools) {
+  // Use Responses API when tools are present, Chat Completions otherwise
+  if (tools && tools.length > 0) {
+    await streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools);
+  } else {
+    await streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res);
+  }
+}
+
+async function streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -766,6 +885,79 @@ async function streamOpenAI(model, messages, maxTokens, temperature, res) {
   }
 }
 
+async function streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools) {
+  // Convert chat messages to Responses API input format
+  const input = messages.map(m => ({ role: m.role, content: m.content }));
+
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_output_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      input,
+      tools,
+      stream: true,
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`OpenAI ${response.status}: ${err}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === '[DONE]') continue;
+
+      try {
+        const event = JSON.parse(jsonStr);
+
+        // Web search started
+        if (event.type === 'response.web_search_call.searching') {
+          res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
+        }
+
+        // Text delta
+        if (event.type === 'response.output_text.delta') {
+          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta || '' })}\n\n`);
+        }
+
+        // Text done — extract URL citations from annotations
+        if (event.type === 'response.output_text.done') {
+          const annotations = event.annotations || [];
+          const urlCites = annotations.filter(a => a.type === 'url_citation');
+          if (urlCites.length > 0) {
+            const sources = urlCites.slice(0, 6).map(a => ({
+              title: a.title || a.url || '',
+              url: a.url || '',
+              snippet: '',
+            }));
+            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+          }
+        }
+      } catch {}
+    }
+  }
+}
+
 // ─── Image Generation Endpoint ──────────────────────────────
 
 // POST /v1/image — Generate image via Gemini
@@ -773,12 +965,19 @@ app.post('/v1/image', authenticateApiKey, async (req, res) => {
   const { prompt } = req.body;
   const { tierConfig, usage } = req.infinite;
 
+  if (!PROVIDER_AVAILABLE.gemini) {
+    return res.status(503).json({
+      error: 'provider_not_configured',
+      message: 'Image generation is coming soon. Gemini API will be activated after token launch.',
+    });
+  }
+
   if (!prompt) {
     return res.status(400).json({ error: 'invalid_request', message: 'prompt is required' });
   }
 
   try {
-    const imageModel = process.env.IMAGE_MODEL || 'gemini-2.0-flash-exp';
+    const imageModel = process.env.IMAGE_MODEL || 'gemini-2.5-flash-image';
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:generateContent?key=${CONFIG.GOOGLE_API_KEY}`,
@@ -849,6 +1048,13 @@ app.post('/v1/image', authenticateApiKey, async (req, res) => {
 app.post('/v1/video/generate', authenticateApiKey, async (req, res) => {
   const { prompt, aspectRatio, duration } = req.body;
   const { tierConfig, usage, apiKey, tier } = req.infinite;
+
+  if (!PROVIDER_AVAILABLE.gemini) {
+    return res.status(503).json({
+      error: 'provider_not_configured',
+      message: 'Video generation is coming soon. Google Veo 2 will be activated after token launch.',
+    });
+  }
 
   if (!VIDEO_ALLOWED_TIERS.includes(tier)) {
     return res.status(403).json({
@@ -1275,6 +1481,16 @@ app.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
 // Public treasury status (for dashboard)
 app.get('/treasury', (req, res) => {
   res.json(treasuryState);
+});
+
+// ─── Provider Status ─────────────────────────────────────────
+
+app.get('/providers', (req, res) => {
+  res.json({
+    claude: PROVIDER_AVAILABLE.claude,
+    gemini: PROVIDER_AVAILABLE.gemini,
+    openai: PROVIDER_AVAILABLE.openai,
+  });
 });
 
 // ─── Health ──────────────────────────────────────────────────

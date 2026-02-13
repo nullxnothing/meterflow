@@ -537,6 +537,188 @@
   40% { opacity: 1; transform: translateY(-4px); }
 }
 
+/* ─── Tool Indicators ─── */
+.tool-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(200, 255, 0, 0.15);
+  border-radius: 6px;
+  background: rgba(200, 255, 0, 0.03);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 4px 0;
+  animation: fadeUp 0.3s ease;
+}
+
+.tool-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.search-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+  animation: fadeUp 0.3s ease;
+}
+
+.search-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-source-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.search-source-chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ─── Chat Upload ─── */
+.chat-upload-btn {
+  width: 50px;
+  height: 50px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 20px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.chat-upload-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chat-image-preview {
+  display: flex;
+  gap: 8px;
+  padding: 8px 24px 0;
+  max-width: 848px;
+  width: 100%;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.chat-image-thumb {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.chat-image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-image-thumb .remove-img {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  font-size: 10px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ─── Tool Toggle ─── */
+.tool-toggle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 6px 12px;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-toggle.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(200, 255, 0, 0.05);
+}
+
+.tool-toggle:hover { border-color: var(--accent); }
+
+.tool-toggle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background 0.2s;
+}
+
+.tool-toggle.active .tool-toggle-dot { background: var(--accent); }
+
+/* ─── Chat Images in Messages ─── */
+.chat-msg-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chat-msg-images img {
+  max-width: 200px;
+  max-height: 150px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  object-fit: cover;
+}
+
 .chat-input-area {
   display: flex;
   align-items: flex-end;
@@ -1163,6 +1345,7 @@ const STATE = {
   usage: { today: 0, limit: 0, remaining: 0 },
   models: [],
   treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0 },
+  providers: { claude: false, gemini: false, openai: false },
   activeTab: 'overview',
   keyVisible: false,
   error: null,
@@ -1174,6 +1357,8 @@ const CHAT = {
   selectedModel: '',
   isGenerating: false,
   abortController: null,
+  enabledTools: ['web_search'],
+  pendingImages: [],
 };
 
 const IMAGES = {
@@ -1341,7 +1526,14 @@ function clearSession() {
 function saveChatHistory() {
   const toSave = CHAT.conversations.slice(-30).map(c => ({
     id: c.id, title: c.title,
-    messages: c.messages.slice(-100), // cap per conversation
+    messages: c.messages.slice(-100).map(m => {
+      const saved = { role: m.role, content: m.content };
+      if (m.model) saved.model = m.model;
+      if (m.sources) saved.sources = m.sources;
+      // Strip base64 image data from localStorage (too large)
+      if (m.images) saved.hasImages = true;
+      return saved;
+    }),
   }));
   try {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ conversations: toSave, activeId: CHAT.activeId }));
@@ -1448,9 +1640,14 @@ async function fetchTreasury() {
   try { STATE.treasury = await api('/treasury'); } catch {}
 }
 
+async function fetchProviders() {
+  try { STATE.providers = await api('/providers'); } catch {}
+}
+
 function startStatusPolling() {
   fetchStatus();
   fetchTreasury();
+  fetchProviders();
   if (statusPollInterval) clearInterval(statusPollInterval);
   statusPollInterval = setInterval(() => { fetchStatus(); fetchTreasury(); }, 60_000);
 }
@@ -1472,19 +1669,26 @@ async function sendChatMessage() {
   input.style.height = 'auto';
 
   const conv = getActiveConversation();
-  conv.messages.push({ role: 'user', content: text });
+  const sentImages = CHAT.pendingImages.length > 0 ? [...CHAT.pendingImages] : null;
+  conv.messages.push({ role: 'user', content: text, images: sentImages });
 
   // Update title from first message
   if (conv.messages.filter(m => m.role === 'user').length === 1) {
     conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
   }
 
-  appendMessageToDOM({ role: 'user', content: text });
+  appendMessageToDOM({ role: 'user', content: text, images: sentImages });
   showTypingIndicator();
   CHAT.isGenerating = true;
   updateSendButton();
 
   const model = CHAT.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+  const tools = CHAT.enabledTools.length > 0 ? [...CHAT.enabledTools] : undefined;
+  const images = sentImages || undefined;
+
+  // Clear pending images after capturing
+  CHAT.pendingImages = [];
+  renderImagePreview();
 
   try {
     CHAT.abortController = new AbortController();
@@ -1498,6 +1702,8 @@ async function sendChatMessage() {
       body: JSON.stringify({
         model,
         messages: conv.messages.map(m => ({ role: m.role, content: m.content })),
+        tools,
+        images,
       }),
       signal: CHAT.abortController.signal,
     });
@@ -1511,11 +1717,13 @@ async function sendChatMessage() {
 
     const msgEl = appendMessageToDOM({ role: 'assistant', content: '', model });
     const contentEl = msgEl.querySelector('.chat-msg-content');
+    const bodyEl = msgEl.querySelector('.chat-msg-body');
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
+    let collectedSources = [];
 
     while (true) {
       const { done, value } = await reader.read();
@@ -1535,6 +1743,14 @@ async function sendChatMessage() {
             fullText += data.content;
             contentEl.innerHTML = renderMarkdown(fullText);
             scrollChat();
+          } else if (data.type === 'tool_start') {
+            showToolIndicator(bodyEl, data.tool, data.query);
+          } else if (data.type === 'tool_result') {
+            removeToolIndicator(bodyEl);
+            if (data.sources && data.sources.length > 0) {
+              collectedSources = collectedSources.concat(data.sources);
+              showSearchSources(bodyEl, collectedSources);
+            }
           } else if (data.type === 'error') {
             throw new Error(data.message);
           }
@@ -1544,7 +1760,8 @@ async function sendChatMessage() {
       }
     }
 
-    conv.messages.push({ role: 'assistant', content: fullText, model });
+    removeToolIndicator(bodyEl);
+    conv.messages.push({ role: 'assistant', content: fullText, model, sources: collectedSources.length > 0 ? collectedSources : undefined });
     saveChatHistory();
     bindCodeCopyButtons();
 
@@ -1568,12 +1785,17 @@ function appendMessageToDOM(msg) {
   const empty = container.querySelector('.chat-empty');
   if (empty) empty.remove();
 
+  const imagesHtml = msg.images ? `<div class="chat-msg-images">${msg.images.map(img =>
+    `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`
+  ).join('')}</div>` : '';
+
   const el = document.createElement('div');
   el.className = `chat-message ${msg.role}`;
   el.innerHTML = `
     <div class="chat-msg-avatar">${msg.role === 'user' ? 'You' : 'AI'}</div>
     <div class="chat-msg-body">
       <div class="chat-msg-name">${msg.role === 'user' ? 'You' : (msg.model || 'AI')}</div>
+      ${imagesHtml}
       <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
         msg.role === 'user' ? escapeHtml(msg.content) : (msg.content ? renderMarkdown(msg.content) : '')
       }</div>
@@ -1628,6 +1850,95 @@ function bindCodeCopyButtons() {
       if (code) copyText(code.textContent);
     };
   });
+}
+
+// ─── Tool Indicators ───
+
+function showToolIndicator(bodyEl, tool, query) {
+  if (!bodyEl) return;
+  removeToolIndicator(bodyEl);
+  const el = document.createElement('div');
+  el.className = 'tool-indicator';
+  el.innerHTML = `<div class="tool-spinner"></div><span>Searching the web${query ? ` for "${escapeHtml(query)}"` : ''}...</span>`;
+  const contentEl = bodyEl.querySelector('.chat-msg-content');
+  if (contentEl) bodyEl.insertBefore(el, contentEl);
+  else bodyEl.appendChild(el);
+  scrollChat();
+}
+
+function removeToolIndicator(bodyEl) {
+  if (!bodyEl) return;
+  bodyEl.querySelector('.tool-indicator')?.remove();
+}
+
+function showSearchSources(bodyEl, sources) {
+  if (!bodyEl || !sources || sources.length === 0) return;
+  bodyEl.querySelector('.search-sources')?.remove();
+  const el = document.createElement('div');
+  el.className = 'search-sources';
+  el.innerHTML = sources.slice(0, 6).map(s => {
+    let label = s.title;
+    if (!label) try { label = new URL(s.url).hostname; } catch { label = s.url; }
+    return `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+  }).join('');
+  const contentEl = bodyEl.querySelector('.chat-msg-content');
+  if (contentEl) bodyEl.insertBefore(el, contentEl);
+  else bodyEl.appendChild(el);
+  scrollChat();
+}
+
+// ─── Image Upload ───
+
+function handleImageUpload(files) {
+  if (!files || files.length === 0) return;
+  const maxFiles = 4;
+  const maxSize = 5 * 1024 * 1024; // 5MB
+
+  for (const file of Array.from(files).slice(0, maxFiles - CHAT.pendingImages.length)) {
+    if (!file.type.startsWith('image/')) continue;
+    if (file.size > maxSize) { showToast('Image too large (max 5MB)', true); continue; }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      CHAT.pendingImages.push({ data: base64, mimeType: file.type, name: file.name });
+      renderImagePreview();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removePendingImage(index) {
+  CHAT.pendingImages.splice(index, 1);
+  renderImagePreview();
+}
+
+function renderImagePreview() {
+  const existing = document.getElementById('chatImagePreview');
+  if (CHAT.pendingImages.length === 0) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  const html = CHAT.pendingImages.map((img, i) => `
+    <div class="chat-image-thumb">
+      <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
+      <button class="remove-img" onclick="removePendingImage(${i})">x</button>
+    </div>
+  `).join('');
+
+  if (existing) {
+    existing.innerHTML = html;
+  } else {
+    const inputArea = document.querySelector('.chat-input-area');
+    if (inputArea) {
+      const preview = document.createElement('div');
+      preview.className = 'chat-image-preview';
+      preview.id = 'chatImagePreview';
+      preview.innerHTML = html;
+      inputArea.parentNode.insertBefore(preview, inputArea);
+    }
+  }
 }
 
 // ─── Image Generation ───
@@ -1838,6 +2149,10 @@ function renderTab() {
 
 // ─── Tab: Overview ───
 
+function hasAnyChatProvider() {
+  return STATE.providers.claude || STATE.providers.gemini || STATE.providers.openai;
+}
+
 function renderOverview() {
   const usagePct = STATE.usage.limit > 0 ? (STATE.usage.today / STATE.usage.limit) * 100 : 0;
   const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
@@ -1870,10 +2185,10 @@ function renderOverview() {
     <div class="section">
       <div class="section-title">Quick Access</div>
       <div class="tools-grid">
-        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">Generate high-quality images with Gemini. Describe anything and get instant results.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.${isVideoTierAllowed() ? '' : ' Operator+ only.'}</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Trading Agent</div><div class="tool-desc">AI-powered Solana token analysis. Real-time data, risk assessment, market intelligence.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-status${hasAnyChatProvider() ? '' : ' coming'}">${hasAnyChatProvider() ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">${hasAnyChatProvider() ? 'Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.' : 'AI chat will activate after token launch. Claude, Gemini, and OpenAI models included.'}</div><div class="tool-launch">${hasAnyChatProvider() ? 'Open' : 'Preview'}</div></div>
+        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate high-quality images with Gemini. Describe anything and get instant results.' : 'Image generation will activate after token launch. Powered by Gemini.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
+        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.' + (isVideoTierAllowed() ? '' : ' Operator+ only.') : 'Video generation will activate after token launch. Powered by Google Veo 2.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
+        <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-status${hasAnyChatProvider() ? '' : ' coming'}">${hasAnyChatProvider() ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Trading Agent</div><div class="tool-desc">${hasAnyChatProvider() ? 'AI-powered Solana token analysis. Real-time data, risk assessment, market intelligence.' : 'Trading analysis will activate after token launch. AI-powered Solana intelligence.'}</div><div class="tool-launch">${hasAnyChatProvider() ? 'Open' : 'Preview'}</div></div>
         <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key</div></div>
       </div>
@@ -1975,6 +2290,8 @@ function renderChat() {
     document.getElementById('chatInput')?.focus();
   }, 50);
 
+  const isSearchOn = CHAT.enabledTools.includes('web_search');
+
   return `
     <div class="chat-container">
       <div class="chat-header">
@@ -1984,6 +2301,9 @@ function renderChat() {
               `<option value="${m}" ${m === CHAT.selectedModel ? 'selected' : ''}>${m}</option>`
             ).join('')}
           </select>
+          <button class="tool-toggle${isSearchOn ? ' active' : ''}" id="searchToggle">
+            <span class="tool-toggle-dot"></span>Search
+          </button>
         </div>
         <div style="display:flex;gap:8px;">
           ${CHAT.conversations.length > 1 ? `
@@ -2009,13 +2329,28 @@ function renderChat() {
             <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
             <div class="chat-msg-body">
               <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
+              ${m.images ? `<div class="chat-msg-images">${m.images.map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
               <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
+              ${m.sources ? `<div class="search-sources">${m.sources.slice(0,6).map(s => `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title || s.url)}</a>`).join('')}</div>` : ''}
             </div>
           </div>
         `).join('')}
       </div>
 
+      ${CHAT.pendingImages.length > 0 ? `
+        <div class="chat-image-preview" id="chatImagePreview">
+          ${CHAT.pendingImages.map((img, i) => `
+            <div class="chat-image-thumb">
+              <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
+              <button class="remove-img" onclick="removePendingImage(${i})">x</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
       <div class="chat-input-area">
+        <button class="chat-upload-btn" id="chatUploadBtn" title="Upload image">+</button>
+        <input type="file" id="chatFileInput" accept="image/*" multiple style="display:none;">
         <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
         <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
       </div>
@@ -2026,6 +2361,20 @@ function renderChat() {
 // ─── Tab: Image Lab ───
 
 function renderImages() {
+  if (!STATE.providers.gemini) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Image Lab</h1>
+        <p class="page-sub">Generate images with Gemini. Describe anything — photorealistic, illustration, concept art.</p>
+      </div>
+      <div class="video-tier-gate">
+        <h3>Coming Soon</h3>
+        <p>Image generation will activate after token launch. Powered by Google Gemini.</p>
+        <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px;margin-top:16px;">This feature requires the Gemini API to be configured by the protocol treasury.</p>
+      </div>
+    `;
+  }
+
   return `
     <div class="page-header">
       <h1 class="page-title">Image Lab</h1>
@@ -2069,6 +2418,20 @@ function isVideoTierAllowed() {
 }
 
 function renderVideo() {
+  if (!STATE.providers.gemini) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Video Lab</h1>
+        <p class="page-sub">Generate AI videos with Google Veo 2</p>
+      </div>
+      <div class="video-tier-gate">
+        <h3>Coming Soon</h3>
+        <p>Video generation will activate after token launch. Powered by Google Veo 2.</p>
+        <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px;margin-top:16px;">This feature requires the Gemini API to be configured by the protocol treasury.</p>
+      </div>
+    `;
+  }
+
   if (!isVideoTierAllowed()) {
     return `
       <div class="page-header">
@@ -2815,6 +3178,28 @@ function bindEvents() {
     convSelect.addEventListener('change', () => {
       CHAT.activeId = convSelect.value;
       render();
+    });
+  }
+
+  // Search toggle
+  const searchToggle = document.getElementById('searchToggle');
+  if (searchToggle) {
+    searchToggle.addEventListener('click', () => {
+      const idx = CHAT.enabledTools.indexOf('web_search');
+      if (idx >= 0) CHAT.enabledTools.splice(idx, 1);
+      else CHAT.enabledTools.push('web_search');
+      searchToggle.classList.toggle('active', CHAT.enabledTools.includes('web_search'));
+    });
+  }
+
+  // Upload button + file input
+  const uploadBtn = document.getElementById('chatUploadBtn');
+  const fileInput = document.getElementById('chatFileInput');
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      handleImageUpload(e.target.files);
+      fileInput.value = '';
     });
   }
 
