@@ -491,10 +491,53 @@ app.post('/auth/rotate', authenticateApiKey, async (req, res) => {
   });
 });
 
+// ─── Admin: Treasury Agent ───────────────────────────────────
+// The treasury agent pushes rate limit adjustments here
+
+let treasuryState = {
+  multiplier: 1.0,
+  healthStatus: 'unknown',
+  runwayDays: 0,
+  dailyBudget: 0,
+  treasuryBalanceUsd: 0,
+  updatedAt: null,
+};
+
+function authenticateAdmin(req, res, next) {
+  const key = req.headers.authorization?.split(' ')[1];
+  const adminKey = process.env.ADMIN_KEY || 'dev-admin-key';
+  if (key !== adminKey) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  next();
+}
+
+// Treasury agent pushes updated rate limits
+app.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
+  const { multiplier, healthStatus, runwayDays, dailyBudget, treasuryBalanceUsd } = req.body;
+  
+  treasuryState = {
+    multiplier: multiplier || 1.0,
+    healthStatus: healthStatus || 'unknown',
+    runwayDays: runwayDays || 0,
+    dailyBudget: dailyBudget || 0,
+    treasuryBalanceUsd: treasuryBalanceUsd || 0,
+    updatedAt: Date.now(),
+  };
+  
+  console.log(`[Admin] Rate limits updated: ${multiplier}x (${healthStatus}), runway: ${runwayDays} days`);
+  res.json({ ok: true, applied: treasuryState });
+});
+
+// Public treasury status (for dashboard)
+app.get('/treasury', (req, res) => {
+  res.json(treasuryState);
+});
+
 // ─── Health ──────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.0.0', protocol: 'INFINITE' });
+  res.json({ status: 'ok', version: '1.0.0', protocol: 'INFINITE', treasury: treasuryState.healthStatus });
 });
 
 // ─── Start ───────────────────────────────────────────────────
