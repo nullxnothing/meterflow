@@ -453,6 +453,15 @@ server.on("upgrade", async (req, socket, head) => {
     socket.destroy();
     return;
   }
+
+  // Browsers cannot send Authorization headers on WebSocket connections.
+  // Inject the gateway token as a query parameter so the gateway accepts it.
+  const parsed = new URL(req.url, GATEWAY_TARGET);
+  if (!parsed.searchParams.has("token")) {
+    parsed.searchParams.set("token", OPENCLAW_GATEWAY_TOKEN);
+    req.url = parsed.pathname + parsed.search;
+  }
+
   proxy.ws(req, socket, head, { target: GATEWAY_TARGET });
 });
 
