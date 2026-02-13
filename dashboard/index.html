@@ -3,57 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>∞ INFINITE — Dashboard</title>
+<title>INFINITE — Dashboard</title>
+<link rel="icon" type="image/png" href="/site/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
-  --surface-3: #141414;
-  --border: #222222;
-  --border-light: #333333;
-  --text: #f0efe9;
-  --text-dim: #888880;
-  --text-muted: #555550;
-  --accent: #c8ff00;
-  --accent-dim: #a0cc00;
-  --green: #28c840;
-  --red: #ff5f57;
-  --blue: #00d4ff;
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'Sora', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
-
-html { background: var(--bg); }
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-}
-
-::selection { background: var(--accent); color: var(--bg); }
-
 /* ─── Layout ─── */
 .app {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
+}
+
+.app.connect-mode {
+  grid-template-columns: 1fr;
 }
 
 /* ─── Sidebar ─── */
@@ -84,7 +47,7 @@ body::after {
 
 .sidebar-logo .inf { font-size: 22px; }
 
-.sidebar-nav { flex: 1; }
+.sidebar-nav { flex: 1; overflow-y: auto; }
 
 .nav-group-label {
   font-family: var(--font-mono);
@@ -152,9 +115,13 @@ body::after {
   overflow-y: auto;
 }
 
-.page-header {
-  margin-bottom: 40px;
+.main.chat-mode {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
+
+.page-header { margin-bottom: 40px; }
 
 .page-title {
   font-family: var(--font-display);
@@ -168,22 +135,8 @@ body::after {
   font-weight: 300;
 }
 
-/* ─── Stats Row ─── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  margin-bottom: 40px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 24px;
-  transition: border-color 0.3s;
-}
-
-.stat-card:hover { border-color: var(--border-light); }
+/* ─── Stats ─── */
+.stats-row { margin-bottom: 40px; }
 
 .stat-card .label {
   font-family: var(--font-mono);
@@ -211,10 +164,8 @@ body::after {
   margin-top: 4px;
 }
 
-/* ─── API Key Section ─── */
-.section {
-  margin-bottom: 40px;
-}
+/* ─── Sections ─── */
+.section { margin-bottom: 40px; }
 
 .section-title {
   font-family: var(--font-mono);
@@ -262,40 +213,7 @@ body::after {
   white-space: nowrap;
 }
 
-.btn-sm {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 14px 20px;
-  border: 1px solid var(--border-light);
-  background: transparent;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.btn-sm:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.btn-sm.primary {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-  font-weight: 600;
-}
-
-.btn-sm.primary:hover { background: #fff; }
-
-.btn-sm.danger:hover { border-color: var(--red); color: var(--red); }
-
-.api-key-actions {
-  display: flex;
-  gap: 8px;
-}
+.api-key-actions { display: flex; gap: 8px; }
 
 .api-key-hint {
   font-family: var(--font-mono);
@@ -312,7 +230,7 @@ body::after {
   color: var(--text-dim);
 }
 
-/* ─── Usage Chart ─── */
+/* ─── Usage Bar ─── */
 .usage-bar-container {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -352,10 +270,7 @@ body::after {
 .usage-bar-fill.warning { background: #febc2e; }
 .usage-bar-fill.danger { background: var(--red); }
 
-.usage-legend {
-  display: flex;
-  gap: 24px;
-}
+.usage-legend { display: flex; gap: 24px; }
 
 .usage-legend-item {
   font-family: var(--font-mono);
@@ -372,119 +287,444 @@ body::after {
   border-radius: 50%;
 }
 
-/* ─── Tools Grid ─── */
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
-}
-
-.tool-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 28px;
-  cursor: pointer;
-  transition: all 0.3s;
+/* ─── Chat UI ─── */
+.chat-container {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
 }
 
-.tool-card:hover {
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-model-select {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.chat-model-select:focus { border-color: var(--accent); }
+
+.chat-model-select option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  scroll-behavior: smooth;
+}
+
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  min-height: 400px;
+}
+
+.chat-empty-icon {
+  font-size: 64px;
+  color: var(--accent);
+  opacity: 0.3;
+  margin-bottom: 24px;
+  font-family: var(--font-display);
+}
+
+.chat-empty-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.chat-empty-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 300;
+  max-width: 400px;
+}
+
+.chat-message {
+  display: flex;
+  gap: 16px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  animation: fadeUp 0.3s ease;
+}
+
+.chat-msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.chat-message.user .chat-msg-avatar {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.chat-message.assistant .chat-msg-avatar {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.chat-msg-body { flex: 1; min-width: 0; }
+
+.chat-msg-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.chat-msg-content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.chat-msg-content.error { color: var(--red); }
+
+/* Chat markdown rendering */
+.chat-msg-content strong { font-weight: 600; }
+.chat-msg-content em { font-style: italic; color: var(--text-dim); }
+
+.chat-msg-content code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+.chat-msg-content pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  position: relative;
+}
+
+.chat-msg-content pre .code-lang {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.chat-msg-content pre .code-copy {
+  position: absolute;
+  top: 6px;
+  right: 60px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-msg-content pre .code-copy:hover {
   border-color: var(--accent);
   background: var(--surface-2);
 }
 
-.tool-card .tool-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
+.chat-msg-content pre code {
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
 }
 
-.tool-card .tool-icon { font-size: 24px; }
-
-.tool-card .tool-status {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 1px;
-  padding: 3px 8px;
-  border: 1px solid var(--green);
-  color: var(--green);
+.chat-msg-content ul, .chat-msg-content ol {
+  padding-left: 24px;
+  margin: 8px 0;
 }
 
-.tool-card .tool-status.coming {
-  border-color: var(--text-muted);
-  color: var(--text-muted);
-}
+.chat-msg-content li { margin-bottom: 4px; }
 
-.tool-card .tool-name {
+.chat-msg-content h1, .chat-msg-content h2, .chat-msg-content h3 {
   font-family: var(--font-display);
-  font-size: 20px;
-  margin-bottom: 6px;
+  margin: 16px 0 8px;
 }
 
-.tool-card .tool-desc {
-  font-size: 12px;
+.chat-msg-content h1 { font-size: 24px; }
+.chat-msg-content h2 { font-size: 20px; }
+.chat-msg-content h3 { font-size: 16px; }
+
+.chat-msg-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  margin: 12px 0;
   color: var(--text-dim);
-  font-weight: 300;
-  line-height: 1.6;
-  flex: 1;
 }
 
-.tool-card .tool-launch {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--accent);
-  margin-top: 16px;
-  letter-spacing: 1px;
-}
-
-/* ─── Models List ─── */
-.models-list {
+.chat-typing {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  padding: 8px 0;
 }
 
-.model-row {
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-4px); }
+}
+
+.chat-input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
   background: var(--surface);
+  flex-shrink: 0;
+  max-width: 848px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.chat-input {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
   border: 1px solid var(--border);
-  padding: 16px 20px;
-  display: grid;
-  grid-template-columns: 1fr 120px 100px 80px;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  padding: 14px 18px;
+  resize: none;
+  outline: none;
+  min-height: 50px;
+  max-height: 200px;
+  line-height: 1.5;
   transition: border-color 0.2s;
 }
 
-.model-row:hover { border-color: var(--border-light); }
+.chat-input:focus { border-color: var(--accent); }
 
-.model-name { color: var(--text); font-weight: 500; }
-.model-provider { color: var(--text-muted); }
-.model-tier { color: var(--text-dim); }
-.model-status { text-align: right; }
+.chat-input::placeholder { color: var(--text-muted); }
 
-.model-status .live {
-  color: var(--green);
+.chat-send-btn {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  width: 50px;
+  height: 50px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.chat-send-btn:hover { background: #fff; }
+.chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Image Lab ─── */
+.image-prompt-area {
   display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.image-prompt-input {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.image-prompt-input:focus { border-color: var(--accent); }
+.image-prompt-input::placeholder { color: var(--text-muted); }
+
+.image-gen-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 16px 32px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.image-gen-btn:hover { background: #fff; }
+.image-gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.image-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.image-card:hover { border-color: var(--accent); }
+
+.image-card img {
+  width: 100%;
+  display: block;
+}
+
+.image-card-footer {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
 }
 
-.model-status .live::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--green);
+.image-card-prompt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.image-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: var(--text-muted);
+}
+
+.image-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
-  animation: pulse-dot 2s ease-in-out infinite;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Tools Hub ─── */
+.tools-section { margin-bottom: 40px; }
+
+.tool-config-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.tool-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tool-card-actions a {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid var(--border-light);
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.tool-card-actions a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ─── Connect Screen ─── */
@@ -494,24 +734,42 @@ body::after {
   justify-content: center;
   min-height: 100vh;
   padding: 40px;
+  position: relative;
+}
+
+.connect-screen::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 255, 0, 0.04) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .connect-box {
   text-align: center;
   max-width: 440px;
+  position: relative;
+  z-index: 1;
 }
 
 .connect-box .logo {
-  font-family: var(--font-mono);
-  font-size: 48px;
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-style: italic;
   color: var(--accent);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  line-height: 1;
 }
 
 .connect-box h1 {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 36px;
   margin-bottom: 12px;
+  letter-spacing: -0.5px;
 }
 
 .connect-box p {
@@ -527,20 +785,51 @@ body::after {
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 18px 48px;
+  padding: 16px 48px;
   background: var(--accent);
   color: var(--bg);
-  border: none;
+  border: 1px solid var(--accent);
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s;
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .connect-btn:hover {
   background: #fff;
+  border-color: #fff;
   transform: translateY(-1px);
+}
+
+.connect-btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-light);
+}
+
+.connect-btn-secondary:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.connect-wallets { margin-bottom: 20px; }
+
+.connect-error {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--red);
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 95, 87, 0.3);
+  background: rgba(255, 95, 87, 0.05);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .connect-note {
@@ -550,396 +839,898 @@ body::after {
   letter-spacing: 0.5px;
 }
 
+/* ─── Video Lab ─── */
+.video-controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  margin-bottom: 32px;
+  align-items: end;
+}
+
+.video-select {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 14px 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.video-select:focus { border-color: var(--accent); }
+
+.video-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.video-card:hover { border-color: var(--accent); }
+
+.video-card video {
+  width: 100%;
+  display: block;
+  background: #000;
+}
+
+.video-card-footer {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.video-card-prompt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.video-pending {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 200px;
+}
+
+.video-pending .image-spinner { margin-bottom: 0; }
+
+.video-tier-gate {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.video-tier-gate h3 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.video-tier-gate p {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+/* ─── Trading Agent ─── */
+.trading-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  height: 100vh;
+  max-height: 100vh;
+}
+
+.trading-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trading-sidebar-section {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.trading-sidebar-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.trading-quick-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.trading-quick-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 8px 6px;
+  background: var(--surface);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.trading-quick-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(200, 255, 0, 0.04);
+}
+
+.trading-token-input {
+  display: flex;
+  gap: 6px;
+}
+
+.trading-token-input input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+.trading-token-input input:focus { border-color: var(--accent); }
+
+.trading-token-input .btn-sm {
+  flex-shrink: 0;
+  font-size: 9px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.token-info-card {
+  margin-top: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.token-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.token-info-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.token-info-symbol {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+
+.token-info-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.token-info-stat {
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+
+.token-info-stat .label {
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.token-info-stat .val { color: var(--text); font-size: 12px; font-weight: 500; }
+.token-info-stat .val.green { color: var(--green); }
+.token-info-stat .val.red { color: var(--red); }
+
+.trading-model-select {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555550'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.trading-model-select:focus { border-color: var(--accent); }
+
+.trading-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.trading-chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  scroll-behavior: smooth;
+}
+
+.trading-chat-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .tools-grid { grid-template-columns: 1fr; }
-  .model-row { grid-template-columns: 1fr 1fr; gap: 4px; }
+  .chat-input-area { max-width: 100%; }
+  .image-prompt-area { flex-direction: column; }
+  .video-controls { grid-template-columns: 1fr; }
+  .trading-layout { grid-template-columns: 1fr; }
+  .trading-sidebar { display: none; }
+  .trading-chat { height: 100vh; }
 }
 </style>
 </head>
 <body>
 
-<div class="app" id="app">
-  <!-- JS renders connect screen or dashboard -->
-</div>
+<div class="app" id="app"></div>
 
 <script>
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Client App
+// INFINITE Dashboard
 // ═══════════════════════════════════════════
 
-const API_BASE = 'https://api.infinite.sh'; // Change to your proxy URL
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001'
+  : '/proxy';
+
+const STORAGE_KEY = 'infinite_session';
+const CHAT_STORAGE_KEY = 'infinite_chats';
+
+// ─── State ───
+
 const STATE = {
   connected: false,
+  connecting: false,
   wallet: null,
+  walletProvider: null,
   apiKey: null,
+  apiKeyFull: null,
   tier: null,
   balance: 0,
   usage: { today: 0, limit: 0, remaining: 0 },
   models: [],
-  activeTab: 'overview'
+  treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0 },
+  activeTab: 'overview',
+  keyVisible: false,
+  error: null,
 };
 
-// ─── Mock data for demo ───
-const DEMO = {
-  wallet: '7xKp9Tz4mNqR8bVyH2wLfG6cJdEa5kXnPo3',
-  apiKey: 'inf_8a3f2c91e7d04b6...hidden',
-  apiKeyFull: 'inf_8a3f2c91e7d04b6f9a1c82de5703f8b4a29e61c0d7f5',
-  tier: 'Operator',
-  balance: 142500,
-  usage: { today: 2847, limit: 10000, remaining: 7153 },
-  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash']
+const CHAT = {
+  conversations: [],
+  activeId: null,
+  selectedModel: '',
+  isGenerating: false,
+  abortController: null,
 };
 
-function render() {
-  const app = document.getElementById('app');
-  
-  if (!STATE.connected) {
-    app.innerHTML = renderConnectScreen();
-  } else {
-    app.innerHTML = renderDashboard();
+const IMAGES = {
+  gallery: [],
+  isGenerating: false,
+};
+
+const VIDEOS = {
+  gallery: [],
+  isGenerating: false,
+  pollIntervals: new Map(),
+};
+
+const TRADING = {
+  conversations: [],
+  activeId: null,
+  selectedModel: '',
+  isGenerating: false,
+  abortController: null,
+  tokenInfo: null,
+};
+
+let statusPollInterval = null;
+
+// ─── Wallet Icons ───
+
+const WALLET_ICONS = {
+  phantom: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiB2aWV3Qm94PSIwIDAgMTA4IDEwOCIgZmlsbD0ibm9uZSI+CjxyZWN0IHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiByeD0iMjYiIGZpbGw9IiNBQjlGRjIiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00Ni41MjY3IDY5LjkyMjlDNDIuMDA1NCA3Ni44NTA5IDM0LjQyOTIgODUuNjE4MiAyNC4zNDggODUuNjE4MkMxOS41ODI0IDg1LjYxODIgMTUgODMuNjU2MyAxNSA3NS4xMzQyQzE1IDUzLjQzMDUgNDQuNjMyNiAxOS44MzI3IDcyLjEyNjggMTkuODMyN0M4Ny43NjggMTkuODMyNyA5NCAzMC42ODQ2IDk0IDQzLjAwNzlDOTQgNTguODI1OCA4My43MzU1IDc2LjkxMjIgNzMuNTMyMSA3Ni45MTIyQzcwLjI5MzkgNzYuOTEyMiA2OC43MDUzIDc1LjEzNDIgNjguNzA1MyA3Mi4zMTRDNjguNzA1MyA3MS41NzgzIDY4LjgyNzUgNzAuNzgxMiA2OS4wNzE5IDY5LjkyMjlDNjUuNTg5MyA3NS44Njk5IDU4Ljg2ODUgODEuMzg3OCA1Mi41NzU0IDgxLjM4NzhDNDcuOTkzIDgxLjM4NzggNDUuNjcxMyA3OC41MDYzIDQ1LjY3MTMgNzQuNDU5OEM0NS42NzEzIDcyLjk4ODQgNDUuOTc2OCA3MS40NTU2IDQ2LjUyNjcgNjkuOTIyOVpNODMuNjc2MSA0Mi41Nzk0QzgzLjY3NjEgNDYuMTcwNCA4MS41NTc1IDQ3Ljk2NTggNzkuMTg3NSA0Ny45NjU4Qzc2Ljc4MTYgNDcuOTY1OCA3NC42OTg5IDQ2LjE3MDQgNzQuNjk4OSA0Mi41Nzk0Qzc0LjY5ODkgMzguOTg4NSA3Ni43ODE2IDM3LjE5MzEgNzkuMTg3NSAzNy4xOTMxQzgxLjU1NzUgMzcuMTkzMSA4My42NzYxIDM4Ljk4ODUgODMuNjc2MSA0Mi41Nzk0Wk03MC4yMTAzIDQyLjU3OTVDNzAuMjEwMyA0Ni4xNzA0IDY4LjA5MTYgNDcuOTY1OCA2NS43MjE2IDQ3Ljk2NThDNjMuMzE1NyA0Ny45NjU4IDYxLjIzMyA0Ni4xNzA0IDYxLjIzMyA0Mi41Nzk1QzYxLjIzMyAzOC45ODg1IDYzLjMxNTcgMzcuMTkzMSA2NS43MjE2IDM3LjE5MzFDNjguMDkxNiAzNy4xOTMxIDcwLjIxMDMgMzguOTg4NSA3MC4yMTAzIDQyLjU3OTVaIiBmaWxsPSIjRkZGREY4Ii8+Cjwvc3ZnPg==',
+  backpack: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIHJ4PSIyNiIgZmlsbD0iIzE5MTkxOSIvPjxwYXRoIGQ9Ik00NC44IDQ0LjhWMzguNGMwLTEwLjYgOC42LTE5LjIgMTkuMi0xOS4yczE5LjIgOC42IDE5LjIgMTkuMnY2LjQiIHN0cm9rZT0iI0UzM0UzRiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz48cmVjdCB4PSIzMiIgeT0iNTEuMiIgd2lkdGg9IjY0IiBoZWlnaHQ9IjQ0LjgiIHJ4PSIxMiIgZmlsbD0iI0UzM0UzRiIvPjxyZWN0IHg9IjQ4IiB5PSI2NyIgd2lkdGg9IjMyIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjMTkxOTE5Ii8+PC9zdmc+',
+  solflare: 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJTIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiMwMjA1MGE7c3Ryb2tlOiNmZmVmNDY7c3Ryb2tlLW1pdGVybGltaXQ6MTA7c3Ryb2tlLXdpZHRoOi41cHg7fS5jbHMtMntmaWxsOiNmZmVmNDY7fTwvc3R5bGU+PC9kZWZzPjxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iMCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIHJ5PSIxMiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTI0LjIzLDI2LjQybDIuNDYtMi4zOCw0LjU5LDEuNWMzLjAxLDEsNC41MSwyLjg0LDQuNTEsNS40MywwLDEuOTYtLjc1LDMuMjYtMi4yNSw0LjkzbC0uNDYuNS4xNy0xLjE3Yy42Ny00LjI2LS41OC02LjA5LTQuNzItNy40M2wtNC4zLTEuMzhoMFpNMTguMDUsMTEuODVsMTIuNTIsNC4xNy0yLjcxLDIuNTktNi41MS0yLjE3Yy0yLjI1LS43NS0zLjAxLTEuOTYtMy4zLTQuNTF2LS4wOGgwWk0xNy4zLDMzLjA2bDIuODQtMi43MSw1LjM0LDEuNzVjMi44LjkyLDMuNzYsMi4xMywzLjQ2LDUuMThsLTExLjY1LTQuMjJoMFpNMTMuNzEsMjAuOTVjMC0uNzkuNDItMS41NCwxLjEzLTIuMTcuNzUsMS4wOSwyLjA1LDIuMDUsNC4wOSwyLjcxbDQuNDIsMS40Ni0yLjQ2LDIuMzgtNC4zNC0xLjQyYy0yLS42Ny0yLjg0LTEuNjctMi44NC0yLjk2TTI2LjgyLDQyLjg3YzkuMTgtNi4wOSwxNC4xMS0xMC4yMywxNC4xMS0xNS4zMiwwLTMuMzgtMi01LjI2LTYuNDMtNi43MmwtMy4zNC0xLjEzLDkuMTQtOC43Ny0xLjg0LTEuOTYtMi43MSwyLjM4LTEyLjgxLTQuMjJjLTMuOTcsMS4yOS04Ljk3LDUuMDktOC45Nyw4Ljg5LDAsLjQyLjA0LjgzLjE3LDEuMjktMy4zLDEuODgtNC42MywzLjYzLTQuNjMsNS44LDAsMi4wNSwxLjA5LDQuMDksNC41NSw1LjIybDIuNzUuOTItOS41Miw5LjE0LDEuODQsMS45NiwyLjk2LTIuNzEsMTQuNzMsNS4yMmgwWiIvPjwvc3ZnPg==',
+};
+
+// ─── Wallet Detection ───
+
+function getWalletProviders() {
+  const providers = [];
+  if (window.phantom?.solana?.isPhantom) {
+    const p = window.phantom.solana;
+    providers.push({ name: 'Phantom', provider: p, icon: p.icon || WALLET_ICONS.phantom });
   }
-  
-  bindEvents();
+  if (window.backpack?.isBackpack) {
+    const p = window.backpack;
+    providers.push({ name: 'Backpack', provider: p, icon: p.icon || WALLET_ICONS.backpack });
+  }
+  if (window.solflare?.isSolflare) {
+    const p = window.solflare;
+    providers.push({ name: 'Solflare', provider: p, icon: p.icon || WALLET_ICONS.solflare });
+  }
+  return providers;
 }
 
-function renderConnectScreen() {
-  return `
-    <div class="connect-screen">
-      <div class="connect-box">
-        <div class="logo">∞</div>
-        <h1>INFINITE Dashboard</h1>
-        <p>Connect your wallet to access your API keys, manage usage, and launch AI tools. Requires minimum 10,000 $INFINITE.</p>
-        <button class="connect-btn" onclick="connectWallet()">Connect Wallet</button>
-        <div class="connect-note">Supports Phantom, Backpack, Solflare</div>
-      </div>
-    </div>
-  `;
+// ─── API Helpers ───
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (STATE.apiKeyFull) headers['Authorization'] = `Bearer ${STATE.apiKeyFull}`;
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+  } catch {
+    throw new Error('API unreachable. The proxy server may not be deployed yet.');
+  }
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error(`Server error: ${res.status}`); }
+  if (!res.ok) throw { status: res.status, message: data.message || data.error, ...data };
+  return data;
 }
 
-function renderDashboard() {
-  const usagePct = (STATE.usage.today / STATE.usage.limit) * 100;
-  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
-  
-  return `
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <span class="inf">∞</span> INFINITE
-      </div>
-      <nav class="sidebar-nav">
-        <div class="nav-group-label">Dashboard</div>
-        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview">
-          <span class="icon">◉</span> Overview
-        </div>
-        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys">
-          <span class="icon">⌘</span> API Keys
-        </div>
-        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models">
-          <span class="icon">◈</span> Models
-        </div>
-
-        <div class="nav-group-label">Tools</div>
-        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">
-          <span class="icon">▹</span> AI Chat
-        </div>
-        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">
-          <span class="icon">◎</span> Trading Agents
-        </div>
-        <div class="nav-item ${STATE.activeTab === 'vault' ? 'active' : ''}" data-tab="vault">
-          <span class="icon">⬡</span> Community Vault
-        </div>
-
-        <div class="nav-group-label">Protocol</div>
-        <div class="nav-item" data-tab="treasury">
-          <span class="icon">◆</span> Treasury
-        </div>
-        <div class="nav-item" onclick="window.open('https://docs.infinite.sh')">
-          <span class="icon">↗</span> Docs
-        </div>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="wallet-info">${STATE.tier} Tier — ${STATE.balance.toLocaleString()} $INF</div>
-        <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
-          ${STATE.wallet.slice(0, 6)}...${STATE.wallet.slice(-4)}
-          <span class="copy">COPY</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main">
-      ${renderTab()}
-    </main>
-  `;
+function maskKey(key) {
+  if (!key) return 'No key';
+  return key.slice(0, 18) + '...' + key.slice(-4);
 }
 
-function renderTab() {
-  switch (STATE.activeTab) {
-    case 'overview': return renderOverview();
-    case 'keys': return renderKeys();
-    case 'models': return renderModels();
-    case 'agents': return renderAgents();
-    default: return renderOverview();
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Markdown Renderer ───
+
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = escapeHtml(text);
+
+  // Code blocks: ```lang\ncode\n```
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const id = 'cb_' + Math.random().toString(36).slice(2, 8);
+    return `<pre><span class="code-lang">${lang || 'code'}</span><button class="code-copy" data-copy-id="${id}">copy</button><code id="${id}">${code.trimEnd()}</code></pre>`;
+  });
+
+  // Inline code
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // Headings
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Bold + Italic
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Blockquotes
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Unordered lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+
+  // Ordered lists
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // Line breaks (but not inside pre/code blocks)
+  html = html.replace(/\n/g, '<br>');
+  // Clean up extra <br> inside tags
+  html = html.replace(/<br><\/?(ul|ol|li|pre|h[1-3]|blockquote)/g, '</$1');
+
+  return html;
+}
+
+// ─── Session Persistence ───
+
+function saveSession() {
+  if (!STATE.connected) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    wallet: STATE.wallet,
+    apiKey: STATE.apiKeyFull,
+    tier: STATE.tier,
+    balance: STATE.balance,
+    models: STATE.models,
+  }));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved.wallet || !saved.apiKey) return false;
+    STATE.wallet = saved.wallet;
+    STATE.apiKeyFull = saved.apiKey;
+    STATE.apiKey = maskKey(saved.apiKey);
+    STATE.tier = saved.tier;
+    STATE.balance = saved.balance;
+    STATE.models = saved.models || [];
+    STATE.connected = true;
+    return true;
+  } catch { return false; }
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY);
+  if (statusPollInterval) clearInterval(statusPollInterval);
+  Object.assign(STATE, {
+    connected: false, connecting: false, wallet: null, walletProvider: null,
+    apiKey: null, apiKeyFull: null, tier: null, balance: 0,
+    usage: { today: 0, limit: 0, remaining: 0 }, models: [], keyVisible: false, error: null,
+  });
+}
+
+// ─── Chat Persistence ───
+
+function saveChatHistory() {
+  const toSave = CHAT.conversations.slice(-30).map(c => ({
+    id: c.id, title: c.title,
+    messages: c.messages.slice(-100), // cap per conversation
+  }));
+  try {
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ conversations: toSave, activeId: CHAT.activeId }));
+  } catch { /* storage full */ }
+}
+
+function loadChatHistory() {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    CHAT.conversations = data.conversations || [];
+    CHAT.activeId = data.activeId;
+  } catch {}
+}
+
+function getActiveConversation() {
+  if (!CHAT.activeId) {
+    newConversation(false);
+  }
+  return CHAT.conversations.find(c => c.id === CHAT.activeId);
+}
+
+function newConversation(doRender = true) {
+  const conv = {
+    id: 'conv_' + Date.now(),
+    title: 'New chat',
+    messages: [],
+  };
+  CHAT.conversations.push(conv);
+  CHAT.activeId = conv.id;
+  if (doRender) render();
+}
+
+// ─── Wallet Connect ───
+
+async function connectWallet(providerObj) {
+  STATE.connecting = true;
+  STATE.error = null;
+  render();
+
+  try {
+    const provider = providerObj || getWalletProviders()[0]?.provider;
+    if (!provider) throw new Error('No Solana wallet found. Install Phantom, Backpack, or Solflare.');
+
+    const resp = await provider.connect();
+    const publicKey = resp.publicKey.toString();
+    const message = `INFINITE Protocol: Verify wallet ownership\n\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
+    const encoded = new TextEncoder().encode(message);
+    const signatureBytes = await provider.signMessage(encoded, 'utf8');
+    const sig = btoa(String.fromCharCode(...new Uint8Array(signatureBytes.signature || signatureBytes)));
+
+    const data = await api('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ wallet: publicKey, signature: sig, message }),
+    });
+
+    STATE.connected = true;
+    STATE.wallet = publicKey;
+    STATE.walletProvider = provider;
+    STATE.apiKeyFull = data.apiKey;
+    STATE.apiKey = maskKey(data.apiKey);
+    STATE.tier = data.tier;
+    STATE.balance = data.balance;
+    STATE.models = data.models || [];
+    STATE.usage = { today: 0, limit: data.dailyLimit, remaining: data.dailyLimit };
+
+    // Default chat model to first available
+    if (STATE.models.length && !CHAT.selectedModel) {
+      CHAT.selectedModel = STATE.models[0];
+    }
+
+    saveSession();
+    startStatusPolling();
+  } catch (err) {
+    STATE.error = err.message || 'Connection failed';
+  } finally {
+    STATE.connecting = false;
+    render();
   }
 }
 
-function renderOverview() {
-  const usagePct = (STATE.usage.today / STATE.usage.limit) * 100;
-  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+// ─── Status Polling ───
 
-  return `
-    <div class="page-header">
-      <h1 class="page-title">Welcome back</h1>
-      <p class="page-sub">${STATE.tier} tier — ${STATE.usage.remaining.toLocaleString()} API calls remaining today</p>
-    </div>
-
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="label">Your Tier</div>
-        <div class="value accent">${STATE.tier}</div>
-        <div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Calls Today</div>
-        <div class="value">${STATE.usage.today.toLocaleString()}</div>
-        <div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Models Available</div>
-        <div class="value green">${STATE.models.length}</div>
-        <div class="sub">AI providers active</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Your Cost</div>
-        <div class="value accent">$0</div>
-        <div class="sub">funded by treasury</div>
-      </div>
-    </div>
-
-    <!-- Usage Bar -->
-    <div class="section">
-      <div class="section-title">Daily Usage</div>
-      <div class="usage-bar-container">
-        <div class="usage-header">
-          <div class="usage-count">${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} calls</span></div>
-          <div class="usage-count">${Math.round(usagePct)}%</div>
-        </div>
-        <div class="usage-bar-track">
-          <div class="usage-bar-fill ${barClass}" style="width: ${usagePct}%"></div>
-        </div>
-        <div class="usage-legend">
-          <div class="usage-legend-item">
-            <div class="usage-legend-dot" style="background: var(--accent)"></div>
-            Used
-          </div>
-          <div class="usage-legend-item">
-            <div class="usage-legend-dot" style="background: var(--border)"></div>
-            Remaining
-          </div>
-          <div class="usage-legend-item" style="margin-left: auto">
-            Resets at 00:00 UTC
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Access Tools -->
-    <div class="section">
-      <div class="section-title">Quick Access</div>
-      <div class="tools-grid">
-        <div class="tool-card" onclick="setTab('chat')">
-          <div class="tool-header">
-            <span class="tool-icon">▹</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">AI Chat</div>
-          <div class="tool-desc">Chat with Claude and Gemini directly. No account needed, no billing. Just ask.</div>
-          <div class="tool-launch">Open →</div>
-        </div>
-        <div class="tool-card" onclick="setTab('agents')">
-          <div class="tool-header">
-            <span class="tool-icon">◎</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">Trading Agents</div>
-          <div class="tool-desc">AI-powered wallet trackers, sentiment bots, and snipe agents. Pre-configured and ready.</div>
-          <div class="tool-launch">Open →</div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">⌘</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">Raw API</div>
-          <div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div>
-          <div class="tool-launch">View Key →</div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">⬡</span>
-            <span class="tool-status coming">SOON</span>
-          </div>
-          <div class="tool-name">Community Vault</div>
-          <div class="tool-desc">Tools built by holders, for holders. Submit your own or use what others have built.</div>
-          <div class="tool-launch" style="color: var(--text-muted)">Coming soon</div>
-        </div>
-      </div>
-    </div>
-  `;
+async function fetchStatus() {
+  if (!STATE.apiKeyFull) return;
+  try {
+    const data = await api('/auth/status');
+    STATE.tier = data.tier;
+    STATE.balance = data.balance;
+    STATE.usage = data.usage;
+    STATE.models = data.models || STATE.models;
+    if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
+    saveSession();
+    // Only full re-render if NOT in interactive tabs
+    if (!['chat', 'images', 'video', 'trading'].includes(STATE.activeTab)) render();
+    else updateSidebarFooter();
+  } catch (err) {
+    if (err.status === 401) { clearSession(); render(); }
+  }
 }
 
-function renderKeys() {
-  return `
-    <div class="page-header">
-      <h1 class="page-title">API Keys</h1>
-      <p class="page-sub">Your key works as a drop-in replacement for Anthropic and Google API keys</p>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Your API Key</div>
-      <div class="api-key-box">
-        <div class="api-key-display">
-          <div class="api-key-value" id="apiKeyDisplay">${STATE.apiKey}</div>
-          <button class="btn-sm primary" onclick="copyText('${DEMO.apiKeyFull}')">Copy</button>
-        </div>
-        <div class="api-key-actions">
-          <button class="btn-sm" onclick="toggleKeyVisibility()">Show / Hide</button>
-          <button class="btn-sm" onclick="rotateKey()">Rotate Key</button>
-          <button class="btn-sm danger" onclick="revokeKey()">Revoke</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Quick Start</div>
-      <div class="api-key-box">
-        <div class="api-key-hint" style="margin-bottom: 16px;">
-          Use your INFINITE API key exactly like you'd use a Claude or Gemini key. Just point to our endpoint:
-        </div>
-        <div class="api-key-value" style="font-size: 12px; line-height: 1.8; white-space: pre-wrap; margin-bottom: 16px; padding: 20px;">
-<span style="color: var(--text-muted);">// Works with any HTTP client</span>
-<span style="color: var(--blue);">curl</span> https://api.infinite.sh/v1/chat \\
-  -H <span style="color: var(--accent);">"Authorization: Bearer inf_your_key"</span> \\
-  -d <span style="color: var(--accent);">'{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":"Hello"}]}'</span>
-
-<span style="color: var(--text-muted);">// Response includes $0.00 cost</span>
-<span style="color: var(--green);">{"content":[...],"usage":{"cost":"$0.00 — funded by $INFINITE treasury"}}</span></div>
-        <div class="api-key-hint">
-          <strong style="color: var(--text);">Supported SDKs:</strong> Works with the official Anthropic Python/Node SDK — just override the <code>base_url</code> to <code>https://api.infinite.sh</code> and use your INFINITE key.
-        </div>
-      </div>
-    </div>
-  `;
+async function fetchTreasury() {
+  try { STATE.treasury = await api('/treasury'); } catch {}
 }
 
-function renderModels() {
-  const allModels = [
-    { name: 'claude-sonnet-4-5', provider: 'Anthropic', tier: 'Signal+', live: true },
-    { name: 'claude-opus-4-6', provider: 'Anthropic', tier: 'Architect', live: true },
-    { name: 'gemini-2.5-pro', provider: 'Google', tier: 'Operator+', live: true },
-    { name: 'gemini-2.5-flash', provider: 'Google', tier: 'Signal+', live: true },
-  ];
-
-  return `
-    <div class="page-header">
-      <h1 class="page-title">Available Models</h1>
-      <p class="page-sub">Access depends on your tier. Upgrade by holding more $INFINITE.</p>
-    </div>
-
-    <div class="section">
-      <div class="section-title">AI Models</div>
-      <div class="models-list">
-        <div class="model-row" style="background: transparent; border-color: transparent;">
-          <div class="model-name" style="color: var(--text-muted); font-size: 10px; letter-spacing: 2px;">MODEL</div>
-          <div class="model-provider" style="font-size: 10px; letter-spacing: 2px;">PROVIDER</div>
-          <div class="model-tier" style="font-size: 10px; letter-spacing: 2px;">MIN TIER</div>
-          <div class="model-status" style="font-size: 10px; letter-spacing: 2px;">STATUS</div>
-        </div>
-        ${allModels.map(m => `
-          <div class="model-row">
-            <div class="model-name">${m.name}</div>
-            <div class="model-provider">${m.provider}</div>
-            <div class="model-tier">${m.tier}</div>
-            <div class="model-status">
-              ${m.live ? '<span class="live">LIVE</span>' : '<span style="color:var(--text-muted)">SOON</span>'}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+function startStatusPolling() {
+  fetchStatus();
+  fetchTreasury();
+  if (statusPollInterval) clearInterval(statusPollInterval);
+  statusPollInterval = setInterval(() => { fetchStatus(); fetchTreasury(); }, 60_000);
 }
 
-function renderAgents() {
-  return `
-    <div class="page-header">
-      <h1 class="page-title">Trading Agents</h1>
-      <p class="page-sub">Pre-configured AI agents powered by your INFINITE API access. No setup required.</p>
-    </div>
+function updateSidebarFooter() {
+  const el = document.getElementById('sidebarFooterInfo');
+  if (el) el.textContent = `${STATE.tier || '—'} Tier — ${STATE.balance.toLocaleString()} $INF`;
+}
 
-    <div class="section">
-      <div class="section-title">Available Agents</div>
-      <div class="tools-grid">
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">◎</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">Wallet Stalker</div>
-          <div class="tool-desc">Monitor any wallet for trades. Get AI-generated analysis of what they're buying and why. Alerts via Telegram or the dashboard.</div>
-          <div class="tool-launch">Configure →</div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">▲</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">Launch Scanner</div>
-          <div class="tool-desc">Scans every new pump.fun launch in real-time. AI evaluates the narrative, socials, and deployer history. Surfaces only high-signal launches.</div>
-          <div class="tool-launch">Configure →</div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">◇</span>
-            <span class="tool-status">LIVE</span>
-          </div>
-          <div class="tool-name">Sentiment Engine</div>
-          <div class="tool-desc">AI reads CT in real-time. Tracks mentions, sentiment shifts, and emerging narratives before they hit the chart. Custom watchlists.</div>
-          <div class="tool-launch">Configure →</div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-header">
-            <span class="tool-icon">⚡</span>
-            <span class="tool-status coming">SOON</span>
-          </div>
-          <div class="tool-name">Auto Trader</div>
-          <div class="tool-desc">Delegated trading agent. Set your strategy, risk limits, and let the AI execute. Requires wallet approval for each action class.</div>
-          <div class="tool-launch" style="color: var(--text-muted)">Coming soon</div>
-        </div>
+// ─── Chat Logic ───
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || CHAT.isGenerating) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const conv = getActiveConversation();
+  conv.messages.push({ role: 'user', content: text });
+
+  // Update title from first message
+  if (conv.messages.filter(m => m.role === 'user').length === 1) {
+    conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+  }
+
+  appendMessageToDOM({ role: 'user', content: text });
+  showTypingIndicator();
+  CHAT.isGenerating = true;
+  updateSendButton();
+
+  const model = CHAT.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+
+  try {
+    CHAT.abortController = new AbortController();
+
+    const response = await fetch(`${API_BASE}/v1/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.apiKeyFull}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: conv.messages.map(m => ({ role: m.role, content: m.content })),
+      }),
+      signal: CHAT.abortController.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(err.message || 'Request failed');
+    }
+
+    removeTypingIndicator();
+
+    const msgEl = appendMessageToDOM({ role: 'assistant', content: '', model });
+    const contentEl = msgEl.querySelector('.chat-msg-content');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+        try {
+          const data = JSON.parse(jsonStr);
+          if (data.type === 'text') {
+            fullText += data.content;
+            contentEl.innerHTML = renderMarkdown(fullText);
+            scrollChat();
+          } else if (data.type === 'error') {
+            throw new Error(data.message);
+          }
+        } catch (e) {
+          if (e.message && !e.message.includes('JSON')) throw e;
+        }
+      }
+    }
+
+    conv.messages.push({ role: 'assistant', content: fullText, model });
+    saveChatHistory();
+    bindCodeCopyButtons();
+
+  } catch (err) {
+    removeTypingIndicator();
+    if (err.name !== 'AbortError') {
+      appendMessageToDOM({ role: 'assistant', content: `Error: ${err.message}`, isError: true });
+    }
+  } finally {
+    CHAT.isGenerating = false;
+    CHAT.abortController = null;
+    updateSendButton();
+  }
+}
+
+function appendMessageToDOM(msg) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return null;
+
+  // Remove empty state if present
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = `chat-message ${msg.role}`;
+  el.innerHTML = `
+    <div class="chat-msg-avatar">${msg.role === 'user' ? '&#9673;' : '&#8734;'}</div>
+    <div class="chat-msg-body">
+      <div class="chat-msg-name">${msg.role === 'user' ? 'You' : (msg.model || 'AI')}</div>
+      <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
+        msg.role === 'user' ? escapeHtml(msg.content) : (msg.content ? renderMarkdown(msg.content) : '')
+      }</div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollChat();
+  return el;
+}
+
+function showTypingIndicator() {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'chat-message assistant';
+  el.id = 'typingIndicator';
+  el.innerHTML = `
+    <div class="chat-msg-avatar">&#8734;</div>
+    <div class="chat-msg-body">
+      <div class="chat-typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
       </div>
     </div>
   `;
+  container.appendChild(el);
+  scrollChat();
+}
+
+function removeTypingIndicator() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function scrollChat() {
+  const el = document.getElementById('chatMessages');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function updateSendButton() {
+  const btn = document.getElementById('chatSendBtn');
+  if (btn) {
+    btn.disabled = CHAT.isGenerating;
+    btn.textContent = CHAT.isGenerating ? '...' : '\u2192';
+  }
+}
+
+function bindCodeCopyButtons() {
+  document.querySelectorAll('.code-copy[data-copy-id]').forEach(btn => {
+    btn.onclick = () => {
+      const code = document.getElementById(btn.dataset.copyId);
+      if (code) copyText(code.textContent);
+    };
+  });
+}
+
+// ─── Image Generation ───
+
+async function generateImage() {
+  const input = document.getElementById('imagePrompt');
+  if (!input) return;
+  const prompt = input.value.trim();
+  if (!prompt || IMAGES.isGenerating) return;
+
+  IMAGES.isGenerating = true;
+  renderImageState();
+
+  try {
+    const data = await api('/v1/image', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (data.images?.length > 0) {
+      for (const img of data.images) {
+        IMAGES.gallery.unshift({
+          data: img.data,
+          mimeType: img.mimeType,
+          prompt,
+          text: data.text,
+          id: data.id,
+        });
+      }
+    }
+    input.value = '';
+  } catch (err) {
+    showToast(err.message || 'Image generation failed', true);
+  } finally {
+    IMAGES.isGenerating = false;
+    renderImageState();
+  }
+}
+
+function renderImageState() {
+  const gallery = document.getElementById('imageGallery');
+  const btn = document.getElementById('imageGenBtn');
+  if (btn) {
+    btn.disabled = IMAGES.isGenerating;
+    btn.textContent = IMAGES.isGenerating ? 'GENERATING...' : 'CREATE';
+  }
+  if (gallery) {
+    gallery.innerHTML = IMAGES.isGenerating
+      ? `<div class="image-loading"><div class="image-spinner"></div><span style="font-family:var(--font-mono);font-size:11px;">Generating image...</span></div>`
+      : IMAGES.gallery.map(img => `
+        <div class="image-card">
+          <img src="data:${img.mimeType};base64,${img.data}" alt="${escapeHtml(img.prompt)}" loading="lazy">
+          <div class="image-card-footer">
+            <div class="image-card-prompt">${escapeHtml(img.prompt)}</div>
+            <button class="btn-sm" onclick="downloadImage('${img.data}','${img.mimeType}')">Save</button>
+          </div>
+        </div>
+      `).join('') || '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px;padding:40px;text-align:center;">No images yet. Describe what you want to create.</div>';
+  }
+}
+
+function downloadImage(base64, mimeType) {
+  const link = document.createElement('a');
+  link.href = `data:${mimeType};base64,${base64}`;
+  link.download = `infinite-${Date.now()}.png`;
+  link.click();
 }
 
 // ─── Actions ───
 
-function connectWallet() {
-  // In production: use @solana/wallet-adapter
-  // For demo, simulate connection
-  Object.assign(STATE, {
-    connected: true,
-    wallet: DEMO.wallet,
-    apiKey: DEMO.apiKey,
-    tier: DEMO.tier,
-    balance: DEMO.balance,
-    usage: DEMO.usage,
-    models: DEMO.models
-  });
+async function rotateKey() {
+  if (!confirm('Rotate your API key? The old key will stop working immediately.')) return;
+  try {
+    const data = await api('/auth/rotate', { method: 'POST' });
+    STATE.apiKeyFull = data.apiKey;
+    STATE.apiKey = maskKey(data.apiKey);
+    STATE.tier = data.tier;
+    STATE.keyVisible = false;
+    saveSession();
+    showToast('Key rotated');
+  } catch (err) {
+    showToast(err.message || 'Rotate failed', true);
+  }
   render();
+}
+
+async function revokeKey() {
+  if (!confirm('Revoke your API key? All active sessions will be terminated.')) return;
+  try { await api('/auth/revoke', { method: 'POST' }); showToast('Key revoked'); } catch {}
+  clearSession();
+  render();
+}
+
+function disconnectWallet() {
+  if (STATE.walletProvider?.disconnect) STATE.walletProvider.disconnect();
+  clearSession();
+  render();
+}
+
+function toggleKeyVisibility() {
+  STATE.keyVisible = !STATE.keyVisible;
+  const el = document.getElementById('apiKeyDisplay');
+  if (el) el.textContent = STATE.keyVisible ? STATE.apiKeyFull : STATE.apiKey;
 }
 
 function setTab(tab) {
@@ -948,33 +1739,1041 @@ function setTab(tab) {
 }
 
 function copyText(text) {
-  navigator.clipboard?.writeText(text);
-  // Could add toast notification
+  navigator.clipboard?.writeText(text).then(() => showToast('Copied'));
 }
 
-function toggleKeyVisibility() {
-  const el = document.getElementById('apiKeyDisplay');
-  if (el) {
-    if (el.textContent.includes('...')) {
-      el.textContent = DEMO.apiKeyFull;
-    } else {
-      el.textContent = DEMO.apiKey;
+function showToast(msg, isError = false) {
+  document.getElementById('toast')?.remove();
+  const el = document.createElement('div');
+  el.id = 'toast';
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;padding:12px 20px;font-family:var(--font-mono);font-size:11px;letter-spacing:1px;z-index:10000;border:1px solid ${isError ? 'var(--red)' : 'var(--accent)'};color:${isError ? 'var(--red)' : 'var(--accent)'};background:var(--surface);`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// ─── Render ───
+
+function render() {
+  const app = document.getElementById('app');
+  app.className = STATE.connected ? 'app' : 'app connect-mode';
+  app.innerHTML = STATE.connected ? renderDashboard() : renderConnectScreen();
+  bindEvents();
+}
+
+function renderConnectScreen() {
+  const providers = getWalletProviders();
+  const hasWallet = providers.length > 0;
+  return `
+    <div class="connect-screen">
+      <div class="connect-box">
+        <div class="logo">&infin;</div>
+        <h1>INFINITE Dashboard</h1>
+        <p>Connect your wallet to access AI chat, image generation, trading tools, and raw API keys.</p>
+        ${STATE.error ? `<div class="connect-error">${escapeHtml(STATE.error)}</div>` : ''}
+        <div class="connect-wallets">
+          ${STATE.connecting ? `<div class="connect-btn" style="opacity:0.6;cursor:wait;">Connecting...</div>` : hasWallet ? providers.map((p, i) => `
+            <button class="connect-btn${i > 0 ? ' connect-btn-secondary' : ''}" data-provider="${i}">
+              <img src="${p.icon}" alt="${p.name}" width="20" height="20" style="border-radius:4px;">
+              Connect ${p.name}
+            </button>
+          `).join('') : `
+            <button class="connect-btn" onclick="window.open('https://phantom.com/download','_blank')">Install Phantom Wallet</button>
+          `}
+        </div>
+        <div class="connect-note">${hasWallet ? providers.map(p => p.name).join(', ') + ' detected' : 'No wallet detected'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDashboard() {
+  const isChat = STATE.activeTab === 'chat' || STATE.activeTab === 'trading';
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-logo"><span class="inf">&infin;</span> INFINITE</div>
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">Dashboard</div>
+        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview"><span class="icon">&#9673;</span> Overview</div>
+        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys"><span class="icon">&#8984;</span> API Keys</div>
+        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models"><span class="icon">&#9672;</span> Models</div>
+        <div class="nav-group-label">Tools</div>
+        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat"><span class="icon">&#9657;</span> AI Chat</div>
+        <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images"><span class="icon">&#9726;</span> Image Lab</div>
+        <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video"><span class="icon">&#9654;</span> Video Lab</div>
+        <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading"><span class="icon">&#9651;</span> Trading Agent</div>
+        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents"><span class="icon">&#9678;</span> Tools Hub</div>
+        <div class="nav-group-label">Protocol</div>
+        <div class="nav-item ${STATE.activeTab === 'treasury' ? 'active' : ''}" data-tab="treasury"><span class="icon">&#9670;</span> Treasury</div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier || '—'} Tier — ${STATE.balance.toLocaleString()} $INF</div>
+        <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
+          ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '—'}
+          <span class="copy">COPY</span>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
+        </div>
+      </div>
+    </aside>
+    <main class="main${isChat ? ' chat-mode' : ''}">${renderTab()}</main>
+  `;
+}
+
+function renderTab() {
+  switch (STATE.activeTab) {
+    case 'overview': return renderOverview();
+    case 'keys': return renderKeys();
+    case 'models': return renderModels();
+    case 'chat': return renderChat();
+    case 'images': return renderImages();
+    case 'video': return renderVideo();
+    case 'trading': return renderTrading();
+    case 'agents': return renderAgents();
+    case 'treasury': return renderTreasury();
+    default: return renderOverview();
+  }
+}
+
+// ─── Tab: Overview ───
+
+function renderOverview() {
+  const usagePct = STATE.usage.limit > 0 ? (STATE.usage.today / STATE.usage.limit) * 100 : 0;
+  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Welcome back</h1>
+      <p class="page-sub">${STATE.tier || '—'} tier — ${STATE.usage.remaining.toLocaleString()} API calls remaining today</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Your Tier</div><div class="value accent">${STATE.tier || '—'}</div><div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div></div>
+      <div class="stat-card"><div class="label">Calls Today</div><div class="value">${STATE.usage.today.toLocaleString()}</div><div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div></div>
+      <div class="stat-card"><div class="label">Models Available</div><div class="value green">${STATE.models.length}</div><div class="sub">AI providers active</div></div>
+      <div class="stat-card"><div class="label">Your Cost</div><div class="value accent">$0</div><div class="sub">funded by treasury</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Daily Usage</div>
+      <div class="usage-bar-container">
+        <div class="usage-header">
+          <div class="usage-count">${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} calls</span></div>
+          <div class="usage-count">${Math.round(usagePct)}%</div>
+        </div>
+        <div class="usage-bar-track"><div class="usage-bar-fill ${barClass}" style="width: ${usagePct}%"></div></div>
+        <div class="usage-legend">
+          <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--accent)"></div>Used</div>
+          <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--border)"></div>Remaining</div>
+          <div class="usage-legend-item" style="margin-left: auto">Resets at 00:00 UTC</div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Quick Access</div>
+      <div class="tools-grid">
+        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-icon">&#9657;</span><span class="tool-status">LIVE</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.</div><div class="tool-launch">Open &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-icon">&#9726;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">Generate high-quality images with Gemini. Describe anything and get instant results.</div><div class="tool-launch">Open &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-icon">&#9654;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.${isVideoTierAllowed() ? '' : ' Operator+ only.'}</div><div class="tool-launch">Open &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-icon">&#9651;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Trading Agent</div><div class="tool-desc">AI-powered Solana token analysis. Real-time data, risk assessment, market intelligence.</div><div class="tool-launch">Open &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-icon">&#9678;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open &rarr;</div></div>
+        <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-icon">&#8984;</span><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key &rarr;</div></div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Tab: API Keys ───
+
+function renderKeys() {
+  const displayKey = STATE.keyVisible ? STATE.apiKeyFull : STATE.apiKey;
+  return `
+    <div class="page-header">
+      <h1 class="page-title">API Keys</h1>
+      <p class="page-sub">Your key works as a drop-in replacement for Anthropic and Google API keys</p>
+    </div>
+    <div class="section">
+      <div class="section-title">Your API Key</div>
+      <div class="api-key-box">
+        <div class="api-key-display">
+          <div class="api-key-value" id="apiKeyDisplay">${displayKey || 'No key'}</div>
+          <button class="btn-sm primary" onclick="copyText('${STATE.apiKeyFull || ''}')">Copy</button>
+        </div>
+        <div class="api-key-actions">
+          <button class="btn-sm" onclick="toggleKeyVisibility()">${STATE.keyVisible ? 'Hide' : 'Show'}</button>
+          <button class="btn-sm" onclick="rotateKey()">Rotate Key</button>
+          <button class="btn-sm danger" onclick="revokeKey()">Revoke</button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Quick Start</div>
+      <div class="api-key-box">
+        <div class="api-key-hint" style="margin-bottom:16px;">Use your INFINITE API key exactly like you'd use a Claude or Gemini key. Just point to our endpoint:</div>
+        <div class="api-key-value" style="font-size:12px;line-height:1.8;white-space:pre-wrap;margin-bottom:16px;padding:20px;">
+<span style="color:var(--text-muted)">// Works with any HTTP client</span>
+<span style="color:var(--blue)">curl</span> ${API_BASE}/v1/chat \\
+  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'inf_your_key'}"</span> \\
+  -d <span style="color:var(--accent)">'{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":"Hello"}]}'</span></div>
+        <div class="api-key-hint">
+          <strong style="color:var(--text)">Anthropic Python SDK:</strong><br>
+          <code>client = Anthropic(api_key="your_inf_key", base_url="${API_BASE}")</code>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Tab: Models ───
+
+function renderModels() {
+  const allModels = [
+    { name: 'claude-sonnet-4-5', provider: 'Anthropic', tier: 'Signal+', live: true },
+    { name: 'claude-opus-4-6', provider: 'Anthropic', tier: 'Architect', live: true },
+    { name: 'gemini-2.5-pro', provider: 'Google', tier: 'Operator+', live: true },
+    { name: 'gemini-2.5-flash', provider: 'Google', tier: 'Signal+', live: true },
+  ];
+  const userModels = STATE.models || [];
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Available Models</h1>
+      <p class="page-sub">Access depends on your tier. Upgrade by holding more $INFINITE.</p>
+    </div>
+    <div class="section">
+      <div class="section-title">AI Models</div>
+      <div class="models-list">
+        <div class="model-row" style="background:transparent;border-color:transparent;">
+          <div class="model-name" style="color:var(--text-muted);font-size:10px;letter-spacing:2px;">MODEL</div>
+          <div class="model-provider" style="font-size:10px;letter-spacing:2px;">PROVIDER</div>
+          <div class="model-tier" style="font-size:10px;letter-spacing:2px;">MIN TIER</div>
+          <div class="model-status" style="font-size:10px;letter-spacing:2px;">STATUS</div>
+        </div>
+        ${allModels.map(m => {
+          const hasAccess = userModels.some(um => um.includes(m.name.split('-')[0]));
+          return `<div class="model-row" style="${hasAccess ? '' : 'opacity:0.4'}">
+            <div class="model-name">${m.name}</div>
+            <div class="model-provider">${m.provider}</div>
+            <div class="model-tier">${m.tier}</div>
+            <div class="model-status">${hasAccess ? '<span class="live">LIVE</span>' : '<span style="color:var(--text-muted)">LOCKED</span>'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ─── Tab: AI Chat ───
+
+function renderChat() {
+  const conv = getActiveConversation();
+  const messages = conv ? conv.messages : [];
+
+  // Set default model if needed
+  if (!CHAT.selectedModel && STATE.models.length) CHAT.selectedModel = STATE.models[0];
+
+  setTimeout(() => {
+    scrollChat();
+    bindCodeCopyButtons();
+    document.getElementById('chatInput')?.focus();
+  }, 50);
+
+  return `
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <select class="chat-model-select" id="chatModelSelect">
+            ${(STATE.models || []).map(m =>
+              `<option value="${m}" ${m === CHAT.selectedModel ? 'selected' : ''}>${m}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${CHAT.conversations.length > 1 ? `
+            <select class="chat-model-select" id="chatConvSelect" style="max-width:200px;">
+              ${CHAT.conversations.map(c =>
+                `<option value="${c.id}" ${c.id === CHAT.activeId ? 'selected' : ''}>${escapeHtml(c.title)}</option>`
+              ).join('')}
+            </select>
+          ` : ''}
+          <button class="btn-sm primary" onclick="newConversation()">+ New</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        ${messages.length === 0 ? `
+          <div class="chat-empty">
+            <div class="chat-empty-icon">&infin;</div>
+            <div class="chat-empty-title">Start a conversation</div>
+            <div class="chat-empty-sub">Chat with Claude and Gemini. Free, no billing, powered by $INFINITE treasury.</div>
+          </div>
+        ` : messages.map(m => `
+          <div class="chat-message ${m.role}">
+            <div class="chat-msg-avatar">${m.role === 'user' ? '&#9673;' : '&#8734;'}</div>
+            <div class="chat-msg-body">
+              <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
+              <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
+        <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Tab: Image Lab ───
+
+function renderImages() {
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Image Lab</h1>
+      <p class="page-sub">Generate images with Gemini. Describe anything — photorealistic, illustration, concept art.</p>
+    </div>
+    <div class="image-prompt-area">
+      <input type="text" class="image-prompt-input" id="imagePrompt" placeholder="A cyberpunk cityscape at sunset with neon signs..."
+        onkeydown="if(event.key==='Enter')generateImage()">
+      <button class="image-gen-btn" id="imageGenBtn" onclick="generateImage()" ${IMAGES.isGenerating ? 'disabled' : ''}>
+        ${IMAGES.isGenerating ? 'GENERATING...' : 'CREATE'}
+      </button>
+    </div>
+    <div class="section">
+      <div class="section-title">Generated Images</div>
+      <div class="image-gallery" id="imageGallery">
+        ${IMAGES.isGenerating ? `
+          <div class="image-loading"><div class="image-spinner"></div><span style="font-family:var(--font-mono);font-size:11px;">Generating image...</span></div>
+        ` : IMAGES.gallery.length ? IMAGES.gallery.map(img => `
+          <div class="image-card">
+            <img src="data:${img.mimeType};base64,${img.data}" alt="${escapeHtml(img.prompt)}" loading="lazy">
+            <div class="image-card-footer">
+              <div class="image-card-prompt">${escapeHtml(img.prompt)}</div>
+              <button class="btn-sm" onclick="downloadImage('${img.data}','${img.mimeType}')">Save</button>
+            </div>
+          </div>
+        `).join('') : `
+          <div style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px;padding:60px;text-align:center;">
+            No images yet. Describe what you want to create.
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+// ─── Video Lab ───
+
+function isVideoTierAllowed() {
+  const t = (STATE.tier || '').toLowerCase();
+  return t === 'operator' || t === 'architect';
+}
+
+function renderVideo() {
+  if (!isVideoTierAllowed()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Video Lab</h1>
+        <p class="page-sub">Generate AI videos with Google Veo 2</p>
+      </div>
+      <div class="video-tier-gate">
+        <h3>Operator Tier Required</h3>
+        <p>Video generation requires Operator tier (100K+ $INFINITE) or above.</p>
+        <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px;margin-top:16px;">Current: ${STATE.tier || '—'} (${STATE.balance.toLocaleString()} $INFINITE)</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Video Lab</h1>
+      <p class="page-sub">Generate AI videos with Google Veo 2. Each generation counts as 10 API calls.</p>
+    </div>
+    <div class="video-controls">
+      <input type="text" class="image-prompt-input" id="videoPrompt" placeholder="A drone shot flying over a futuristic city at night..."
+        onkeydown="if(event.key==='Enter')generateVideo()">
+      <select class="video-select" id="videoAspect">
+        <option value="16:9">16:9</option>
+        <option value="9:16">9:16</option>
+        <option value="1:1">1:1</option>
+      </select>
+      <select class="video-select" id="videoDuration">
+        <option value="5">5s</option>
+        <option value="10">10s</option>
+      </select>
+      <button class="image-gen-btn" id="videoGenBtn" onclick="generateVideo()" ${VIDEOS.isGenerating ? 'disabled' : ''}>
+        ${VIDEOS.isGenerating ? 'GENERATING...' : 'CREATE'}
+      </button>
+    </div>
+    <div class="section">
+      <div class="section-title">Generated Videos</div>
+      <div class="image-gallery" id="videoGallery">
+        ${renderVideoGallery()}
+      </div>
+    </div>
+  `;
+}
+
+function renderVideoGallery() {
+  if (VIDEOS.gallery.length === 0 && !VIDEOS.isGenerating) {
+    return '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px;padding:60px;text-align:center;">No videos yet. Describe what you want to create.</div>';
+  }
+
+  return VIDEOS.gallery.map((v, i) => {
+    if (v.status === 'pending') {
+      return `
+        <div class="video-pending">
+          <div class="image-spinner"></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">Generating video...</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">Estimated: 1-3 minutes</span>
+          <div class="video-card-prompt" style="white-space:normal;text-align:center;padding:0 16px;">${escapeHtml(v.prompt)}</div>
+        </div>
+      `;
     }
+    if (v.status === 'failed') {
+      return `
+        <div class="video-card" style="border-color:var(--red);">
+          <div style="padding:40px;text-align:center;color:var(--red);font-family:var(--font-mono);font-size:12px;">
+            Generation failed${v.error ? ': ' + escapeHtml(v.error) : ''}
+          </div>
+          <div class="video-card-footer">
+            <div class="video-card-prompt">${escapeHtml(v.prompt)}</div>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="video-card">
+        <video controls preload="metadata" src="${v.uri}"></video>
+        <div class="video-card-footer">
+          <div class="video-card-prompt">${escapeHtml(v.prompt)}</div>
+          <button class="btn-sm" onclick="downloadVideo('${v.uri}')">Save</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function generateVideo() {
+  const input = document.getElementById('videoPrompt');
+  if (!input) return;
+  const prompt = input.value.trim();
+  if (!prompt || VIDEOS.isGenerating) return;
+
+  const aspectRatio = document.getElementById('videoAspect')?.value || '16:9';
+  const duration = parseInt(document.getElementById('videoDuration')?.value || '5');
+
+  VIDEOS.isGenerating = true;
+  const entry = { prompt, status: 'pending', operationName: null, uri: null, error: null, createdAt: Date.now() };
+  VIDEOS.gallery.unshift(entry);
+  input.value = '';
+  renderVideoState();
+
+  try {
+    const data = await api('/v1/video/generate', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, aspectRatio, duration }),
+    });
+    entry.operationName = data.operationName;
+    startVideoPolling(entry);
+    saveVideoHistory();
+  } catch (err) {
+    entry.status = 'failed';
+    entry.error = err.message || 'Generation failed';
+    VIDEOS.isGenerating = false;
+    renderVideoState();
+    showToast(err.message || 'Video generation failed', true);
   }
 }
 
-function rotateKey() {
-  if (confirm('Rotate your API key? The old key will stop working immediately.')) {
-    STATE.apiKey = 'inf_' + Math.random().toString(36).substring(2, 15) + '...new';
-    render();
+function startVideoPolling(entry) {
+  if (!entry.operationName) return;
+
+  const intervalId = setInterval(async () => {
+    try {
+      const data = await api(`/v1/video/status/${entry.operationName}`);
+
+      if (data.status === 'complete') {
+        entry.status = 'complete';
+        entry.uri = data.video?.uri || null;
+        clearInterval(intervalId);
+        VIDEOS.pollIntervals.delete(entry.operationName);
+        VIDEOS.isGenerating = false;
+        saveVideoHistory();
+        renderVideoState();
+      } else if (data.status === 'failed') {
+        entry.status = 'failed';
+        entry.error = data.error || 'Unknown error';
+        clearInterval(intervalId);
+        VIDEOS.pollIntervals.delete(entry.operationName);
+        VIDEOS.isGenerating = false;
+        saveVideoHistory();
+        renderVideoState();
+      }
+    } catch {
+      // Keep polling on transient errors
+    }
+  }, 5000);
+
+  VIDEOS.pollIntervals.set(entry.operationName, intervalId);
+}
+
+function renderVideoState() {
+  const gallery = document.getElementById('videoGallery');
+  const btn = document.getElementById('videoGenBtn');
+  if (btn) {
+    btn.disabled = VIDEOS.isGenerating;
+    btn.textContent = VIDEOS.isGenerating ? 'GENERATING...' : 'CREATE';
+  }
+  if (gallery) gallery.innerHTML = renderVideoGallery();
+}
+
+function downloadVideo(uri) {
+  const link = document.createElement('a');
+  link.href = uri;
+  link.download = `infinite-video-${Date.now()}.mp4`;
+  link.target = '_blank';
+  link.click();
+}
+
+function saveVideoHistory() {
+  try {
+    const toSave = VIDEOS.gallery.filter(v => v.status === 'complete').slice(0, 20).map(v => ({
+      prompt: v.prompt, uri: v.uri, status: v.status, createdAt: v.createdAt,
+    }));
+    localStorage.setItem('infinite_videos', JSON.stringify(toSave));
+  } catch {}
+}
+
+function loadVideoHistory() {
+  try {
+    const raw = localStorage.getItem('infinite_videos');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    VIDEOS.gallery = data || [];
+  } catch {}
+}
+
+// ─── Trading Agent ───
+
+function getActiveTradingConversation() {
+  if (!TRADING.activeId) {
+    const conv = { id: 'tconv_' + Date.now(), messages: [] };
+    TRADING.conversations.push(conv);
+    TRADING.activeId = conv.id;
+  }
+  return TRADING.conversations.find(c => c.id === TRADING.activeId);
+}
+
+function renderTrading() {
+  const conv = getActiveTradingConversation();
+  const messages = conv ? conv.messages : [];
+
+  if (!TRADING.selectedModel && STATE.models.length) TRADING.selectedModel = STATE.models[0];
+
+  setTimeout(() => {
+    scrollTradingChat();
+    bindCodeCopyButtons();
+    document.getElementById('tradingInput')?.focus();
+  }, 50);
+
+  return `
+    <div class="trading-layout">
+      <div class="trading-sidebar">
+        <div class="trading-sidebar-section">
+          <div class="trading-sidebar-title">Quick Actions</div>
+          <div class="trading-quick-btns">
+            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the top trending Solana tokens right now? Analyze volume, social buzz, and on-chain activity.')">Trending</button>
+            <button class="trading-quick-btn" onclick="sendTradingQuery('Give me a broad Solana market overview. SOL price action, DEX volumes, new token launches, and overall sentiment.')">Market</button>
+            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the biggest risk factors to watch for in the current Solana ecosystem? Any major red flags?')">Risk Check</button>
+            <button class="trading-quick-btn" onclick="sendTradingQuery('Find me high-potential alpha opportunities on Solana right now. New protocols, undervalued tokens, or emerging narratives.')">Find Alpha</button>
+          </div>
+        </div>
+        <div class="trading-sidebar-section">
+          <div class="trading-sidebar-title">Token Lookup</div>
+          <div class="trading-token-input">
+            <input type="text" id="tradingTokenAddr" placeholder="Paste token address...">
+            <button class="btn-sm primary" onclick="lookupToken()">Analyze</button>
+          </div>
+          <div id="tokenInfoCard"></div>
+        </div>
+        <div class="trading-sidebar-section">
+          <div class="trading-sidebar-title">Model</div>
+          <select class="trading-model-select" id="tradingModelSelect">
+            ${(STATE.models || []).map(m =>
+              '<option value="' + m + '"' + (m === TRADING.selectedModel ? ' selected' : '') + '>' + m + '</option>'
+            ).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="trading-chat">
+        <div class="trading-chat-messages" id="tradingMessages">
+          ${messages.length === 0 ? `
+            <div class="chat-empty">
+              <div class="chat-empty-icon">&#9651;</div>
+              <div class="chat-empty-title">Trading Agent</div>
+              <div class="chat-empty-sub">AI-powered Solana trading analysis. Ask about tokens, market conditions, risk assessment, or use the quick actions on the left.</div>
+            </div>
+          ` : messages.map(m => `
+            <div class="chat-message ${m.role}">
+              <div class="chat-msg-avatar">${m.role === 'user' ? '&#9673;' : '&#9651;'}</div>
+              <div class="chat-msg-body">
+                <div class="chat-msg-name">${m.role === 'user' ? 'You' : 'Trading Agent'}</div>
+                <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="trading-chat-input">
+          <textarea class="chat-input" id="tradingInput" placeholder="Ask about any token, market trend, or trading strategy..." rows="1"></textarea>
+          <button class="chat-send-btn" id="tradingSendBtn" ${TRADING.isGenerating ? 'disabled' : ''}>${TRADING.isGenerating ? '...' : '\u2192'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function lookupToken() {
+  const input = document.getElementById('tradingTokenAddr');
+  if (!input) return;
+  const address = input.value.trim();
+  if (!address) return;
+
+  const card = document.getElementById('tokenInfoCard');
+  if (card) card.innerHTML = '<div style="padding:12px;text-align:center;"><div class="image-spinner" style="margin:0 auto;"></div></div>';
+
+  try {
+    const info = await api(`/v1/trading/token/${address}`);
+    TRADING.tokenInfo = info;
+    renderTokenInfoCard(info);
+    // Auto-trigger analysis
+    sendTradingQuery(`Analyze this token in detail: ${info.name || 'Unknown'} (${info.symbol || '?'}) at address ${address}. Give me a full breakdown: risk level, liquidity analysis, price action assessment, and whether it looks like a good opportunity right now.`, address);
+  } catch (err) {
+    if (card) card.innerHTML = `<div style="padding:12px;color:var(--red);font-family:var(--font-mono);font-size:11px;">Lookup failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
   }
 }
 
-function revokeKey() {
-  if (confirm('Revoke your API key? All active sessions will be terminated.')) {
-    STATE.apiKey = null;
-    render();
+function renderTokenInfoCard(info) {
+  const card = document.getElementById('tokenInfoCard');
+  if (!card) return;
+
+  const changeClass = (info.change24h || 0) >= 0 ? 'green' : 'red';
+  const changePrefix = (info.change24h || 0) >= 0 ? '+' : '';
+
+  card.innerHTML = `
+    <div class="token-info-card" style="margin-top:12px;">
+      <div class="token-info-header">
+        <span class="token-info-name">${escapeHtml(info.name || 'Unknown')}</span>
+        <span class="token-info-symbol">$${escapeHtml(info.symbol || '?')}</span>
+      </div>
+      <div class="token-info-stats">
+        <div class="token-info-stat"><div class="label">Price</div><div class="val">${info.price ? '$' + formatTokenPrice(info.price) : '—'}</div></div>
+        <div class="token-info-stat"><div class="label">24h</div><div class="val ${changeClass}">${info.change24h !== null ? changePrefix + info.change24h + '%' : '—'}</div></div>
+        <div class="token-info-stat"><div class="label">Mkt Cap</div><div class="val">${info.marketCap ? '$' + formatCompact(info.marketCap) : '—'}</div></div>
+        <div class="token-info-stat"><div class="label">Liquidity</div><div class="val">${info.liquidity ? '$' + formatCompact(info.liquidity) : '—'}</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function formatCompact(num) {
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+  if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
+  return num.toFixed(0);
+}
+
+function formatTokenPrice(price) {
+  if (price < 0.0001) return price.toExponential(2);
+  if (price < 1) return price.toFixed(6);
+  if (price < 100) return price.toFixed(4);
+  return price.toFixed(2);
+}
+
+function sendTradingQuery(preset, tokenAddress) {
+  const input = document.getElementById('tradingInput');
+  if (input && preset) input.value = preset;
+  sendTradingMessage(tokenAddress);
+}
+
+async function sendTradingMessage(tokenAddress) {
+  const input = document.getElementById('tradingInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || TRADING.isGenerating) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const conv = getActiveTradingConversation();
+  conv.messages.push({ role: 'user', content: text });
+
+  appendTradingMessageToDOM({ role: 'user', content: text });
+  showTradingTypingIndicator();
+  TRADING.isGenerating = true;
+  updateTradingSendButton();
+
+  const model = TRADING.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+
+  try {
+    TRADING.abortController = new AbortController();
+
+    const systemPrompt = `You are an expert Solana trading analyst. Provide concise, data-driven analysis. When given a token address, analyze its trading metrics, liquidity, holder distribution, and risk factors. Format responses with clear sections. Use markdown tables for comparisons. Always include a risk assessment (Low/Medium/High/Critical).${tokenAddress ? ` The user is asking about token: ${tokenAddress}` : ''}`;
+
+    const body = {
+      model,
+      messages: [
+        { role: 'user', content: systemPrompt },
+        { role: 'assistant', content: 'Understood. I\'ll provide concise, data-driven Solana trading analysis.' },
+        ...conv.messages.map(m => ({ role: m.role, content: m.content })),
+      ],
+    };
+
+    const response = await fetch(`${API_BASE}/v1/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.apiKeyFull}`,
+      },
+      body: JSON.stringify(body),
+      signal: TRADING.abortController.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(err.message || 'Request failed');
+    }
+
+    removeTradingTypingIndicator();
+
+    const msgEl = appendTradingMessageToDOM({ role: 'assistant', content: '' });
+    const contentEl = msgEl.querySelector('.chat-msg-content');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+        try {
+          const data = JSON.parse(jsonStr);
+          if (data.type === 'text') {
+            fullText += data.content;
+            contentEl.innerHTML = renderMarkdown(fullText);
+            scrollTradingChat();
+          } else if (data.type === 'error') {
+            throw new Error(data.message);
+          }
+        } catch (e) {
+          if (e.message && !e.message.includes('JSON')) throw e;
+        }
+      }
+    }
+
+    conv.messages.push({ role: 'assistant', content: fullText });
+    saveTradingHistory();
+    bindCodeCopyButtons();
+
+  } catch (err) {
+    removeTradingTypingIndicator();
+    if (err.name !== 'AbortError') {
+      appendTradingMessageToDOM({ role: 'assistant', content: `Error: ${err.message}`, isError: true });
+    }
+  } finally {
+    TRADING.isGenerating = false;
+    TRADING.abortController = null;
+    updateTradingSendButton();
   }
+}
+
+function appendTradingMessageToDOM(msg) {
+  const container = document.getElementById('tradingMessages');
+  if (!container) return null;
+
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = `chat-message ${msg.role}`;
+  el.innerHTML = `
+    <div class="chat-msg-avatar">${msg.role === 'user' ? '&#9673;' : '&#9651;'}</div>
+    <div class="chat-msg-body">
+      <div class="chat-msg-name">${msg.role === 'user' ? 'You' : 'Trading Agent'}</div>
+      <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
+        msg.role === 'user' ? escapeHtml(msg.content) : (msg.content ? renderMarkdown(msg.content) : '')
+      }</div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollTradingChat();
+  return el;
+}
+
+function showTradingTypingIndicator() {
+  const container = document.getElementById('tradingMessages');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'chat-message assistant';
+  el.id = 'tradingTypingIndicator';
+  el.innerHTML = `
+    <div class="chat-msg-avatar">&#9651;</div>
+    <div class="chat-msg-body">
+      <div class="chat-typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollTradingChat();
+}
+
+function removeTradingTypingIndicator() {
+  document.getElementById('tradingTypingIndicator')?.remove();
+}
+
+function scrollTradingChat() {
+  const el = document.getElementById('tradingMessages');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function updateTradingSendButton() {
+  const btn = document.getElementById('tradingSendBtn');
+  if (btn) {
+    btn.disabled = TRADING.isGenerating;
+    btn.textContent = TRADING.isGenerating ? '...' : '\u2192';
+  }
+}
+
+function saveTradingHistory() {
+  try {
+    const toSave = TRADING.conversations.slice(-10).map(c => ({
+      id: c.id,
+      messages: c.messages.slice(-50),
+    }));
+    localStorage.setItem('infinite_trading', JSON.stringify({ conversations: toSave, activeId: TRADING.activeId }));
+  } catch {}
+}
+
+function loadTradingHistory() {
+  try {
+    const raw = localStorage.getItem('infinite_trading');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    TRADING.conversations = data.conversations || [];
+    TRADING.activeId = data.activeId;
+  } catch {}
+}
+
+// ─── Tab: Tools Hub ───
+
+function renderAgents() {
+  const key = STATE.apiKeyFull || 'inf_your_key_here';
+  const base = window.location.origin + '/proxy';
+
+  const tools = [
+    {
+      category: 'AI Coding',
+      items: [
+        {
+          name: 'aider',
+          icon: '&#9657;',
+          desc: 'AI pair programming in your terminal. Edit code across entire repos with Claude or Gemini.',
+          github: 'https://github.com/Aider-AI/aider',
+          config: `# Install\npip install aider-chat\n\n# Run with INFINITE\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-5-20250929`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Continue',
+          icon: '&#9655;',
+          desc: 'Open-source AI coding agent for VS Code & JetBrains. Autocomplete, chat, and edit in your IDE.',
+          github: 'https://github.com/continuedev/continue',
+          config: `// ~/.continue/config.json\n{\n  "models": [{\n    "provider": "anthropic",\n    "model": "claude-sonnet-4-5-20250929",\n    "apiKey": "${key}",\n    "apiBase": "${base}"\n  }]\n}`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Open WebUI',
+          icon: '&#9635;',
+          desc: 'Self-hosted ChatGPT-like interface. Connect to any LLM API with a beautiful web UI.',
+          github: 'https://github.com/open-webui/open-webui',
+          config: `# Docker setup\ndocker run -d -p 3000:8080 \\\n  -e OPENAI_API_BASE_URL=${base}/v1 \\\n  -e OPENAI_API_KEY=${key} \\\n  ghcr.io/open-webui/open-webui:main`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Tabby',
+          icon: '&#9655;',
+          desc: 'Self-hosted AI coding assistant. Open-source GitHub Copilot alternative — runs on consumer GPUs.',
+          github: 'https://github.com/TabbyML/tabby',
+          config: `# Docker setup\ndocker run -d -p 8080:8080 \\\n  tabbyml/tabby serve \\\n  --model TabbyML/StarCoder-1B\n\n# Connect to INFINITE for chat\n# Settings > Model > Custom API\n# Base URL: ${base}\n# API Key: ${key}`,
+          status: 'LIVE',
+        },
+      ]
+    },
+    {
+      category: 'AI Agents',
+      items: [
+        {
+          name: 'CrewAI',
+          icon: '&#9733;',
+          desc: 'Multi-agent AI framework. Build teams of AI agents that collaborate on complex tasks.',
+          github: 'https://github.com/crewAIInc/crewAI',
+          config: `# Install\npip install crewai\n\n# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\n\n# Usage\nfrom crewai import Agent, Crew\nagent = Agent(\n  role="Analyst",\n  llm="anthropic/claude-sonnet-4-5-20250929"\n)`,
+          status: 'LIVE',
+        },
+        {
+          name: 'LangChain',
+          icon: '&#9741;',
+          desc: 'Build LLM-powered applications with chains, agents, and retrieval. Supports custom API endpoints.',
+          github: 'https://github.com/langchain-ai/langchain',
+          config: `pip install langchain-anthropic\n\nfrom langchain_anthropic import ChatAnthropic\n\nllm = ChatAnthropic(\n  model="claude-sonnet-4-5-20250929",\n  api_key="${key}",\n  base_url="${base}"\n)`,
+          status: 'LIVE',
+        },
+        {
+          name: 'AutoGPT',
+          icon: '&#9881;',
+          desc: 'Autonomous AI agent platform. Create agents that complete tasks independently.',
+          github: 'https://github.com/Significant-Gravitas/AutoGPT',
+          config: `# .env in AutoGPT directory\nANTHROPIC_API_KEY=${key}\n\n# Configure in settings\n# Set Claude as your default model\n# Point API base to INFINITE proxy`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Eliza (ElizaOS)',
+          icon: '&#9733;',
+          desc: 'Web3-native AI agent framework with Solana support. Build agents that trade, chat, and execute on-chain.',
+          github: 'https://github.com/elizaOS/eliza',
+          config: `# .env\nANTHROPIC_API_KEY=${key}\nGOOGLE_GENERATIVE_AI_API_KEY=${key}\nSOLANA_PRIVATE_KEY=your_key\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\n\n# Install & run\nnpx eliza --character=your_agent.json`,
+          status: 'LIVE',
+        },
+      ]
+    },
+    {
+      category: 'Solana Trading',
+      items: [
+        {
+          name: 'Copy Trading Bot',
+          icon: '&#9673;',
+          desc: 'Mirror trades from any wallet in real-time. Uses Helius WebSocket for 0.3ms latency filtering.',
+          github: 'https://github.com/metaggdev/Copy-trading-bot',
+          config: `# .env\nHELIUS_API_KEY=your_helius_key\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_wallet_key\nTARGET_WALLET=wallet_to_copy\n\n# AI Analysis (uses your INFINITE key)\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Solana Sniper Bot',
+          icon: '&#9650;',
+          desc: 'Automated token sniper for Raydium and Pump.fun. Configurable buy/sell logic with AI-assisted filtering.',
+          github: 'https://github.com/fdundjer/solana-sniper-bot',
+          config: `# .env\nRPC_ENDPOINT=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_key\nQUOTE_MINT=SOL\nQUOTE_AMOUNT=0.1\nAUTO_SELL=true\nSTOP_LOSS=30\nTAKE_PROFIT=50`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Solana Trade Bot',
+          icon: '&#9830;',
+          desc: 'Multi-DEX trading bot for Raydium, Pumpfun, Orca, Moonshot, and Jupiter with SDK integration.',
+          github: 'https://github.com/YZYLAB/solana-trade-bot',
+          config: `# .env\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_private_key\nSLIPPAGE=10\nPRIORITY_FEE=0.001`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Solana Agent Kit',
+          icon: '&#9889;',
+          desc: 'AI agent framework for Solana. Execute trades, check balances, and chain tools with natural language.',
+          github: 'https://github.com/truemagic-coder/solana-agent',
+          config: `# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_key`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Pump.fun Sniper',
+          icon: '&#9733;',
+          desc: 'Open-source Pump.fun sniper bot for new Solana token launches. Configurable buy/sell with priority fees.',
+          github: 'https://github.com/TreeCityWes/Pump-Fun-Trading-Bot-Solana',
+          config: `# .env\nSOLANA_RPC_URL=https://mainnet.helius-rpc.com\nWALLET_PRIVATE_KEY=your_key\nQUOTE_MINT=SOL\nPRIORITY_FEE=0.001\nSLIPPAGE=10`,
+          status: 'LIVE',
+        },
+        {
+          name: 'Multi-Tool Bot',
+          icon: '&#9830;',
+          desc: 'All-in-one: Raydium sniper, Pumpfun bundler, volume bot, copy trading, and wallet tracker in one package.',
+          github: 'https://github.com/Immutal0/solana-trading-bot',
+          config: `# .env\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEYS=["your_key"]\nBOT_MODE=sniper\nTELEGRAM_BOT_TOKEN=optional\nSLIPPAGE=15`,
+          status: 'LIVE',
+        },
+      ]
+    },
+  ];
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Tools Hub</h1>
+      <p class="page-sub">Pre-configured tools with your API key auto-filled. Clone, paste config, run.</p>
+    </div>
+    ${tools.map(cat => `
+      <div class="tools-section">
+        <div class="section-title">${cat.category}</div>
+        <div class="tools-grid">
+          ${cat.items.map(t => `
+            <div class="tool-card" style="cursor:default;">
+              <div class="tool-header">
+                <span class="tool-icon">${t.icon}</span>
+                <span class="tool-status${t.status === 'SOON' ? ' coming' : ''}">${t.status}</span>
+              </div>
+              <div class="tool-name">${t.name}</div>
+              <div class="tool-desc">${t.desc}</div>
+              <div class="tool-config-box">${escapeHtml(t.config)}</div>
+              <div class="tool-card-actions">
+                <a href="#" onclick="copyText(${JSON.stringify(t.config).replace(/"/g, '&quot;')});return false;">Copy Config</a>
+                <a href="${t.github}" target="_blank" rel="noopener">GitHub &rarr;</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ─── Tab: Treasury ───
+
+function renderTreasury() {
+  const t = STATE.treasury;
+  const statusColor = {
+    surplus: 'var(--green)', healthy: 'var(--accent)', cautious: '#febc2e',
+    critical: 'var(--red)', unknown: 'var(--text-muted)'
+  }[t.healthStatus] || 'var(--text-muted)';
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Treasury</h1>
+      <p class="page-sub">Live protocol treasury health. Funded by pump.fun creator fees.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Health Status</div><div class="value" style="color:${statusColor};text-transform:uppercase;">${t.healthStatus}</div><div class="sub">rate multiplier: ${t.multiplier}x</div></div>
+      <div class="stat-card"><div class="label">Runway</div><div class="value">${t.runwayDays || '—'}</div><div class="sub">days at current usage</div></div>
+      <div class="stat-card"><div class="label">Treasury Balance</div><div class="value accent">${t.treasuryBalanceUsd ? '$' + t.treasuryBalanceUsd.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}</div><div class="sub">USD value</div></div>
+      <div class="stat-card"><div class="label">Daily Budget</div><div class="value">${t.dailyBudget ? '$' + t.dailyBudget.toFixed(2) : '—'}</div><div class="sub">API spend / day</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">How Treasury Works</div>
+      <div class="api-key-box">
+        <div class="api-key-hint" style="line-height:2;">
+          Creator fees from the $INFINITE token on pump.fun are split:<br>
+          <strong style="color:var(--text)">50%</strong> &rarr; API treasury (pays for Claude + Gemini calls)<br>
+          <strong style="color:var(--text)">40%</strong> &rarr; Dev operations<br>
+          <strong style="color:var(--text)">10%</strong> &rarr; Community fund<br><br>
+          The treasury agent monitors the balance, calculates runway, and dynamically adjusts rate limits.
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ─── Event Binding ───
@@ -983,9 +2782,75 @@ function bindEvents() {
   document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => setTab(item.dataset.tab));
   });
+  document.querySelectorAll('[data-provider]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.provider);
+      const providers = getWalletProviders();
+      if (providers[idx]) connectWallet(providers[idx].provider);
+    });
+  });
+
+  // Chat-specific bindings
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput) {
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+      }
+    });
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 200) + 'px';
+    });
+  }
+
+  const modelSelect = document.getElementById('chatModelSelect');
+  if (modelSelect) {
+    modelSelect.addEventListener('change', () => { CHAT.selectedModel = modelSelect.value; });
+  }
+
+  const convSelect = document.getElementById('chatConvSelect');
+  if (convSelect) {
+    convSelect.addEventListener('change', () => {
+      CHAT.activeId = convSelect.value;
+      render();
+    });
+  }
+
+  // Trading-specific bindings
+  const tradingInput = document.getElementById('tradingInput');
+  if (tradingInput) {
+    tradingInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendTradingMessage();
+      }
+    });
+    tradingInput.addEventListener('input', () => {
+      tradingInput.style.height = 'auto';
+      tradingInput.style.height = Math.min(tradingInput.scrollHeight, 200) + 'px';
+    });
+  }
+
+  const tradingModelSelect = document.getElementById('tradingModelSelect');
+  if (tradingModelSelect) {
+    tradingModelSelect.addEventListener('change', () => { TRADING.selectedModel = tradingModelSelect.value; });
+  }
+
+  bindCodeCopyButtons();
 }
 
 // ─── Init ───
+
+loadChatHistory();
+loadVideoHistory();
+loadTradingHistory();
+if (loadSession()) {
+  if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
+  if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
+  startStatusPolling();
+}
 render();
 </script>
 
