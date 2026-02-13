@@ -66,7 +66,11 @@ function generateApiKey() {
   return `inf_${random}`;
 }
 
+// When TOKEN_MINT is not set, grant operator tier to any connected wallet
+const TOKEN_GATING_ENABLED = CONFIG.TOKEN_MINT && CONFIG.TOKEN_MINT !== 'PASTE_YOUR_TOKEN_MINT_HERE';
+
 function getTierForBalance(balance) {
+  if (!TOKEN_GATING_ENABLED) return 'operator';
   if (balance >= CONFIG.TIERS.architect.min) return 'architect';
   if (balance >= CONFIG.TIERS.operator.min) return 'operator';
   if (balance >= CONFIG.TIERS.signal.min) return 'signal';
@@ -91,6 +95,8 @@ function getUsage(apiKey) {
 // ─── Helius: Check Token Balance ─────────────────────────────
 
 async function getTokenBalance(walletAddress) {
+  if (!TOKEN_GATING_ENABLED) return 0;
+
   // Check cache first
   const cached = balanceCache.get(walletAddress);
   if (cached && Date.now() - cached.checkedAt < CONFIG.BALANCE_CACHE_TTL) {
