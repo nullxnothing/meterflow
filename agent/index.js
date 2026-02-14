@@ -29,6 +29,7 @@ const CONFIG = {
 
   PROXY_URL: process.env.PROXY_URL || 'http://localhost:3001',
   PROXY_ADMIN_KEY: process.env.PROXY_ADMIN_KEY || '',
+  DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || '',
 
   // Real API costs per model (avg per call, conservative)
   COSTS: {
@@ -39,7 +40,7 @@ const CONFIG = {
   },
   BLENDED_AVG_COST: 0.02,
 
-  SOL_PRICE_USD: 150,
+  SOL_PRICE_USD: 88,
 
   MIN_RUNWAY_DAYS: 7,
   TARGET_RUNWAY_DAYS: 30,
@@ -81,9 +82,9 @@ const state = {
 
 async function updateSolPrice() {
   try {
-    const res = await fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112');
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
     const data = await res.json();
-    const price = parseFloat(data?.data?.['So11111111111111111111111111111111111111112']?.price);
+    const price = parseFloat(data?.solana?.usd);
     if (price > 0) state.solPriceUsd = price;
   } catch {}
 }
@@ -153,6 +154,7 @@ function recalculate() {
   if (old !== state.rateMultiplier) {
     console.log(`[Budget] ${old}x → ${state.rateMultiplier}x (${state.healthStatus})`);
     pushLimits();
+    fetchProxyStats().then(() => postToDiscord(generateReport(), true));
   }
 }
 
@@ -202,6 +204,42 @@ function recordReimbursement(amountUsd, txSig = null) {
   state.totalReimbursedUsd += amountUsd;
   state.pendingReimbursementUsd = state.totalApiSpendUsd - state.totalReimbursedUsd;
   state.reimbursements.push({ timestamp: Date.now(), amountUsd, sol: amountUsd / state.solPriceUsd, txSig });
+}
+
+// ─── Discord Webhook ────────────────────────────────────────
+
+const HEALTH_EMOJI = { surplus: '\u{1F7E2}', healthy: '\u{1F535}', cautious: '\u{1F7E1}', critical: '\u{1F534}', unknown: '\u2B1C' };
+
+async function postToDiscord(report, isAlert = false) {
+  if (!CONFIG.DISCORD_WEBHOOK_URL) return;
+  try {
+    const h = report.budget.health;
+    const runway = report.budget.runway === 'infinite' ? '\u221E' : `${report.budget.runway}d`;
+    const embed = {
+      title: isAlert ? `\u26A0\uFE0F Status Change: ${h.toUpperCase()}` : '\u221E Treasury Report',
+      color: h === 'surplus' ? 0x00ff00 : h === 'healthy' ? 0x3498db : h === 'cautious' ? 0xf1c40f : h === 'critical' ? 0xe74c3c : 0x95a5a6,
+      fields: [
+        { name: 'Treasury', value: `${report.treasury.sol} SOL ($${report.treasury.usd})`, inline: true },
+        { name: 'SOL Price', value: `$${report.treasury.solPrice}`, inline: true },
+        { name: 'Health', value: `${HEALTH_EMOJI[h] || ''} ${h} (${report.budget.multiplier}x)`, inline: true },
+        { name: 'Runway', value: runway, inline: true },
+        { name: 'Daily Budget', value: `${report.budget.dailyBudget} calls`, inline: true },
+        { name: 'Active Keys', value: `${report.usage.activeKeys}`, inline: true },
+        { name: 'Calls Today', value: `${report.usage.callsToday}`, inline: true },
+        { name: 'Daily Spend', value: `$${report.usage.dailySpendUsd}`, inline: true },
+        { name: 'Inflows (24h)', value: `$${report.inflows24h.usd} (${report.inflows24h.sol} SOL)`, inline: true },
+      ],
+      footer: { text: `Net: $${report.net.dailyUsd}/day \u2022 ${report.net.sustainable ? 'Sustainable' : 'Burning reserves'}` },
+      timestamp: report.timestamp,
+    };
+    await fetch(CONFIG.DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] }),
+    });
+  } catch (err) {
+    console.error('[Discord]', err.message);
+  }
 }
 
 // ─── Report ─────────────────────────────────────────────────
@@ -269,7 +307,12 @@ async function start() {
   setInterval(checkBalance, CONFIG.BALANCE_CHECK_MS);
   setInterval(updateSolPrice, CONFIG.PRICE_UPDATE_MS);
   setInterval(fetchProxyStats, CONFIG.BALANCE_CHECK_MS);
-  setInterval(() => { recordDailySpend(); console.log(JSON.stringify(generateReport(), null, 2)); }, CONFIG.REPORT_MS);
+  setInterval(async () => {
+    recordDailySpend();
+    const report = generateReport();
+    console.log(JSON.stringify(report, null, 2));
+    await postToDiscord(report);
+  }, CONFIG.REPORT_MS);
 }
 
 if (process.argv[1]?.includes('index') || process.argv[1]?.includes('treasury')) {

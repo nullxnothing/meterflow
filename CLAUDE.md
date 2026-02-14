@@ -58,12 +58,42 @@ node index.js           # Starts daemon + health server on :3002
 - Both `api-proxy/server.js` and `agent/index.js` use ES module syntax (`import`/`export`). The package.json files likely need `"type": "module"`.
 - Signature verification in `/auth/register` is stubbed out (TODO comment at line ~208 of server.js) — tweetnacl + bs58 are dependencies but not wired up yet.
 - The proxy currently has no streaming support — the `stream` param in `/v1/chat` is destructured but unused.
-- The dashboard uses hardcoded demo data (`DEMO` object) instead of real wallet adapter integration. `connectWallet()` just copies demo state.
+- The dashboard is wired to real Solana wallet adapters (Phantom, Backpack, Solflare) and connects to the API proxy via `/proxy` Vercel rewrite. Session persists in localStorage.
 - Balance cache TTL is 5 minutes. Treasury agent checks balance every 5 minutes, SOL price every 15 minutes.
 - Admin auth for treasury agent push uses `ADMIN_KEY` env var (defaults to `dev-admin-key`).
 - The treasury agent health status determines rate limit multiplier: surplus (1.5x), healthy (1.0x), cautious (0.7x), critical (0.3x).
 - `vercel.json` handles routing rewrites. Vercel org ID is in `.vercel/project.json`.
 
-## Design Tokens (Shared Across All HTML)
+## Frontend Design System
 
-All three HTML pages share the same CSS variables — accent is `#c8ff00`, bg is `#0a0a0a`. Fonts: DM Serif Display (headings), Sora (body), JetBrains Mono (code/UI).
+All pages **must** import the shared design system. Every new HTML page needs this in `<head>`:
+
+```html
+<link rel="icon" type="image/png" href="/site/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+```
+
+**`site/shared.css`** is the single source of truth for:
+- CSS reset, variables/tokens (`--bg`, `--surface`, `--border`, `--text`, `--accent`, etc.)
+- Base `html`/`body` styles, `::selection`
+- Typography utilities (`.heading-xl/lg/md/sm`, `.label-sm`, `.mono`, `.accent`, `.dim`, `.muted`)
+- Nav (`.nav`, `.nav-logo`, `.nav-links`, `.nav-cta`)
+- Buttons (`.btn-primary`, `.btn-secondary`, `.btn-sm` with `.primary`/`.danger` variants)
+- Cards (`.card`, `.card.interactive`)
+- Section labels (`.section-label` with accent line `::before`)
+- Stats grid (`.stats-row`, `.stat-card` with `.stat-label`/`.stat-value`/`.stat-sub`)
+- Tools grid (`.tools-grid`, `.tool-card` with status badges)
+- Models list (`.models-list`, `.model-row` with live pulse dot)
+- Code blocks (`.code-block` with `.comment`/`.string`/`.key` syntax colors)
+- Footer (`.footer`, `.footer-links`)
+- Animations (`@keyframes fadeUp`, `.reveal`/`.reveal.visible`)
+- Responsive breakpoints (`@media max-width: 900px`)
+
+**Key tokens:** accent `#c8ff00`, bg `#0a0a0a`, surface `#111111`. Fonts: DM Serif Display (headings), Sora (body), JetBrains Mono (code/UI).
+
+**Rules for new pages:**
+- Never redeclare `:root` variables, reset, or base styles — shared.css handles it.
+- Use shared component classes where they fit. Only add page-specific `<style>` for unique layouts.
+- Add any new reusable component to `shared.css`, not inline.
+- When adding a new route, add the rewrite to `vercel.json`.
