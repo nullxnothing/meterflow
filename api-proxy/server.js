@@ -13,6 +13,11 @@ import {
   createDCAOrder, pauseDCAOrder, resumeDCAOrder, cancelDCAOrder, getDCAOrderInfo,
   TriggerManager,
 } from './trading/index.js';
+import {
+  isServerTool, executeTool,
+  getAnthropicTools, getGeminiTools, getOpenAITools,
+  SERVER_TOOL_NAMES,
+} from './tools/index.js';
 
 // ═══════════════════════════════════════════
 // INFINITE Protocol — API Proxy Server
@@ -145,25 +150,35 @@ function isModelAvailable(model) {
 // ─── Tool Translation ────────────────────────────────────────
 
 function translateToolsForProvider(provider, tools) {
-  if (!tools || !Array.isArray(tools) || tools.length === 0) return null;
+  if (!tools || !Array.isArray(tools) || tools.length === 0) return { native: null, serverTools: [] };
   const has = (name) => tools.includes(name);
+
+  const serverToolNames = tools.filter(t => SERVER_TOOL_NAMES.includes(t));
 
   if (provider === 'claude') {
     const out = [];
     if (has('web_search')) out.push({ type: 'web_search_20250305', name: 'web_search', max_uses: 5 });
-    return out.length ? out : null;
+    out.push(...getAnthropicTools(serverToolNames));
+    return { native: out.length ? out : null, serverTools: serverToolNames };
   }
   if (provider === 'gemini') {
-    const out = [];
-    if (has('web_search')) out.push({ google_search: {} });
-    return out.length ? out : null;
+    const nativeTools = [];
+    if (has('web_search')) nativeTools.push({ google_search: {} });
+    const customFns = getGeminiTools(serverToolNames);
+    // Gemini: native tools go in tools array, custom functions go as functionDeclarations
+    const combined = [...nativeTools];
+    if (customFns.length > 0) combined.push({ functionDeclarations: customFns });
+    return { native: combined.length ? combined : null, serverTools: serverToolNames };
   }
   if (provider === 'openai') {
     const out = [];
     if (has('web_search')) out.push({ type: 'web_search' });
-    return out.length ? out : null;
+    // OpenAI: server tools use Chat Completions function calling
+    const fns = getOpenAITools(serverToolNames);
+    out.push(...fns);
+    return { native: out.length ? out : null, serverTools: serverToolNames };
   }
-  return null;
+  return { native: null, serverTools: [] };
 }
 
 function injectImagesIntoMessages(provider, messages, images) {
@@ -711,7 +726,7 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
   }
 
   const provider = getProviderForModel(requestedModel);
-  const translatedTools = translateToolsForProvider(provider, tools);
+  const { native: translatedTools, serverTools } = translateToolsForProvider(provider, tools);
   const processedMessages = injectImagesIntoMessages(provider, messages, images);
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -721,11 +736,11 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
 
   try {
     if (provider === 'claude') {
-      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
+      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
     } else if (provider === 'gemini') {
-      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
+      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
     } else if (provider === 'openai') {
-      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools);
+      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
     } else {
       res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
     }
@@ -740,162 +755,395 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
   }
 });
 
-async function streamAnthropic(model, messages, maxTokens, temperature, res, tools) {
-  const body = {
-    model,
-    max_tokens: Math.min(maxTokens, 8192),
-    temperature: temperature ?? 0.7,
-    messages,
-    stream: true,
-  };
-  if (tools) body.tools = tools;
+async function streamAnthropic(model, messages, maxTokens, temperature, res, tools, serverTools) {
+  const MAX_TOOL_LOOPS = 3;
+  let loopMessages = [...messages];
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': CONFIG.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify(body)
-  });
+  for (let loop = 0; loop <= MAX_TOOL_LOOPS; loop++) {
+    const body = {
+      model,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages: loopMessages,
+      stream: true,
+    };
+    if (tools) body.tools = tools;
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Anthropic ${response.status}: ${err}`);
-  }
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CONFIG.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify(body)
+    });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
-
-      try {
-        const event = JSON.parse(jsonStr);
-
-        if (event.type === 'content_block_start') {
-          if (event.content_block?.type === 'server_tool_use') {
-            res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
-          } else if (event.content_block?.type === 'web_search_tool_result') {
-            const sources = (event.content_block.content || [])
-              .filter(c => c.type === 'web_search_result')
-              .slice(0, 6)
-              .map(c => ({ title: c.title || '', url: c.url || '', snippet: c.encrypted_content ? '' : (c.page_content || '').slice(0, 120) }));
-            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
-          }
-        }
-
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
-        }
-      } catch {}
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Anthropic ${response.status}: ${err}`);
     }
-  }
-}
 
-async function streamGemini(model, messages, maxTokens, temperature, res, tools) {
-  const geminiContents = messages.map(m => {
-    const parts = [];
-    // Handle injected images
-    if (m._images) {
-      for (const img of m._images) {
-        parts.push({ inline_data: { mime_type: img.mimeType, data: img.data } });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let stopReason = null;
+    const contentBlocks = [];
+    let currentBlockIndex = -1;
+    let currentToolInput = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+
+        try {
+          const event = JSON.parse(jsonStr);
+
+          if (event.type === 'content_block_start') {
+            currentBlockIndex = event.index ?? contentBlocks.length;
+            const block = event.content_block || {};
+
+            if (block.type === 'tool_use') {
+              contentBlocks[currentBlockIndex] = { type: 'tool_use', id: block.id, name: block.name, input: '' };
+              if (isServerTool(block.name)) {
+                res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: block.name, query: '' })}\n\n`);
+              }
+            } else if (block.type === 'server_tool_use') {
+              res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
+              contentBlocks[currentBlockIndex] = { type: 'server_tool_use' };
+            } else if (block.type === 'web_search_tool_result') {
+              const sources = (block.content || [])
+                .filter(c => c.type === 'web_search_result')
+                .slice(0, 6)
+                .map(c => ({ title: c.title || '', url: c.url || '', snippet: c.encrypted_content ? '' : (c.page_content || '').slice(0, 120) }));
+              res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+              contentBlocks[currentBlockIndex] = { type: 'web_search_tool_result' };
+            } else if (block.type === 'text') {
+              contentBlocks[currentBlockIndex] = { type: 'text', text: '' };
+            }
+          }
+
+          if (event.type === 'content_block_delta') {
+            if (event.delta?.type === 'text_delta') {
+              res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+              if (contentBlocks[currentBlockIndex]?.type === 'text') {
+                contentBlocks[currentBlockIndex].text += event.delta.text;
+              }
+            } else if (event.delta?.type === 'input_json_delta') {
+              if (contentBlocks[currentBlockIndex]?.type === 'tool_use') {
+                contentBlocks[currentBlockIndex].input += event.delta.partial_json || '';
+              }
+            }
+          }
+
+          if (event.type === 'message_delta') {
+            stopReason = event.delta?.stop_reason || null;
+          }
+        } catch {}
       }
     }
-    const text = typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.map(c => c.text || '').join('') : '');
-    if (text) parts.push({ text });
-    return { role: m.role === 'assistant' ? 'model' : 'user', parts };
-  });
 
-  const body = {
-    contents: geminiContents,
-    generationConfig: {
-      maxOutputTokens: Math.min(maxTokens, 8192),
-      temperature: temperature ?? 0.7
+    // Check if we need to execute server tools
+    const toolUseBlocks = contentBlocks.filter(b => b?.type === 'tool_use' && isServerTool(b.name));
+
+    if (stopReason !== 'tool_use' || toolUseBlocks.length === 0 || loop === MAX_TOOL_LOOPS) {
+      break; // Done — no more tool calls or hit max loops
     }
-  };
-  if (tools) body.tools = tools;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    }
-  );
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Gemini ${response.status}: ${err}`);
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let emittedGroundingStart = false;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr) continue;
-
-      try {
-        const data = JSON.parse(jsonStr);
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+    // Execute server tools and build continuation
+    const assistantContent = contentBlocks
+      .filter(b => b && (b.type === 'text' || b.type === 'tool_use'))
+      .map(b => {
+        if (b.type === 'text') return { type: 'text', text: b.text };
+        if (b.type === 'tool_use') {
+          let input = {};
+          try { input = JSON.parse(b.input); } catch {}
+          return { type: 'tool_use', id: b.id, name: b.name, input };
         }
+        return null;
+      })
+      .filter(Boolean);
 
-        // Grounding metadata from Google Search
-        const grounding = data.candidates?.[0]?.groundingMetadata;
-        if (grounding) {
-          if (!emittedGroundingStart && grounding.searchEntryPoint) {
-            const query = grounding.webSearchQueries?.[0] || '';
-            res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query })}\n\n`);
-            emittedGroundingStart = true;
-          }
-          const chunks = grounding.groundingChunks || [];
-          if (chunks.length > 0) {
-            const sources = chunks.slice(0, 6).map(c => ({
-              title: c.web?.title || '',
-              url: c.web?.uri || '',
-              snippet: '',
-            }));
-            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
-          }
-        }
-      } catch {}
+    const toolResults = [];
+    for (const block of toolUseBlocks) {
+      let input = {};
+      try { input = JSON.parse(block.input); } catch {}
+      const result = await executeTool(block.name, input);
+      res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: block.name, data: result })}\n\n`);
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: block.id,
+        content: JSON.stringify(result),
+      });
     }
+
+    loopMessages = [
+      ...loopMessages,
+      { role: 'assistant', content: assistantContent },
+      ...toolResults.map(tr => ({ role: 'user', content: [tr] })),
+    ];
   }
 }
 
-async function streamOpenAI(model, messages, maxTokens, temperature, res, tools) {
-  // Use Responses API when tools are present, Chat Completions otherwise
-  if (tools && tools.length > 0) {
+async function streamGemini(model, messages, maxTokens, temperature, res, tools, serverTools) {
+  const MAX_TOOL_LOOPS = 3;
+
+  function buildGeminiContents(msgs) {
+    return msgs.map(m => {
+      const parts = [];
+      if (m._images) {
+        for (const img of m._images) {
+          parts.push({ inline_data: { mime_type: img.mimeType, data: img.data } });
+        }
+      }
+      if (m._functionResponses) {
+        for (const fr of m._functionResponses) {
+          parts.push({ functionResponse: fr });
+        }
+        return { role: 'user', parts };
+      }
+      if (m._functionCalls) {
+        for (const fc of m._functionCalls) {
+          parts.push({ functionCall: fc });
+        }
+        return { role: 'model', parts };
+      }
+      const text = typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.map(c => c.text || '').join('') : '');
+      if (text) parts.push({ text });
+      return { role: m.role === 'assistant' ? 'model' : 'user', parts };
+    });
+  }
+
+  let loopMessages = [...messages];
+
+  for (let loop = 0; loop <= MAX_TOOL_LOOPS; loop++) {
+    const geminiContents = buildGeminiContents(loopMessages);
+
+    const body = {
+      contents: geminiContents,
+      generationConfig: {
+        maxOutputTokens: Math.min(maxTokens, 8192),
+        temperature: temperature ?? 0.7,
+      },
+    };
+    if (tools) body.tools = tools;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini ${response.status}: ${err}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let emittedGroundingStart = false;
+    const functionCalls = [];
+    let collectedText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+
+        try {
+          const data = JSON.parse(jsonStr);
+          const parts = data.candidates?.[0]?.content?.parts || [];
+
+          for (const part of parts) {
+            if (part.text) {
+              collectedText += part.text;
+              res.write(`data: ${JSON.stringify({ type: 'text', content: part.text })}\n\n`);
+            }
+            if (part.functionCall && isServerTool(part.functionCall.name)) {
+              res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: part.functionCall.name, query: '' })}\n\n`);
+              functionCalls.push(part.functionCall);
+            }
+          }
+
+          // Grounding metadata from Google Search
+          const grounding = data.candidates?.[0]?.groundingMetadata;
+          if (grounding) {
+            if (!emittedGroundingStart && grounding.searchEntryPoint) {
+              const query = grounding.webSearchQueries?.[0] || '';
+              res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query })}\n\n`);
+              emittedGroundingStart = true;
+            }
+            const chunks = grounding.groundingChunks || [];
+            if (chunks.length > 0) {
+              const sources = chunks.slice(0, 6).map(c => ({
+                title: c.web?.title || '',
+                url: c.web?.uri || '',
+                snippet: '',
+              }));
+              res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+            }
+          }
+        } catch {}
+      }
+    }
+
+    if (functionCalls.length === 0 || loop === MAX_TOOL_LOOPS) break;
+
+    // Execute server tools
+    const functionResponses = [];
+    for (const fc of functionCalls) {
+      const result = await executeTool(fc.name, fc.args || {});
+      res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: fc.name, data: result })}\n\n`);
+      functionResponses.push({ name: fc.name, response: result });
+    }
+
+    // Build continuation messages
+    loopMessages = [
+      ...loopMessages,
+      { role: 'assistant', content: '', _functionCalls: functionCalls.map(fc => ({ name: fc.name, args: fc.args || {} })) },
+      { role: 'user', content: '', _functionResponses: functionResponses },
+    ];
+  }
+}
+
+async function streamOpenAI(model, messages, maxTokens, temperature, res, tools, serverTools) {
+  const hasServerTools = serverTools && serverTools.length > 0;
+  const hasNativeToolsOnly = tools && tools.length > 0 && !hasServerTools;
+
+  if (hasServerTools) {
+    // Use Chat Completions with function calling for server tools
+    await streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools);
+  } else if (hasNativeToolsOnly) {
+    // Use Responses API for native-only tools (web_search)
     await streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools);
   } else {
     await streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res);
+  }
+}
+
+async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools) {
+  const MAX_TOOL_LOOPS = 3;
+  // Split tools: native web_search uses Responses API format, function tools use Chat Completions format
+  const functionTools = tools.filter(t => t.type === 'function');
+  const hasNativeWebSearch = tools.some(t => t.type === 'web_search');
+
+  let loopMessages = [...messages];
+
+  for (let loop = 0; loop <= MAX_TOOL_LOOPS; loop++) {
+    const body = {
+      model,
+      max_tokens: Math.min(maxTokens, 8192),
+      temperature: temperature ?? 0.7,
+      messages: loopMessages,
+      stream: true,
+    };
+    if (functionTools.length > 0) body.tools = functionTools;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`OpenAI ${response.status}: ${err}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finishReason = null;
+    const toolCallAccumulator = {};
+    let collectedText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+
+        try {
+          const data = JSON.parse(jsonStr);
+          const choice = data.choices?.[0];
+          if (!choice) continue;
+
+          if (choice.delta?.content) {
+            collectedText += choice.delta.content;
+            res.write(`data: ${JSON.stringify({ type: 'text', content: choice.delta.content })}\n\n`);
+          }
+
+          // Accumulate tool calls from deltas
+          if (choice.delta?.tool_calls) {
+            for (const tc of choice.delta.tool_calls) {
+              const idx = tc.index;
+              if (!toolCallAccumulator[idx]) {
+                toolCallAccumulator[idx] = { id: tc.id || '', name: tc.function?.name || '', arguments: '' };
+                if (tc.function?.name && isServerTool(tc.function.name)) {
+                  res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: tc.function.name, query: '' })}\n\n`);
+                }
+              }
+              if (tc.id) toolCallAccumulator[idx].id = tc.id;
+              if (tc.function?.name) toolCallAccumulator[idx].name = tc.function.name;
+              if (tc.function?.arguments) toolCallAccumulator[idx].arguments += tc.function.arguments;
+            }
+          }
+
+          if (choice.finish_reason) finishReason = choice.finish_reason;
+        } catch {}
+      }
+    }
+
+    const toolCalls = Object.values(toolCallAccumulator).filter(tc => isServerTool(tc.name));
+
+    if (finishReason !== 'tool_calls' || toolCalls.length === 0 || loop === MAX_TOOL_LOOPS) break;
+
+    // Execute server tools
+    const assistantMsg = { role: 'assistant', content: collectedText || null, tool_calls: Object.values(toolCallAccumulator).map(tc => ({
+      id: tc.id, type: 'function', function: { name: tc.name, arguments: tc.arguments },
+    })) };
+
+    const toolResultMsgs = [];
+    for (const tc of toolCalls) {
+      let args = {};
+      try { args = JSON.parse(tc.arguments); } catch {}
+      const result = await executeTool(tc.name, args);
+      res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: tc.name, data: result })}\n\n`);
+      toolResultMsgs.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+    }
+
+    loopMessages = [...loopMessages, assistantMsg, ...toolResultMsgs];
   }
 }
 

@@ -631,6 +631,99 @@
   flex-shrink: 0;
 }
 
+/* ─── Tool Result Cards ─── */
+.tool-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 6px 0;
+  animation: fadeUp 0.3s ease;
+  max-width: 600px;
+}
+
+.tool-result-card .trc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tool-result-card .trc-icon {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.tool-result-card .trc-title {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tool-result-card .trc-title a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.tool-result-card .trc-title a:hover { text-decoration: underline; }
+
+.tool-result-card .trc-body {
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.5;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+.tool-result-card .trc-body.code-output {
+  background: var(--bg);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.tool-result-card .trc-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.tool-result-card .trc-error {
+  color: #ff6b6b;
+}
+
+.tool-result-card .trc-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 10px;
+}
+
+.tool-result-card .trc-stat {
+  color: var(--text-muted);
+}
+
+.tool-result-card .trc-stat span { color: var(--text); }
+
 /* ─── Chat Upload ─── */
 .chat-upload-btn {
   width: 50px;
@@ -1396,6 +1489,30 @@
   letter-spacing: 1px;
 }
 
+.bot-wallet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.bot-wallet-action-btn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 6px 8px;
+  background: var(--surface);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.bot-wallet-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
 .bot-quick-trade {
   display: grid;
   grid-template-columns: 1fr;
@@ -1516,9 +1633,17 @@
 
 /* ─── Bot Main Panel ─── */
 .bot-main {
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bot-main > * {
+  width: 100%;
+  max-width: 640px;
 }
 
 .bot-main h2 {
@@ -1584,7 +1709,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 480px;
+  width: 100%;
 }
 
 .bot-form-row {
@@ -2304,6 +2429,7 @@ async function sendChatMessage() {
     let fullText = '';
     let buffer = '';
     let collectedSources = [];
+    let collectedToolResults = [];
 
     while (true) {
       const { done, value } = await reader.read();
@@ -2327,9 +2453,12 @@ async function sendChatMessage() {
             showToolIndicator(bodyEl, data.tool, data.query);
           } else if (data.type === 'tool_result') {
             removeToolIndicator(bodyEl);
-            if (data.sources && data.sources.length > 0) {
+            if (data.tool === 'web_search' && data.sources && data.sources.length > 0) {
               collectedSources = collectedSources.concat(data.sources);
               showSearchSources(bodyEl, collectedSources);
+            } else if (data.tool && data.data) {
+              collectedToolResults.push({ tool: data.tool, data: data.data });
+              showToolResultCard(bodyEl, data.tool, data.data);
             }
           } else if (data.type === 'error') {
             throw new Error(data.message);
@@ -2341,7 +2470,11 @@ async function sendChatMessage() {
     }
 
     removeToolIndicator(bodyEl);
-    conv.messages.push({ role: 'assistant', content: fullText, model, sources: collectedSources.length > 0 ? collectedSources : undefined });
+    conv.messages.push({
+      role: 'assistant', content: fullText, model,
+      sources: collectedSources.length > 0 ? collectedSources : undefined,
+      toolResults: collectedToolResults.length > 0 ? collectedToolResults : undefined,
+    });
     saveChatHistory();
     bindCodeCopyButtons();
 
@@ -2434,12 +2567,20 @@ function bindCodeCopyButtons() {
 
 // ─── Tool Indicators ───
 
+const TOOL_LABELS = {
+  web_search: (q) => `Searching the web${q ? ` for "${escapeHtml(q)}"` : ''}...`,
+  url_reader: (q) => `Reading URL${q ? `: ${escapeHtml(q.slice(0, 60))}` : ''}...`,
+  code_runner: () => 'Running code...',
+  github_lookup: (q) => `Looking up GitHub${q ? `: ${escapeHtml(q)}` : ''}...`,
+};
+
 function showToolIndicator(bodyEl, tool, query) {
   if (!bodyEl) return;
   removeToolIndicator(bodyEl);
   const el = document.createElement('div');
   el.className = 'tool-indicator';
-  el.innerHTML = `<div class="tool-spinner"></div><span>Searching the web${query ? ` for "${escapeHtml(query)}"` : ''}...</span>`;
+  const labelFn = TOOL_LABELS[tool] || TOOL_LABELS.web_search;
+  el.innerHTML = `<div class="tool-spinner"></div><span>${labelFn(query)}</span>`;
   const contentEl = bodyEl.querySelector('.chat-msg-content');
   if (contentEl) bodyEl.insertBefore(el, contentEl);
   else bodyEl.appendChild(el);
@@ -2461,6 +2602,118 @@ function showSearchSources(bodyEl, sources) {
     if (!label) try { label = new URL(s.url).hostname; } catch { label = s.url; }
     return `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
   }).join('');
+  const contentEl = bodyEl.querySelector('.chat-msg-content');
+  if (contentEl) bodyEl.insertBefore(el, contentEl);
+  else bodyEl.appendChild(el);
+  scrollChat();
+}
+
+function renderToolResultCardHtml(tool, data) {
+  if (!data) return '';
+  if (data.error) {
+    return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>${escapeHtml(tool)}</div><div class="trc-error">${escapeHtml(data.error)}</div></div>`;
+  }
+  if (tool === 'url_reader') {
+    const title = data.title || 'Untitled';
+    const preview = (data.content || '').slice(0, 150).replace(/\n/g, ' ');
+    let urlDisplay = '';
+    if (data.url) try { urlDisplay = new URL(data.url).hostname; } catch { urlDisplay = data.url; }
+    return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>URL READER</div><div class="trc-title">${data.url ? `<a href="${escapeHtml(data.url)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>` : escapeHtml(title)}</div><div class="trc-body">${escapeHtml(preview)}${data.truncated ? '...' : ''}</div><div class="trc-meta"><span>${escapeHtml(urlDisplay)}</span></div></div>`;
+  }
+  if (tool === 'code_runner') {
+    const displayText = data.output || data.returnValue || '(no output)';
+    return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>CODE RUNNER</div><div class="trc-body code-output">${escapeHtml(displayText.slice(0, 500))}</div><div class="trc-meta">${data.executionTimeMs != null ? `<span>${data.executionTimeMs}ms</span>` : ''}</div></div>`;
+  }
+  if (tool === 'github_lookup') {
+    if (data.name && data.stars !== undefined) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GITHUB</div><div class="trc-title"><a href="${escapeHtml(data.url || '')}" target="_blank" rel="noopener">${escapeHtml(data.name)}</a></div><div class="trc-body">${escapeHtml(data.description || '')}</div><div class="trc-stats"><span class="trc-stat">Stars <span>${(data.stars || 0).toLocaleString()}</span></span><span class="trc-stat">Forks <span>${(data.forks || 0).toLocaleString()}</span></span></div></div>`;
+    }
+    if (data.type === 'file') {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GITHUB FILE</div><div class="trc-title">${escapeHtml(data.path || '')}</div><div class="trc-body code-output">${escapeHtml((data.content || '').slice(0, 300))}</div></div>`;
+    }
+    if (Array.isArray(data)) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GITHUB ISSUES</div><div class="trc-body">${data.slice(0, 5).map(i => `#${i.number} ${escapeHtml(i.title)}`).join('<br>')}</div></div>`;
+    }
+  }
+  return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>${escapeHtml(tool)}</div><div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div></div>`;
+}
+
+function showToolResultCard(bodyEl, tool, data) {
+  if (!bodyEl || !data) return;
+  const el = document.createElement('div');
+  el.className = 'tool-result-card';
+
+  if (data.error) {
+    el.innerHTML = `
+      <div class="trc-header"><span class="trc-icon"></span>${escapeHtml(tool)}</div>
+      <div class="trc-error">${escapeHtml(data.error)}</div>
+    `;
+  } else if (tool === 'url_reader') {
+    const title = data.title || 'Untitled';
+    const preview = (data.content || '').slice(0, 150).replace(/\n/g, ' ');
+    const urlDisplay = data.url ? (() => { try { return new URL(data.url).hostname; } catch { return data.url; } })() : '';
+    el.innerHTML = `
+      <div class="trc-header"><span class="trc-icon"></span>URL READER</div>
+      <div class="trc-title">${data.url ? `<a href="${escapeHtml(data.url)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>` : escapeHtml(title)}</div>
+      <div class="trc-body">${escapeHtml(preview)}${data.truncated ? '...' : ''}</div>
+      <div class="trc-meta"><span>${escapeHtml(urlDisplay)}</span>${data.contentLength ? `<span>${(data.contentLength / 1024).toFixed(1)}KB</span>` : ''}</div>
+    `;
+  } else if (tool === 'code_runner') {
+    const output = data.output || '';
+    const retVal = data.returnValue || '';
+    const displayText = output || retVal || '(no output)';
+    el.innerHTML = `
+      <div class="trc-header"><span class="trc-icon"></span>CODE RUNNER</div>
+      <div class="trc-body code-output">${escapeHtml(displayText.slice(0, 500))}</div>
+      <div class="trc-meta">${data.executionTimeMs != null ? `<span>${data.executionTimeMs}ms</span>` : ''}</div>
+    `;
+  } else if (tool === 'github_lookup') {
+    if (data.name && data.stars !== undefined) {
+      // repo_info
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB</div>
+        <div class="trc-title"><a href="${escapeHtml(data.url || '')}" target="_blank" rel="noopener">${escapeHtml(data.name)}</a></div>
+        <div class="trc-body">${escapeHtml(data.description || 'No description')}</div>
+        <div class="trc-stats">
+          <span class="trc-stat">Stars <span>${(data.stars || 0).toLocaleString()}</span></span>
+          <span class="trc-stat">Forks <span>${(data.forks || 0).toLocaleString()}</span></span>
+          <span class="trc-stat">Lang <span>${escapeHtml(data.language || '—')}</span></span>
+        </div>
+      `;
+    } else if (data.type === 'file') {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB FILE</div>
+        <div class="trc-title">${escapeHtml(data.path || '')}</div>
+        <div class="trc-body code-output">${escapeHtml((data.content || '').slice(0, 500))}</div>
+        ${data.size ? `<div class="trc-meta"><span>${(data.size / 1024).toFixed(1)}KB</span></div>` : ''}
+      `;
+    } else if (data.type === 'directory') {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB DIR</div>
+        <div class="trc-title">${escapeHtml(data.path || '/')}</div>
+        <div class="trc-body">${(data.files || []).slice(0, 15).map(f => escapeHtml(f.name)).join(', ')}</div>
+      `;
+    } else if (data.totalCount !== undefined) {
+      // search_code
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB SEARCH</div>
+        <div class="trc-body">${data.totalCount} results found</div>
+        <div class="trc-meta">${(data.items || []).slice(0, 5).map(i => escapeHtml(i.path)).join(', ')}</div>
+      `;
+    } else if (Array.isArray(data)) {
+      // list_issues
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB ISSUES</div>
+        <div class="trc-body">${data.slice(0, 5).map(i => `#${i.number} ${escapeHtml(i.title)}`).join('<br>')}</div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GITHUB</div>
+        <div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div>
+      `;
+    }
+  }
+
   const contentEl = bodyEl.querySelector('.chat-msg-content');
   if (contentEl) bodyEl.insertBefore(el, contentEl);
   else bodyEl.appendChild(el);
@@ -2878,6 +3131,9 @@ function renderChat() {
   }, 50);
 
   const isSearchOn = CHAT.enabledTools.includes('web_search');
+  const isUrlReaderOn = CHAT.enabledTools.includes('url_reader');
+  const isCodeRunnerOn = CHAT.enabledTools.includes('code_runner');
+  const isGithubOn = CHAT.enabledTools.includes('github_lookup');
 
   return `
     <div class="chat-with-sidebar">
@@ -2891,6 +3147,15 @@ function renderChat() {
             </select>
             <button class="tool-toggle${isSearchOn ? ' active' : ''}" id="searchToggle">
               <span class="tool-toggle-dot"></span>Search
+            </button>
+            <button class="tool-toggle${isUrlReaderOn ? ' active' : ''}" id="urlReaderToggle">
+              <span class="tool-toggle-dot"></span>Read URL
+            </button>
+            <button class="tool-toggle${isCodeRunnerOn ? ' active' : ''}" id="codeRunnerToggle">
+              <span class="tool-toggle-dot"></span>Run Code
+            </button>
+            <button class="tool-toggle${isGithubOn ? ' active' : ''}" id="githubToggle">
+              <span class="tool-toggle-dot"></span>GitHub
             </button>
           </div>
           <div style="display:flex;gap:8px;">
@@ -2920,6 +3185,7 @@ function renderChat() {
                 ${m.images ? `<div class="chat-msg-images">${m.images.map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
                 <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
                 ${m.sources ? `<div class="search-sources">${m.sources.slice(0,6).map(s => `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title || s.url)}</a>`).join('')}</div>` : ''}
+                ${m.toolResults ? m.toolResults.map(tr => renderToolResultCardHtml(tr.tool, tr.data)).join('') : ''}
               </div>
             </div>
           `).join('')}
@@ -3270,8 +3536,8 @@ async function initTradingWallet() {
 
 async function fetchTradingState() {
   if (STATE.activeTab !== 'trading') return;
+  if (TRADING._endpointsDead) return;
 
-  // First check wallet — if it fails (404/403/no endpoint), skip all other calls
   try {
     const walletInfo = await api('/v1/trading/wallet/info');
     TRADING.wallet = { publicKey: walletInfo.publicKey, solBalance: walletInfo.solBalance };
@@ -3279,16 +3545,14 @@ async function fetchTradingState() {
     TRADING._fetchFailCount = 0;
   } catch (err) {
     TRADING._fetchFailCount = (TRADING._fetchFailCount || 0) + 1;
-    // If wallet doesn't exist yet, that's expected
     if (err.status === 404) { TRADING.wallet = null; return; }
-    // If tier restricted or endpoint missing, stop polling entirely
-    if (err.status === 403 || err.status === 502) { stopBotPolling(); return; }
-    // Network errors or repeated failures — stop polling to avoid flooding
-    if (TRADING._fetchFailCount >= 2) { stopBotPolling(); return; }
+    if (err.status === 403 || err.status === 502 || err.status === 500 || err.status === 0) {
+      TRADING._endpointsDead = true; stopBotPolling(); return;
+    }
+    if (TRADING._fetchFailCount >= 2) { TRADING._endpointsDead = true; stopBotPolling(); return; }
     return;
   }
 
-  // Wallet exists — fetch remaining state in parallel
   try {
     const results = await Promise.allSettled([
       api('/v1/trading/dca/orders'),
@@ -3297,7 +3561,6 @@ async function fetchTradingState() {
       api('/v1/trading/safety/status'),
       api('/v1/trading/history?limit=50'),
     ]);
-
     if (results[0].status === 'fulfilled') TRADING.dcaOrders = results[0].value || [];
     if (results[1].status === 'fulfilled') TRADING.copyTargets = results[1].value?.targets || [];
     if (results[2].status === 'fulfilled') TRADING.triggers = results[2].value || [];
@@ -3307,11 +3570,10 @@ async function fetchTradingState() {
 }
 
 function startBotPolling() {
-  if (TRADING.pollInterval) return;
+  if (TRADING.pollInterval || TRADING._endpointsDead) return;
   TRADING._fetchFailCount = 0;
-  // Initial fetch — don't start interval until first fetch succeeds or gracefully handles error
   fetchTradingState().then(() => {
-    if (TRADING.pollInterval) return; // guard double-start
+    if (TRADING.pollInterval || TRADING._endpointsDead) return;
     TRADING.pollInterval = setInterval(async () => {
       await fetchTradingState();
       if (STATE.activeTab === 'trading') renderBotPanelContent();
@@ -3372,9 +3634,16 @@ function renderTrading() {
         ${w ? `
           <div class="bot-card">
             <div class="bot-card-title">Wallet</div>
-            <div class="bot-wallet-addr">${w.publicKey.slice(0, 6)}...${w.publicKey.slice(-4)}</div>
+            <div class="bot-wallet-addr" onclick="copyText('${w.publicKey}')" title="Click to copy address" style="cursor:pointer;">
+              ${w.publicKey.slice(0, 6)}...${w.publicKey.slice(-4)}
+              <span style="color:var(--accent);font-size:9px;margin-left:4px;">COPY</span>
+            </div>
             <div class="bot-wallet-bal">${(w.solBalance || 0).toFixed(4)} SOL</div>
             <div class="bot-wallet-bal-label">Available Balance</div>
+            <div class="bot-wallet-actions">
+              <button class="bot-wallet-action-btn" onclick="copyText('${w.publicKey}')">Copy Address</button>
+              <button class="bot-wallet-action-btn" onclick="exportBotPrivateKey()">Export Key</button>
+            </div>
           </div>
         ` : `
           <div class="bot-card">
@@ -3430,7 +3699,7 @@ function renderTrading() {
 
 function renderBotOverview() {
   const positions = TRADING.positions || [];
-  return `
+  return `<div>
     <h2>Positions (${positions.length})</h2>
     ${positions.length === 0
       ? '<div class="bot-empty"><div class="bot-empty-icon">/</div>No open positions</div>'
@@ -3446,11 +3715,11 @@ function renderBotOverview() {
     }
     <h2 style="margin-top:24px;">Recent Trades</h2>
     ${renderBotHistoryTable(TRADING.history.slice(-10))}
-  `;
+  </div>`;
 }
 
 function renderBotSwap() {
-  return `
+  return `<div>
     <h2>Jupiter Swap</h2>
     <div class="bot-form">
       <div class="bot-form-row"><label class="bot-form-label">Input Mint</label><input class="bot-form-input" id="swapInputMint" value="So11111111111111111111111111111111111111112" placeholder="SOL mint"></div>
@@ -3460,12 +3729,12 @@ function renderBotSwap() {
       <button class="bot-form-submit" onclick="executeSwapForm()">Execute Swap</button>
       <div id="swapResult" style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);"></div>
     </div>
-  `;
+  </div>`;
 }
 
 function renderBotDCA() {
   const orders = TRADING.dcaOrders || [];
-  return `
+  return `<div>
     <h2>DCA Orders</h2>
     <div class="bot-form" style="margin-bottom:24px;">
       <div class="bot-form-row"><label class="bot-form-label">Input Mint (from)</label><input class="bot-form-input" id="dcaInputMint" value="So11111111111111111111111111111111111111112"></div>
@@ -3487,12 +3756,12 @@ function renderBotDCA() {
         </div>
       `).join('')}
     </div>
-  `;
+  </div>`;
 }
 
 function renderBotCopy() {
   const targets = TRADING.copyTargets || [];
-  return `
+  return `<div>
     <h2>Copy Trading</h2>
     <div class="bot-form" style="margin-bottom:24px;">
       <div class="bot-form-row"><label class="bot-form-label">Wallet Address to Follow</label><input class="bot-form-input" id="copyAddress" placeholder="Solana wallet address"></div>
@@ -3516,12 +3785,12 @@ function renderBotCopy() {
         </div>
       `).join('')}
     </div>
-  `;
+  </div>`;
 }
 
 function renderBotTriggers() {
   const triggers = TRADING.triggers || [];
-  return `
+  return `<div>
     <h2>Conditional Orders (TP / SL / Sniper)</h2>
     <div class="bot-form" style="margin-bottom:24px;">
       <div class="bot-form-row"><label class="bot-form-label">Token Mint</label><input class="bot-form-input" id="trigMint" placeholder="Token mint"></div>
@@ -3547,14 +3816,14 @@ function renderBotTriggers() {
         </div>
       `).join('')}
     </div>
-  `;
+  </div>`;
 }
 
 function renderBotHistory() {
-  return `
+  return `<div>
     <h2>Trade History</h2>
     ${renderBotHistoryTable(TRADING.history)}
-  `;
+  </div>`;
 }
 
 function renderBotHistoryTable(entries) {
@@ -3577,6 +3846,26 @@ function renderBotHistoryTable(entries) {
 }
 
 // ─── Bot Actions ───
+
+async function exportBotPrivateKey() {
+  if (!confirm('This will display your private key. Never share it with anyone. Continue?')) return;
+  try {
+    const res = await api('/v1/trading/wallet/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirm: true }),
+    });
+    const key = res.privateKey || res.secretKey || '';
+    if (key) {
+      await navigator.clipboard.writeText(key);
+      alert('Private key copied to clipboard.');
+    } else {
+      alert('Could not retrieve private key.');
+    }
+  } catch (err) {
+    alert('Export failed: ' + (err.message || 'Unknown error'));
+  }
+}
 
 async function executeQuickTrade(action) {
   const token = document.getElementById('botQtToken')?.value.trim();
@@ -4143,7 +4432,7 @@ const FUTURE_APIS = [
     id: 'helius',
     name: 'Helius',
     category: 'RPC/Infrastructure',
-    logo: 'https://avatars.githubusercontent.com/u/111014188?s=200&v=4',
+    logo: 'https://dashboard.helius.dev/logos/logo-helius.svg',
     description: 'Premier Solana RPC provider with enhanced APIs for NFT metadata, transaction parsing, webhooks, and Digital Asset Standard API.',
     features: ['RPC', 'Webhooks', 'DAS API', 'NFT Metadata'],
     website: 'https://helius.dev',
@@ -4152,7 +4441,7 @@ const FUTURE_APIS = [
     id: 'quicknode',
     name: 'QuickNode',
     category: 'RPC/Infrastructure',
-    logo: 'https://avatars.githubusercontent.com/u/47941499?s=200&v=4',
+    logo: 'https://www.gitbook.com/cdn-cgi/image/width=40,dpr=2,height=40,fit=contain,format=auto/https%3A%2F%2F1578191620-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252F-Mf3KXQJ21hOqcm3xf03%252Ficon%252FBVmzTIFKQxm5Kik0vItS%252FQuickNode%2520Icon%2520Blue.png%3Falt%3Dmedia%26token%3D4acb23b9-bd6e-4cd7-8a6d-4f1d1b0c0096',
     description: 'Multi-chain RPC infrastructure with Solana support. Add-ons for NFT APIs, token data, and marketplace information.',
     features: ['Multi-chain', 'Global Edge', 'Add-ons', 'Low Latency'],
     website: 'https://quicknode.com',
@@ -4161,7 +4450,7 @@ const FUTURE_APIS = [
     id: 'alchemy',
     name: 'Alchemy',
     category: 'RPC/Infrastructure',
-    logo: 'https://avatars.githubusercontent.com/u/31228267?s=200&v=4',
+    logo: 'https://www.datocms-assets.com/105223/1749761632-logo.svg',
     description: 'Enterprise-grade blockchain infrastructure with Solana support. Enhanced APIs, webhooks, and developer tools.',
     features: ['Enterprise', 'Webhooks', 'Dev Tools', 'High Uptime'],
     website: 'https://alchemy.com',
@@ -4170,7 +4459,7 @@ const FUTURE_APIS = [
     id: 'triton',
     name: 'Triton',
     category: 'RPC/Infrastructure',
-    logo: 'https://avatars.githubusercontent.com/u/81624557?s=200&v=4',
+    logo: 'https://triton.one/img/logo-triton-icon.png',
     description: 'High-performance Solana RPC provider known for validator infrastructure. Powers major Solana dApps.',
     features: ['High Performance', 'Validators', 'Dedicated RPC', 'Shared RPC'],
     website: 'https://triton.one',
@@ -4180,7 +4469,7 @@ const FUTURE_APIS = [
     id: 'jupiter',
     name: 'Jupiter',
     category: 'DeFi/Trading',
-    logo: 'https://avatars.githubusercontent.com/u/90786211?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-jupiter-1.svg',
     description: 'The leading Solana DEX aggregator. Routes trades across all major AMMs for best prices with swap, limit order, and DCA APIs.',
     features: ['DEX Aggregator', 'Limit Orders', 'DCA', 'Best Prices'],
     website: 'https://jup.ag',
@@ -4189,7 +4478,7 @@ const FUTURE_APIS = [
     id: 'raydium',
     name: 'Raydium',
     category: 'DeFi/Trading',
-    logo: 'https://avatars.githubusercontent.com/u/78620407?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-raydium-1.svg',
     description: 'Major Solana AMM and liquidity provider. APIs for swaps, pools, and concentrated liquidity positions.',
     features: ['AMM', 'Liquidity Pools', 'CLMM', 'Swaps'],
     website: 'https://raydium.io',
@@ -4198,7 +4487,7 @@ const FUTURE_APIS = [
     id: 'orca',
     name: 'Orca',
     category: 'DeFi/Trading',
-    logo: 'https://avatars.githubusercontent.com/u/80433635?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-orca.svg',
     description: 'User-friendly Solana DEX with concentrated liquidity (Whirlpools). SDKs for programmatic trading and liquidity provision.',
     features: ['Whirlpools', 'CLMM', 'SDK', 'User-Friendly'],
     website: 'https://orca.so',
@@ -4207,7 +4496,7 @@ const FUTURE_APIS = [
     id: 'pumpfun',
     name: 'Pump.fun',
     category: 'DeFi/Trading',
-    logo: 'https://pump.fun/icon.png',
+    logo: 'https://www.helius.dev/api/logos/file/pump-fun-logo.svg',
     description: 'Popular token launchpad on Solana for memecoins. Essential for tracking new launches and early trading opportunities.',
     features: ['Token Launch', 'Memecoins', 'Bonding Curves', 'Early Access'],
     website: 'https://pump.fun',
@@ -4217,7 +4506,7 @@ const FUTURE_APIS = [
     id: 'birdeye',
     name: 'Birdeye',
     category: 'Data/Analytics',
-    logo: 'https://avatars.githubusercontent.com/u/105024664?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/birdeye-logo.svg',
     description: 'Comprehensive Solana token analytics. Real-time prices, OHLCV data, holder info, security analysis, and trending tokens.',
     features: ['Token Data', 'OHLCV', 'Security Scan', 'Trending'],
     website: 'https://birdeye.so',
@@ -4226,7 +4515,7 @@ const FUTURE_APIS = [
     id: 'dexscreener',
     name: 'DexScreener',
     category: 'Data/Analytics',
-    logo: 'https://pbs.twimg.com/profile_images/1629836273207554050/kLwbhJZT_200x200.jpg',
+    logo: 'https://www.helius.dev/api/logos/file/dexscreener-logo.svg',
     description: 'Multi-chain DEX analytics with excellent Solana coverage. Real-time charts, pair data, new listings, and trending tokens.',
     features: ['Multi-chain', 'Charts', 'New Listings', 'Trending'],
     website: 'https://dexscreener.com',
@@ -4235,7 +4524,7 @@ const FUTURE_APIS = [
     id: 'defillama',
     name: 'DeFiLlama',
     category: 'Data/Analytics',
-    logo: 'https://avatars.githubusercontent.com/u/80431448?s=200&v=4',
+    logo: 'https://defillama.com/defillama-dark.png',
     description: 'Open/free API for DeFi TVL, yields, and protocol analytics across all chains. Essential for macro DeFi data.',
     features: ['TVL Data', 'Yields', 'Free API', 'Cross-chain'],
     website: 'https://defillama.com',
@@ -4244,7 +4533,7 @@ const FUTURE_APIS = [
     id: 'coingecko',
     name: 'CoinGecko',
     category: 'Data/Analytics',
-    logo: 'https://avatars.githubusercontent.com/u/7494937?s=200&v=4',
+    logo: 'https://static.coingecko.com/s/coingecko-logo-8903d34ce19ca4be1c81f0db30e924154750d208683fad7ae6f2ce06c76d0a56.png',
     description: 'Major crypto data aggregator with token prices, market caps, volumes, and historical data. Free and pro tiers available.',
     features: ['Prices', 'Market Cap', 'Volume', 'Historical'],
     website: 'https://coingecko.com',
@@ -4254,7 +4543,7 @@ const FUTURE_APIS = [
     id: 'magiceden',
     name: 'Magic Eden',
     category: 'NFT',
-    logo: 'https://avatars.githubusercontent.com/u/99347446?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-magiceden.svg',
     description: 'Largest Solana NFT marketplace. APIs for listings, sales, collections, and marketplace data for trading bots.',
     features: ['Marketplace', 'Listings', 'Sales Data', 'Collections'],
     website: 'https://magiceden.io',
@@ -4263,7 +4552,7 @@ const FUTURE_APIS = [
     id: 'tensor',
     name: 'Tensor',
     category: 'NFT',
-    logo: 'https://avatars.githubusercontent.com/u/113384710?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-tensor-1.svg',
     description: 'Professional Solana NFT trading platform with AMM pools, bids, and real-time data. Growing API for pro traders.',
     features: ['Pro Trading', 'AMM Pools', 'Bids', 'Real-time'],
     website: 'https://tensor.trade',
@@ -4272,7 +4561,7 @@ const FUTURE_APIS = [
     id: 'metaplex',
     name: 'Metaplex',
     category: 'NFT',
-    logo: 'https://avatars.githubusercontent.com/u/84874526?s=200&v=4',
+    logo: 'https://www.helius.dev/api/logos/file/logo-metaplex.svg',
     description: 'Core NFT infrastructure on Solana. Standards, tools, and APIs for creating and managing NFTs and digital assets.',
     features: ['NFT Standard', 'cNFTs', 'Tooling', 'Metadata'],
     website: 'https://metaplex.com',
@@ -4282,7 +4571,7 @@ const FUTURE_APIS = [
     id: 'twitter',
     name: 'Twitter/X API',
     category: 'Social/Alerts',
-    logo: 'https://abs.twimg.com/icons/apple-touch-icon-192x192.png',
+    logo: 'https://abs.twimg.com/responsive-web/client-web/icon-ios.77d25eba.png',
     description: 'Essential for crypto social signals, influencer tracking, sentiment analysis, and automated posting.',
     features: ['Social Signals', 'Sentiment', 'Auto-Post', 'Influencers'],
     website: 'https://developer.twitter.com',
@@ -4300,7 +4589,7 @@ const FUTURE_APIS = [
     id: 'discord',
     name: 'Discord API',
     category: 'Social/Alerts',
-    logo: 'https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.svg',
+    logo: 'https://www.helius.dev/api/logos/file/logo-discord-1.svg',
     description: 'Powers community bots for alerts, trading signals, and automated notifications. Essential for crypto communities.',
     features: ['Bots', 'Webhooks', 'Communities', 'Alerts'],
     website: 'https://discord.com/developers',
@@ -4310,7 +4599,7 @@ const FUTURE_APIS = [
     id: 'shyft',
     name: 'Shyft',
     category: 'Emerging',
-    logo: 'https://avatars.githubusercontent.com/u/101880627?s=200&v=4',
+    logo: 'https://shyft.to/assets/shyft-logo-symbol.png',
     description: 'Solana-focused API with transaction parsing, wallet tracking, token APIs, and webhooks. Growing Helius alternative.',
     features: ['Parsing', 'Wallets', 'Webhooks', 'Tokens'],
     website: 'https://shyft.to',
@@ -4319,7 +4608,7 @@ const FUTURE_APIS = [
     id: 'hellomoon',
     name: 'Hello Moon',
     category: 'Emerging',
-    logo: 'https://avatars.githubusercontent.com/u/112967282?s=200&v=4',
+    logo: 'https://www.hellomoon.io/assets/hellomoon-logo.svg',
     description: 'Solana analytics and data API platform. Indexed blockchain data, NFT analytics, DeFi metrics, and wallet intelligence.',
     features: ['Analytics', 'Indexed Data', 'NFT Metrics', 'Wallets'],
     website: 'https://hellomoon.io',
@@ -4364,7 +4653,7 @@ function renderFutureApis() {
         return `
           <div class="api-card">
             <div class="api-card-logo">
-              <img src="${api.logo}" alt="${api.name}">
+              <img src="${api.logo}" alt="${api.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'width:48px;height:48px;background:var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);font-size:18px;\\'>${api.name.charAt(0)}</div>'">
             </div>
             <div class="api-card-content">
               <div class="api-card-header">
@@ -4480,16 +4769,22 @@ function bindEvents() {
     });
   }
 
-  // Search toggle
-  const searchToggle = document.getElementById('searchToggle');
-  if (searchToggle) {
-    searchToggle.addEventListener('click', () => {
-      const idx = CHAT.enabledTools.indexOf('web_search');
-      if (idx >= 0) CHAT.enabledTools.splice(idx, 1);
-      else CHAT.enabledTools.push('web_search');
-      searchToggle.classList.toggle('active', CHAT.enabledTools.includes('web_search'));
-    });
+  // Tool toggles
+  function bindToolToggle(elementId, toolName) {
+    const btn = document.getElementById(elementId);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const idx = CHAT.enabledTools.indexOf(toolName);
+        if (idx >= 0) CHAT.enabledTools.splice(idx, 1);
+        else CHAT.enabledTools.push(toolName);
+        btn.classList.toggle('active', CHAT.enabledTools.includes(toolName));
+      });
+    }
   }
+  bindToolToggle('searchToggle', 'web_search');
+  bindToolToggle('urlReaderToggle', 'url_reader');
+  bindToolToggle('codeRunnerToggle', 'code_runner');
+  bindToolToggle('githubToggle', 'github_lookup');
 
   // Upload button + file input
   const uploadBtn = document.getElementById('chatUploadBtn');
