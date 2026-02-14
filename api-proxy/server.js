@@ -1,8 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import { Connection } from '@solana/web3.js';
 import { config } from 'dotenv';
 config();
+
+import {
+  generateWallet, importWallet, loadKeypair, getEncryptionKey, getSolBalance,
+  getQuote, executeSwap, SOL_MINT, USDC_MINT,
+  executePumpTrade, getBondingCurveState, calculatePrice, calculateBuyQuote, calculateSellQuote, getTokenPriceInfo,
+  CopyTrader, createSafetyManager,
+  createDCAOrder, pauseDCAOrder, resumeDCAOrder, cancelDCAOrder, getDCAOrderInfo,
+  TriggerManager,
+} from './trading/index.js';
 
 // ═══════════════════════════════════════════
 // INFINITE Protocol — API Proxy Server
@@ -28,6 +38,15 @@ const walletKeys = new Map();   // wallet -> apiKey
 const usageCounts = new Map();  // apiKey -> { date, count, tokens }
 const balanceCache = new Map(); // wallet -> { balance, checkedAt }
 const videoOperations = new Map(); // operationName -> { apiKey, prompt, status, result }
+
+// ─── Trading Bot State ──────────────────────────────────────
+const tradingWallets = new Map();    // apiKey → { encryptedKeypair, publicKey, createdAt }
+const tradingPositions = new Map();  // apiKey → Map<mint, { amount, avgPrice, entryTime }>
+const tradeHistory = new Map();      // apiKey → [{ id, action, mint, sol, tokens, sig, ts }]
+const activeDCA = new Map();         // orderId → { apiKey, order }
+const activeCopyTraders = new Map(); // apiKey → CopyTrader instance
+const activeTriggers = new Map();    // apiKey → TriggerManager instance
+const safetyManagers = new Map();    // apiKey → SafetyManager instance
 
 // ─── Config ──────────────────────────────────────────────────
 const CONFIG = {
@@ -60,7 +79,50 @@ const CONFIG = {
     }
   },
   BALANCE_CACHE_TTL: 5 * 60 * 1000, // 5 minutes
+  WALLET_ENCRYPTION_SECRET: process.env.WALLET_ENCRYPTION_SECRET || 'dev-encryption-secret-change-me',
 };
+
+const TRADING_TIERS = ['operator', 'architect'];
+const solanaConnection = new Connection(CONFIG.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com');
+
+function getSafetyManager(apiKey) {
+  if (!safetyManagers.has(apiKey)) safetyManagers.set(apiKey, createSafetyManager());
+  return safetyManagers.get(apiKey);
+}
+
+function getTriggerManager(apiKey) {
+  if (!activeTriggers.has(apiKey)) activeTriggers.set(apiKey, new TriggerManager());
+  return activeTriggers.get(apiKey);
+}
+
+function requireTradingTier(req, res, next) {
+  const { tier } = req.infinite;
+  if (!TRADING_TIERS.includes(tier)) {
+    return res.status(403).json({
+      error: 'tier_restricted',
+      message: 'Trading bot requires Operator tier or above.',
+      requiredTier: 'Operator',
+      currentTier: CONFIG.TIERS[tier]?.label || tier,
+    });
+  }
+  next();
+}
+
+function getPositions(apiKey) {
+  if (!tradingPositions.has(apiKey)) tradingPositions.set(apiKey, new Map());
+  return tradingPositions.get(apiKey);
+}
+
+function getHistory(apiKey) {
+  if (!tradeHistory.has(apiKey)) tradeHistory.set(apiKey, []);
+  return tradeHistory.get(apiKey);
+}
+
+function recordTrade(apiKey, entry) {
+  const hist = getHistory(apiKey);
+  hist.push({ id: `t_${Date.now()}`, ...entry, ts: Date.now() });
+  if (hist.length > 1000) hist.splice(0, hist.length - 1000);
+}
 
 const PROVIDER_AVAILABLE = {
   claude: !!CONFIG.ANTHROPIC_API_KEY,
@@ -1456,6 +1518,349 @@ async function streamOpenAIWithSystem(model, systemPrompt, messages, maxTokens, 
     }
   }
 }
+
+// ─── Routes: Trading Bot ─────────────────────────────────────
+
+// POST /v1/trading/wallet/create
+app.post('/v1/trading/wallet/create', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  if (tradingWallets.has(apiKey)) {
+    const existing = tradingWallets.get(apiKey);
+    return res.json({ publicKey: existing.publicKey, message: 'Wallet already exists.' });
+  }
+  const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+  const wallet = generateWallet(encKey);
+  tradingWallets.set(apiKey, wallet);
+  res.json({ publicKey: wallet.publicKey, message: 'Burner wallet created. Fund it with SOL to start trading.' });
+});
+
+// POST /v1/trading/wallet/import
+app.post('/v1/trading/wallet/import', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { privateKey } = req.body;
+  if (!privateKey) return res.status(400).json({ error: 'missing_field', message: 'privateKey is required' });
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const wallet = importWallet(privateKey, encKey);
+    tradingWallets.set(apiKey, wallet);
+    res.json({ publicKey: wallet.publicKey, message: 'Wallet imported.' });
+  } catch (err) {
+    res.status(400).json({ error: 'import_failed', message: err.message });
+  }
+});
+
+// GET /v1/trading/wallet/info
+app.get('/v1/trading/wallet/info', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first via POST /v1/trading/wallet/create' });
+  try {
+    const solBalance = await getSolBalance(solanaConnection, w.publicKey);
+    const positions = [...getPositions(apiKey).entries()].map(([mint, p]) => ({ mint, ...p }));
+    res.json({ publicKey: w.publicKey, solBalance, positions, createdAt: w.createdAt });
+  } catch (err) {
+    res.status(502).json({ error: 'balance_check_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/wallet/export
+app.post('/v1/trading/wallet/export', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { confirm } = req.body;
+  if (!confirm) return res.status(400).json({ error: 'confirmation_required', message: 'Set { confirm: true } to export private key.' });
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'No wallet found.' });
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    const privateKey = Buffer.from(keypair.secretKey).toString('base64');
+    res.json({ publicKey: w.publicKey, privateKey });
+  } catch (err) {
+    res.status(500).json({ error: 'export_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/swap/quote
+app.post('/v1/trading/swap/quote', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { inputMint, outputMint, amount, slippageBps } = req.body;
+  if (!inputMint || !outputMint || !amount) {
+    return res.status(400).json({ error: 'missing_fields', message: 'inputMint, outputMint, amount required' });
+  }
+  try {
+    const quote = await getQuote({ inputMint, outputMint, amount: String(amount), slippageBps });
+    res.json(quote);
+  } catch (err) {
+    res.status(502).json({ error: 'quote_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/swap
+app.post('/v1/trading/swap', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const { inputMint, outputMint, amount, slippageBps, priorityFeeLamports } = req.body;
+  if (!inputMint || !outputMint || !amount) {
+    return res.status(400).json({ error: 'missing_fields', message: 'inputMint, outputMint, amount required' });
+  }
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  const safety = getSafetyManager(apiKey);
+  const solAmount = inputMint === SOL_MINT ? Number(amount) / 1e9 : 0;
+  const check = safety.validateTrade({ action: 'buy', solAmount, mint: outputMint });
+  if (!check.allowed) return res.status(403).json({ error: 'safety_blocked', message: check.reason });
+
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    const quote = await getQuote({ inputMint, outputMint, amount: String(amount), slippageBps });
+    const result = await executeSwap(solanaConnection, keypair, quote, { priorityFeeLamports });
+    recordTrade(apiKey, { action: 'swap', inputMint, outputMint, amount, sig: result.signature });
+    res.json({ signature: result.signature, inputAmount: result.inputAmount, outputAmount: result.outputAmount });
+  } catch (err) {
+    res.status(502).json({ error: 'swap_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/pump/buy
+app.post('/v1/trading/pump/buy', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const { mint, amount, denominatedInSol = true, slippage, priorityFee, pool } = req.body;
+  if (!mint || amount === undefined) return res.status(400).json({ error: 'missing_fields', message: 'mint, amount required' });
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  const safety = getSafetyManager(apiKey);
+  const check = safety.validateTrade({ action: 'buy', solAmount: denominatedInSol ? amount : 0, mint });
+  if (!check.allowed) return res.status(403).json({ error: 'safety_blocked', message: check.reason });
+
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    const result = await executePumpTrade(solanaConnection, keypair, { mint, action: 'buy', amount, denominatedInSol, slippage, priorityFee, pool });
+    recordTrade(apiKey, { action: 'pump_buy', mint, amount, sig: result.signature });
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({ error: 'pump_buy_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/pump/sell
+app.post('/v1/trading/pump/sell', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const { mint, amount, denominatedInSol = false, slippage, priorityFee, pool } = req.body;
+  if (!mint || amount === undefined) return res.status(400).json({ error: 'missing_fields', message: 'mint, amount required' });
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    const result = await executePumpTrade(solanaConnection, keypair, { mint, action: 'sell', amount, denominatedInSol, slippage, priorityFee, pool });
+    recordTrade(apiKey, { action: 'pump_sell', mint, amount, sig: result.signature });
+    res.json(result);
+  } catch (err) {
+    res.status(502).json({ error: 'pump_sell_failed', message: err.message });
+  }
+});
+
+// POST /v1/trading/dca/create
+app.post('/v1/trading/dca/create', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs, slippageBps, maxCycles, maxPrice } = req.body;
+  if (!inputMint || !outputMint || !totalAmountLamports || !amountPerCycleLamports || !cycleIntervalMs) {
+    return res.status(400).json({ error: 'missing_fields', message: 'inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs required' });
+  }
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  try {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    const order = createDCAOrder(solanaConnection, keypair, { inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs, slippageBps, maxCycles, maxPrice });
+    activeDCA.set(order.id, { apiKey, order });
+    res.json(getDCAOrderInfo(order));
+  } catch (err) {
+    res.status(500).json({ error: 'dca_create_failed', message: err.message });
+  }
+});
+
+// GET /v1/trading/dca/orders
+app.get('/v1/trading/dca/orders', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const orders = [...activeDCA.values()]
+    .filter(d => d.apiKey === apiKey)
+    .map(d => getDCAOrderInfo(d.order));
+  res.json(orders);
+});
+
+// POST /v1/trading/dca/:id/cancel
+app.post('/v1/trading/dca/:id/cancel', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const entry = activeDCA.get(req.params.id);
+  if (!entry || entry.apiKey !== apiKey) return res.status(404).json({ error: 'not_found', message: 'DCA order not found.' });
+  cancelDCAOrder(entry.order);
+  res.json({ id: req.params.id, status: 'cancelled' });
+});
+
+// POST /v1/trading/copy/follow
+app.post('/v1/trading/copy/follow', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { address, name, multiplier, maxPositionSol, copyBuys, copySells, slippageBps, delayMs } = req.body;
+  if (!address) return res.status(400).json({ error: 'missing_fields', message: 'address required' });
+
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  let ct = activeCopyTraders.get(apiKey);
+  if (!ct) {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    ct = new CopyTrader(solanaConnection, keypair, { onTrade: (data) => {
+      recordTrade(apiKey, { action: 'copy_' + data.trade?.action, mint: data.trade?.mint, sig: data.result?.signature });
+    }});
+    activeCopyTraders.set(apiKey, ct);
+  }
+
+  const target = ct.addTarget(address, { name, multiplier, maxPositionSol, copyBuys, copySells, slippageBps, delayMs });
+  res.json(target);
+});
+
+// POST /v1/trading/copy/unfollow
+app.post('/v1/trading/copy/unfollow', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { targetId } = req.body;
+  if (!targetId) return res.status(400).json({ error: 'missing_fields', message: 'targetId required' });
+  const ct = activeCopyTraders.get(apiKey);
+  if (!ct) return res.status(404).json({ error: 'not_found', message: 'No copy trader active.' });
+  ct.removeTarget(targetId);
+  res.json({ removed: targetId });
+});
+
+// GET /v1/trading/copy/targets
+app.get('/v1/trading/copy/targets', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const ct = activeCopyTraders.get(apiKey);
+  if (!ct) return res.json({ targets: [], stats: { totalTargets: 0, activeTargets: 0, totalTradesCopied: 0, successRate: '0.0' } });
+  res.json({ targets: ct.listTargets(), stats: ct.getStats() });
+});
+
+// POST /v1/trading/copy/start
+app.post('/v1/trading/copy/start', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const ct = activeCopyTraders.get(apiKey);
+  if (!ct) return res.status(404).json({ error: 'not_found', message: 'Follow a wallet first.' });
+  ct.start();
+  res.json({ status: 'running', targets: ct.listTargets().length });
+});
+
+// POST /v1/trading/copy/stop
+app.post('/v1/trading/copy/stop', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const ct = activeCopyTraders.get(apiKey);
+  if (!ct) return res.status(404).json({ error: 'not_found', message: 'No copy trader active.' });
+  ct.stop();
+  res.json({ status: 'stopped' });
+});
+
+// POST /v1/trading/trigger/create
+app.post('/v1/trading/trigger/create', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const { mint, condition, order, expiresAt, oneShot } = req.body;
+  if (!mint || !condition || !order) return res.status(400).json({ error: 'missing_fields', message: 'mint, condition, order required' });
+
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first.' });
+
+  const tm = getTriggerManager(apiKey);
+
+  // Wire executor if not set
+  if (!tm.executeFn) {
+    const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
+    const keypair = loadKeypair(w.encryptedKeypair, encKey);
+    tm.setExecutor(async (trigger) => {
+      const { action, inputMint, outputMint, amount, slippageBps } = trigger.order;
+      const quote = await getQuote({ inputMint, outputMint, amount: String(amount), slippageBps: slippageBps || 300 });
+      const result = await executeSwap(solanaConnection, keypair, quote);
+      recordTrade(apiKey, { action: `trigger_${action}`, mint: trigger.mint, sig: result.signature });
+      return { signature: result.signature };
+    });
+  }
+
+  const trigger = tm.create({ mint, condition, order, expiresAt, oneShot });
+  res.json(trigger);
+});
+
+// GET /v1/trading/trigger/list
+app.get('/v1/trading/trigger/list', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const tm = activeTriggers.get(apiKey);
+  if (!tm) return res.json([]);
+  res.json(tm.list());
+});
+
+// POST /v1/trading/trigger/:id/cancel
+app.post('/v1/trading/trigger/:id/cancel', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const tm = activeTriggers.get(apiKey);
+  if (!tm) return res.status(404).json({ error: 'not_found', message: 'No triggers active.' });
+  tm.cancel(req.params.id);
+  res.json({ id: req.params.id, status: 'cancelled' });
+});
+
+// GET /v1/trading/safety/status
+app.get('/v1/trading/safety/status', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const safety = getSafetyManager(apiKey);
+  res.json(safety.getState());
+});
+
+// POST /v1/trading/safety/kill
+app.post('/v1/trading/safety/kill', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const { reason } = req.body;
+
+  // Kill all bots for this user
+  const safety = getSafetyManager(apiKey);
+  safety.killSwitch(reason || 'Manual kill switch from dashboard');
+
+  // Stop copy trader
+  const ct = activeCopyTraders.get(apiKey);
+  if (ct) ct.stop();
+
+  // Stop DCA orders
+  for (const [id, entry] of activeDCA) {
+    if (entry.apiKey === apiKey) cancelDCAOrder(entry.order);
+  }
+
+  // Stop triggers
+  const tm = activeTriggers.get(apiKey);
+  if (tm) tm.stopAll();
+
+  res.json({ killed: true, message: 'All trading bots stopped.' });
+});
+
+// POST /v1/trading/safety/resume
+app.post('/v1/trading/safety/resume', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const safety = getSafetyManager(apiKey);
+  const resumed = safety.resumeTrading();
+  res.json({ resumed, state: safety.getState() });
+});
+
+// GET /v1/trading/positions
+app.get('/v1/trading/positions', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const positions = [...getPositions(apiKey).entries()].map(([mint, p]) => ({ mint, ...p }));
+  res.json(positions);
+});
+
+// GET /v1/trading/history
+app.get('/v1/trading/history', authenticateApiKey, requireTradingTier, (req, res) => {
+  const { apiKey } = req.infinite;
+  const limit = parseInt(req.query.limit) || 100;
+  const hist = getHistory(apiKey);
+  res.json(hist.slice(-limit));
+});
 
 // ─── Routes: Treasury & Stats ────────────────────────────────
 
