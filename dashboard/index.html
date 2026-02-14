@@ -5011,12 +5011,13 @@ async function viewAgentLogs(agentId) {
 }
 
 function renderMyAgents() {
-  // Lazy load data
-  if (!AGENTS.templates.length) {
-    loadAgentTemplates().then(() => loadMyAgents().then(() => render()));
-  }
-  if (!AGENTS.list.length && AGENTS.templates.length) {
-    loadMyAgents().then(() => render());
+  // Lazy load data (use flag to prevent re-entrant loop)
+  if (!AGENTS.templates.length && !AGENTS.loading) {
+    AGENTS.loading = true;
+    loadAgentTemplates().then(() => loadMyAgents()).then(() => {
+      AGENTS.loading = false;
+      render();
+    }).catch(() => { AGENTS.loading = false; });
   }
 
   // Wizard mode

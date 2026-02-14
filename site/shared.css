@@ -230,6 +230,48 @@ body {
 
 .btn-sm.primary:hover { background: #fff; }
 .btn-sm.danger:hover { border-color: var(--red); color: var(--red); }
+.btn-sm.accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.btn-sm.accent:hover { background: #fff; border-color: #fff; }
+.btn-sm.accent:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 16px 36px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn.accent {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.btn.accent:hover {
+  background: #fff;
+  border-color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(200, 255, 0, 0.2);
+}
 
 /* ─── Cards ─── */
 .card {
