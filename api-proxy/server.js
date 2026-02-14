@@ -18,6 +18,7 @@ import {
   getAnthropicTools, getGeminiTools, getOpenAITools,
   SERVER_TOOL_NAMES,
 } from './tools/index.js';
+import oauthRouter from './oauth/routes.js';
 
 // ═══════════════════════════════════════════
 // INFINITE Protocol — API Proxy Server
@@ -52,6 +53,15 @@ const activeDCA = new Map();         // orderId → { apiKey, order }
 const activeCopyTraders = new Map(); // apiKey → CopyTrader instance
 const activeTriggers = new Map();    // apiKey → TriggerManager instance
 const safetyManagers = new Map();    // apiKey → SafetyManager instance
+
+// ─── Voting State ─────────────────────────────────────────────
+const walletVotes = new Map();       // wallet → Set<apiId>
+const voteCounts = {};               // apiId → number (aggregated cache)
+const VALID_API_IDS = new Set([
+  'helius', 'quicknode', 'alchemy', 'triton', 'jupiter', 'raydium', 'orca',
+  'pumpfun', 'birdeye', 'dexscreener', 'defillama', 'coingecko', 'magiceden',
+  'tensor', 'metaplex', 'twitter', 'telegram', 'discord', 'shyft', 'hellomoon',
+]);
 
 // ─── Config ──────────────────────────────────────────────────
 const CONFIG = {
@@ -409,6 +419,9 @@ async function authenticateApiKey(req, res, next) {
   next();
 }
 
+// ─── Routes: OAuth ───────────────────────────────────────────
+app.use('/oauth', oauthRouter);
+
 // ─── Routes: Auth ────────────────────────────────────────────
 
 // POST /auth/register — Verify wallet ownership and issue API key
@@ -701,7 +714,7 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
 // POST /v1/chat/stream — SSE streaming proxy to Claude or Gemini
 app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature, tools, images } = req.body;
-  const { tierConfig, usage } = req.infinite;
+  const { tierConfig, usage, apiKey } = req.infinite;
 
   const requestedModel = model || tierConfig.models[0];
 
@@ -736,11 +749,11 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
 
   try {
     if (provider === 'claude') {
-      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
+      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey);
     } else if (provider === 'gemini') {
-      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
+      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey);
     } else if (provider === 'openai') {
-      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools);
+      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey);
     } else {
       res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
     }
@@ -755,7 +768,7 @@ app.post('/v1/chat/stream', authenticateApiKey, async (req, res) => {
   }
 });
 
-async function streamAnthropic(model, messages, maxTokens, temperature, res, tools, serverTools) {
+async function streamAnthropic(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey) {
   const MAX_TOOL_LOOPS = 3;
   let loopMessages = [...messages];
 
@@ -877,7 +890,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
     for (const block of toolUseBlocks) {
       let input = {};
       try { input = JSON.parse(block.input); } catch {}
-      const result = await executeTool(block.name, input);
+      const result = await executeTool(block.name, input, apiKey);
       res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: block.name, data: result })}\n\n`);
       toolResults.push({
         type: 'tool_result',
@@ -894,7 +907,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
   }
 }
 
-async function streamGemini(model, messages, maxTokens, temperature, res, tools, serverTools) {
+async function streamGemini(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey) {
   const MAX_TOOL_LOOPS = 3;
 
   function buildGeminiContents(msgs) {
@@ -1013,7 +1026,7 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
     // Execute server tools
     const functionResponses = [];
     for (const fc of functionCalls) {
-      const result = await executeTool(fc.name, fc.args || {});
+      const result = await executeTool(fc.name, fc.args || {}, apiKey);
       res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: fc.name, data: result })}\n\n`);
       functionResponses.push({ name: fc.name, response: result });
     }
@@ -1027,13 +1040,13 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
   }
 }
 
-async function streamOpenAI(model, messages, maxTokens, temperature, res, tools, serverTools) {
+async function streamOpenAI(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey) {
   const hasServerTools = serverTools && serverTools.length > 0;
   const hasNativeToolsOnly = tools && tools.length > 0 && !hasServerTools;
 
   if (hasServerTools) {
     // Use Chat Completions with function calling for server tools
-    await streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools);
+    await streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey);
   } else if (hasNativeToolsOnly) {
     // Use Responses API for native-only tools (web_search)
     await streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools);
@@ -1042,7 +1055,7 @@ async function streamOpenAI(model, messages, maxTokens, temperature, res, tools,
   }
 }
 
-async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools) {
+async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey) {
   const MAX_TOOL_LOOPS = 3;
   // Split tools: native web_search uses Responses API format, function tools use Chat Completions format
   const functionTools = tools.filter(t => t.type === 'function');
@@ -1138,7 +1151,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
     for (const tc of toolCalls) {
       let args = {};
       try { args = JSON.parse(tc.arguments); } catch {}
-      const result = await executeTool(tc.name, args);
+      const result = await executeTool(tc.name, args, apiKey);
       res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: tc.name, data: result })}\n\n`);
       toolResultMsgs.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
     }
@@ -2217,6 +2230,45 @@ app.get('/stats', (req, res) => {
       models: t.models
     }))
   });
+});
+
+// ─── Routes: Voting ──────────────────────────────────────────
+
+app.get('/votes', (req, res) => {
+  const authHeader = req.headers.authorization;
+  let userVotes = [];
+  if (authHeader?.startsWith('Bearer ')) {
+    const keyData = apiKeys.get(authHeader.split(' ')[1]);
+    if (keyData) {
+      const votes = walletVotes.get(keyData.wallet);
+      if (votes) userVotes = Array.from(votes);
+    }
+  }
+  res.json({ counts: { ...voteCounts }, userVotes });
+});
+
+app.post('/votes', authenticateApiKey, (req, res) => {
+  const { apiId } = req.body;
+  if (!apiId || !VALID_API_IDS.has(apiId)) {
+    return res.status(400).json({ error: 'invalid_api_id', message: 'Unknown API ID' });
+  }
+
+  const { wallet } = req.infinite;
+  if (!walletVotes.has(wallet)) walletVotes.set(wallet, new Set());
+  const votes = walletVotes.get(wallet);
+
+  let voted;
+  if (votes.has(apiId)) {
+    votes.delete(apiId);
+    voteCounts[apiId] = Math.max(0, (voteCounts[apiId] || 1) - 1);
+    voted = false;
+  } else {
+    votes.add(apiId);
+    voteCounts[apiId] = (voteCounts[apiId] || 0) + 1;
+    voted = true;
+  }
+
+  res.json({ voted, counts: { ...voteCounts }, userVotes: Array.from(votes) });
 });
 
 // ─── Routes: Key Management ──────────────────────────────────

@@ -1,16 +1,19 @@
 const GITHUB_API = 'https://api.github.com';
 const FETCH_TIMEOUT_MS = 10000;
 
-async function githubFetch(path) {
+async function githubFetch(path, token) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'InfiniteBot/1.0',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   const response = await fetch(`${GITHUB_API}${path}`, {
     signal: controller.signal,
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'InfiniteBot/1.0',
-    },
+    headers,
   });
 
   clearTimeout(timer);
@@ -23,8 +26,8 @@ async function githubFetch(path) {
   return response.json();
 }
 
-async function repoInfo(owner, repo) {
-  const data = await githubFetch(`/repos/${owner}/${repo}`);
+async function repoInfo(owner, repo, token) {
+  const data = await githubFetch(`/repos/${owner}/${repo}`, token);
   return {
     name: data.full_name,
     description: data.description,
@@ -41,8 +44,8 @@ async function repoInfo(owner, repo) {
   };
 }
 
-async function fileContent(owner, repo, path) {
-  const data = await githubFetch(`/repos/${owner}/${repo}/contents/${path}`);
+async function fileContent(owner, repo, path, token) {
+  const data = await githubFetch(`/repos/${owner}/${repo}/contents/${path}`, token);
 
   if (Array.isArray(data)) {
     return {
@@ -66,8 +69,8 @@ async function fileContent(owner, repo, path) {
   return { type: data.type, path: data.path, size: data.size, downloadUrl: data.download_url };
 }
 
-async function searchCode(owner, repo, query) {
-  const data = await githubFetch(`/search/code?q=${encodeURIComponent(query)}+repo:${owner}/${repo}&per_page=10`);
+async function searchCode(owner, repo, query, token) {
+  const data = await githubFetch(`/search/code?q=${encodeURIComponent(query)}+repo:${owner}/${repo}&per_page=10`, token);
   return {
     totalCount: data.total_count,
     items: (data.items || []).map(item => ({
@@ -78,8 +81,8 @@ async function searchCode(owner, repo, query) {
   };
 }
 
-async function listIssues(owner, repo) {
-  const data = await githubFetch(`/repos/${owner}/${repo}/issues?per_page=15&state=open&sort=updated`);
+async function listIssues(owner, repo, token) {
+  const data = await githubFetch(`/repos/${owner}/${repo}/issues?per_page=15&state=open&sort=updated`, token);
   return data.map(issue => ({
     number: issue.number,
     title: issue.title,
@@ -91,22 +94,22 @@ async function listIssues(owner, repo) {
   }));
 }
 
-export async function executeGithubLookup({ action, owner, repo, path, query }) {
+export async function executeGithubLookup({ action, owner, repo, path, query }, token) {
   if (!action) return { error: 'action is required (repo_info, file_content, search_code, list_issues)' };
   if (!owner || !repo) return { error: 'owner and repo are required' };
 
   try {
     switch (action) {
       case 'repo_info':
-        return await repoInfo(owner, repo);
+        return await repoInfo(owner, repo, token);
       case 'file_content':
         if (!path) return { error: 'path is required for file_content' };
-        return await fileContent(owner, repo, path);
+        return await fileContent(owner, repo, path, token);
       case 'search_code':
         if (!query) return { error: 'query is required for search_code' };
-        return await searchCode(owner, repo, query);
+        return await searchCode(owner, repo, query, token);
       case 'list_issues':
-        return await listIssues(owner, repo);
+        return await listIssues(owner, repo, token);
       default:
         return { error: `Unknown action: ${action}. Use: repo_info, file_content, search_code, list_issues` };
     }

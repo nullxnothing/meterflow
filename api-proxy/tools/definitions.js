@@ -25,7 +25,7 @@ const TOOL_DEFINITIONS = {
   },
   github_lookup: {
     name: 'github_lookup',
-    description: 'Look up information from public GitHub repositories. Can fetch repo info, read file contents, search code, or list issues.',
+    description: 'Look up information from GitHub repositories. Can fetch repo info, read file contents, search code, or list issues. Works with public repos by default; if the user has connected their GitHub account, also accesses their private repos.',
     parameters: {
       type: 'object',
       properties: {
@@ -38,6 +38,40 @@ const TOOL_DEFINITIONS = {
       required: ['action', 'owner', 'repo'],
     },
   },
+  google_lookup: {
+    name: 'google_lookup',
+    description: 'Search and read the user\'s Google Drive files, Google Docs, and Google Sheets. Requires the user to connect their Google account first via Dashboard > Connections.',
+    parameters: {
+      type: 'object',
+      properties: {
+        action: { type: 'string', enum: ['search_files', 'read_document', 'read_spreadsheet'], description: 'What to do' },
+        query: { type: 'string', description: 'Search query (for search_files action)' },
+        fileId: { type: 'string', description: 'Google file ID (for read_document or read_spreadsheet)' },
+      },
+      required: ['action'],
+    },
+  },
+  notion_lookup: {
+    name: 'notion_lookup',
+    description: 'Search and read pages and databases from the user\'s Notion workspace. Requires the user to connect their Notion account first via Dashboard > Connections.',
+    parameters: {
+      type: 'object',
+      properties: {
+        action: { type: 'string', enum: ['search', 'read_page', 'query_database'], description: 'What to do' },
+        query: { type: 'string', description: 'Search query (for search action)' },
+        pageId: { type: 'string', description: 'Notion page ID (for read_page action)' },
+        databaseId: { type: 'string', description: 'Notion database ID (for query_database action)' },
+      },
+      required: ['action'],
+    },
+  },
+};
+
+// Tools that require OAuth tokens — maps tool name to provider
+export const AUTH_REQUIRED_TOOLS = {
+  github_lookup: 'github',
+  google_lookup: 'google',
+  notion_lookup: 'notion',
 };
 
 export const SERVER_TOOL_NAMES = Object.keys(TOOL_DEFINITIONS);

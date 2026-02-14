@@ -823,6 +823,65 @@
 
 .tool-toggle.active .tool-toggle-dot { background: var(--accent); }
 
+/* ─── Connections ─── */
+.connections-grid {
+  display: grid;
+  gap: 16px;
+  max-width: 700px;
+}
+
+.connection-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.connection-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.connection-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.connection-name {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.connection-desc {
+  font-size: 13px;
+}
+
+.connection-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.connection-status.connected {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
 /* ─── Chat Images in Messages ─── */
 .chat-msg-images {
   display: flex;
@@ -2083,6 +2142,7 @@ const STATE = {
   models: [],
   treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, solPrice: 0 },
   providers: { claude: false, gemini: false, openai: false },
+  connections: { github: false, google: false, notion: false },
   activeTab: 'overview',
   keyVisible: false,
   error: null,
@@ -2129,42 +2189,36 @@ const TRADING = {
   pollInterval: null,
 };
 
-const VOTES_STORAGE_KEY = 'infinite_api_votes';
 const VOTES = {
   userVotes: new Set(),
   voteCounts: {},
 };
 
-function loadVotes() {
+async function loadVotes() {
   try {
-    const stored = localStorage.getItem(VOTES_STORAGE_KEY);
-    if (stored) {
-      const data = JSON.parse(stored);
-      VOTES.userVotes = new Set(data.userVotes || []);
-      VOTES.voteCounts = data.voteCounts || {};
-    }
+    const data = await api('/votes');
+    VOTES.voteCounts = data.counts || {};
+    VOTES.userVotes = new Set(data.userVotes || []);
+    render();
   } catch (e) { console.error('Failed to load votes:', e); }
 }
 
-function saveVotes() {
-  try {
-    localStorage.setItem(VOTES_STORAGE_KEY, JSON.stringify({
-      userVotes: Array.from(VOTES.userVotes),
-      voteCounts: VOTES.voteCounts,
-    }));
-  } catch (e) { console.error('Failed to save votes:', e); }
-}
-
-function toggleVote(apiId) {
-  if (VOTES.userVotes.has(apiId)) {
-    VOTES.userVotes.delete(apiId);
-    VOTES.voteCounts[apiId] = Math.max(0, (VOTES.voteCounts[apiId] || 1) - 1);
-  } else {
-    VOTES.userVotes.add(apiId);
-    VOTES.voteCounts[apiId] = (VOTES.voteCounts[apiId] || 0) + 1;
+async function toggleVote(apiId) {
+  if (!STATE.connected) {
+    STATE.error = 'Connect your wallet to vote';
+    render();
+    return;
   }
-  saveVotes();
-  render();
+  try {
+    const data = await api('/votes', { method: 'POST', body: JSON.stringify({ apiId }) });
+    VOTES.voteCounts = data.counts || {};
+    VOTES.userVotes = new Set(data.userVotes || []);
+    render();
+  } catch (e) {
+    console.error('Failed to toggle vote:', e);
+    STATE.error = e.message || 'Failed to vote';
+    render();
+  }
 }
 
 loadVotes();
@@ -2432,10 +2486,15 @@ async function fetchProviders() {
   try { STATE.providers = await api('/providers'); } catch {}
 }
 
+async function fetchOAuthStatus() {
+  try { STATE.connections = await api('/oauth/status'); } catch {}
+}
+
 function startStatusPolling() {
   fetchStatus();
   fetchTreasury();
   fetchProviders();
+  fetchOAuthStatus();
   if (statusPollInterval) clearInterval(statusPollInterval);
   statusPollInterval = setInterval(() => { fetchStatus(); fetchTreasury(); }, 60_000);
 }
@@ -2655,6 +2714,8 @@ const TOOL_LABELS = {
   url_reader: (q) => `Reading URL${q ? `: ${escapeHtml(q.slice(0, 60))}` : ''}...`,
   code_runner: () => 'Running code...',
   github_lookup: (q) => `Looking up GitHub${q ? `: ${escapeHtml(q)}` : ''}...`,
+  google_lookup: (q) => `Searching Google Drive${q ? `: ${escapeHtml(q)}` : ''}...`,
+  notion_lookup: (q) => `Searching Notion${q ? `: ${escapeHtml(q)}` : ''}...`,
 };
 
 function showToolIndicator(bodyEl, tool, query) {
@@ -2716,6 +2777,25 @@ function renderToolResultCardHtml(tool, data) {
     }
     if (Array.isArray(data)) {
       return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GITHUB ISSUES</div><div class="trc-body">${data.slice(0, 5).map(i => `#${i.number} ${escapeHtml(i.title)}`).join('<br>')}</div></div>`;
+    }
+  }
+  if (tool === 'google_lookup') {
+    if (data.files) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GOOGLE DRIVE</div><div class="trc-body">${data.files.slice(0, 5).map(f => `<a href="${escapeHtml(f.url || '')}" target="_blank" rel="noopener">${escapeHtml(f.name)}</a>`).join('<br>')}</div><div class="trc-meta"><span>${data.files.length} files found</span></div></div>`;
+    }
+    if (data.title) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>GOOGLE DOC</div><div class="trc-title">${escapeHtml(data.title)}</div><div class="trc-body">${escapeHtml((data.content || '').slice(0, 200))}</div></div>`;
+    }
+  }
+  if (tool === 'notion_lookup') {
+    if (data.results) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>NOTION</div><div class="trc-body">${data.results.slice(0, 5).map(r => `<a href="${escapeHtml(r.url || '')}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a> <span class="dim">${r.type}</span>`).join('<br>')}</div></div>`;
+    }
+    if (data.title) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>NOTION PAGE</div><div class="trc-title">${escapeHtml(data.title)}</div><div class="trc-body">${escapeHtml((data.content || '').slice(0, 200))}</div></div>`;
+    }
+    if (data.entries) {
+      return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>NOTION DATABASE</div><div class="trc-body">${data.entries.slice(0, 5).map(e => escapeHtml(JSON.stringify(e.properties).slice(0, 80))).join('<br>')}</div><div class="trc-meta"><span>${data.total} entries</span></div></div>`;
     }
   }
   return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>${escapeHtml(tool)}</div><div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div></div>`;
@@ -2792,6 +2872,49 @@ function showToolResultCard(bodyEl, tool, data) {
     } else {
       el.innerHTML = `
         <div class="trc-header"><span class="trc-icon"></span>GITHUB</div>
+        <div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div>
+      `;
+    }
+  } else if (tool === 'google_lookup') {
+    if (data.files) {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GOOGLE DRIVE</div>
+        <div class="trc-body">${data.files.slice(0, 5).map(f => `<a href="${escapeHtml(f.url || '')}" target="_blank" rel="noopener">${escapeHtml(f.name)}</a>`).join('<br>')}</div>
+        <div class="trc-meta"><span>${data.files.length} files found</span></div>
+      `;
+    } else if (data.title) {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GOOGLE DOC</div>
+        <div class="trc-title">${escapeHtml(data.title)}</div>
+        <div class="trc-body">${escapeHtml((data.content || '').slice(0, 300))}</div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GOOGLE</div>
+        <div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div>
+      `;
+    }
+  } else if (tool === 'notion_lookup') {
+    if (data.results) {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>NOTION</div>
+        <div class="trc-body">${data.results.slice(0, 5).map(r => `<a href="${escapeHtml(r.url || '')}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a>`).join('<br>')}</div>
+      `;
+    } else if (data.title) {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>NOTION PAGE</div>
+        <div class="trc-title">${escapeHtml(data.title)}</div>
+        <div class="trc-body">${escapeHtml((data.content || '').slice(0, 300))}</div>
+      `;
+    } else if (data.entries) {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>NOTION DATABASE</div>
+        <div class="trc-body">${data.entries.slice(0, 5).map(e => escapeHtml(JSON.stringify(e.properties).slice(0, 80))).join('<br>')}</div>
+        <div class="trc-meta"><span>${data.total} entries</span></div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>NOTION</div>
         <div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div>
       `;
     }
@@ -3025,6 +3148,7 @@ function renderDashboard() {
         <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
         <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
         <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models">Models</div>
+        <div class="nav-item ${STATE.activeTab === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
         <div class="nav-group-label">Tools</div>
         <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
         <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
@@ -3059,6 +3183,7 @@ function renderTab() {
     case 'overview': return renderOverview();
     case 'keys': return renderKeys();
     case 'models': return renderModels();
+    case 'connections': return renderConnections();
     case 'chat': return renderChat();
     case 'images': return renderImages();
     case 'video': return renderVideo();
@@ -3198,6 +3323,72 @@ function renderModels() {
   `;
 }
 
+// ─── Tab: Connections ───
+
+function renderConnections() {
+  const providers = [
+    { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH' },
+    { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', icon: 'G' },
+    { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', icon: 'N' },
+  ];
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Connections</h1>
+      <p class="page-sub">Connect your accounts to let the AI access your private data</p>
+    </div>
+    <div class="connections-grid">
+      ${providers.map(p => {
+        const isConnected = STATE.connections[p.id];
+        return `
+          <div class="card connection-card">
+            <div class="connection-icon">${p.icon}</div>
+            <div class="connection-info">
+              <div class="connection-name">${p.name}</div>
+              <div class="connection-desc dim">${p.desc}</div>
+            </div>
+            <div class="connection-action">
+              ${isConnected
+                ? `<span class="connection-status connected">Connected</span>
+                   <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
+                : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div class="section" style="margin-top:32px;">
+      <div class="section-title">How it works</div>
+      <div class="dim" style="max-width:600px;line-height:1.6;">
+        When you connect an account, the AI chat can access your private data through that service's API.
+        Your OAuth tokens are stored in-memory on the server and tied to your API key.
+        You can disconnect at any time.
+      </div>
+    </div>
+  `;
+}
+
+async function connectOAuth(provider) {
+  try {
+    const data = await api('/oauth/' + provider + '/init', { method: 'POST' });
+    if (data.url) window.open(data.url, '_blank', 'width=600,height=700');
+  } catch (err) {
+    showToast(err.message || 'Failed to start OAuth', true);
+  }
+}
+
+async function disconnectOAuth(provider) {
+  try {
+    await api('/oauth/' + provider + '/disconnect', { method: 'POST' });
+    STATE.connections[provider] = false;
+    render();
+    showToast(provider + ' disconnected');
+  } catch (err) {
+    showToast(err.message || 'Failed to disconnect', true);
+  }
+}
+
 // ─── Tab: AI Chat ───
 
 function renderChat() {
@@ -3217,6 +3408,8 @@ function renderChat() {
   const isUrlReaderOn = CHAT.enabledTools.includes('url_reader');
   const isCodeRunnerOn = CHAT.enabledTools.includes('code_runner');
   const isGithubOn = CHAT.enabledTools.includes('github_lookup');
+  const isGoogleOn = CHAT.enabledTools.includes('google_lookup');
+  const isNotionOn = CHAT.enabledTools.includes('notion_lookup');
 
   return `
     <div class="chat-with-sidebar">
@@ -3240,6 +3433,12 @@ function renderChat() {
             <button class="tool-toggle${isGithubOn ? ' active' : ''}" id="githubToggle">
               <span class="tool-toggle-dot"></span>GitHub
             </button>
+            ${STATE.connections.google ? `<button class="tool-toggle${isGoogleOn ? ' active' : ''}" id="googleToggle">
+              <span class="tool-toggle-dot"></span>Google
+            </button>` : ''}
+            ${STATE.connections.notion ? `<button class="tool-toggle${isNotionOn ? ' active' : ''}" id="notionToggle">
+              <span class="tool-toggle-dot"></span>Notion
+            </button>` : ''}
           </div>
           <div style="display:flex;gap:8px;">
             ${CHAT.conversations.length > 1 ? `
@@ -4927,6 +5126,8 @@ function bindEvents() {
   bindToolToggle('urlReaderToggle', 'url_reader');
   bindToolToggle('codeRunnerToggle', 'code_runner');
   bindToolToggle('githubToggle', 'github_lookup');
+  bindToolToggle('googleToggle', 'google_lookup');
+  bindToolToggle('notionToggle', 'notion_lookup');
 
   // Upload button + file input
   const uploadBtn = document.getElementById('chatUploadBtn');
@@ -4977,6 +5178,22 @@ if (loadSession()) {
   if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
   startStatusPolling();
 }
+
+// Handle OAuth redirects
+const urlParams = new URLSearchParams(window.location.search);
+const connectedProvider = urlParams.get('connected');
+const oauthError = urlParams.get('oauth_error');
+if (connectedProvider) {
+  STATE.connections[connectedProvider] = true;
+  STATE.activeTab = 'connections';
+  showToast(`${connectedProvider} connected successfully`);
+  fetchOAuthStatus();
+  window.history.replaceState({}, '', '/dashboard');
+} else if (oauthError) {
+  showToast(`OAuth error: ${oauthError}`, true);
+  window.history.replaceState({}, '', '/dashboard');
+}
+
 render();
 </script>
 
