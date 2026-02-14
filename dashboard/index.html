@@ -1124,6 +1124,192 @@
   margin-right: auto;
 }
 
+/* Agent stats overview */
+.agent-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.agent-stat-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+  text-align: center;
+}
+.agent-stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.agent-stat-value.accent { color: var(--accent); }
+.agent-stat-value.green { color: var(--green); }
+.agent-stat-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Notification bell */
+.agent-notif-bell {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+.agent-notif-bell:hover { border-color: var(--accent); color: var(--accent); }
+.agent-notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+.agent-notif-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 380px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  z-index: 100;
+  margin-top: 8px;
+}
+.agent-notif-panel-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.agent-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: background 0.15s;
+}
+.agent-notif-item:hover { background: var(--surface-2); }
+.agent-notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.agent-notif-dot.run_start { background: var(--accent); }
+.agent-notif-dot.run_complete { background: var(--green); }
+.agent-notif-dot.run_error { background: var(--red); }
+.agent-notif-dot.created,
+.agent-notif-dot.activated { background: var(--text-muted); }
+.agent-notif-dot.paused { background: var(--text-muted); opacity: 0.5; }
+.agent-notif-body { flex: 1; min-width: 0; }
+.agent-notif-text { color: var(--text-dim); line-height: 1.4; }
+.agent-notif-text strong { color: var(--text); font-weight: 600; }
+.agent-notif-time { color: var(--text-muted); font-size: 9px; margin-top: 3px; }
+
+/* Activity feed section */
+.agent-activity-section {
+  margin-top: 32px;
+}
+.agent-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.agent-activity-icon {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  flex-shrink: 0;
+}
+.agent-activity-body { flex: 1; min-width: 0; }
+.agent-activity-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.agent-activity-desc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  max-height: 42px;
+  overflow: hidden;
+}
+.agent-activity-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* Pulse animation for active agents */
+@keyframes agentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.agent-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+  animation: agentPulse 2s ease-in-out infinite;
+}
+
+/* Running indicator */
+@keyframes agentSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.agent-running-indicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: agentSpin 0.8s linear infinite;
+}
+
 .agent-template-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1338,6 +1524,10 @@
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-muted);
+}
+.agent-card-stats strong {
+  color: var(--text-dim);
+  font-weight: 600;
 }
 
 .agent-card-actions {
@@ -2532,12 +2722,17 @@ const TRADING = {
 const AGENTS = {
   list: [],
   templates: [],
+  activity: [],
+  notifications: [],
+  notifOpen: false,
+  notifSeen: 0,
   wizardStep: 0,
   wizardTemplate: null,
   wizardConfig: {},
   selectedAgent: null,
   loading: false,
   pollInterval: null,
+  runningAgents: new Set(),
 };
 
 const VOTES = {
@@ -5007,21 +5202,94 @@ async function agentAction(agentId, action) {
       AGENTS.selectedAgent = null;
     } else if (action === 'activate') {
       await api(`/v1/agents/${agentId}/activate`, { method: 'POST' });
-      showToast('Agent activated');
+      showToast('Agent activated — it will run on schedule');
     } else if (action === 'pause') {
       await api(`/v1/agents/${agentId}/pause`, { method: 'POST' });
       showToast('Agent paused');
     } else if (action === 'run') {
+      AGENTS.runningAgents.add(agentId);
+      render();
       showToast('Running agent...');
-      const data = await api(`/v1/agents/${agentId}/run`, { method: 'POST' });
-      if (data.ok) showToast('Agent run complete');
-      else showToast(data.error || 'Run failed', true);
+      try {
+        const data = await api(`/v1/agents/${agentId}/run`, { method: 'POST' });
+        if (data.ok) {
+          showToast('Agent run complete');
+          pushAgentNotification(agentId, 'run_complete', 'Run completed successfully');
+        } else {
+          showToast(data.error || 'Run failed', true);
+          pushAgentNotification(agentId, 'run_error', data.error || 'Run failed');
+        }
+      } finally {
+        AGENTS.runningAgents.delete(agentId);
+      }
     }
     await loadMyAgents();
+    await loadAgentActivity();
     render();
   } catch (err) {
+    AGENTS.runningAgents.delete(agentId);
     showToast(err.message, true);
+    render();
   }
+}
+
+function pushAgentNotification(agentId, type, message) {
+  const agent = AGENTS.list.find(a => a.id === agentId);
+  AGENTS.notifications.unshift({
+    agentId,
+    agentName: agent?.name || 'Agent',
+    template: agent?.template || 'custom',
+    type,
+    message,
+    ts: Date.now(),
+  });
+  // Keep max 50 notifications
+  if (AGENTS.notifications.length > 50) AGENTS.notifications.length = 50;
+}
+
+async function loadAgentActivity() {
+  try {
+    const data = await api('/v1/agents/activity?limit=20');
+    AGENTS.activity = data.activity || [];
+  } catch (e) {
+    console.error('Failed to load agent activity:', e);
+  }
+}
+
+function startAgentPolling() {
+  if (AGENTS.pollInterval) return;
+  AGENTS.pollInterval = setInterval(async () => {
+    if (STATE.currentTab !== 'my-agents') {
+      clearInterval(AGENTS.pollInterval);
+      AGENTS.pollInterval = null;
+      return;
+    }
+    try {
+      const oldList = JSON.stringify(AGENTS.list.map(a => ({ s: a.status, r: a.runCount, lr: a.lastRun })));
+      await loadMyAgents();
+      const newList = JSON.stringify(AGENTS.list.map(a => ({ s: a.status, r: a.runCount, lr: a.lastRun })));
+      if (oldList !== newList) {
+        await loadAgentActivity();
+        render();
+      }
+    } catch {}
+  }, 15000); // every 15s
+}
+
+function stopAgentPolling() {
+  if (AGENTS.pollInterval) {
+    clearInterval(AGENTS.pollInterval);
+    AGENTS.pollInterval = null;
+  }
+}
+
+function timeAgo(ts) {
+  if (!ts) return 'never';
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  return Math.floor(s / 86400) + 'd ago';
 }
 
 async function viewAgentLogs(agentId) {
@@ -5033,8 +5301,9 @@ function renderMyAgents() {
   // Lazy load data (use flag to prevent re-entrant loop)
   if (!AGENTS.templates.length && !AGENTS.loading) {
     AGENTS.loading = true;
-    loadAgentTemplates().then(() => loadMyAgents()).then(() => {
+    loadAgentTemplates().then(() => loadMyAgents()).then(() => loadAgentActivity()).then(() => {
       AGENTS.loading = false;
+      startAgentPolling();
       render();
     }).catch(() => { AGENTS.loading = false; });
   }
@@ -5051,28 +5320,119 @@ function renderMyAgents() {
 
   // Main list
   const agents = AGENTS.list;
+  const totalRuns = agents.reduce((s, a) => s + (a.runCount || 0), 0);
+  const totalTokens = agents.reduce((s, a) => s + (a.totalTokens || 0), 0);
+  const activeCount = agents.filter(a => a.status === 'active').length;
+  const notifUnseen = AGENTS.notifications.length - AGENTS.notifSeen;
 
-  return `
-    <div class="page-header">
-      <h1 class="page-title">AI Agents</h1>
-      <p class="page-sub">Deploy autonomous AI agents that run 24/7 on your schedule. Uses your API quota.</p>
-    </div>
-    ${agents.length ? `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <div class="section-title">Your Agents (${agents.length})</div>
-        <button class="btn-sm accent" onclick="AGENTS.wizardStep=1;render();">+ New Agent</button>
+  if (!agents.length) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">AI Agents</h1>
+        <p class="page-sub">Deploy autonomous AI agents that run 24/7 on your schedule. Uses your API quota.</p>
       </div>
-      <div class="agents-grid">
-        ${agents.map(a => renderAgentCard(a)).join('')}
-      </div>
-    ` : `
       <div class="agent-empty">
-        <div class="agent-empty-icon">\u221E</div>
+        <div class="agent-empty-icon" style="font-family:var(--font-mono);font-weight:700;">INF</div>
         <div class="agent-empty-title">No agents yet</div>
         <div class="agent-empty-sub">Deploy your first autonomous agent. It runs on a schedule using your API quota — wallet monitors, trading alerts, personal assistants, or fully custom.</div>
         <button class="btn accent" onclick="AGENTS.wizardStep=1;render();">Activate Agent</button>
       </div>
-    `}
+    `;
+  }
+
+  return `
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <h1 class="page-title">AI Agents</h1>
+        <p class="page-sub">Deploy autonomous AI agents that run 24/7 on your schedule.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="position:relative;">
+          <button class="agent-notif-bell" onclick="AGENTS.notifOpen=!AGENTS.notifOpen;if(!AGENTS.notifOpen)AGENTS.notifSeen=AGENTS.notifications.length;render();">
+            ACTIVITY ${notifUnseen > 0 ? `<span class="agent-notif-badge">${notifUnseen}</span>` : ''}
+          </button>
+          ${AGENTS.notifOpen ? renderNotifPanel() : ''}
+        </div>
+        <button class="btn-sm accent" onclick="AGENTS.wizardStep=1;render();">+ New Agent</button>
+      </div>
+    </div>
+
+    <div class="agent-stats-bar">
+      <div class="agent-stat-item">
+        <div class="agent-stat-value">${agents.length}</div>
+        <div class="agent-stat-label">Total Agents</div>
+      </div>
+      <div class="agent-stat-item">
+        <div class="agent-stat-value green">${activeCount}</div>
+        <div class="agent-stat-label">Active</div>
+      </div>
+      <div class="agent-stat-item">
+        <div class="agent-stat-value">${totalRuns}</div>
+        <div class="agent-stat-label">Total Runs</div>
+      </div>
+      <div class="agent-stat-item">
+        <div class="agent-stat-value accent">${totalTokens.toLocaleString()}</div>
+        <div class="agent-stat-label">Tokens Used</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:16px;">Your Agents</div>
+    <div class="agents-grid">
+      ${agents.map(a => renderAgentCard(a)).join('')}
+    </div>
+
+    ${AGENTS.activity.length ? `
+      <div class="agent-activity-section">
+        <div class="section-title" style="margin-bottom:16px;">Recent Activity</div>
+        ${AGENTS.activity.slice(0, 10).map(a => renderActivityItem(a)).join('')}
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderNotifPanel() {
+  const items = AGENTS.notifications.slice(0, 20);
+  if (!items.length) {
+    return `<div class="agent-notif-panel">
+      <div class="agent-notif-panel-header">Notifications</div>
+      <div style="padding:24px;text-align:center;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;">No notifications yet. Run an agent to see activity here.</div>
+    </div>`;
+  }
+  return `<div class="agent-notif-panel">
+    <div class="agent-notif-panel-header">Notifications</div>
+    ${items.map(n => `
+      <div class="agent-notif-item" onclick="viewAgentLogs('${n.agentId}');AGENTS.notifOpen=false;render();">
+        <div class="agent-notif-dot ${n.type}"></div>
+        <div class="agent-notif-body">
+          <div class="agent-notif-text"><strong>${escapeHtml(n.agentName)}</strong> ${escapeHtml(n.message || n.type.replace(/_/g, ' '))}</div>
+          <div class="agent-notif-time">${timeAgo(n.ts)}</div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+function renderActivityItem(a) {
+  const letter = AGENT_ICON_LETTER[a.template] || 'A';
+  const typeLabels = {
+    run_start: 'Started',
+    run_complete: 'Completed',
+    run_error: 'Error',
+    created: 'Created',
+    activated: 'Activated',
+    paused: 'Paused',
+    updated: 'Updated',
+  };
+  const dotColor = a.type === 'run_complete' ? 'var(--green)' : a.type === 'run_error' ? 'var(--red)' : a.type === 'run_start' ? 'var(--accent)' : 'var(--text-muted)';
+  return `
+    <div class="agent-activity-item" style="cursor:pointer;" onclick="viewAgentLogs('${a.agentId}')">
+      <div class="agent-activity-icon" style="border-color:${dotColor};color:${dotColor};">${letter}</div>
+      <div class="agent-activity-body">
+        <div class="agent-activity-title">${escapeHtml(a.agentName || 'Agent')} — ${typeLabels[a.type] || a.type}</div>
+        ${a.message ? `<div class="agent-activity-desc">${escapeHtml(a.message)}</div>` : ''}
+      </div>
+      <div class="agent-activity-time">${timeAgo(a.ts)}</div>
+    </div>
   `;
 }
 
@@ -5080,32 +5440,38 @@ const AGENT_ICON_LETTER = {'wallet-monitor':'W','trading-agent':'T','personal-as
 const CRON_LABELS = {'*/5 * * * *':'Every 5m','*/10 * * * *':'Every 10m','*/30 * * * *':'Every 30m','0 * * * *':'Hourly','0 */2 * * *':'Every 2h','0 */6 * * *':'Every 6h','0 9 * * *':'Daily 9AM','0 9,21 * * *':'Twice daily'};
 
 function renderAgentCard(a) {
-  const lastRun = a.lastRun ? new Date(a.lastRun).toLocaleString() : 'Never';
   const iconLetter = AGENT_ICON_LETTER[a.template] || 'A';
   const shortModel = (a.model || 'unknown').replace('claude-','').replace('gemini-','').split('-').slice(0,2).join('-');
   const scheduleLabel = CRON_LABELS[a.schedule] || a.schedule || 'manual';
+  const isRunning = AGENTS.runningAgents.has(a.id);
+  const isActive = a.status === 'active';
+
   return `
-    <div class="agent-card">
+    <div class="agent-card" style="${isActive ? 'border-color: rgba(76,217,100,0.3);' : ''}">
       <div class="agent-card-header">
-        <div class="agent-card-icon">${iconLetter}</div>
+        <div class="agent-card-icon" style="${isActive ? 'border-color:var(--green);color:var(--green);' : ''}">${iconLetter}</div>
         <div class="agent-card-info">
-          <div class="agent-card-name">${escapeHtml(a.name)}</div>
+          <div class="agent-card-name" style="display:flex;align-items:center;gap:8px;">
+            ${escapeHtml(a.name)}
+            ${isActive ? '<span class="agent-pulse"></span>' : ''}
+            ${isRunning ? '<span class="agent-running-indicator"></span>' : ''}
+          </div>
           <div class="agent-card-meta">${shortModel} // ${scheduleLabel}</div>
         </div>
         <span class="agent-status-badge ${a.status}">${a.status.toUpperCase()}</span>
       </div>
-      ${a.lastResult ? `<div class="agent-card-result">${escapeHtml(a.lastResult.slice(0, 300))}</div>` : ''}
-      ${a.lastError ? `<div class="agent-card-result" style="border-color:var(--red);color:var(--red);">${escapeHtml(a.lastError)}</div>` : ''}
       <div class="agent-card-stats">
-        <span>Runs: ${a.runCount || 0}</span>
-        <span>Tokens: ${(a.totalTokens || 0).toLocaleString()}</span>
-        <span>Last: ${lastRun}</span>
+        <span>Runs: <strong>${a.runCount || 0}</strong></span>
+        <span>Tokens: <strong>${(a.totalTokens || 0).toLocaleString()}</strong></span>
+        <span>Last: <strong>${a.lastRun ? timeAgo(a.lastRun) : 'never'}</strong></span>
       </div>
+      ${a.lastResult ? `<div class="agent-card-result">${escapeHtml(a.lastResult.slice(0, 200))}${a.lastResult.length > 200 ? '...' : ''}</div>` : ''}
+      ${a.lastError ? `<div class="agent-card-result" style="border-color:var(--red);color:var(--red);">${escapeHtml(a.lastError)}</div>` : ''}
       <div class="agent-card-actions">
         ${a.status === 'paused'
           ? `<button class="btn-sm accent" onclick="agentAction('${a.id}','activate')">Activate</button>`
           : `<button class="btn-sm" onclick="agentAction('${a.id}','pause')">Pause</button>`}
-        <button class="btn-sm" onclick="agentAction('${a.id}','run')">Run Now</button>
+        <button class="btn-sm" ${isRunning ? 'disabled style="opacity:0.5;"' : ''} onclick="agentAction('${a.id}','run')">${isRunning ? 'Running...' : 'Run Now'}</button>
         <button class="btn-sm" onclick="viewAgentLogs('${a.id}')">Logs</button>
         <button class="btn-sm danger" onclick="agentAction('${a.id}','delete')">Delete</button>
       </div>

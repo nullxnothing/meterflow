@@ -223,4 +223,31 @@ router.delete('/agents/:id', authenticateApiKey, async (req, res) => {
   res.json({ ok: true });
 });
 
+// GET /v1/agents/activity — aggregated activity feed across all agents
+router.get('/agents/activity', authenticateApiKey, async (req, res) => {
+  try {
+    const agents = await listAgents(req.infinite.apiKey);
+    const limit = parseInt(req.query.limit) || 20;
+    const allLogs = [];
+
+    for (const agent of agents) {
+      const logs = await getAgentLogs(agent.id, 10);
+      for (const log of logs) {
+        allLogs.push({
+          ...log,
+          agentId: agent.id,
+          agentName: agent.name,
+          template: agent.template,
+        });
+      }
+    }
+
+    // Sort by timestamp descending, take top N
+    allLogs.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    res.json({ activity: allLogs.slice(0, limit) });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load activity', detail: err.message });
+  }
+});
+
 export default router;
