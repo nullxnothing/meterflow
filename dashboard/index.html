@@ -1291,6 +1291,9 @@
   font-size: 10px;
   color: var(--text-muted);
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .agent-status-badge {
@@ -5073,15 +5076,21 @@ function renderMyAgents() {
   `;
 }
 
+const AGENT_ICON_LETTER = {'wallet-monitor':'W','trading-agent':'T','personal-assistant':'A','custom':'C'};
+const CRON_LABELS = {'*/5 * * * *':'Every 5m','*/10 * * * *':'Every 10m','*/30 * * * *':'Every 30m','0 * * * *':'Hourly','0 */2 * * *':'Every 2h','0 */6 * * *':'Every 6h','0 9 * * *':'Daily 9AM','0 9,21 * * *':'Twice daily'};
+
 function renderAgentCard(a) {
   const lastRun = a.lastRun ? new Date(a.lastRun).toLocaleString() : 'Never';
+  const iconLetter = AGENT_ICON_LETTER[a.template] || 'A';
+  const shortModel = (a.model || 'unknown').replace('claude-','').replace('gemini-','').split('-').slice(0,2).join('-');
+  const scheduleLabel = CRON_LABELS[a.schedule] || a.schedule || 'manual';
   return `
     <div class="agent-card">
       <div class="agent-card-header">
-        <div class="agent-card-icon">${a.icon || '[A]'}</div>
+        <div class="agent-card-icon">${iconLetter}</div>
         <div class="agent-card-info">
           <div class="agent-card-name">${escapeHtml(a.name)}</div>
-          <div class="agent-card-meta">${a.model} \u2022 ${a.schedule || 'manual'}</div>
+          <div class="agent-card-meta">${shortModel} // ${scheduleLabel}</div>
         </div>
         <span class="agent-status-badge ${a.status}">${a.status.toUpperCase()}</span>
       </div>
@@ -5290,10 +5299,10 @@ function renderAgentDetail() {
     </div>
     <div class="page-header">
       <h1 class="page-title" style="display:flex;align-items:center;gap:14px;">
-        <span>${agent.icon || '[A]'}</span> ${escapeHtml(agent.name)}
+        <span style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent);border:2px solid var(--accent);width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;">${AGENT_ICON_LETTER[agent.template] || 'A'}</span> ${escapeHtml(agent.name)}
         <span class="agent-status-badge ${agent.status}" style="font-size:11px;">${agent.status.toUpperCase()}</span>
       </h1>
-      <p class="page-sub">${agent.template} \u2022 ${agent.model} \u2022 ${agent.schedule}</p>
+      <p class="page-sub">${agent.template} // ${agent.model} // ${CRON_LABELS[agent.schedule] || agent.schedule}</p>
     </div>
     <div class="stats-row">
       <div class="stat-card"><div class="label">Total Runs</div><div class="value">${agent.runCount || 0}</div></div>
