@@ -21,6 +21,7 @@
 // ═══════════════════════════════════════════════════
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 
 const CONFIG = {
   HELIUS_RPC_URL: process.env.HELIUS_RPC_URL || 'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY',
@@ -30,6 +31,7 @@ const CONFIG = {
   PROXY_URL: process.env.PROXY_URL || 'http://localhost:3001',
   PROXY_ADMIN_KEY: process.env.PROXY_ADMIN_KEY || '',
   DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || '',
+  DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN || '',
 
   // Real API costs per model (avg per call, conservative)
   COSTS: {
@@ -297,6 +299,74 @@ async function startServer(port) {
   }).listen(port, () => console.log(`[Agent] :${port}`));
 }
 
+// ─── Discord Bot (Slash Commands) ───────────────────────────
+
+async function startDiscordBot() {
+  if (!CONFIG.DISCORD_BOT_TOKEN) return;
+  const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+  client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+    await fetchProxyStats();
+    const report = generateReport();
+    const h = report.budget.health;
+    const color = h === 'surplus' ? 0x00ff00 : h === 'healthy' ? 0x3498db : h === 'cautious' ? 0xf1c40f : h === 'critical' ? 0xe74c3c : 0x95a5a6;
+
+    if (interaction.commandName === 'treasury') {
+      const runway = report.budget.runway === 'infinite' ? '\u221E' : `${report.budget.runway}d`;
+      const embed = new EmbedBuilder()
+        .setTitle('\u221E Treasury Status')
+        .setColor(color)
+        .addFields(
+          { name: 'Balance', value: `${report.treasury.sol} SOL ($${report.treasury.usd})`, inline: true },
+          { name: 'SOL Price', value: `$${report.treasury.solPrice}`, inline: true },
+          { name: 'Health', value: `${HEALTH_EMOJI[h] || ''} ${h}`, inline: true },
+          { name: 'Runway', value: runway, inline: true },
+          { name: 'Rate Multiplier', value: `${report.budget.multiplier}x`, inline: true },
+          { name: 'Daily Budget', value: `${report.budget.dailyBudget} calls`, inline: true },
+          { name: 'Inflows (24h)', value: `$${report.inflows24h.usd} (${report.inflows24h.sol} SOL)`, inline: true },
+        )
+        .setFooter({ text: `Net: $${report.net.dailyUsd}/day` })
+        .setTimestamp();
+      await interaction.reply({ embeds: [embed] });
+    }
+
+    if (interaction.commandName === 'status') {
+      const embed = new EmbedBuilder()
+        .setTitle('\u221E API Status')
+        .setColor(color)
+        .addFields(
+          { name: 'Calls Today', value: `${report.usage.callsToday}`, inline: true },
+          { name: 'Active Keys', value: `${report.usage.activeKeys}`, inline: true },
+          { name: 'Daily Spend', value: `$${report.usage.dailySpendUsd}`, inline: true },
+          { name: 'Health', value: `${HEALTH_EMOJI[h] || ''} ${h} (${report.budget.multiplier}x)`, inline: true },
+          { name: 'Daily Budget', value: `${report.budget.dailyBudget} calls`, inline: true },
+          { name: 'Sustainable', value: report.net.sustainable ? 'Yes' : 'No — burning reserves', inline: true },
+        )
+        .setTimestamp();
+      await interaction.reply({ embeds: [embed] });
+    }
+
+    if (interaction.commandName === 'runway') {
+      const runway = report.budget.runway === 'infinite' ? '\u221E (no burn)' : `${report.budget.runway} days`;
+      const embed = new EmbedBuilder()
+        .setTitle('\u221E Runway')
+        .setColor(color)
+        .setDescription(`At current burn rate, the treasury can fund API access for **${runway}**.`)
+        .addFields(
+          { name: 'Treasury', value: `$${report.treasury.usd}`, inline: true },
+          { name: 'Daily Burn', value: `$${report.usage.dailySpendUsd}`, inline: true },
+          { name: 'Health', value: `${HEALTH_EMOJI[h] || ''} ${h}`, inline: true },
+        )
+        .setTimestamp();
+      await interaction.reply({ embeds: [embed] });
+    }
+  });
+
+  client.once('ready', () => console.log(`[Discord] Bot online as ${client.user.tag}`));
+  await client.login(CONFIG.DISCORD_BOT_TOKEN);
+}
+
 async function start() {
   console.log(`∞ INFINITE Treasury Agent v2\n  Treasury: ${CONFIG.TREASURY_WALLET?.slice(0, 8) || 'NOT SET'}...\n  Proxy: ${CONFIG.PROXY_URL}`);
   await updateSolPrice();
@@ -318,6 +388,7 @@ async function start() {
 if (process.argv[1]?.includes('index') || process.argv[1]?.includes('treasury')) {
   start();
   startServer(parseInt(process.env.AGENT_PORT || '3002'));
+  startDiscordBot();
 }
 
 export default { skills, state, generateReport, getReimbursementStatus };
