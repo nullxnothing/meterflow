@@ -746,6 +746,20 @@
   color: var(--accent);
 }
 
+.chat-connectors-btn {
+  position: relative;
+}
+
+.connectors-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
 .chat-image-preview {
   display: flex;
   gap: 8px;
@@ -3487,6 +3501,10 @@ function renderChat() {
         <div class="chat-input-area">
           <button class="chat-upload-btn" id="chatUploadBtn" title="Upload image">+</button>
           <input type="file" id="chatFileInput" accept="image/*" multiple style="display:none;">
+          <button class="chat-upload-btn chat-connectors-btn" id="chatConnectorsBtn" title="Connections">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v4M10 10v4M4 6h4a2 2 0 012 2v0M8 8h4"/><circle cx="6" cy="2" r="1"/><circle cx="10" cy="14" r="1"/></svg>
+            ${Object.values(STATE.connections).some(Boolean) ? '<span class="connectors-dot"></span>' : ''}
+          </button>
           <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
           <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
         </div>
@@ -5137,6 +5155,15 @@ function bindEvents() {
     fileInput.addEventListener('change', (e) => {
       handleImageUpload(e.target.files);
       fileInput.value = '';
+    });
+  }
+
+  // Connectors button — navigate to connections tab
+  const connectorsBtn = document.getElementById('chatConnectorsBtn');
+  if (connectorsBtn) {
+    connectorsBtn.addEventListener('click', () => {
+      STATE.activeTab = 'connections';
+      render();
     });
   }
 
