@@ -1119,6 +1119,9 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
   margin-top: 24px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .agent-template-card {
@@ -1141,8 +1144,17 @@
 }
 
 .agent-template-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--accent);
+  margin: 0 auto 16px;
 }
 
 .agent-template-name {
@@ -1160,6 +1172,7 @@
 
 .agent-wizard {
   max-width: 640px;
+  margin: 0 auto;
 }
 
 .agent-wizard-step {
@@ -1251,14 +1264,17 @@
 }
 
 .agent-card-icon {
-  font-size: 32px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
   width: 48px;
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-2);
-  border-radius: 8px;
+  border: 2px solid var(--accent);
+  background: transparent;
 }
 
 .agent-card-info { flex: 1; min-width: 0; }
@@ -5062,7 +5078,7 @@ function renderAgentCard(a) {
   return `
     <div class="agent-card">
       <div class="agent-card-header">
-        <div class="agent-card-icon">${a.icon || '\u2699\uFE0F'}</div>
+        <div class="agent-card-icon">${a.icon || '[A]'}</div>
         <div class="agent-card-info">
           <div class="agent-card-name">${escapeHtml(a.name)}</div>
           <div class="agent-card-meta">${a.model} \u2022 ${a.schedule || 'manual'}</div>
@@ -5194,7 +5210,7 @@ function renderAgentWizard() {
         </div>
         <div class="api-key-box" style="margin-bottom:24px;">
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-            <span style="font-size:36px;">${selectedTmpl.icon}</span>
+            <span style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--accent);border:2px solid var(--accent);width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;">${selectedTmpl.icon}</span>
             <div>
               <div style="font-family:var(--font-mono);font-size:16px;font-weight:600;">${escapeHtml(config.agentName || selectedTmpl.name)}</div>
               <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${config.model || selectedTmpl.defaultModel} \u2022 ${config.schedule || selectedTmpl.defaultSchedule}</div>
@@ -5274,7 +5290,7 @@ function renderAgentDetail() {
     </div>
     <div class="page-header">
       <h1 class="page-title" style="display:flex;align-items:center;gap:14px;">
-        <span>${agent.icon || '\u2699\uFE0F'}</span> ${escapeHtml(agent.name)}
+        <span>${agent.icon || '[A]'}</span> ${escapeHtml(agent.name)}
         <span class="agent-status-badge ${agent.status}" style="font-size:11px;">${agent.status.toUpperCase()}</span>
       </h1>
       <p class="page-sub">${agent.template} \u2022 ${agent.model} \u2022 ${agent.schedule}</p>

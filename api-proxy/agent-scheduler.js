@@ -14,7 +14,7 @@ const AGENT_TEMPLATES = {
   'wallet-monitor': {
     name: 'Wallet Monitor',
     description: 'Monitors your Solana wallets for balance changes, large transfers, and suspicious activity. Sends alerts.',
-    icon: '👁',
+    icon: '[W]',
     defaultModel: 'gemini-2.5-flash',
     defaultSchedule: '*/10 * * * *', // every 10 min
     systemPrompt: `You are a Solana wallet monitoring agent. Your job is to:
@@ -34,7 +34,7 @@ Be brief and only alert on meaningful changes. Format numbers clearly.`,
   'trading-agent': {
     name: 'Trading Assistant',
     description: 'Analyzes tokens, tracks trends, and provides trade alerts based on your strategy.',
-    icon: '📊',
+    icon: '[T]',
     defaultModel: 'gemini-2.5-flash',
     defaultSchedule: '0 */2 * * *', // every 2 hours
     systemPrompt: `You are an autonomous Solana trading analysis agent. Your job is to:
@@ -54,7 +54,7 @@ Never recommend financial actions directly. Present data-driven analysis. Includ
   'personal-assistant': {
     name: 'Personal Assistant',
     description: 'A general-purpose AI assistant that can research, summarize, and execute tasks on a schedule.',
-    icon: '🤖',
+    icon: '[A]',
     defaultModel: 'gemini-2.5-flash',
     defaultSchedule: '0 9 * * *', // daily at 9am
     systemPrompt: `You are a personal AI assistant. Your job is to:
@@ -74,7 +74,7 @@ Always start with the most important updates first.`,
   'custom': {
     name: 'Custom Agent',
     description: 'Build your own agent from scratch. Define the system prompt, tools, and schedule.',
-    icon: '⚙️',
+    icon: '[C]',
     defaultModel: 'gemini-2.5-flash',
     defaultSchedule: '0 */6 * * *',
     systemPrompt: '',
