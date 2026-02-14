@@ -1836,6 +1836,88 @@
   opacity: 0.3;
 }
 
+/* ─── Portfolio ─── */
+.portfolio-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.portfolio-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.portfolio-stat-card .label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.portfolio-stat-card .val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.portfolio-stat-card .val.accent { color: var(--accent); }
+
+.portfolio-holdings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.portfolio-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.portfolio-row:hover { border-color: var(--accent); }
+
+.portfolio-row .token-mint {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.portfolio-row .token-amount { color: var(--text); text-align: right; }
+.portfolio-row .token-value { color: var(--text-dim); text-align: right; font-size: 10px; }
+
+.portfolio-sol-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.portfolio-sol-row .token-amount { color: var(--accent); font-weight: 600; text-align: right; }
+.portfolio-sol-row .token-value { color: var(--text-dim); text-align: right; font-size: 10px; }
+
 /* ─── Chat Quick Actions Sidebar ─── */
 .chat-with-sidebar {
   display: grid;
@@ -2036,13 +2118,14 @@ const TRADING = {
   tokenInfo: null,
   // Bot state
   wallet: null,
+  portfolio: null,
   positions: [],
   dcaOrders: [],
   copyTargets: [],
   triggers: [],
   safety: null,
   history: [],
-  activePanel: 'overview',
+  activePanel: 'portfolio',
   pollInterval: null,
 };
 
@@ -3555,17 +3638,19 @@ async function fetchTradingState() {
 
   try {
     const results = await Promise.allSettled([
+      api('/v1/trading/portfolio'),
       api('/v1/trading/dca/orders'),
       api('/v1/trading/copy/targets'),
       api('/v1/trading/trigger/list'),
       api('/v1/trading/safety/status'),
       api('/v1/trading/history?limit=50'),
     ]);
-    if (results[0].status === 'fulfilled') TRADING.dcaOrders = results[0].value || [];
-    if (results[1].status === 'fulfilled') TRADING.copyTargets = results[1].value?.targets || [];
-    if (results[2].status === 'fulfilled') TRADING.triggers = results[2].value || [];
-    if (results[3].status === 'fulfilled') TRADING.safety = results[3].value || null;
-    if (results[4].status === 'fulfilled') TRADING.history = results[4].value || [];
+    if (results[0].status === 'fulfilled') TRADING.portfolio = results[0].value || null;
+    if (results[1].status === 'fulfilled') TRADING.dcaOrders = results[1].value || [];
+    if (results[2].status === 'fulfilled') TRADING.copyTargets = results[2].value?.targets || [];
+    if (results[3].status === 'fulfilled') TRADING.triggers = results[3].value || [];
+    if (results[4].status === 'fulfilled') TRADING.safety = results[4].value || null;
+    if (results[5].status === 'fulfilled') TRADING.history = results[5].value || [];
   } catch {}
 }
 
@@ -3594,6 +3679,7 @@ function renderBotPanelContent() {
   const main = document.getElementById('botMainPanel');
   if (!main) return;
   switch (TRADING.activePanel) {
+    case 'portfolio': main.innerHTML = renderBotPortfolio(); break;
     case 'overview': main.innerHTML = renderBotOverview(); break;
     case 'swap': main.innerHTML = renderBotSwap(); break;
     case 'dca': main.innerHTML = renderBotDCA(); break;
@@ -3671,7 +3757,8 @@ function renderTrading() {
         <div class="bot-card">
           <div class="bot-card-title">Panels</div>
           <div class="bot-nav-list">
-            <div class="bot-nav-item ${TRADING.activePanel === 'overview' ? 'active' : ''}" data-panel="overview" onclick="setBotPanel('overview')">Overview</div>
+            <div class="bot-nav-item ${TRADING.activePanel === 'portfolio' ? 'active' : ''}" data-panel="portfolio" onclick="setBotPanel('portfolio')">Portfolio</div>
+            <div class="bot-nav-item ${TRADING.activePanel === 'overview' ? 'active' : ''}" data-panel="overview" onclick="setBotPanel('overview')">Positions</div>
             <div class="bot-nav-item ${TRADING.activePanel === 'swap' ? 'active' : ''}" data-panel="swap" onclick="setBotPanel('swap')">Swap</div>
             <div class="bot-nav-item ${TRADING.activePanel === 'dca' ? 'active' : ''}" data-panel="dca" onclick="setBotPanel('dca')">DCA <span class="bot-nav-count">${dcaActive}</span></div>
             <div class="bot-nav-item ${TRADING.activePanel === 'copy' ? 'active' : ''}" data-panel="copy" onclick="setBotPanel('copy')">Copy Trade <span class="bot-nav-count">${copyActive}</span></div>
@@ -3691,10 +3778,65 @@ function renderTrading() {
         </div>
       </div>
       <div class="bot-main" id="botMainPanel">
-        ${renderBotOverview()}
+        ${renderBotPortfolio()}
       </div>
     </div>
   `;
+}
+
+function renderBotPortfolio() {
+  const p = TRADING.portfolio;
+  if (!p) return `<div><div class="bot-empty"><div class="bot-empty-icon">/</div>Loading portfolio...</div></div>`;
+
+  const sol = p.solBalance || 0;
+  const solUsd = p.solValueUsd || 0;
+  const totalUsd = p.totalValueUsd || 0;
+  const holdings = p.holdings || [];
+  const solPrice = p.solPriceUsd || 0;
+
+  return `<div>
+    <h2>Portfolio</h2>
+    <div class="portfolio-summary">
+      <div class="portfolio-stat-card">
+        <div class="label">Total Value</div>
+        <div class="val accent">$${totalUsd.toFixed(2)}</div>
+      </div>
+      <div class="portfolio-stat-card">
+        <div class="label">SOL Balance</div>
+        <div class="val">${sol.toFixed(4)}</div>
+      </div>
+      <div class="portfolio-stat-card">
+        <div class="label">Tokens Held</div>
+        <div class="val">${holdings.length}</div>
+      </div>
+      <div class="portfolio-stat-card">
+        <div class="label">SOL Price</div>
+        <div class="val">$${solPrice.toFixed(2)}</div>
+      </div>
+    </div>
+
+    <h2>Holdings</h2>
+    <div class="portfolio-holdings">
+      <div class="portfolio-sol-row">
+        <div>
+          <div style="font-weight:600;">SOL</div>
+          <div class="token-mint">Native</div>
+        </div>
+        <div class="token-amount">${sol.toFixed(4)}</div>
+        <div class="token-value">$${solUsd.toFixed(2)}</div>
+      </div>
+      ${holdings.length === 0 ? '<div class="bot-empty" style="padding:24px 0;">No token holdings</div>' : holdings.map(h => `
+        <div class="portfolio-row" onclick="copyText('${h.mint}')" title="Click to copy mint">
+          <div>
+            <div>${h.mint.slice(0, 4)}...${h.mint.slice(-4)}</div>
+            <div class="token-mint">${h.mint}</div>
+          </div>
+          <div class="token-amount">${formatCompact(h.amount)}</div>
+          <div class="token-value">${h.valueUsd > 0 ? '$' + h.valueUsd.toFixed(2) : '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
 }
 
 function renderBotOverview() {

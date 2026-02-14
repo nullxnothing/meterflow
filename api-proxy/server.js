@@ -2095,6 +2095,82 @@ app.post('/v1/trading/safety/resume', authenticateApiKey, requireTradingTier, (r
   res.json({ resumed, state: safety.getState() });
 });
 
+// GET /v1/trading/portfolio — all SPL token holdings + SOL balance with live prices
+app.get('/v1/trading/portfolio', authenticateApiKey, requireTradingTier, async (req, res) => {
+  const { apiKey } = req.infinite;
+  const w = tradingWallets.get(apiKey);
+  if (!w) return res.status(404).json({ error: 'no_wallet' });
+  try {
+    const solBalance = await getSolBalance(solanaConnection, w.publicKey);
+
+    // Fetch all token accounts for this wallet
+    const taRes = await fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'portfolio',
+        method: 'getTokenAccountsByOwner',
+        params: [w.publicKey, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }]
+      })
+    });
+    const taData = await taRes.json();
+    const holdings = [];
+    const mints = [];
+
+    if (taData.result?.value) {
+      for (const acct of taData.result.value) {
+        const info = acct.account.data.parsed.info;
+        const amount = parseFloat(info.tokenAmount.uiAmountString || '0');
+        if (amount <= 0) continue;
+        holdings.push({
+          mint: info.mint,
+          amount,
+          decimals: info.tokenAmount.decimals,
+        });
+        mints.push(info.mint);
+      }
+    }
+
+    // Fetch prices for all held tokens via Jupiter
+    let prices = {};
+    if (mints.length > 0) {
+      try {
+        const priceRes = await fetch(`https://api.jup.ag/price/v2?ids=${mints.join(',')}`);
+        const priceData = await priceRes.json();
+        prices = priceData.data || {};
+      } catch {}
+    }
+
+    // Enrich holdings with price data
+    let totalValueUsd = solBalance * (prices['So11111111111111111111111111111111111111112']?.price || 0);
+    const enriched = holdings.map(h => {
+      const priceUsd = parseFloat(prices[h.mint]?.price || 0);
+      const valueUsd = h.amount * priceUsd;
+      totalValueUsd += valueUsd;
+      return { ...h, priceUsd, valueUsd };
+    }).sort((a, b) => b.valueUsd - a.valueUsd);
+
+    // Get SOL price
+    let solPriceUsd = 0;
+    try {
+      const solPriceRes = await fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112');
+      const solPriceData = await solPriceRes.json();
+      solPriceUsd = parseFloat(solPriceData.data?.['So11111111111111111111111111111111111111112']?.price || 0);
+    } catch {}
+
+    res.json({
+      publicKey: w.publicKey,
+      solBalance,
+      solPriceUsd,
+      solValueUsd: solBalance * solPriceUsd,
+      holdings: enriched,
+      totalValueUsd: (solBalance * solPriceUsd) + enriched.reduce((s, h) => s + h.valueUsd, 0),
+    });
+  } catch (err) {
+    res.status(502).json({ error: 'portfolio_fetch_failed', message: err.message });
+  }
+});
+
 // GET /v1/trading/positions
 app.get('/v1/trading/positions', authenticateApiKey, requireTradingTier, (req, res) => {
   const { apiKey } = req.infinite;
