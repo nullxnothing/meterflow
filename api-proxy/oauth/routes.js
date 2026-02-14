@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PROVIDERS, getRedirectUri, isProviderConfigured } from './config.js';
+import { PROVIDERS, getRedirectUri, getDashboardUrl, isProviderConfigured } from './config.js';
 import { createState, consumeState, setToken, removeToken, getConnectedProviders, getToken } from './store.js';
 
 const router = Router();
@@ -45,43 +45,44 @@ router.get('/:provider/callback', async (req, res) => {
   const { code, state, error: oauthError } = req.query;
 
   if (oauthError) {
-    return res.redirect(`/dashboard?oauth_error=${encodeURIComponent(oauthError)}`);
+    return res.redirect(getDashboardUrl(`oauth_error=${encodeURIComponent(oauthError)}`));
   }
 
   if (!code || !state) {
-    return res.redirect('/dashboard?oauth_error=missing_params');
+    return res.redirect(getDashboardUrl('oauth_error=missing_params'));
   }
 
   const stateData = consumeState(state);
   if (!stateData) {
-    return res.redirect('/dashboard?oauth_error=invalid_state');
+    return res.redirect(getDashboardUrl('oauth_error=invalid_state'));
   }
 
   if (stateData.provider !== provider) {
-    return res.redirect('/dashboard?oauth_error=provider_mismatch');
+    return res.redirect(getDashboardUrl('oauth_error=provider_mismatch'));
   }
 
   try {
     const token = await exchangeCode(provider, code);
-    setToken(stateData.apiKey, provider, token);
-    res.redirect(`/dashboard?connected=${provider}`);
+    await setToken(stateData.apiKey, provider, token);
+    res.redirect(getDashboardUrl(`connected=${provider}`));
   } catch (err) {
     console.error(`OAuth ${provider} exchange failed:`, err.message);
-    res.redirect(`/dashboard?oauth_error=${encodeURIComponent(err.message)}`);
+    res.redirect(getDashboardUrl(`oauth_error=${encodeURIComponent(err.message)}`));
   }
 });
 
 // GET /oauth/status — Get connected providers
-router.get('/status', (req, res) => {
+router.get('/status', async (req, res) => {
   const apiKey = req.headers.authorization?.split(' ')[1];
   if (!apiKey) {
     return res.status(401).json({ error: 'missing_api_key' });
   }
-  res.json(getConnectedProviders(apiKey));
+  const providers = await getConnectedProviders(apiKey);
+  res.json(providers);
 });
 
 // POST /oauth/:provider/disconnect — Remove OAuth connection
-router.post('/:provider/disconnect', (req, res) => {
+router.post('/:provider/disconnect', async (req, res) => {
   const { provider } = req.params;
   const apiKey = req.headers.authorization?.split(' ')[1];
 
@@ -93,7 +94,7 @@ router.post('/:provider/disconnect', (req, res) => {
     return res.status(400).json({ error: 'unknown_provider' });
   }
 
-  removeToken(apiKey, provider);
+  await removeToken(apiKey, provider);
   res.json({ success: true, provider });
 });
 
@@ -166,7 +167,7 @@ async function exchangeCode(provider, code) {
 
 // Refresh Google token if expired
 export async function ensureValidGoogleToken(apiKey) {
-  const tokenData = getToken(apiKey, 'google');
+  const tokenData = await getToken(apiKey, 'google');
   if (!tokenData) return null;
 
   if (typeof tokenData === 'string') return tokenData;
@@ -187,7 +188,7 @@ export async function ensureValidGoogleToken(apiKey) {
     if (data.access_token) {
       tokenData.access = data.access_token;
       tokenData.expiresAt = Date.now() + (data.expires_in || 3600) * 1000;
-      setToken(apiKey, 'google', tokenData);
+      await setToken(apiKey, 'google', tokenData);
     }
   }
 

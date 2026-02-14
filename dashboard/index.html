@@ -1113,6 +1113,298 @@
   color: var(--accent);
 }
 
+/* ─── My Agents ─── */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.agent-template-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.agent-template-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.agent-template-card.selected {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.agent-template-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.agent-template-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.agent-template-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.agent-wizard {
+  max-width: 640px;
+}
+
+.agent-wizard-step {
+  margin-bottom: 32px;
+}
+
+.agent-wizard-step-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.agent-wizard-step-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.agent-wizard-step-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+
+.agent-field {
+  margin-bottom: 20px;
+}
+
+.agent-field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.agent-field input,
+.agent-field textarea,
+.agent-field select {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.agent-field input:focus,
+.agent-field textarea:focus,
+.agent-field select:focus {
+  border-color: var(--accent);
+}
+
+.agent-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.agent-wizard-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.agent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  transition: all 0.2s;
+}
+
+.agent-card:hover {
+  border-color: var(--border-light);
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.agent-card-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+
+.agent-card-info { flex: 1; min-width: 0; }
+
+.agent-card-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.agent-card-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.agent-status-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+}
+
+.agent-status-badge.active {
+  color: var(--green);
+  background: rgba(76, 217, 100, 0.1);
+  border: 1px solid rgba(76, 217, 100, 0.3);
+}
+
+.agent-status-badge.paused {
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.agent-card-result {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 14px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.agent-card-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.agent-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.agent-card-actions button {
+  flex: 1;
+}
+
+.agent-empty {
+  text-align: center;
+  padding: 64px 24px;
+  border: 2px dashed var(--border);
+  background: var(--surface);
+  margin-top: 24px;
+}
+
+.agent-empty-icon {
+  font-size: 56px;
+  opacity: 0.4;
+  margin-bottom: 16px;
+}
+
+.agent-empty-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.agent-empty-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.agent-logs {
+  margin-top: 20px;
+}
+
+.agent-log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.agent-log-ts {
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 130px;
+}
+
+.agent-log-type {
+  padding: 2px 6px;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.agent-log-type.run_start { background: rgba(200,255,0,0.1); color: var(--accent); }
+.agent-log-type.run_complete { background: rgba(76,217,100,0.1); color: var(--green); }
+.agent-log-type.run_error { background: rgba(255,95,87,0.1); color: var(--red); }
+.agent-log-type.created,
+.agent-log-type.activated,
+.agent-log-type.paused,
+.agent-log-type.updated { background: var(--surface-2); color: var(--text-dim); }
+
+.agent-log-msg {
+  color: var(--text-dim);
+  line-height: 1.5;
+  min-width: 0;
+  word-break: break-word;
+}
+
 /* ─── Future APIs ─── */
 .future-apis-grid {
   display: grid;
@@ -2003,25 +2295,7 @@
 .portfolio-sol-row .token-value { color: var(--text-dim); text-align: right; font-size: 10px; }
 
 /* ─── Chat Quick Actions Sidebar ─── */
-.chat-with-sidebar {
-  display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 0;
-  flex: 1;
-  min-height: 0;
-  height: 100vh;
-  max-height: 100vh;
-}
-
-.chat-qa-sidebar {
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  padding: 16px 12px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+/* REMOVED - sidebar disabled */
 
 .token-info-card {
   margin-top: 10px;
@@ -2131,8 +2405,30 @@
   .video-controls { grid-template-columns: 1fr; }
   .bot-layout { grid-template-columns: 1fr; }
   .bot-sidebar { display: none; }
-  .chat-with-sidebar { grid-template-columns: 1fr; }
-  .chat-qa-sidebar { display: none; }
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg);
 }
 </style>
 </head>
@@ -2179,7 +2475,7 @@ const CHAT = {
   selectedModel: '',
   isGenerating: false,
   abortController: null,
-  enabledTools: ['web_search'],
+  enabledTools: ['web_search', 'url_reader', 'code_runner', 'image_generate', 'github_lookup', 'google_lookup', 'notion_lookup'],
   pendingImages: [],
 };
 
@@ -2211,6 +2507,17 @@ const TRADING = {
   safety: null,
   history: [],
   activePanel: 'portfolio',
+  pollInterval: null,
+};
+
+const AGENTS = {
+  list: [],
+  templates: [],
+  wizardStep: 0,
+  wizardTemplate: null,
+  wizardConfig: {},
+  selectedAgent: null,
+  loading: false,
   pollInterval: null,
 };
 
@@ -2741,6 +3048,7 @@ const TOOL_LABELS = {
   github_lookup: (q) => `Looking up GitHub${q ? `: ${escapeHtml(q)}` : ''}...`,
   google_lookup: (q) => `Searching Google Drive${q ? `: ${escapeHtml(q)}` : ''}...`,
   notion_lookup: (q) => `Searching Notion${q ? `: ${escapeHtml(q)}` : ''}...`,
+  image_generate: (q) => `Generating image${q ? `: "${escapeHtml(q.slice(0, 50))}${q.length > 50 ? '...' : ''}"` : ''}...`,
 };
 
 function showToolIndicator(bodyEl, tool, query) {
@@ -2822,6 +3130,15 @@ function renderToolResultCardHtml(tool, data) {
     if (data.entries) {
       return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>NOTION DATABASE</div><div class="trc-body">${data.entries.slice(0, 5).map(e => escapeHtml(JSON.stringify(e.properties).slice(0, 80))).join('<br>')}</div><div class="trc-meta"><span>${data.total} entries</span></div></div>`;
     }
+  }
+  if (tool === 'image_generate') {
+    if (data.success && data.images && data.images.length > 0) {
+      const imagesHtml = data.images.map(img => 
+        `<img src="data:${img.mimeType};base64,${img.data}" alt="Generated image" class="generated-image" style="max-width:100%;border-radius:8px;margin:8px 0;">`
+      ).join('');
+      return `<div class="tool-result-card image-result" style="max-width:512px;"><div class="trc-header"><span class="trc-icon"></span>GENERATED IMAGE</div>${imagesHtml}${data.text ? `<div class="trc-body" style="margin-top:8px;">${escapeHtml(data.text)}</div>` : ''}<div class="trc-meta"><span>${escapeHtml(data.prompt?.slice(0, 50) || '')}${(data.prompt?.length || 0) > 50 ? '...' : ''}</span></div></div>`;
+    }
+    return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>IMAGE GENERATION</div><div class="trc-error">${escapeHtml(data.message || data.error || 'Failed to generate image')}</div></div>`;
   }
   return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>${escapeHtml(tool)}</div><div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div></div>`;
 }
@@ -2941,6 +3258,25 @@ function showToolResultCard(bodyEl, tool, data) {
       el.innerHTML = `
         <div class="trc-header"><span class="trc-icon"></span>NOTION</div>
         <div class="trc-body">${escapeHtml(JSON.stringify(data).slice(0, 200))}</div>
+      `;
+    }
+  } else if (tool === 'image_generate') {
+    if (data.success && data.images && data.images.length > 0) {
+      const imagesHtml = data.images.map(img => 
+        `<img src="data:${img.mimeType};base64,${img.data}" alt="Generated image" class="generated-image" style="max-width:100%;border-radius:8px;margin:8px 0;">`
+      ).join('');
+      el.style.maxWidth = '512px';
+      el.classList.add('image-result');
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>GENERATED IMAGE</div>
+        ${imagesHtml}
+        ${data.text ? `<div class="trc-body" style="margin-top:8px;">${escapeHtml(data.text)}</div>` : ''}
+        <div class="trc-meta"><span>${escapeHtml(data.prompt?.slice(0, 50) || '')}${(data.prompt?.length || 0) > 50 ? '...' : ''}</span></div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div class="trc-header"><span class="trc-icon"></span>IMAGE GENERATION</div>
+        <div class="trc-error">${escapeHtml(data.message || data.error || 'Failed to generate image')}</div>
       `;
     }
   }
@@ -3179,6 +3515,7 @@ function renderDashboard() {
         <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
         <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
         <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
+        <div class="nav-item ${STATE.activeTab === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agents</div>
         <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
         <div class="nav-group-label">Protocol</div>
         <div class="nav-item ${STATE.activeTab === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
@@ -3213,6 +3550,7 @@ function renderTab() {
     case 'images': return renderImages();
     case 'video': return renderVideo();
     case 'trading': return renderTrading();
+    case 'my-agents': return renderMyAgents();
     case 'agents': return renderAgents();
     case 'future-apis': return renderFutureApis();
     case 'treasury': return renderTreasury();
@@ -3262,6 +3600,7 @@ function renderOverview() {
         <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate high-quality images with Gemini. Describe anything and get instant results.' : 'Image generation will activate after token launch. Powered by Gemini.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
         <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.' + (isVideoTierAllowed() ? '' : ' Operator+ only.') : 'Video generation will activate after token launch. Powered by Google Veo 2.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
         <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Trade Bot</div><div class="tool-desc">Autonomous trading bot. Jupiter swaps, DCA, copy trading, TP/SL triggers, and kill switch. Operator+ tier.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('my-agents')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">AI Agents</div><div class="tool-desc">Deploy autonomous agents — wallet monitors, trading assistants, custom bots. Runs 24/7 on your schedule.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key</div></div>
       </div>
@@ -3431,116 +3770,69 @@ function renderChat() {
     document.getElementById('chatInput')?.focus();
   }, 50);
 
-  const isSearchOn = CHAT.enabledTools.includes('web_search');
-  const isUrlReaderOn = CHAT.enabledTools.includes('url_reader');
-  const isCodeRunnerOn = CHAT.enabledTools.includes('code_runner');
-  const isGithubOn = CHAT.enabledTools.includes('github_lookup');
-  const isGoogleOn = CHAT.enabledTools.includes('google_lookup');
-  const isNotionOn = CHAT.enabledTools.includes('notion_lookup');
-
   return `
-    <div class="chat-with-sidebar">
-      <div class="chat-container">
-        <div class="chat-header">
-          <div class="chat-header-left">
-            <select class="chat-model-select" id="chatModelSelect">
-              ${(STATE.models || []).map(m =>
-                `<option value="${m}" ${m === CHAT.selectedModel ? 'selected' : ''}>${m}</option>`
+    <div class="chat-container" style="height:100vh;max-height:100vh;">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <select class="chat-model-select" id="chatModelSelect">
+            ${(STATE.models || []).map(m =>
+              `<option value="${m}" ${m === CHAT.selectedModel ? 'selected' : ''}>${m}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${CHAT.conversations.length > 1 ? `
+            <select class="chat-model-select" id="chatConvSelect" style="max-width:200px;">
+              ${CHAT.conversations.map(c =>
+                `<option value="${c.id}" ${c.id === CHAT.activeId ? 'selected' : ''}>${escapeHtml(c.title)}</option>`
               ).join('')}
             </select>
-            <button class="tool-toggle${isSearchOn ? ' active' : ''}" id="searchToggle">
-              <span class="tool-toggle-dot"></span>Search
-            </button>
-            <button class="tool-toggle${isUrlReaderOn ? ' active' : ''}" id="urlReaderToggle">
-              <span class="tool-toggle-dot"></span>Read URL
-            </button>
-            <button class="tool-toggle${isCodeRunnerOn ? ' active' : ''}" id="codeRunnerToggle">
-              <span class="tool-toggle-dot"></span>Run Code
-            </button>
-            <button class="tool-toggle${isGithubOn ? ' active' : ''}" id="githubToggle">
-              <span class="tool-toggle-dot"></span>GitHub
-            </button>
-            ${STATE.connections.google ? `<button class="tool-toggle${isGoogleOn ? ' active' : ''}" id="googleToggle">
-              <span class="tool-toggle-dot"></span>Google
-            </button>` : ''}
-            ${STATE.connections.notion ? `<button class="tool-toggle${isNotionOn ? ' active' : ''}" id="notionToggle">
-              <span class="tool-toggle-dot"></span>Notion
-            </button>` : ''}
-          </div>
-          <div style="display:flex;gap:8px;">
-            ${CHAT.conversations.length > 1 ? `
-              <select class="chat-model-select" id="chatConvSelect" style="max-width:200px;">
-                ${CHAT.conversations.map(c =>
-                  `<option value="${c.id}" ${c.id === CHAT.activeId ? 'selected' : ''}>${escapeHtml(c.title)}</option>`
-                ).join('')}
-              </select>
-            ` : ''}
-            <button class="btn-sm primary" onclick="newConversation()">+ New</button>
-          </div>
-        </div>
-
-        <div class="chat-messages" id="chatMessages">
-          ${messages.length === 0 ? `
-            <div class="chat-empty">
-              <div class="chat-empty-icon">/</div>
-              <div class="chat-empty-title">Start a conversation</div>
-              <div class="chat-empty-sub">Chat with Claude and Gemini. Free, no billing, powered by $INFINITE treasury.</div>
-            </div>
-          ` : messages.map(m => `
-            <div class="chat-message ${m.role}">
-              <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
-              <div class="chat-msg-body">
-                <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
-                ${m.images ? `<div class="chat-msg-images">${m.images.map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
-                <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
-                ${m.sources ? `<div class="search-sources">${m.sources.slice(0,6).map(s => `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title || s.url)}</a>`).join('')}</div>` : ''}
-                ${m.toolResults ? m.toolResults.map(tr => renderToolResultCardHtml(tr.tool, tr.data)).join('') : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-
-        ${CHAT.pendingImages.length > 0 ? `
-          <div class="chat-image-preview" id="chatImagePreview">
-            ${CHAT.pendingImages.map((img, i) => `
-              <div class="chat-image-thumb">
-                <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
-                <button class="remove-img" onclick="removePendingImage(${i})">x</button>
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-
-        <div class="chat-input-area">
-          <button class="chat-upload-btn" id="chatUploadBtn" title="Upload image">+</button>
-          <input type="file" id="chatFileInput" accept="image/*" multiple style="display:none;">
-          <button class="chat-upload-btn chat-connectors-btn" id="chatConnectorsBtn" title="Connections">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v4M10 10v4M4 6h4a2 2 0 012 2v0M8 8h4"/><circle cx="6" cy="2" r="1"/><circle cx="10" cy="14" r="1"/></svg>
-            ${Object.values(STATE.connections).some(Boolean) ? '<span class="connectors-dot"></span>' : ''}
-          </button>
-          <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
-          <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
+          ` : ''}
+          <button class="btn-sm primary" onclick="newConversation()">+ New</button>
         </div>
       </div>
 
-      <div class="chat-qa-sidebar">
-        <div class="bot-card">
-          <div class="bot-card-title">Quick Actions</div>
-          <div class="trading-quick-btns">
-            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the top trending Solana tokens right now? Analyze volume, social buzz, and on-chain activity.')">Trending</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('Give me a broad Solana market overview. SOL price action, DEX volumes, new token launches, and overall sentiment.')">Market</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the biggest risk factors to watch for in the current Solana ecosystem? Any major red flags?')">Risk Check</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('Find me high-potential alpha opportunities on Solana right now. New protocols, undervalued tokens, or emerging narratives.')">Find Alpha</button>
+      <div class="chat-messages" id="chatMessages">
+        ${messages.length === 0 ? `
+          <div class="chat-empty">
+            <div class="chat-empty-icon">/</div>
+            <div class="chat-empty-title">Start a conversation</div>
+            <div class="chat-empty-sub">Chat with Claude and Gemini. Free, no billing, powered by $INFINITE treasury.</div>
           </div>
-        </div>
-        <div class="bot-card">
-          <div class="bot-card-title">Token Lookup</div>
-          <div class="trading-token-input">
-            <input type="text" id="chatTokenAddr" placeholder="Token address...">
-            <button class="btn-sm primary" onclick="lookupToken()">Go</button>
+        ` : messages.map(m => `
+          <div class="chat-message ${m.role}">
+            <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
+            <div class="chat-msg-body">
+              <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
+              ${m.images ? `<div class="chat-msg-images">${m.images.map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
+              <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
+              ${m.sources ? `<div class="search-sources">${m.sources.slice(0,6).map(s => `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title || s.url)}</a>`).join('')}</div>` : ''}
+              ${m.toolResults ? m.toolResults.map(tr => renderToolResultCardHtml(tr.tool, tr.data)).join('') : ''}
+            </div>
           </div>
-          <div id="tokenInfoCard"></div>
+        `).join('')}
+      </div>
+
+      ${CHAT.pendingImages.length > 0 ? `
+        <div class="chat-image-preview" id="chatImagePreview">
+          ${CHAT.pendingImages.map((img, i) => `
+            <div class="chat-image-thumb">
+              <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
+              <button class="remove-img" onclick="removePendingImage(${i})">x</button>
+            </div>
+          `).join('')}
         </div>
+      ` : ''}
+
+      <div class="chat-input-area">
+        <button class="chat-upload-btn" id="chatUploadBtn" title="Upload image">+</button>
+        <input type="file" id="chatFileInput" accept="image/*" multiple style="display:none;">
+        <button class="chat-upload-btn chat-connectors-btn" id="chatConnectorsBtn" title="Connections">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v4M10 10v4M4 6h4a2 2 0 012 2v0M8 8h4"/><circle cx="6" cy="2" r="1"/><circle cx="10" cy="14" r="1"/></svg>
+          ${Object.values(STATE.connections).some(Boolean) ? '<span class="connectors-dot"></span>' : ''}
+        </button>
+        <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
+        <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
       </div>
     </div>
   `;
@@ -4630,6 +4922,390 @@ function loadTradingHistory() {
   } catch {}
 }
 
+// ─── Tab: My Agents ───
+
+async function loadAgentTemplates() {
+  if (AGENTS.templates.length) return;
+  try {
+    const data = await api('/v1/agents/templates');
+    AGENTS.templates = data.templates || [];
+  } catch (err) {
+    console.error('Failed to load agent templates:', err);
+  }
+}
+
+async function loadMyAgents() {
+  try {
+    const data = await api('/v1/agents');
+    AGENTS.list = data.agents || [];
+  } catch (err) {
+    console.error('Failed to load agents:', err);
+  }
+}
+
+async function createAgent() {
+  if (!AGENTS.wizardTemplate) return;
+  AGENTS.loading = true;
+  render();
+
+  try {
+    const config = { ...AGENTS.wizardConfig };
+    const tmpl = AGENTS.templates.find(t => t.id === AGENTS.wizardTemplate);
+
+    const body = {
+      template: AGENTS.wizardTemplate,
+      name: config.agentName || tmpl?.name || 'My Agent',
+      model: config.model || tmpl?.defaultModel || 'gemini-2.5-flash',
+      schedule: config.schedule || tmpl?.defaultSchedule || '0 */6 * * *',
+      config,
+    };
+
+    const data = await api('/v1/agents', { method: 'POST', body: JSON.stringify(body) });
+
+    if (data.ok) {
+      showToast('Agent created!');
+      AGENTS.wizardStep = 0;
+      AGENTS.wizardTemplate = null;
+      AGENTS.wizardConfig = {};
+      await loadMyAgents();
+    } else {
+      showToast(data.message || data.error || 'Failed to create agent', true);
+    }
+  } catch (err) {
+    showToast(err.message || 'Failed to create agent', true);
+  }
+
+  AGENTS.loading = false;
+  render();
+}
+
+async function agentAction(agentId, action) {
+  try {
+    if (action === 'delete') {
+      if (!confirm('Delete this agent? This cannot be undone.')) return;
+      await api(`/v1/agents/${agentId}`, { method: 'DELETE' });
+      showToast('Agent deleted');
+      AGENTS.selectedAgent = null;
+    } else if (action === 'activate') {
+      await api(`/v1/agents/${agentId}/activate`, { method: 'POST' });
+      showToast('Agent activated');
+    } else if (action === 'pause') {
+      await api(`/v1/agents/${agentId}/pause`, { method: 'POST' });
+      showToast('Agent paused');
+    } else if (action === 'run') {
+      showToast('Running agent...');
+      const data = await api(`/v1/agents/${agentId}/run`, { method: 'POST' });
+      if (data.ok) showToast('Agent run complete');
+      else showToast(data.error || 'Run failed', true);
+    }
+    await loadMyAgents();
+    render();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function viewAgentLogs(agentId) {
+  AGENTS.selectedAgent = agentId;
+  render();
+}
+
+function renderMyAgents() {
+  // Lazy load data
+  if (!AGENTS.templates.length) {
+    loadAgentTemplates().then(() => loadMyAgents().then(() => render()));
+  }
+  if (!AGENTS.list.length && AGENTS.templates.length) {
+    loadMyAgents().then(() => render());
+  }
+
+  // Wizard mode
+  if (AGENTS.wizardStep > 0) {
+    return renderAgentWizard();
+  }
+
+  // Detail/logs view
+  if (AGENTS.selectedAgent) {
+    return renderAgentDetail();
+  }
+
+  // Main list
+  const agents = AGENTS.list;
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">AI Agents</h1>
+      <p class="page-sub">Deploy autonomous AI agents that run 24/7 on your schedule. Uses your API quota.</p>
+    </div>
+    ${agents.length ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div class="section-title">Your Agents (${agents.length})</div>
+        <button class="btn-sm accent" onclick="AGENTS.wizardStep=1;render();">+ New Agent</button>
+      </div>
+      <div class="agents-grid">
+        ${agents.map(a => renderAgentCard(a)).join('')}
+      </div>
+    ` : `
+      <div class="agent-empty">
+        <div class="agent-empty-icon">\u221E</div>
+        <div class="agent-empty-title">No agents yet</div>
+        <div class="agent-empty-sub">Deploy your first autonomous agent. It runs on a schedule using your API quota — wallet monitors, trading alerts, personal assistants, or fully custom.</div>
+        <button class="btn accent" onclick="AGENTS.wizardStep=1;render();">Activate Agent</button>
+      </div>
+    `}
+  `;
+}
+
+function renderAgentCard(a) {
+  const lastRun = a.lastRun ? new Date(a.lastRun).toLocaleString() : 'Never';
+  return `
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <div class="agent-card-icon">${a.icon || '\u2699\uFE0F'}</div>
+        <div class="agent-card-info">
+          <div class="agent-card-name">${escapeHtml(a.name)}</div>
+          <div class="agent-card-meta">${a.model} \u2022 ${a.schedule || 'manual'}</div>
+        </div>
+        <span class="agent-status-badge ${a.status}">${a.status.toUpperCase()}</span>
+      </div>
+      ${a.lastResult ? `<div class="agent-card-result">${escapeHtml(a.lastResult.slice(0, 300))}</div>` : ''}
+      ${a.lastError ? `<div class="agent-card-result" style="border-color:var(--red);color:var(--red);">${escapeHtml(a.lastError)}</div>` : ''}
+      <div class="agent-card-stats">
+        <span>Runs: ${a.runCount || 0}</span>
+        <span>Tokens: ${(a.totalTokens || 0).toLocaleString()}</span>
+        <span>Last: ${lastRun}</span>
+      </div>
+      <div class="agent-card-actions">
+        ${a.status === 'paused'
+          ? `<button class="btn-sm accent" onclick="agentAction('${a.id}','activate')">Activate</button>`
+          : `<button class="btn-sm" onclick="agentAction('${a.id}','pause')">Pause</button>`}
+        <button class="btn-sm" onclick="agentAction('${a.id}','run')">Run Now</button>
+        <button class="btn-sm" onclick="viewAgentLogs('${a.id}')">Logs</button>
+        <button class="btn-sm danger" onclick="agentAction('${a.id}','delete')">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAgentWizard() {
+  const step = AGENTS.wizardStep;
+  const templates = AGENTS.templates;
+  const selectedTmpl = templates.find(t => t.id === AGENTS.wizardTemplate);
+
+  if (step === 1) {
+    // Step 1: Choose what type
+    return `
+      <div class="agent-wizard">
+        <div class="agent-wizard-step">
+          <div class="agent-wizard-step-label">Step 1 of 3</div>
+          <div class="agent-wizard-step-title">What do you want this agent to do?</div>
+          <div class="agent-wizard-step-sub">Choose a template to get started. You can customize everything in the next step.</div>
+        </div>
+        <div class="agents-grid">
+          ${templates.map(t => `
+            <div class="agent-template-card ${AGENTS.wizardTemplate === t.id ? 'selected' : ''}"
+                 onclick="AGENTS.wizardTemplate='${t.id}';render();">
+              <div class="agent-template-icon">${t.icon}</div>
+              <div class="agent-template-name">${t.name}</div>
+              <div class="agent-template-desc">${t.description}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="agent-wizard-actions">
+          <button class="btn-sm" onclick="AGENTS.wizardStep=0;AGENTS.wizardTemplate=null;AGENTS.wizardConfig={};render();">Cancel</button>
+          <button class="btn-sm accent" ${!AGENTS.wizardTemplate ? 'disabled' : ''} onclick="AGENTS.wizardStep=2;render();">Next \u2192</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (step === 2 && selectedTmpl) {
+    // Step 2: Configure
+    const scheduleOptions = [
+      { value: '*/5 * * * *', label: 'Every 5 minutes' },
+      { value: '*/10 * * * *', label: 'Every 10 minutes' },
+      { value: '*/30 * * * *', label: 'Every 30 minutes' },
+      { value: '0 * * * *', label: 'Every hour' },
+      { value: '0 */2 * * *', label: 'Every 2 hours' },
+      { value: '0 */6 * * *', label: 'Every 6 hours' },
+      { value: '0 9 * * *', label: 'Daily at 9 AM UTC' },
+      { value: '0 9,21 * * *', label: 'Twice daily (9 AM / 9 PM UTC)' },
+    ];
+
+    const modelChoices = STATE.models.length ? STATE.models : ['gemini-2.5-flash', 'gemini-2.5-pro', 'claude-sonnet-4-5-20250929'];
+
+    const config = AGENTS.wizardConfig;
+
+    return `
+      <div class="agent-wizard">
+        <div class="agent-wizard-step">
+          <div class="agent-wizard-step-label">Step 2 of 3</div>
+          <div class="agent-wizard-step-title">Configure ${selectedTmpl.name}</div>
+          <div class="agent-wizard-step-sub">Customize your agent's behavior.</div>
+        </div>
+        <div class="agent-field">
+          <label>Agent Name</label>
+          <input type="text" id="agentWizName" placeholder="${selectedTmpl.name}" value="${escapeHtml(config.agentName || '')}">
+        </div>
+        <div class="agent-field">
+          <label>AI Model</label>
+          <select id="agentWizModel">
+            ${modelChoices.map(m => `<option value="${m}" ${(config.model || selectedTmpl.defaultModel) === m ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
+        </div>
+        <div class="agent-field">
+          <label>Run Schedule</label>
+          <select id="agentWizSchedule">
+            ${scheduleOptions.map(s => `<option value="${s.value}" ${(config.schedule || selectedTmpl.defaultSchedule) === s.value ? 'selected' : ''}>${s.label}</option>`).join('')}
+          </select>
+        </div>
+        ${(selectedTmpl.configFields || []).map(f => `
+          <div class="agent-field">
+            <label>${f.label}</label>
+            ${f.type === 'textarea' ? `
+              <textarea id="agentWiz_${f.id}" placeholder="${f.placeholder || ''}">${escapeHtml(config[f.id] || f.default || '')}</textarea>
+            ` : f.type === 'select' ? `
+              <select id="agentWiz_${f.id}">
+                ${f.options.map(o => `<option value="${o}" ${config[f.id] === o ? 'selected' : ''}>${o}</option>`).join('')}
+              </select>
+            ` : `
+              <input type="${f.type || 'text'}" id="agentWiz_${f.id}" placeholder="${f.placeholder || ''}" value="${escapeHtml(config[f.id] || f.default || '')}">
+            `}
+          </div>
+        `).join('')}
+        <div class="agent-wizard-actions">
+          <button class="btn-sm" onclick="AGENTS.wizardStep=1;render();">\u2190 Back</button>
+          <button class="btn-sm accent" onclick="collectWizardConfig();AGENTS.wizardStep=3;render();">Next \u2192</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (step === 3 && selectedTmpl) {
+    // Step 3: Confirm & deploy
+    const config = AGENTS.wizardConfig;
+    return `
+      <div class="agent-wizard">
+        <div class="agent-wizard-step">
+          <div class="agent-wizard-step-label">Step 3 of 3</div>
+          <div class="agent-wizard-step-title">Ready to deploy</div>
+          <div class="agent-wizard-step-sub">Review your agent and activate it.</div>
+        </div>
+        <div class="api-key-box" style="margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+            <span style="font-size:36px;">${selectedTmpl.icon}</span>
+            <div>
+              <div style="font-family:var(--font-mono);font-size:16px;font-weight:600;">${escapeHtml(config.agentName || selectedTmpl.name)}</div>
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${config.model || selectedTmpl.defaultModel} \u2022 ${config.schedule || selectedTmpl.defaultSchedule}</div>
+            </div>
+          </div>
+          <div class="api-key-hint" style="line-height:2;">
+            <strong style="color:var(--text);">Template:</strong> ${selectedTmpl.name}<br>
+            <strong style="color:var(--text);">Tools:</strong> ${(selectedTmpl.tools || []).join(', ')}<br>
+            <strong style="color:var(--text);">Billing:</strong> Uses your API quota (counted against daily limit)<br>
+            <strong style="color:var(--text);">Status:</strong> Will start <em>paused</em> — activate when ready
+          </div>
+        </div>
+        <div class="agent-wizard-actions">
+          <button class="btn-sm" onclick="AGENTS.wizardStep=2;render();">\u2190 Back</button>
+          <button class="btn-sm accent" ${AGENTS.loading ? 'disabled' : ''} onclick="createAgent();">${AGENTS.loading ? 'Deploying...' : 'Deploy Agent'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Fallback
+  AGENTS.wizardStep = 0;
+  return renderMyAgents();
+}
+
+function collectWizardConfig() {
+  const selectedTmpl = AGENTS.templates.find(t => t.id === AGENTS.wizardTemplate);
+  if (!selectedTmpl) return;
+
+  const nameEl = document.getElementById('agentWizName');
+  const modelEl = document.getElementById('agentWizModel');
+  const schedEl = document.getElementById('agentWizSchedule');
+
+  AGENTS.wizardConfig.agentName = nameEl?.value || selectedTmpl.name;
+  AGENTS.wizardConfig.model = modelEl?.value || selectedTmpl.defaultModel;
+  AGENTS.wizardConfig.schedule = schedEl?.value || selectedTmpl.defaultSchedule;
+
+  for (const f of (selectedTmpl.configFields || [])) {
+    const el = document.getElementById(`agentWiz_${f.id}`);
+    if (el) AGENTS.wizardConfig[f.id] = el.value;
+  }
+}
+
+function renderAgentDetail() {
+  const agent = AGENTS.list.find(a => a.id === AGENTS.selectedAgent);
+  if (!agent) {
+    AGENTS.selectedAgent = null;
+    return renderMyAgents();
+  }
+
+  // Load logs async
+  const logsContainerId = 'agentLogsContainer';
+  setTimeout(async () => {
+    try {
+      const data = await api(`/v1/agents/${agent.id}/logs`);
+      const container = document.getElementById(logsContainerId);
+      if (!container) return;
+      const logs = data.logs || [];
+      if (!logs.length) {
+        container.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:16px;">No logs yet. Run the agent to generate activity.</div>';
+        return;
+      }
+      container.innerHTML = logs.map(l => `
+        <div class="agent-log-entry">
+          <span class="agent-log-ts">${new Date(l.ts).toLocaleString()}</span>
+          <span class="agent-log-type ${l.type}">${l.type.replace('_', ' ')}</span>
+          <span class="agent-log-msg">${escapeHtml(l.message || '')}</span>
+        </div>
+      `).join('');
+    } catch {}
+  }, 100);
+
+  const lastRun = agent.lastRun ? new Date(agent.lastRun).toLocaleString() : 'Never';
+  return `
+    <div style="margin-bottom:24px;">
+      <button class="btn-sm" onclick="AGENTS.selectedAgent=null;render();">\u2190 Back to Agents</button>
+    </div>
+    <div class="page-header">
+      <h1 class="page-title" style="display:flex;align-items:center;gap:14px;">
+        <span>${agent.icon || '\u2699\uFE0F'}</span> ${escapeHtml(agent.name)}
+        <span class="agent-status-badge ${agent.status}" style="font-size:11px;">${agent.status.toUpperCase()}</span>
+      </h1>
+      <p class="page-sub">${agent.template} \u2022 ${agent.model} \u2022 ${agent.schedule}</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Total Runs</div><div class="value">${agent.runCount || 0}</div></div>
+      <div class="stat-card"><div class="label">Tokens Used</div><div class="value">${(agent.totalTokens || 0).toLocaleString()}</div></div>
+      <div class="stat-card"><div class="label">Last Run</div><div class="value" style="font-size:14px;">${lastRun}</div></div>
+      <div class="stat-card"><div class="label">Status</div><div class="value ${agent.status === 'active' ? 'green' : ''}">${agent.status.toUpperCase()}</div></div>
+    </div>
+    ${agent.lastResult ? `
+      <div class="section">
+        <div class="section-title">Last Result</div>
+        <div class="agent-card-result" style="max-height:300px;">${escapeHtml(agent.lastResult)}</div>
+      </div>
+    ` : ''}
+    <div style="display:flex;gap:8px;margin:20px 0;">
+      ${agent.status === 'paused'
+        ? `<button class="btn-sm accent" onclick="agentAction('${agent.id}','activate')">Activate</button>`
+        : `<button class="btn-sm" onclick="agentAction('${agent.id}','pause')">Pause</button>`}
+      <button class="btn-sm" onclick="agentAction('${agent.id}','run')">Run Now</button>
+      <button class="btn-sm danger" onclick="agentAction('${agent.id}','delete')">Delete Agent</button>
+    </div>
+    <div class="section">
+      <div class="section-title">Activity Log</div>
+      <div class="agent-logs" id="${logsContainerId}">
+        <div style="color:var(--text-muted);font-size:12px;padding:16px;">Loading logs...</div>
+      </div>
+    </div>
+  `;
+}
+
 // ─── Tab: Tools Hub ───
 
 function renderAgents() {
@@ -5141,24 +5817,7 @@ function bindEvents() {
     });
   }
 
-  // Tool toggles
-  function bindToolToggle(elementId, toolName) {
-    const btn = document.getElementById(elementId);
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const idx = CHAT.enabledTools.indexOf(toolName);
-        if (idx >= 0) CHAT.enabledTools.splice(idx, 1);
-        else CHAT.enabledTools.push(toolName);
-        btn.classList.toggle('active', CHAT.enabledTools.includes(toolName));
-      });
-    }
-  }
-  bindToolToggle('searchToggle', 'web_search');
-  bindToolToggle('urlReaderToggle', 'url_reader');
-  bindToolToggle('codeRunnerToggle', 'code_runner');
-  bindToolToggle('githubToggle', 'github_lookup');
-  bindToolToggle('googleToggle', 'google_lookup');
-  bindToolToggle('notionToggle', 'notion_lookup');
+  // Tools are always enabled - no toggles needed
 
   // Upload button + file input
   const uploadBtn = document.getElementById('chatUploadBtn');

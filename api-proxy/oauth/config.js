@@ -1,4 +1,5 @@
 const OAUTH_REDIRECT_BASE = process.env.OAUTH_REDIRECT_BASE || 'http://localhost:3001';
+const DASHBOARD_URL = process.env.DASHBOARD_URL || 'http://localhost:5500/dashboard';
 
 export const PROVIDERS = {
   github: {
@@ -33,6 +34,10 @@ export const PROVIDERS = {
 
 export function getRedirectUri(provider) {
   return `${OAUTH_REDIRECT_BASE}${PROVIDERS[provider].callbackPath}`;
+}
+
+export function getDashboardUrl(params = '') {
+  return `${DASHBOARD_URL}${params ? '?' + params : ''}`;
 }
 
 export function isProviderConfigured(provider) {

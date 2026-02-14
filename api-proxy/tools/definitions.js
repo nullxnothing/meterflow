@@ -65,6 +65,17 @@ const TOOL_DEFINITIONS = {
       required: ['action'],
     },
   },
+  image_generate: {
+    name: 'image_generate',
+    description: 'Generate an AI image based on a text prompt using Gemini. Use this when the user asks you to create, generate, draw, design, or visualize an image. Returns the generated image that will be displayed inline in the chat.',
+    parameters: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string', description: 'A detailed description of the image to generate. Be specific about style, composition, lighting, colors, and subject matter.' },
+      },
+      required: ['prompt'],
+    },
+  },
 };
 
 // Tools that require OAuth tokens — maps tool name to provider
