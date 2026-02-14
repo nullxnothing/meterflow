@@ -97,3 +97,20 @@ All pages **must** import the shared design system. Every new HTML page needs th
 - Use shared component classes where they fit. Only add page-specific `<style>` for unique layouts.
 - Add any new reusable component to `shared.css`, not inline.
 - When adding a new route, add the rewrite to `vercel.json`.
+
+## Discord Integration
+
+Use the Discord MCP to post updates to the INFINITE Discord server. Channel IDs:
+
+- `#releases` — Major releases, deployments, breaking changes (ANNOUNCEMENTS category)
+- `#updates` — `1471262900583792640` — Protocol updates, changelog
+- `#announcements` — `1471263067374358568` — Official announcements
+- `#treasury-updates` — `1471262921882468457` — Auto-posted by treasury agent webhook
+
+**When to post to Discord:**
+- On any major feature deployment or breaking change, post a formatted update to `#releases` using `discord_execute` with `messages.send`
+- Format: use markdown with separator lines (`━━━━━━━━━━━━━━━━━━━━━━━━━━━`) and clear headings
+- Keep the tone direct and professional — no hype, no emojis unless the user requests them
+- Always mention what changed, why it matters, and any action holders need to take
+
+**Treasury webhook** (`agent/index.js`): The treasury agent auto-posts hourly reports and health status change alerts to `#treasury-updates` via Discord webhook. No manual posting needed for treasury data.
