@@ -896,6 +896,17 @@
   color: var(--accent);
 }
 
+.connection-card.coming-soon {
+  opacity: 0.5;
+}
+
+.coming-soon-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
 /* ─── Chat Images in Messages ─── */
 .chat-msg-images {
   display: flex;
@@ -3341,9 +3352,9 @@ function renderModels() {
 
 function renderConnections() {
   const providers = [
-    { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH' },
-    { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', icon: 'G' },
-    { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', icon: 'N' },
+    { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH', ready: true },
+    { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', icon: 'G', ready: false },
+    { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', icon: 'N', ready: false },
   ];
 
   return `
@@ -3355,17 +3366,19 @@ function renderConnections() {
       ${providers.map(p => {
         const isConnected = STATE.connections[p.id];
         return `
-          <div class="card connection-card">
+          <div class="card connection-card${!p.ready ? ' coming-soon' : ''}">
             <div class="connection-icon">${p.icon}</div>
             <div class="connection-info">
               <div class="connection-name">${p.name}</div>
               <div class="connection-desc dim">${p.desc}</div>
             </div>
             <div class="connection-action">
-              ${isConnected
-                ? `<span class="connection-status connected">Connected</span>
-                   <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
-                : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
+              ${!p.ready
+                ? '<span class="connection-status coming-soon-label">Coming Soon</span>'
+                : isConnected
+                  ? `<span class="connection-status connected">Connected</span>
+                     <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
+                  : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
               }
             </div>
           </div>
