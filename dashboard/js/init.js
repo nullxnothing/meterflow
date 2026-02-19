@@ -3,8 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, TRADING } from './state.js';
-import { loadSession, loadChatHistory } from './session.js';
-import { loadVideoHistory } from './tabs/video.js';
+import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchOAuthStatus } from './polling.js';
 import { render } from './render.js';
