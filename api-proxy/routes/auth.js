@@ -23,9 +23,17 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Dashboard sends base64, CLI clients may send base58
+    let sigBytes;
+    try {
+      sigBytes = bs58.decode(signature);
+    } catch {
+      sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+    }
+
     const verified = nacl.sign.detached.verify(
       new TextEncoder().encode(message),
-      bs58.decode(signature),
+      sigBytes,
       bs58.decode(wallet)
     );
 
