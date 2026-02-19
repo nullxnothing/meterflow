@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Session Persistence
+// INFINITE Dashboard — Session Persistence
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, VIDEOS, TRADING, STORAGE_KEY, CHAT_STORAGE_KEY, clearStatusPollInterval } from './state.js';
@@ -54,7 +54,6 @@ export function saveChatHistory() {
       const saved = { role: m.role, content: m.content };
       if (m.model) saved.model = m.model;
       if (m.sources) saved.sources = m.sources;
-      // Strip base64 image data from localStorage (too large)
       if (m.images) saved.hasImages = true;
       return saved;
     }),
@@ -90,10 +89,11 @@ export function newConversation(doRender = true) {
   CHAT.conversations.push(conv);
   CHAT.activeId = conv.id;
   if (doRender) {
-    // Import dynamically to avoid circular dependency
     import('./render.js').then(m => m.render());
   }
 }
+
+window.newConversation = newConversation;
 
 // ─── Video Persistence ───
 
@@ -113,27 +113,5 @@ export function loadVideoHistory() {
     if (!raw) return;
     const data = JSON.parse(raw);
     VIDEOS.gallery = (data || []).filter(v => v.uri);
-  } catch {}
-}
-
-// ─── Trading Persistence ───
-
-export function saveTradingHistory() {
-  try {
-    const toSave = TRADING.conversations.slice(-10).map(c => ({
-      id: c.id,
-      messages: c.messages.slice(-50),
-    }));
-    localStorage.setItem('infinite_trading', JSON.stringify({ conversations: toSave, activeId: TRADING.activeId }));
-  } catch {}
-}
-
-export function loadTradingHistory() {
-  try {
-    const raw = localStorage.getItem('infinite_trading');
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    TRADING.conversations = data.conversations || [];
-    TRADING.activeId = data.activeId;
   } catch {}
 }

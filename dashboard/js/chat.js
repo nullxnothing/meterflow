@@ -1,9 +1,10 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Chat Logic
+// INFINITE Dashboard — Chat Logic
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT } from './state.js';
 import { API_BASE, escapeHtml } from './api.js';
+import { showToast } from './actions.js';
 import { getActiveConversation, saveChatHistory } from './session.js';
 import { renderMarkdown } from './markdown.js';
 import { renderImagePreview } from './images.js';
@@ -24,7 +25,6 @@ export async function sendChatMessage() {
   const sentImages = CHAT.pendingImages.length > 0 ? [...CHAT.pendingImages] : null;
   conv.messages.push({ role: 'user', content: text, images: sentImages });
 
-  // Update title from first message
   if (conv.messages.filter(m => m.role === 'user').length === 1) {
     conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
   }
@@ -38,7 +38,6 @@ export async function sendChatMessage() {
   const tools = CHAT.enabledTools.length > 0 ? [...CHAT.enabledTools] : undefined;
   const images = sentImages || undefined;
 
-  // Clear pending images after capturing
   CHAT.pendingImages = [];
   renderImagePreview();
 
@@ -100,7 +99,7 @@ export async function sendChatMessage() {
             showToolIndicator(bodyEl, data.tool, data.query);
           } else if (data.type === 'tool_result') {
             removeToolIndicator(bodyEl);
-            if (data.tool === 'web_search' && data.sources && data.sources.length > 0) {
+            if (data.tool === 'web_search' && data.sources?.length > 0) {
               collectedSources = collectedSources.concat(data.sources);
               showSearchSources(bodyEl, collectedSources);
             } else if (data.tool && data.data) {
@@ -139,11 +138,10 @@ export async function sendChatMessage() {
 
 // ─── DOM Helpers ───
 
-export function appendMessageToDOM(msg) {
+function appendMessageToDOM(msg) {
   const container = document.getElementById('chatMessages');
   if (!container) return null;
 
-  // Remove empty state if present
   const empty = container.querySelector('.chat-empty');
   if (empty) empty.remove();
 
@@ -168,7 +166,7 @@ export function appendMessageToDOM(msg) {
   return el;
 }
 
-export function showTypingIndicator() {
+function showTypingIndicator() {
   const container = document.getElementById('chatMessages');
   if (!container) return;
   const el = document.createElement('div');
@@ -188,7 +186,7 @@ export function showTypingIndicator() {
   scrollChat();
 }
 
-export function removeTypingIndicator() {
+function removeTypingIndicator() {
   document.getElementById('typingIndicator')?.remove();
 }
 
@@ -197,13 +195,10 @@ export function scrollChat() {
   if (el) el.scrollTop = el.scrollHeight;
 }
 
-export function updateSendButton() {
+function updateSendButton() {
   const btn = document.getElementById('chatSendBtn');
   if (btn) {
     btn.disabled = CHAT.isGenerating;
     btn.textContent = CHAT.isGenerating ? '...' : '\u2192';
   }
 }
-
-// Attach to window for onclick handlers
-window.sendChatMessage = sendChatMessage;

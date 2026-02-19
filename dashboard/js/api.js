@@ -1,12 +1,10 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - API Utilities
+// INFINITE Dashboard — API Helpers
 // ═══════════════════════════════════════════
 
-import { STATE } from './state.js';
+import { STATE, API_BASE } from './state.js';
 
-export const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:3001'
-  : '/proxy';
+export { API_BASE };
 
 // ─── API Request Helper ───
 
@@ -26,14 +24,13 @@ export async function api(path, opts = {}) {
   return data;
 }
 
-// ─── Utility Functions ───
+// ─── Formatting Helpers ───
+
+export function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 export function maskKey(key) {
   if (!key) return 'No key';
   return key.slice(0, 18) + '...' + key.slice(-4);
-}
-
-export function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }

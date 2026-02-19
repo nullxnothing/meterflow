@@ -1,6 +1,10 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - State Management
+// INFINITE Dashboard — State & Constants
 // ═══════════════════════════════════════════
+
+export const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001'
+  : '/proxy';
 
 export const STORAGE_KEY = 'infinite_session';
 export const CHAT_STORAGE_KEY = 'infinite_chats';
@@ -69,6 +73,22 @@ export const TRADING = {
   _fetchFailCount: 0,
 };
 
+export const AGENTS = {
+  list: [],
+  templates: [],
+  activity: [],
+  notifications: [],
+  notifOpen: false,
+  notifSeen: 0,
+  wizardStep: 0,
+  wizardTemplate: null,
+  wizardConfig: {},
+  selectedAgent: null,
+  loading: false,
+  pollInterval: null,
+  runningAgents: new Set(),
+};
+
 export const VOTES = {
   userVotes: new Set(),
   voteCounts: {},
@@ -87,3 +107,6 @@ export function clearStatusPollInterval() {
     statusPollInterval = null;
   }
 }
+
+export let selectedApiCategory = 'All';
+export function setSelectedApiCategory(val) { selectedApiCategory = val; }

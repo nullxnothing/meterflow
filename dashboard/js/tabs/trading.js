@@ -658,3 +658,168 @@ window.botKill = botKill;
 window.botResume = botResume;
 window.lookupToken = lookupToken;
 window.sendTradingQuery = sendTradingQuery;
+
+// ─── Trading Chat Functions ───
+
+export async function sendTradingMessage(tokenAddress) {
+  const input = document.getElementById('tradingInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || TRADING.isGenerating) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const conv = getActiveTradingConversation();
+  conv.messages.push({ role: 'user', content: text });
+
+  appendTradingMessageToDOM({ role: 'user', content: text });
+  showTradingTypingIndicator();
+  TRADING.isGenerating = true;
+  updateTradingSendButton();
+
+  const model = TRADING.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+
+  try {
+    TRADING.abortController = new AbortController();
+
+    const systemPrompt = `You are an expert Solana trading analyst. Provide concise, data-driven analysis. When given a token address, analyze its trading metrics, liquidity, holder distribution, and risk factors. Format responses with clear sections. Use markdown tables for comparisons. Always include a risk assessment (Low/Medium/High/Critical).${tokenAddress ? ` The user is asking about token: ${tokenAddress}` : ''}`;
+
+    const body = {
+      model,
+      messages: [
+        { role: 'user', content: systemPrompt },
+        { role: 'assistant', content: 'Understood. I\'ll provide concise, data-driven Solana trading analysis.' },
+        ...conv.messages.map(m => ({ role: m.role, content: m.content })),
+      ],
+    };
+
+    const response = await fetch(`${API_BASE}/v1/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.apiKeyFull}`,
+      },
+      body: JSON.stringify(body),
+      signal: TRADING.abortController.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(err.message || 'Request failed');
+    }
+
+    removeTradingTypingIndicator();
+
+    const msgEl = appendTradingMessageToDOM({ role: 'assistant', content: '' });
+    const contentEl = msgEl.querySelector('.chat-msg-content');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+        try {
+          const data = JSON.parse(jsonStr);
+          if (data.type === 'text') {
+            fullText += data.content;
+            contentEl.innerHTML = renderMarkdown(fullText);
+            scrollTradingChat();
+          } else if (data.type === 'error') {
+            throw new Error(data.message);
+          }
+        } catch (e) {
+          if (e.message && !e.message.includes('JSON')) throw e;
+        }
+      }
+    }
+
+    conv.messages.push({ role: 'assistant', content: fullText });
+    saveTradingHistory();
+    bindCodeCopyButtons();
+
+  } catch (err) {
+    removeTradingTypingIndicator();
+    if (err.name !== 'AbortError') {
+      appendTradingMessageToDOM({ role: 'assistant', content: `Error: ${err.message}`, isError: true });
+    }
+  } finally {
+    TRADING.isGenerating = false;
+    TRADING.abortController = null;
+    updateTradingSendButton();
+  }
+}
+
+export function appendTradingMessageToDOM(msg) {
+  const container = document.getElementById('tradingMessages');
+  if (!container) return null;
+
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  const el = document.createElement('div');
+  el.className = `chat-message ${msg.role}`;
+  el.innerHTML = `
+    <div class="chat-msg-avatar">${msg.role === 'user' ? 'You' : 'AI'}</div>
+    <div class="chat-msg-body">
+      <div class="chat-msg-name">${msg.role === 'user' ? 'You' : 'AI'}</div>
+      <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
+        msg.role === 'user' ? escapeHtml(msg.content) : (msg.content ? renderMarkdown(msg.content) : '')
+      }</div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollTradingChat();
+  return el;
+}
+
+export function showTradingTypingIndicator() {
+  const container = document.getElementById('tradingMessages');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'chat-message assistant';
+  el.id = 'tradingTypingIndicator';
+  el.innerHTML = `
+    <div class="chat-msg-avatar">AI</div>
+    <div class="chat-msg-body">
+      <div class="chat-typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollTradingChat();
+}
+
+export function removeTradingTypingIndicator() {
+  document.getElementById('tradingTypingIndicator')?.remove();
+}
+
+export function scrollTradingChat() {
+  const el = document.getElementById('tradingMessages');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+export function updateTradingSendButton() {
+  const btn = document.getElementById('tradingSendBtn');
+  if (btn) {
+    btn.disabled = TRADING.isGenerating;
+    btn.textContent = TRADING.isGenerating ? '...' : '\u2192';
+  }
+}
+
+window.sendTradingMessage = sendTradingMessage;

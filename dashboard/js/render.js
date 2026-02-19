@@ -17,6 +17,7 @@ import { renderImages } from './tabs/images.js';
 import { renderVideo } from './tabs/video.js';
 import { renderTrading } from './tabs/trading.js';
 import { renderAgents } from './tabs/agents.js';
+import { renderMyAgents } from './tabs/my-agents.js';
 import { renderFutureApis } from './tabs/future-apis.js';
 import { renderTreasury } from './tabs/treasury.js';
 
@@ -69,6 +70,7 @@ export function renderDashboard() {
         <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
         <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
         <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
+        <div class="nav-item ${STATE.activeTab === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agents</div>
         <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
         <div class="nav-group-label">Protocol</div>
         <div class="nav-item ${STATE.activeTab === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
@@ -103,6 +105,7 @@ export function renderTab() {
     case 'images': return renderImages();
     case 'video': return renderVideo();
     case 'trading': return renderTrading();
+    case 'my-agents': return renderMyAgents();
     case 'agents': return renderAgents();
     case 'future-apis': return renderFutureApis();
     case 'treasury': return renderTreasury();
