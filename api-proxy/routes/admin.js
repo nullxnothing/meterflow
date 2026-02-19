@@ -1,36 +1,20 @@
 import { Router } from 'express';
 import { CONFIG, PROVIDER_AVAILABLE } from '../config.js';
-import { apiKeys, usageCounts, VALID_API_IDS, getTreasuryState, setTreasuryState } from '../state.js';
+import { VALID_API_IDS, getTreasuryState, setTreasuryState } from '../state.js';
 import { authenticateApiKey, authenticateAdmin } from '../middleware.js';
 import { getTodayKey } from '../lib/helpers.js';
 import { getTreasuryBalance } from '../lib/balance.js';
 import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
+import { getKeyData, countKeys } from '../lib/kv-keys.js';
 
 const router = Router();
 
 // GET /stats
-router.get('/stats', (req, res) => {
-  const today = getTodayKey();
-  let totalCallsToday = 0;
-  let totalTokensToday = 0;
-  let activeKeys = 0;
-
-  for (const [key, usage] of usageCounts) {
-    if (usage.date === today) {
-      totalCallsToday += usage.count;
-      totalTokensToday += usage.tokens;
-    }
-  }
-
-  for (const [key, data] of apiKeys) {
-    if (data.tier) activeKeys++;
-  }
+router.get('/stats', async (req, res) => {
+  const totalKeysIssued = await countKeys();
 
   res.json({
-    totalCallsToday,
-    totalTokensToday,
-    activeKeys,
-    totalKeysIssued: apiKeys.size,
+    totalKeysIssued,
     tiers: Object.entries(CONFIG.TIERS).map(([key, t]) => ({
       name: t.label,
       min: t.min,
@@ -46,7 +30,7 @@ router.get('/votes', async (req, res) => {
     const authHeader = req.headers.authorization;
     let userVotes = [];
     if (authHeader?.startsWith('Bearer ')) {
-      const keyData = apiKeys.get(authHeader.split(' ')[1]);
+      const keyData = await getKeyData(authHeader.split(' ')[1]);
       if (keyData) {
         userVotes = await getWalletVotes(keyData.wallet);
       }

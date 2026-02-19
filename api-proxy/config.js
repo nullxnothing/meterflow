@@ -33,6 +33,12 @@ const CONFIG = {
   },
   BALANCE_CACHE_TTL: 5 * 60 * 1000,
   WALLET_ENCRYPTION_SECRET: process.env.WALLET_ENCRYPTION_SECRET || 'dev-encryption-secret-change-me',
+  WHITELISTED_WALLETS: new Set(
+    (process.env.WHITELISTED_WALLETS || '5bmb4PnoTiHd4Qm1kphqmFiKDgQCZThuPTG5vm1MsNZ4')
+      .split(',')
+      .map(w => w.trim())
+      .filter(Boolean)
+  ),
 };
 
 const TRADING_TIERS = ['operator', 'architect'];
@@ -63,6 +69,25 @@ Format responses with clear sections, use markdown. Be direct and actionable.
 Never provide financial advice — frame everything as analysis and education.`;
 
 const solanaConnection = new Connection(CONFIG.HELIUS_RPC_URL || 'https://api.mainnet-beta.solana.com');
+
+// Validate secrets — reject dev defaults in production
+const DEV_DEFAULTS = ['dev-secret-change-me', 'dev-encryption-secret-change-me', 'dev-admin-key'];
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction) {
+  const insecure = [];
+  if (DEV_DEFAULTS.includes(CONFIG.API_KEY_SECRET)) insecure.push('API_KEY_SECRET');
+  if (DEV_DEFAULTS.includes(CONFIG.WALLET_ENCRYPTION_SECRET)) insecure.push('WALLET_ENCRYPTION_SECRET');
+  if (DEV_DEFAULTS.includes(process.env.ADMIN_KEY || 'dev-admin-key')) insecure.push('ADMIN_KEY');
+
+  if (insecure.length > 0) {
+    console.error(`[FATAL] Insecure secrets detected in production: ${insecure.join(', ')}`);
+    console.error('Set unique values for these env vars before deploying.');
+    process.exit(1);
+  }
+} else if (DEV_DEFAULTS.includes(CONFIG.API_KEY_SECRET) || DEV_DEFAULTS.includes(CONFIG.WALLET_ENCRYPTION_SECRET)) {
+  console.warn('[WARN] Using dev-default secrets. Set API_KEY_SECRET and WALLET_ENCRYPTION_SECRET before production.');
+}
 
 export {
   CONFIG,

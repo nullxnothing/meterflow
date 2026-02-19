@@ -1,7 +1,7 @@
 import { CONFIG, TRADING_TIERS } from './config.js';
-import { apiKeys } from './state.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
+import { getKeyData } from './lib/kv-keys.js';
 
 async function authenticateApiKey(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -13,7 +13,7 @@ async function authenticateApiKey(req, res, next) {
   }
 
   const apiKey = authHeader.split(' ')[1];
-  const keyData = apiKeys.get(apiKey);
+  const keyData = await getKeyData(apiKey);
 
   if (!keyData) {
     return res.status(401).json({
@@ -22,8 +22,9 @@ async function authenticateApiKey(req, res, next) {
     });
   }
 
-  const balance = await getTokenBalance(keyData.wallet);
-  const tier = getTierForBalance(balance);
+  const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(keyData.wallet);
+  const balance = isWhitelisted ? 0 : await getTokenBalance(keyData.wallet);
+  const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
 
   if (!tier) {
     return res.status(403).json({
@@ -56,8 +57,11 @@ async function authenticateApiKey(req, res, next) {
 }
 
 function authenticateAdmin(req, res, next) {
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || adminKey === 'dev-admin-key') {
+    return res.status(503).json({ error: 'admin_not_configured', message: 'ADMIN_KEY env var not set.' });
+  }
   const key = req.headers.authorization?.split(' ')[1];
-  const adminKey = process.env.ADMIN_KEY || 'dev-admin-key';
   if (key !== adminKey) {
     return res.status(401).json({ error: 'unauthorized' });
   }

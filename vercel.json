@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/proxy/:path*", "destination": "https://infinite-api-proxy-production.up.railway.app/:path*" },
+    { "source": "/proxy/:path*", "destination": "https://infinite-protocol.onrender.com/:path*" },
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },
     { "source": "/docs.html", "destination": "/site/docs.html" },

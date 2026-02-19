@@ -1,10 +1,13 @@
 import { Router } from 'express';
+import nacl from 'tweetnacl';
+import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
-import { apiKeys, walletKeys, usageCounts } from '../state.js';
 import { authenticateApiKey } from '../middleware.js';
 import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
 import { isModelAvailable } from '../lib/providers.js';
+import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } from '../lib/kv-keys.js';
+import { resetUsage } from '../lib/kv-usage.js';
 
 const router = Router();
 
@@ -20,15 +23,24 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // TODO: Full signature verification with tweetnacl
-    // const verified = nacl.sign.detached.verify(
-    //   new TextEncoder().encode(message),
-    //   bs58.decode(signature),
-    //   bs58.decode(wallet)
-    // );
+    const verified = nacl.sign.detached.verify(
+      new TextEncoder().encode(message),
+      bs58.decode(signature),
+      bs58.decode(wallet)
+    );
 
-    const balance = await getTokenBalance(wallet);
-    const tier = getTierForBalance(balance);
+    if (!verified) {
+      return res.status(401).json({
+        error: 'invalid_signature',
+        message: 'Wallet signature verification failed.'
+      });
+    }
+
+    // Whitelisted wallets bypass balance check (pre-launch testing)
+    const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(wallet);
+
+    const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
+    const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
 
     if (!tier) {
       return res.status(403).json({
@@ -43,31 +55,31 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    let apiKey = walletKeys.get(wallet);
-    if (apiKey && apiKeys.has(apiKey)) {
-      const existing = apiKeys.get(apiKey);
-      existing.tier = tier;
-      existing.balance = balance;
-      const allModels = CONFIG.TIERS[tier].models;
-      return res.json({
-        apiKey,
-        tier: CONFIG.TIERS[tier].label,
-        balance,
-        dailyLimit: CONFIG.TIERS[tier].dailyLimit,
-        models: allModels.filter(isModelAvailable),
-        comingSoon: allModels.filter(m => !isModelAvailable(m)),
-        message: 'Existing key returned. Tier updated.'
-      });
+    // Check for existing key
+    let apiKey = await getKeyForWallet(wallet);
+    if (apiKey) {
+      const existing = await getKeyData(apiKey);
+      if (existing) {
+        existing.tier = tier;
+        existing.balance = balance;
+        await setKeyData(apiKey, existing);
+        const allModels = CONFIG.TIERS[tier].models;
+        return res.json({
+          apiKey,
+          tier: CONFIG.TIERS[tier].label,
+          balance,
+          dailyLimit: CONFIG.TIERS[tier].dailyLimit,
+          models: allModels.filter(isModelAvailable),
+          comingSoon: allModels.filter(m => !isModelAvailable(m)),
+          message: 'Existing key returned. Tier updated.'
+        });
+      }
     }
 
     apiKey = generateApiKey();
-    apiKeys.set(apiKey, {
-      wallet,
-      tier,
-      balance,
-      createdAt: Date.now()
-    });
-    walletKeys.set(wallet, apiKey);
+    const keyData = { wallet, tier, balance, createdAt: Date.now() };
+    await setKeyData(apiKey, keyData);
+    await setKeyForWallet(wallet, apiKey);
 
     const allModels = CONFIG.TIERS[tier].models;
     res.json({
@@ -104,11 +116,10 @@ router.get('/status', authenticateApiKey, (req, res) => {
 });
 
 // POST /auth/revoke — Revoke your own key
-router.post('/revoke', authenticateApiKey, (req, res) => {
+router.post('/revoke', authenticateApiKey, async (req, res) => {
   const { apiKey, wallet } = req.infinite;
-  apiKeys.delete(apiKey);
-  walletKeys.delete(wallet);
-  usageCounts.delete(apiKey);
+  await deleteKey(apiKey, wallet);
+  await resetUsage(apiKey);
   res.json({ message: 'API key revoked. Generate a new one at any time.' });
 });
 
@@ -116,12 +127,12 @@ router.post('/revoke', authenticateApiKey, (req, res) => {
 router.post('/rotate', authenticateApiKey, async (req, res) => {
   const { apiKey: oldKey, wallet, tier, balance } = req.infinite;
 
-  apiKeys.delete(oldKey);
-  usageCounts.delete(oldKey);
+  await deleteKey(oldKey, wallet);
+  await resetUsage(oldKey);
 
   const newKey = generateApiKey();
-  apiKeys.set(newKey, { wallet, tier, balance, createdAt: Date.now() });
-  walletKeys.set(wallet, newKey);
+  await setKeyData(newKey, { wallet, tier, balance, createdAt: Date.now() });
+  await setKeyForWallet(wallet, newKey);
 
   res.json({
     apiKey: newKey,
