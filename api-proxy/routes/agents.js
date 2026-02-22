@@ -8,16 +8,20 @@ const router = Router();
 
 // GET /v1/agents/templates — list available agent templates
 router.get('/agents/templates', authenticateApiKey, (req, res) => {
-  const templates = Object.entries(AGENT_TEMPLATES).map(([id, t]) => ({
-    id,
-    name: t.name,
-    description: t.description,
-    icon: t.icon,
-    defaultModel: t.defaultModel,
-    defaultSchedule: t.defaultSchedule,
-    configFields: t.configFields,
-    tools: t.tools,
-  }));
+  const templates = Object.entries(AGENT_TEMPLATES)
+    .filter(([, t]) => t.category !== '_legacy')
+    .map(([id, t]) => ({
+      id,
+      name: t.name,
+      description: t.description,
+      category: t.category,
+      defaultModel: t.defaultModel,
+      defaultSchedule: t.defaultSchedule,
+      scheduleLabel: t.scheduleLabel,
+      configFields: t.configFields,
+      tools: t.tools,
+      scheduleOptions: t.scheduleOptions || [],
+    }));
   res.json({ templates });
 });
 
