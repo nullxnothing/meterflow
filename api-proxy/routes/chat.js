@@ -13,7 +13,7 @@ const router = Router();
 // POST /v1/chat — Proxy to Claude, Gemini, or OpenAI
 router.post('/chat', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature } = req.body;
-  const { tierConfig, usage } = req.infinite;
+  const { tierConfig, usage, apiKey } = req.infinite;
 
   const requestedModel = model || tierConfig.models[0];
 
@@ -117,24 +117,38 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
 
+  const abortController = new AbortController();
+  const { signal } = abortController;
+  let clientDisconnected = false;
+
+  res.on('close', () => {
+    clientDisconnected = true;
+    abortController.abort();
+  });
+
   try {
     if (provider === 'claude') {
-      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt);
+      await streamAnthropic(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt, signal);
     } else if (provider === 'gemini') {
-      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt);
+      await streamGemini(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt, signal);
     } else if (provider === 'openai') {
-      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt);
+      await streamOpenAI(requestedModel, processedMessages, max_tokens || 4096, temperature, res, translatedTools, serverTools, apiKey, systemPrompt, signal);
     } else {
       res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
     }
 
     await incrementUsage(apiKey);
-    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-    res.end();
+    if (!clientDisconnected) {
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      res.end();
+    }
   } catch (err) {
+    if (clientDisconnected || err.name === 'AbortError') return;
     console.error('Stream error:', err.message);
-    res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
-    res.end();
+    if (!res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+      res.end();
+    }
   }
 });
 
