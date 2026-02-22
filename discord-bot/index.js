@@ -1,0 +1,60 @@
+import { Client, GatewayIntentBits, Partials, ActivityType } from 'discord.js';
+import { createServer } from 'http';
+import { BOT_CONFIG } from './config.js';
+import { handleMessage } from './handlers/message.js';
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
+  ],
+  partials: [Partials.Message, Partials.Channel],
+  presence: {
+    status: 'online',
+    activities: [{ name: '$INFINITE', type: ActivityType.Watching }],
+  },
+});
+
+let isReady = false;
+
+client.once('ready', () => {
+  isReady = true;
+  console.log(`[BOT] Logged in as ${client.user.tag}`);
+  console.log(`[BOT] Serving ${client.guilds.cache.size} guild(s)`);
+});
+
+client.on('messageCreate', (message) => {
+  handleMessage(message, client).catch(err => {
+    console.error('[BOT] Unhandled message error:', err.message);
+  });
+});
+
+client.on('error', (err) => {
+  console.error('[BOT] Client error:', err.message);
+});
+
+// Health server
+const health = createServer((req, res) => {
+  if (req.url === '/health') {
+    const status = isReady ? 200 : 503;
+    res.writeHead(status, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      status: isReady ? 'ok' : 'starting',
+      uptime: process.uptime(),
+      guilds: client.guilds?.cache.size || 0,
+      ping: client.ws.ping,
+    }));
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+health.listen(BOT_CONFIG.HEALTH_PORT, () => {
+  console.log(`[HEALTH] Listening on :${BOT_CONFIG.HEALTH_PORT}`);
+});
+
+client.login(BOT_CONFIG.DISCORD_TOKEN);
