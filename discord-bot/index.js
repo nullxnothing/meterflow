@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Partials, ActivityType } from 'discord.js';
 import { createServer } from 'http';
 import { BOT_CONFIG } from './config.js';
 import { handleMessage } from './handlers/message.js';
+import { handleMemberJoin } from './handlers/welcome.js';
 
 const client = new Client({
   intents: [
@@ -29,6 +30,12 @@ client.once('ready', () => {
 client.on('messageCreate', (message) => {
   handleMessage(message, client).catch(err => {
     console.error('[BOT] Unhandled message error:', err.message);
+  });
+});
+
+client.on('guildMemberAdd', (member) => {
+  handleMemberJoin(member).catch(err => {
+    console.error('[BOT] Welcome error:', err.message);
   });
 });
 

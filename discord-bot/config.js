@@ -15,6 +15,7 @@ const BOT_CONFIG = {
   AI_MODEL: process.env.AI_MODEL || 'gemini-2.5-flash',
 
   MOD_LOG_CHANNEL: process.env.MOD_LOG_CHANNEL || '',
+  WELCOME_CHANNEL: process.env.WELCOME_CHANNEL || '',
   IMMUNE_ROLES: new Set(parseList(process.env.IMMUNE_ROLES)),
   AI_CHANNELS: new Set(parseList(process.env.AI_CHANNELS)),
 
