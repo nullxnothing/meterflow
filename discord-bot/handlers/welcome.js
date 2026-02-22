@@ -19,7 +19,7 @@ async function handleMemberJoin(member) {
       `- <#1471262904685695016> — Main chat for holders\n` +
       `- <#1471262938038800629> — Need help? Ask here\n` +
       `- Mention \`@INFINITE MOD\` anywhere to ask the AI assistant\n\n` +
-      `**Links:** [Website](https://infinite.sh) \u2022 [X/Twitter](https://x.com/infinitesolana) \u2022 [How It Works](https://infinite.sh/how-it-works)`
+      `**Links:** [Website](https://infinite.sh) \u2022 [X/Twitter](https://x.com/infinitexkeys) \u2022 [How It Works](https://infinite.sh/how-it-works)`
     );
   } catch (err) {
     console.error('[WELCOME] Failed to send:', err.message);
