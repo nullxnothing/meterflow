@@ -14,7 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
-/* Subtle grain overlay */
 body::after {
   content: '';
   position: fixed;
@@ -26,7 +25,8 @@ body::after {
   opacity: 0.6;
 }
 
-/* ═══════════ NAV ═══════════ */
+[id] { scroll-margin-top: 100px; }
+
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -41,56 +41,16 @@ nav {
   border-bottom: 1px solid var(--border);
 }
 
-.nav-logo {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 3px;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.nav-logo .infinity {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.nav-links {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-}
-
-.nav-links a {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.nav-links a:hover { color: var(--accent); }
-
 /* ═══════════ DOCS LAYOUT ═══════════ */
 .docs-container {
   display: grid;
   grid-template-columns: 280px 1fr;
   min-height: 100vh;
-  padding-top: 80px; /* Nav height */
+  padding-top: 80px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-  .docs-container { grid-template-columns: 1fr; }
-}
-
-/* Sidebar */
 .docs-sidebar {
   padding: 40px;
   border-right: 1px solid var(--border);
@@ -99,10 +59,6 @@ nav {
   top: 80px;
   overflow-y: auto;
   background: var(--bg);
-}
-
-@media (max-width: 900px) {
-  .docs-sidebar { display: none; } /* Hide on mobile for now */
 }
 
 .sidebar-group { margin-bottom: 32px; }
@@ -129,15 +85,10 @@ nav {
 .sidebar-link:hover { color: var(--accent); }
 .sidebar-link.active { color: var(--accent); font-weight: 500; }
 
-/* Main Content */
 .docs-content {
   padding: 80px 60px;
   max-width: 900px;
-  margin: 0 auto; /* Centers the content */
-}
-
-@media (max-width: 900px) {
-  .docs-content { padding: 40px 20px; }
+  margin: 0 auto;
 }
 
 .docs-header { margin-bottom: 60px; }
@@ -188,6 +139,8 @@ nav {
   font-size: 13px;
   color: var(--text);
   overflow-x: auto;
+  white-space: pre;
+  line-height: 1.6;
 }
 
 .feature-grid {
@@ -204,9 +157,7 @@ nav {
   transition: all 0.3s;
 }
 
-.feature-card:hover {
-  border-color: var(--accent);
-}
+.feature-card:hover { border-color: var(--accent); }
 
 .feature-title {
   font-family: var(--font-mono);
@@ -221,208 +172,377 @@ nav {
   line-height: 1.6;
 }
 
+.doc-list {
+  list-style: none;
+  padding: 0;
+}
+
+.doc-list li {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.doc-list li:last-child { border-bottom: none; }
+
+.doc-list strong {
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.doc-list span {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-align: left;
+}
+
+.doc-table th {
+  padding: 12px 12px 12px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.doc-table td {
+  padding: 16px 12px 16px 0;
+}
+
+.doc-table tr { border-bottom: 1px solid var(--border-light); }
+.doc-table tr:last-child { border-bottom: none; }
+
+.doc-table .tier-name { color: var(--accent); }
+
+@media (max-width: 900px) {
+  .docs-container { grid-template-columns: 1fr; }
+  .docs-sidebar { display: none; }
+  .docs-content { padding: 40px 20px; }
+  .feature-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  nav { padding: 12px 16px; }
+}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <a href="/" class="nav-logo">
-    INFINITE
-  </a>
+  <a href="/" class="nav-logo">INFINITE</a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/#how">How it works</a>
     <a href="/#tools">Tools</a>
+    <a href="/#tiers">Tiers</a>
     <a href="/docs" style="color: var(--accent);">Docs</a>
   </div>
 </nav>
 
 <div class="docs-container">
-  <!-- SIDEBAR -->
   <aside class="docs-sidebar">
     <div class="sidebar-group">
       <span class="sidebar-title">Getting Started</span>
       <a href="#intro" class="sidebar-link active">Introduction</a>
       <a href="#quickstart" class="sidebar-link">Quickstart</a>
-      <a href="#keys" class="sidebar-link">API Keys</a>
+      <a href="#auth" class="sidebar-link">Authentication</a>
+    </div>
+    <div class="sidebar-group">
+      <span class="sidebar-title">Endpoints</span>
+      <a href="#chat" class="sidebar-link">Chat</a>
+      <a href="#streaming" class="sidebar-link">Streaming</a>
+      <a href="#multi" class="sidebar-link">Multi-Model</a>
     </div>
     <div class="sidebar-group">
       <span class="sidebar-title">Features</span>
-      <a href="#chat" class="sidebar-link">Chat & Agents</a>
-      <a href="#trading" class="sidebar-link">Trading Tools</a>
-      <a href="#research" class="sidebar-link">Deep Research</a>
+      <a href="#tools" class="sidebar-link">Trading & Research</a>
+      <a href="#sdk" class="sidebar-link">SDK</a>
     </div>
     <div class="sidebar-group">
-      <span class="sidebar-title">Resources</span>
-      <a href="#pricing" class="sidebar-link">Token Gating</a>
-      <a href="#community" class="sidebar-link">Community Vault</a>
+      <span class="sidebar-title">Reference</span>
+      <a href="#tiers" class="sidebar-link">Tier System</a>
+      <a href="#treasury" class="sidebar-link">Treasury</a>
     </div>
   </aside>
 
-  <!-- CONTENT -->
   <main class="docs-content">
     <div class="docs-header" id="intro">
-      <h1 class="docs-title">Infinite Documentation</h1>
-      <p class="docs-intro">Learn how to access decentralized AI infrastructure, trading agents, and premium tools just by holding the $INFINITE token.</p>
+      <h1 class="docs-title">Documentation</h1>
+      <p class="docs-intro">INFINITE Protocol gives token holders direct access to Claude and Gemini APIs. No subscriptions, no credit cards &mdash; just hold $INFINITE and use the tools.</p>
     </div>
 
     <!-- QUICKSTART -->
     <div class="doc-section" id="quickstart">
       <h2 class="section-title">Quickstart</h2>
-      <p class="section-text">Get up and running with Infinite tools in under 5 minutes. No subscription needed.</p>
-      
+      <p class="section-text">Get up and running in under a minute.</p>
+
       <div class="feature-grid">
         <div class="feature-card">
           <div class="feature-title">1. Buy $INFINITE</div>
-          <p class="feature-desc">Purchase token on PumpSwap. Tiered access starts at 10K $INFINITE.</p>
+          <p class="feature-desc">Get tokens on PumpSwap. Access starts at 10K $INFINITE.</p>
         </div>
         <div class="feature-card">
           <div class="feature-title">2. Connect Wallet</div>
-          <p class="feature-desc">Log into the dashboard with your Solana wallet. Access is instant.</p>
+          <p class="feature-desc">Open the dashboard and connect Phantom, Solflare, or Backpack.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-title">3. Generate Keys</div>
-          <p class="feature-desc">Create your unified API key that routes to Anthropic, Gemini, and X.</p>
+          <div class="feature-title">3. Get API Key</div>
+          <p class="feature-desc">Sign a message to verify holdings. Your API key (inf_xxxxx) is issued instantly.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-title">4. Build / Use</div>
-          <p class="feature-desc">Use the pre-built UI or plug the key into your own agents.</p>
+          <div class="feature-title">4. Start Building</div>
+          <p class="feature-desc">Use the dashboard chat or plug your key into any app.</p>
         </div>
       </div>
     </div>
 
-    <!-- API EXAMPLE -->
-    <div class="doc-section" id="keys">
-      <h2 class="section-title">Using the API</h2>
-      <p class="section-text">The Infinite proxy sits between you and major AI providers. You make a standard request, we handle the auth and billing via the treasury.</p>
-      
-      <div class="code-block">
-curl https://api.infinite.sh/v1/chat \
-  -H "Authorization: Bearer YOUR_INFINITE_KEY" \
-  -d '{
-    "model": "claude-3-5-sonnet",
-    "messages": [{"role": "user", "content": "Analyze this ticker..."}]
-  }'
-      </div>
-      
-      <p class="section-text">We currently support mapped endpoints for:</p>
-      <ul style="list-style: disc; margin-left: 20px; color: var(--text-dim); line-height: 1.8;">
-        <li>Anthropic (Claude 3.5 Sonnet & Haiku)</li>
-        <li>Google (Gemini 1.5 Pro & Flash)</li>
-        <li>X API (Search, Trends, Posts)</li>
-        <li>Flux (Image Generation)</li>
-      </ul>
+    <!-- AUTHENTICATION -->
+    <div class="doc-section" id="auth">
+      <h2 class="section-title">Authentication</h2>
+      <p class="section-text">Authentication uses Solana wallet signatures. Your wallet signs a timestamped message, the proxy verifies your Ed25519 signature and checks your $INFINITE balance via Helius RPC.</p>
+
+      <div class="code-block">POST /auth/register
+Content-Type: application/json
+
+{
+  "walletAddress": "YOUR_SOLANA_ADDRESS",
+  "signature": "BASE58_SIGNATURE",
+  "message": "INFINITE_AUTH_1708000000000"
+}</div>
+
+      <p class="section-text">On success, you receive an API key prefixed with <code style="color: var(--accent);">inf_</code>. Include it as a Bearer token in all subsequent requests.</p>
+
+      <div class="code-block">Authorization: Bearer inf_xxxxx</div>
+
+      <p class="section-text">Balance is re-checked on each request (cached for 5 minutes). If your holdings drop below a tier threshold, your limits adjust automatically.</p>
     </div>
 
-    <!-- CHAT & AGENTS -->
+    <!-- CHAT -->
     <div class="doc-section" id="chat">
-      <h2 class="section-title">Chat & Agents</h2>
-      <p class="section-text">
-        Infinite provides unified access to the world's best LLMs. You don't need separate subscriptions.
-        Your API key routes requests intelligently to the provider you specify.
-      </p>
-      
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-title">Claude 3.5 Sonnet</div>
-          <p class="feature-desc">Best for coding, complex reasoning, and nuance. The default model for most agents.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">Gemini 1.5 Pro</div>
-          <p class="feature-desc">Massive context window (2M tokens). Perfect for analyzing entire codebases or large documents.</p>
-        </div>
-      </div>
-    </div>
+      <h2 class="section-title">Chat</h2>
+      <p class="section-text">Send messages to Claude or Gemini models. The API follows Anthropic's message format.</p>
 
-    <!-- TRADING TOOLS -->
-    <div class="doc-section" id="trading">
-      <h2 class="section-title">Trading Tools</h2>
-      <p class="section-text">
-        We've built specialized agents for Solana traders. These run on our infrastructure but are controlled by you.
-      </p>
-      <ul style="list-style: none; padding: 0;">
-        <li style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
-          <strong style="color: var(--accent); font-family: var(--font-mono);">Wallet Monitor</strong><br>
-          <span style="color: var(--text-dim); font-size: 14px;">Tracks specific wallets for movement. Alerts you on Discord or Telegram when a "smart money" wallet buys.</span>
-        </li>
-        <li style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
-          <strong style="color: var(--accent); font-family: var(--font-mono);">Trend Scanner</strong><br>
-          <span style="color: var(--text-dim); font-size: 14px;">Uses X API to scan for ticker mentions. Correlates social volume with price action to find early breakouts.</span>
+      <div class="code-block">POST /v1/chat
+Authorization: Bearer inf_xxxxx
+Content-Type: application/json
+
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "messages": [
+    {"role": "user", "content": "Analyze this token's on-chain metrics"}
+  ],
+  "max_tokens": 1024
+}</div>
+
+      <p class="section-text">Available models depend on your tier:</p>
+      <ul class="doc-list">
+        <li>
+          <strong>Claude Sonnet</strong><br>
+          <span>Best for coding, analysis, and complex reasoning. Available to all tiers.</span>
         </li>
         <li>
-          <strong style="color: var(--accent); font-family: var(--font-mono);">Sentiment Analyzer</strong><br>
-          <span style="color: var(--text-dim); font-size: 14px;">Feeds 100+ recent tweets about a token into Claude to get a qualitative analysis of community sentiment (bullish/bearish/scam).</span>
+          <strong>Gemini Flash</strong><br>
+          <span>Fast responses, great for quick queries. Available to all tiers.</span>
+        </li>
+        <li>
+          <strong>Gemini Pro</strong><br>
+          <span>Extended context and deeper reasoning. Operator tier and above.</span>
+        </li>
+        <li>
+          <strong>Claude Opus</strong><br>
+          <span>Most capable model for complex tasks. Architect tier only.</span>
         </li>
       </ul>
     </div>
 
-    <!-- DEEP RESEARCH -->
-    <div class="doc-section" id="research">
-      <h2 class="section-title">Deep Research</h2>
-      <p class="section-text">
-        Stop reading whitepapers manually. Our Research Agent can digest PDFs, GitHub repos, and documentation sites in seconds.
-      </p>
-      <div class="code-block">
-POST /v1/research
+    <!-- STREAMING -->
+    <div class="doc-section" id="streaming">
+      <h2 class="section-title">Streaming</h2>
+      <p class="section-text">Stream responses via Server-Sent Events. Supports agentic tool-use loops (up to 3 rounds), web search with source extraction, and proper SSE termination.</p>
+
+      <div class="code-block">POST /v1/chat/stream
+Authorization: Bearer inf_xxxxx
+Content-Type: application/json
+
 {
-  "target": "https://github.com/solana-labs/solana",
-  "query": "Explain the consensus mechanism in simple terms"
-}
-      </div>
+  "model": "claude-sonnet-4-5-20250929",
+  "messages": [
+    {"role": "user", "content": "Write a Solana swap function"}
+  ],
+  "max_tokens": 2048
+}</div>
+
+      <p class="section-text">The response is an SSE stream. Each event contains a chunk of the response. The stream ends with a <code style="color: var(--accent);">[DONE]</code> event.</p>
     </div>
 
-    <!-- TOKEN GATING -->
-    <div class="doc-section" id="pricing">
-      <h2 class="section-title">Token Gating</h2>
-      <p class="section-text">
-        API limits are determined by your $INFINITE holdings on Solana. We take a snapshot every 5 minutes.
-      </p>
-      
+    <!-- MULTI-MODEL -->
+    <div class="doc-section" id="multi">
+      <h2 class="section-title">Multi-Model</h2>
+      <p class="section-text">Send the same prompt to up to 4 models simultaneously and get all responses back. Unique to INFINITE &mdash; no other token-gated proxy offers parallel multi-model inference.</p>
+
+      <div class="code-block">POST /v1/multi
+Authorization: Bearer inf_xxxxx
+Content-Type: application/json
+
+{
+  "models": ["claude-sonnet-4-5-20250929", "gemini-2.5-flash"],
+  "messages": [
+    {"role": "user", "content": "Explain yield farming"}
+  ],
+  "max_tokens": 1024
+}</div>
+
+      <p class="section-text">Response returns all model outputs in parallel:</p>
+
+      <div class="code-block">{
+  "id": "inf-multi-xxx",
+  "type": "multi",
+  "responses": [
+    {
+      "model": "claude-sonnet-4-5-20250929",
+      "content": [...],
+      "usage": { "input_tokens": 12, "output_tokens": 340 }
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "content": [...],
+      "usage": { "input_tokens": 12, "output_tokens": 295 }
+    }
+  ]
+}</div>
+
+      <p class="section-text">The streaming variant <code style="color: var(--accent);">POST /v1/multi/stream</code> emits SSE events prefixed with <code style="color: var(--accent);">model_start</code>, <code style="color: var(--accent);">model_result</code>, and <code style="color: var(--accent);">model_error</code> per model. Defaults to Claude Sonnet + Gemini Flash if no models array is provided. Max 4 models per request.</p>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="doc-section" id="tools">
+      <h2 class="section-title">Trading & Research Tools</h2>
+      <p class="section-text">The dashboard includes built-in tools powered by the same API. These are available to all holders through the web interface.</p>
+
+      <ul class="doc-list">
+        <li>
+          <strong>AI Chat</strong><br>
+          <span>Full-featured chat with Claude and Gemini. Supports model switching, conversation history, and web search.</span>
+        </li>
+        <li>
+          <strong>AI Trading Agents</strong><br>
+          <span>Signals, wallet tracking, and sentiment analysis. AI-powered market intelligence for Solana tokens.</span>
+        </li>
+        <li>
+          <strong>Token Intelligence</strong><br>
+          <span>Audit smart contracts, track whale wallets, and scan social sentiment &mdash; all powered by AI.</span>
+        </li>
+        <li>
+          <strong>Image Generation</strong><br>
+          <span>Generate PFPs, memes, and marketing visuals. No per-image fees.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- SDK -->
+    <div class="doc-section" id="sdk">
+      <h2 class="section-title">SDK</h2>
+      <p class="section-text">Zero-dependency JavaScript SDK. ESM-only, works in Node 18+ and browsers.</p>
+
+      <div class="code-block">npm install @infinite-protocol/sdk</div>
+
+      <div class="code-block">import { InfiniteClient } from '@infinite-protocol/sdk';
+
+const client = new InfiniteClient({ apiKey: 'inf_xxxxx' });
+
+// Chat
+const response = await client.chat({
+  model: 'claude-sonnet-4-5-20250929',
+  messages: [{ role: 'user', content: 'Hello' }]
+});
+
+// Streaming
+for await (const chunk of client.chatStream({ ... })) {
+  process.stdout.write(chunk);
+}
+
+// Multi-model
+const multi = await client.multi({
+  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'],
+  messages: [{ role: 'user', content: 'Compare yield farming strategies' }]
+});
+
+// Treasury status
+const treasury = await client.treasury();</div>
+
+      <p class="section-text">The SDK handles authentication, streaming SSE parsing, and error handling. See the full API in <code style="color: var(--accent);">sdk/src/client.js</code>.</p>
+    </div>
+
+    <!-- TIER SYSTEM -->
+    <div class="doc-section" id="tiers">
+      <h2 class="section-title">Tier System</h2>
+      <p class="section-text">Your access level is determined by your $INFINITE token balance. Balance is checked via Helius RPC and cached for 5 minutes.</p>
+
       <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; text-align: left;">
+        <table class="doc-table">
           <thead>
-            <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted);">
-              <th style="padding: 12px 0;">Tier</th>
-              <th style="padding: 12px 12px;">Holdings</th>
-              <th style="padding: 12px 0;">Daily Limit</th>
-              <th style="padding: 12px 0;">Models</th>
+            <tr>
+              <th>Tier</th>
+              <th>Holdings</th>
+              <th>Daily Limit</th>
+              <th>Models</th>
             </tr>
           </thead>
           <tbody>
-            <tr style="border-bottom: 1px solid var(--border-light);">
-              <td style="padding: 16px 0; color: var(--accent);">Signal</td>
-              <td style="padding: 16px 12px;">10,000 $INFINITE</td>
-              <td style="padding: 16px 0;">1,000 calls</td>
-              <td style="padding: 16px 0;">Sonnet, Flash</td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border-light);">
-              <td style="padding: 16px 0; color: var(--accent);">Operator</td>
-              <td style="padding: 16px 12px;">100,000 $INFINITE</td>
-              <td style="padding: 16px 0;">10,000 calls</td>
-              <td style="padding: 16px 0;">+ Gemini Pro</td>
+            <tr>
+              <td class="tier-name">Signal</td>
+              <td>10K $INFINITE</td>
+              <td>~1,000 calls</td>
+              <td>Claude Sonnet, Gemini Flash</td>
             </tr>
             <tr>
-              <td style="padding: 16px 0; color: var(--text);">Architect</td>
-              <td style="padding: 16px 12px;">1,000,000 $INFINITE</td>
-              <td style="padding: 16px 0;">Unlimited</td>
-              <td style="padding: 16px 0;">+ Opus, Ultra</td>
+              <td class="tier-name">Operator</td>
+              <td>100K $INFINITE</td>
+              <td>~10,000 calls</td>
+              <td>+ Gemini Pro</td>
+            </tr>
+            <tr>
+              <td class="tier-name">Architect</td>
+              <td>1M $INFINITE</td>
+              <td>Unlimited</td>
+              <td>+ Claude Opus</td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <p class="section-text" style="margin-top: 24px;">Rate limits scale dynamically with the treasury health. When the treasury is flush, a multiplier increases effective limits. The treasury agent monitors this 24/7.</p>
     </div>
 
-    <!-- COMMUNITY VAULT -->
-    <div class="doc-section" id="community">
-      <h2 class="section-title">Community Vault</h2>
-      <p class="section-text">
-        The Community Vault is a repository of tools built by the community. If you build a useful agent or script, you can submit it to the vault.
-        If approved by DAO vote, it gets hosted on our infrastructure and available to all holders.
-      </p>
-      <p class="section-text">
-        <a href="https://discord.gg/UGPwBKXV" target="_blank" rel="noopener" style="color: var(--accent);">Submit a tool via Discord</a>
-      </p>
+    <!-- TREASURY -->
+    <div class="doc-section" id="treasury">
+      <h2 class="section-title">Treasury</h2>
+      <p class="section-text">The protocol is funded by pump.fun creator fees. Every trade generates a fee that splits 50% to the API treasury, 40% to development, and 10% to community.</p>
+      <p class="section-text">An autonomous treasury agent monitors the SOL balance, calculates API budget runway, and dynamically adjusts rate limit multipliers:</p>
+
+      <ul class="doc-list">
+        <li>
+          <strong>Surplus (1.5x)</strong><br>
+          <span>Treasury well above target. All rate limits boosted 50%.</span>
+        </li>
+        <li>
+          <strong>Healthy (1.0x)</strong><br>
+          <span>Normal operating range. Base rate limits apply.</span>
+        </li>
+        <li>
+          <strong>Cautious (0.7x)</strong><br>
+          <span>Below target. Limits reduced to extend runway.</span>
+        </li>
+        <li>
+          <strong>Critical (0.3x)</strong><br>
+          <span>Low balance. Aggressive throttling to prevent outage.</span>
+        </li>
+      </ul>
+
+      <p class="section-text">The treasury wallet is public and verifiable on-chain. Check <code style="color: var(--accent);">GET /treasury</code> for live balance, runway, and health status.</p>
     </div>
 
   </main>
