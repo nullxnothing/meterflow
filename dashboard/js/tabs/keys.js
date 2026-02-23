@@ -34,7 +34,7 @@ export function renderKeys() {
 <span style="color:var(--text-muted)">// Works with any HTTP client</span>
 <span style="color:var(--blue)">curl</span> ${API_BASE}/v1/chat \\
   -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'inf_your_key'}"</span> \\
-  -d <span style="color:var(--accent)">'{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":"Hello"}]}'</span></div>
+  -d <span style="color:var(--accent)">'{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"Hello"}]}'</span></div>
         <div class="api-key-hint">
           <strong style="color:var(--text)">Anthropic Python SDK:</strong><br>
           <code>client = Anthropic(api_key="your_inf_key", base_url="${API_BASE}")</code>

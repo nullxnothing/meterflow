@@ -331,7 +331,7 @@ Authorization: Bearer inf_xxxxx
 Content-Type: application/json
 
 {
-  "model": "claude-sonnet-4-5-20250929",
+  "model": "claude-sonnet-4-6",
   "messages": [
     {"role": "user", "content": "Analyze this token's on-chain metrics"}
   ],
@@ -369,7 +369,7 @@ Authorization: Bearer inf_xxxxx
 Content-Type: application/json
 
 {
-  "model": "claude-sonnet-4-5-20250929",
+  "model": "claude-sonnet-4-6",
   "messages": [
     {"role": "user", "content": "Write a Solana swap function"}
   ],
@@ -389,7 +389,7 @@ Authorization: Bearer inf_xxxxx
 Content-Type: application/json
 
 {
-  "models": ["claude-sonnet-4-5-20250929", "gemini-2.5-flash"],
+  "models": ["claude-sonnet-4-6", "gemini-2.5-flash"],
   "messages": [
     {"role": "user", "content": "Explain yield farming"}
   ],
@@ -403,7 +403,7 @@ Content-Type: application/json
   "type": "multi",
   "responses": [
     {
-      "model": "claude-sonnet-4-5-20250929",
+      "model": "claude-sonnet-4-6",
       "content": [...],
       "usage": { "input_tokens": 12, "output_tokens": 340 }
     },
@@ -456,7 +456,7 @@ const client = new InfiniteClient({ apiKey: 'inf_xxxxx' });
 
 // Chat
 const response = await client.chat({
-  model: 'claude-sonnet-4-5-20250929',
+  model: 'claude-sonnet-4-6',
   messages: [{ role: 'user', content: 'Hello' }]
 });
 
@@ -467,7 +467,7 @@ for await (const chunk of client.chatStream({ ... })) {
 
 // Multi-model
 const multi = await client.multi({
-  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'],
+  models: ['claude-sonnet-4-6', 'gemini-2.5-flash'],
   messages: [{ role: 'user', content: 'Compare yield farming strategies' }]
 });
 

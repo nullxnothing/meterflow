@@ -13,7 +13,7 @@
 
 /**
  * @typedef {Object} ChatRequest
- * @property {string} model - Model ID (e.g. 'claude-sonnet-4-5-20250929', 'gemini-2.5-flash')
+ * @property {string} model - Model ID (e.g. 'claude-sonnet-4-6', 'gemini-2.5-flash')
  * @property {ChatMessage[]} messages
  * @property {number} [max_tokens]
  * @property {number} [temperature]

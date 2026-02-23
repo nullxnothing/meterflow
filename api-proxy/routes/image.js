@@ -32,7 +32,7 @@ router.post('/image', authenticateApiKey, async (req, res) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
           generationConfig: {
             responseModalities: ['IMAGE', 'TEXT']
           }
@@ -64,6 +64,10 @@ router.post('/image', authenticateApiKey, async (req, res) => {
     }
 
     if (images.length === 0) {
+      logger.warn('Image generation returned no image', {
+        prompt: prompt.slice(0, 120),
+        modelResponse: text.slice(0, 300),
+      });
       return res.status(422).json({
         error: 'no_image_generated',
         message: text || 'The model did not return an image. Try a different prompt.',

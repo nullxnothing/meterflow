@@ -9,7 +9,7 @@ import { proxyOpenAI } from '../providers/openai.js';
 
 const router = Router();
 
-const DEFAULT_MULTI_MODELS = ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'];
+const DEFAULT_MULTI_MODELS = ['claude-sonnet-4-6', 'gemini-2.5-flash'];
 
 function getProxyFn(model) {
   if (model.startsWith('claude')) return proxyAnthropic;

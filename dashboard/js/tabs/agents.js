@@ -18,7 +18,7 @@ export function renderAgents() {
           icon: '',
           desc: 'AI pair programming in your terminal. Edit code across entire repos with Claude or Gemini.',
           github: 'https://github.com/Aider-AI/aider',
-          config: `# Install\npip install aider-chat\n\n# Run with INFINITE\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-5-20250929`,
+          config: `# Install\npip install aider-chat\n\n# Run with INFINITE\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-6`,
           status: 'LIVE',
         },
         {
@@ -26,7 +26,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Open-source AI coding agent for VS Code & JetBrains. Autocomplete, chat, and edit in your IDE.',
           github: 'https://github.com/continuedev/continue',
-          config: `// ~/.continue/config.json\n{\n  "models": [{\n    "provider": "anthropic",\n    "model": "claude-sonnet-4-5-20250929",\n    "apiKey": "${key}",\n    "apiBase": "${base}"\n  }]\n}`,
+          config: `// ~/.continue/config.json\n{\n  "models": [{\n    "provider": "anthropic",\n    "model": "claude-sonnet-4-6",\n    "apiKey": "${key}",\n    "apiBase": "${base}"\n  }]\n}`,
           status: 'LIVE',
         },
         {
@@ -55,7 +55,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Multi-agent AI framework. Build teams of AI agents that collaborate on complex tasks.',
           github: 'https://github.com/crewAIInc/crewAI',
-          config: `# Install\npip install crewai\n\n# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\n\n# Usage\nfrom crewai import Agent, Crew\nagent = Agent(\n  role="Analyst",\n  llm="anthropic/claude-sonnet-4-5-20250929"\n)`,
+          config: `# Install\npip install crewai\n\n# .env\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}\n\n# Usage\nfrom crewai import Agent, Crew\nagent = Agent(\n  role="Analyst",\n  llm="anthropic/claude-sonnet-4-6"\n)`,
           status: 'LIVE',
         },
         {
@@ -63,7 +63,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Build LLM-powered applications with chains, agents, and retrieval. Supports custom API endpoints.',
           github: 'https://github.com/langchain-ai/langchain',
-          config: `pip install langchain-anthropic\n\nfrom langchain_anthropic import ChatAnthropic\n\nllm = ChatAnthropic(\n  model="claude-sonnet-4-5-20250929",\n  api_key="${key}",\n  base_url="${base}"\n)`,
+          config: `pip install langchain-anthropic\n\nfrom langchain_anthropic import ChatAnthropic\n\nllm = ChatAnthropic(\n  model="claude-sonnet-4-6",\n  api_key="${key}",\n  base_url="${base}"\n)`,
           status: 'LIVE',
         },
         {

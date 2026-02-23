@@ -244,7 +244,7 @@ export async function sendTradingMessage(tokenAddress) {
   TRADING.isGenerating = true;
   updateTradingSendButton();
 
-  const model = TRADING.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+  const model = TRADING.selectedModel || STATE.models[0] || 'claude-sonnet-4-6';
 
   try {
     TRADING.abortController = new AbortController();

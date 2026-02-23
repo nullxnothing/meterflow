@@ -3,7 +3,7 @@ const MATH_PATTERNS = /\b(calculate|prove|equation|algorithm|optimize|mathematic
 const CREATIVE_PATTERNS = /\b(write a poem|story|creative|imagine|brainstorm|fiction|narrative|metaphor|poetic)\b/i;
 const ANALYSIS_PATTERNS = /\b(analyze|compare|evaluate|research|summarize|breakdown|assessment|audit|review|investigate)\b/i;
 
-const CLAUDE_SONNET = 'claude-sonnet-4-5-20250929';
+const CLAUDE_SONNET = 'claude-sonnet-4-6';
 const GEMINI_FLASH = 'gemini-2.5-flash';
 const GEMINI_PRO = 'gemini-2.5-pro';
 

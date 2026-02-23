@@ -34,7 +34,7 @@ export async function sendChatMessage() {
   CHAT.isGenerating = true;
   updateSendButton();
 
-  const model = CHAT.selectedModel || STATE.models[0] || 'claude-sonnet-4-5-20250929';
+  const model = CHAT.selectedModel || STATE.models[0] || 'claude-sonnet-4-6';
   const tools = CHAT.enabledTools.length > 0 ? [...CHAT.enabledTools] : undefined;
   const images = sentImages || undefined;
 

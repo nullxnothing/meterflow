@@ -30,7 +30,7 @@ const CONFIG = {
 
   // Real API costs per model (avg per call, conservative)
   COSTS: {
-    'claude-sonnet-4-5-20250929': 0.015,
+    'claude-sonnet-4-6': 0.015,
     'claude-opus-4-6': 0.06,
     'gemini-2.5-flash': 0.002,
     'gemini-2.5-pro': 0.01,
