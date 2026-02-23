@@ -104,19 +104,40 @@ router.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
 router.get('/treasury', async (req, res) => {
   const balance = await getTreasuryBalance();
   const treasuryState = getTreasuryState();
-  const totalKeysIssued = await countKeys();
+  const [totalKeysIssued, globalStats] = await Promise.all([countKeys(), getGlobalStats()]);
+
+  const BLENDED_COST = 0.02;
+  const TARGET_RUNWAY = 30;
+
+  // Compute fallback values when agent hasn't pushed yet
+  let { multiplier, healthStatus, runwayDays, dailyBudget } = treasuryState;
+  if (!treasuryState.updatedAt && balance.usd > 0) {
+    const totalFundable = Math.floor(balance.usd / BLENDED_COST);
+    dailyBudget = Math.floor(totalFundable / TARGET_RUNWAY);
+    const dailySpend = (globalStats.todayCalls || 0) * BLENDED_COST;
+    runwayDays = dailySpend <= 0 ? 999 : Math.round(balance.usd / dailySpend);
+
+    if (runwayDays >= TARGET_RUNWAY * 2) { healthStatus = 'surplus'; multiplier = 1.5; }
+    else if (runwayDays >= 7) { healthStatus = 'healthy'; multiplier = 1.0; }
+    else if (runwayDays >= 3) { healthStatus = 'cautious'; multiplier = 0.7; }
+    else { healthStatus = 'critical'; multiplier = 0.3; }
+  }
 
   const tiers = Object.entries(CONFIG.TIERS).map(([key, t]) => ({
     name: t.label,
     key,
     min: t.min,
     dailyLimit: t.dailyLimit,
-    effectiveLimit: Math.floor(t.dailyLimit * (treasuryState.multiplier || 1.0)),
+    effectiveLimit: Math.floor(t.dailyLimit * (multiplier || 1.0)),
     models: t.models,
   }));
 
   res.json({
     ...treasuryState,
+    multiplier,
+    healthStatus,
+    runwayDays,
+    dailyBudget,
     treasuryBalanceSol: balance.sol,
     treasuryBalanceUsd: balance.usd,
     solPrice: balance.solPrice,
