@@ -2,7 +2,7 @@
 // INFINITE Dashboard - Actions
 // ═══════════════════════════════════════════
 
-import { STATE, TRADING, LIVE_TRADES } from './state.js';
+import { STATE, TRADING } from './state.js';
 import { stopLiveTrades } from './tabs/live-trades.js';
 import { api, maskKey } from './api.js';
 import { saveSession, clearSession } from './session.js';

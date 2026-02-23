@@ -91,8 +91,7 @@ export const AGENTS = {
 };
 
 export const LIVE_TRADES = {
-  ws: null,
-  reconnectTimer: null,
+  pollInterval: null,
   trades: [],
   stats: { buys: 0, sells: 0, volumeSol: 0, whales: 0 },
 };

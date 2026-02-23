@@ -3,66 +3,74 @@
 // ═══════════════════════════════════════════
 
 import { LIVE_TRADES } from '../state.js';
+import { API_BASE } from '../state.js';
 
-const INFINITE_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
 const MAX_TRADES = 100;
 const WHALE_THRESHOLD_SOL = 1;
+const POLL_INTERVAL = 5_000;
 
-// ─── WebSocket Management ───
+// Track seen signatures to avoid duplicates
+const seenSignatures = new Set();
+
+// ─── Polling ───
 
 export function startLiveTrades() {
-  if (LIVE_TRADES.ws) return;
+  if (LIVE_TRADES.pollInterval) return;
 
-  LIVE_TRADES.trades = [];
-  LIVE_TRADES.stats = { buys: 0, sells: 0, volumeSol: 0, whales: 0 };
-
-  const ws = new WebSocket('wss://pumpportal.fun/api/data');
-  LIVE_TRADES.ws = ws;
-
-  ws.onopen = () => {
-    ws.send(JSON.stringify({
-      method: 'subscribeTokenTrade',
-      keys: [INFINITE_MINT]
-    }));
-    updateConnectionStatus(true);
-  };
-
-  ws.onmessage = (event) => {
-    try {
-      const trade = JSON.parse(event.data);
-      if (!trade.txType) return;
-      processTrade(trade);
-    } catch { /* ignore malformed messages */ }
-  };
-
-  ws.onerror = () => updateConnectionStatus(false);
-
-  ws.onclose = () => {
-    LIVE_TRADES.ws = null;
-    updateConnectionStatus(false);
-    // Auto-reconnect if still on the tab
-    if (document.querySelector('.live-trades-container')) {
-      LIVE_TRADES.reconnectTimer = setTimeout(startLiveTrades, 3000);
-    }
-  };
+  updateConnectionStatus('connecting');
+  fetchTrades(); // immediate first fetch
+  LIVE_TRADES.pollInterval = setInterval(fetchTrades, POLL_INTERVAL);
 }
 
 export function stopLiveTrades() {
-  if (LIVE_TRADES.reconnectTimer) {
-    clearTimeout(LIVE_TRADES.reconnectTimer);
-    LIVE_TRADES.reconnectTimer = null;
+  if (LIVE_TRADES.pollInterval) {
+    clearInterval(LIVE_TRADES.pollInterval);
+    LIVE_TRADES.pollInterval = null;
   }
-  if (LIVE_TRADES.ws) {
-    LIVE_TRADES.ws.close();
-    LIVE_TRADES.ws = null;
+}
+
+async function fetchTrades() {
+  try {
+    const res = await fetch(`${API_BASE}/v1/trades/live`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    updateConnectionStatus('connected');
+
+    if (!data.trades?.length) return;
+
+    let hasNew = false;
+    for (const trade of data.trades) {
+      if (seenSignatures.has(trade.signature)) continue;
+      seenSignatures.add(trade.signature);
+      hasNew = true;
+      processTrade(trade);
+    }
+
+    // Cap seen set
+    if (seenSignatures.size > 500) {
+      const arr = [...seenSignatures];
+      seenSignatures.clear();
+      arr.slice(-200).forEach(s => seenSignatures.add(s));
+    }
+
+    if (!hasNew && LIVE_TRADES.trades.length === 0) {
+      // First load — populate from API response even if "seen"
+      for (const trade of data.trades.reverse()) {
+        processTrade(trade);
+        seenSignatures.add(trade.signature);
+      }
+    }
+  } catch {
+    updateConnectionStatus('disconnected');
   }
 }
 
 // ─── Trade Processing ───
 
 function processTrade(trade) {
-  const solAmount = trade.solAmount / 1e9;
-  const tokenAmount = Number(trade.tokenAmount);
+  const solAmount = Number(trade.solAmount || 0);
+  const tokenAmount = Number(trade.tokenAmount || 0);
   const isBuy = trade.txType === 'buy';
   const isWhale = solAmount >= WHALE_THRESHOLD_SOL;
 
@@ -72,9 +80,12 @@ function processTrade(trade) {
     tokens: tokenAmount,
     wallet: trade.traderPublicKey || '',
     signature: trade.signature || '',
-    timestamp: Date.now(),
+    timestamp: trade.timestamp || Date.now(),
     isWhale,
   };
+
+  // Avoid dupes in state
+  if (LIVE_TRADES.trades.some(t => t.signature === entry.signature)) return;
 
   LIVE_TRADES.trades.unshift(entry);
   if (LIVE_TRADES.trades.length > MAX_TRADES) LIVE_TRADES.trades.pop();
@@ -92,13 +103,12 @@ function processTrade(trade) {
   if (isWhale) showWhaleAlert(entry);
 }
 
-// ─── DOM Updates (incremental, no full re-render) ───
+// ─── DOM Updates (incremental) ───
 
 function prependTradeRow(entry) {
   const feed = document.getElementById('tradeFeed');
   if (!feed) return;
 
-  // Remove empty state
   const empty = feed.querySelector('.feed-empty');
   if (empty) empty.remove();
 
@@ -122,7 +132,6 @@ function prependTradeRow(entry) {
 
   feed.prepend(row);
 
-  // Cap visible rows
   while (feed.children.length > MAX_TRADES) {
     feed.removeChild(feed.lastChild);
   }
@@ -150,11 +159,14 @@ function updateStatsDisplay() {
   }
 }
 
-function updateConnectionStatus(connected) {
+function updateConnectionStatus(status) {
   const dot = document.getElementById('feedStatusDot');
   const label = document.getElementById('feedStatusLabel');
-  if (dot) dot.className = `feed-status-dot ${connected ? 'connected' : 'disconnected'}`;
-  if (label) label.textContent = connected ? 'LIVE' : 'RECONNECTING';
+  if (dot) dot.className = `feed-status-dot ${status}`;
+  if (label) {
+    const labels = { connected: 'LIVE', disconnected: 'OFFLINE', connecting: 'CONNECTING' };
+    label.textContent = labels[status] || status;
+  }
 }
 
 function showWhaleAlert(entry) {
@@ -174,7 +186,7 @@ function showWhaleAlert(entry) {
 export function renderLiveTrades() {
   const { stats, trades } = LIVE_TRADES;
 
-  // Kick off WebSocket on render
+  // Kick off polling on render
   setTimeout(startLiveTrades, 0);
 
   return `
@@ -183,7 +195,7 @@ export function renderLiveTrades() {
         <div class="page-header-row">
           <div>
             <h1 class="page-title">Live Trades</h1>
-            <p class="page-sub">Real-time $INFINITE token activity on pump.fun</p>
+            <p class="page-sub">Real-time $INFINITE token activity</p>
           </div>
           <div class="feed-status">
             <span class="feed-status-dot disconnected" id="feedStatusDot"></span>
