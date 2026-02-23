@@ -163,3 +163,25 @@ Use the Discord MCP to post updates to the INFINITE Discord server. Channel IDs:
 - Always mention what changed, why it matters, and any action holders need to take
 
 **Treasury webhook** (`agent/index.js`): The treasury agent auto-posts hourly reports and health status change alerts to `#treasury-updates` via Discord webhook. No manual posting needed for treasury data.
+
+## Render Deployment
+
+Both backend services run on Render (Spexx workspace). The Render MCP server is configured for managing env vars and deploys.
+
+| Service | Render ID | Root Dir | Runtime |
+|---|---|---|---|
+| `infinite-api-proxy` | `srv-d6bj9oumcj7s73ak3uug` | `api-proxy/` | Node |
+| `infinite-treasury-agent` | `srv-d6dk617fte5s73df40sg` | `agent/` | Docker |
+
+URLs:
+- API Proxy: `https://infinite-api-proxy.onrender.com`
+- Treasury Agent: `https://infinite-treasury-agent.onrender.com`
+
+**Render MCP usage:**
+- `mcp__render__list_services` — list all services
+- `mcp__render__get_service` — get service details by ID
+- `mcp__render__update_environment_variables` — add/update env vars (merges by default, triggers redeploy)
+- `mcp__render__list_deploys` / `mcp__render__get_deploy` — check deploy status
+- `mcp__render__list_logs` — tail service logs
+- Workspace auto-selects on first call. If it errors with "no workspace set", call `mcp__render__list_workspaces` first.
+- Renaming services and editing build/start commands must be done via the Render dashboard — the MCP doesn't support `update_web_service` for those fields.

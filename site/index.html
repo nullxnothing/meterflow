@@ -358,6 +358,130 @@ nav {
   flex-shrink: 0;
 }
 
+/* ═══════════ LIVE PROTOCOL STATS ═══════════ */
+.protocol-stats {
+  padding: 80px 40px;
+  position: relative;
+}
+
+.protocol-stats::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.12) 20%, rgba(200, 255, 0, 0.3) 50%, rgba(200, 255, 0, 0.12) 80%, transparent);
+}
+
+.protocol-stats-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.protocol-stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.protocol-stats-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 8px 16px;
+  border: 1px solid rgba(200, 255, 0, 0.2);
+  background: rgba(200, 255, 0, 0.04);
+}
+
+.live-badge .pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(200, 255, 0, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(200, 255, 0, 0); }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+}
+
+.stat-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px 24px;
+  transition: all 0.4s;
+  position: relative;
+}
+
+.stat-block:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.stat-block .stat-number {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.stat-block .stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-block .stat-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.stat-block .stat-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 16px;
+  opacity: 0.3;
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-block { padding: 20px 16px; }
+  .stat-block .stat-number { font-size: 24px; }
+  .protocol-stats { padding: 60px 16px; }
+  .protocol-stats-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+}
+
 /* ═══════════ HOW IT WORKS ═══════════ */
 .how-section {
   padding: 120px 40px;
@@ -1368,7 +1492,8 @@ footer {
 .tool-card::after,
 .how-step::after,
 .tier-card::after,
-.funded-step::after {
+.funded-step::after,
+.stat-block::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1385,7 +1510,8 @@ footer {
 .tool-card:hover::after,
 .how-step:hover::after,
 .tier-card:hover::after,
-.funded-step:hover::after {
+.funded-step:hover::after,
+.stat-block:hover::after {
   opacity: 1;
 }
 
@@ -1442,6 +1568,7 @@ footer {
     INFINITE
   </div>
   <div class="nav-links">
+    <a href="#stats">Stats</a>
     <a href="#tools">What you get</a>
     <a href="#tiers">Tiers</a>
     <a href="#faq">FAQ</a>
@@ -1457,6 +1584,7 @@ footer {
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
+  <a href="#stats" onclick="closeMobile()">Stats</a>
   <a href="#tools" onclick="closeMobile()">What you get</a>
   <a href="#tiers" onclick="closeMobile()">Tiers</a>
   <a href="#faq" onclick="closeMobile()">FAQ</a>
@@ -1489,6 +1617,54 @@ footer {
 <div class="ticker">
   <div class="ticker-inner" id="ticker"></div>
 </div>
+
+<!-- LIVE PROTOCOL STATS -->
+<section class="protocol-stats" id="stats">
+  <div class="protocol-stats-inner">
+    <div class="protocol-stats-header">
+      <h2>Protocol metrics</h2>
+      <div class="live-badge"><span class="pulse"></span> Live</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-calls-today">--</div>
+        <div class="stat-label">Requests Today</div>
+        <div class="stat-sub" id="ps-tokens-today">&mdash;</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-all-time">--</div>
+        <div class="stat-label">Total Requests</div>
+        <div class="stat-sub">all time</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-active-keys">--</div>
+        <div class="stat-label">Active API Keys</div>
+        <div class="stat-sub">registered holders</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-treasury">--</div>
+        <div class="stat-label">Treasury</div>
+        <div class="stat-sub" id="ps-treasury-usd">&mdash;</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-runway">--</div>
+        <div class="stat-label">Runway</div>
+        <div class="stat-sub" id="ps-health">&mdash;</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-models">--</div>
+        <div class="stat-label">AI Models</div>
+        <div class="stat-sub" id="ps-providers">&mdash;</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
@@ -1844,12 +2020,50 @@ async function fetchLiveData() {
   } catch {}
 }
 
+function formatCompact(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+
+function populateProtocolStats() {
+  const el = (id) => document.getElementById(id);
+
+  const callsToday = liveStats.totalCallsToday || 0;
+  const tokensToday = liveStats.totalTokensToday || 0;
+  const allTime = liveStats.allTimeCalls || 0;
+  const keys = liveStats.totalKeysIssued || 0;
+  const providers = liveStats.activeProviders || 0;
+
+  const balSol = liveTreasury.treasuryBalanceSol || 0;
+  const balUsd = liveTreasury.treasuryBalanceUsd || 0;
+  const runway = liveTreasury.runwayDays || 0;
+  const health = liveTreasury.healthStatus || 'unknown';
+
+  // Count unique models across all tiers
+  const allModels = new Set();
+  (liveStats.tiers || []).forEach(t => (t.models || []).forEach(m => allModels.add(m)));
+
+  el('ps-calls-today').textContent = formatCompact(callsToday);
+  el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' tokens' : 'tokens processed';
+  el('ps-all-time').textContent = formatCompact(allTime);
+  el('ps-active-keys').textContent = formatCompact(keys);
+  el('ps-treasury').textContent = balSol > 0 ? balSol.toFixed(2) + ' SOL' : '--';
+  el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : 'loading...';
+  el('ps-runway').textContent = runway > 0 ? runway + 'd' : '--';
+  el('ps-health').textContent = health !== 'unknown' ? health : 'loading...';
+  el('ps-models').textContent = allModels.size || providers * 2;
+  el('ps-providers').textContent = providers + ' provider' + (providers !== 1 ? 's' : '') + ' active';
+}
+
 // ═══════════ TICKER ═══════════
 function buildTicker() {
+  const allTime = liveStats.allTimeCalls || 0;
   const items = [
-    { label: 'Messages Today', value: liveStats.totalCallsToday?.toLocaleString() || '0' },
-    { label: 'Active Keys', value: liveStats.activeKeys?.toLocaleString() || '0' },
-    { label: 'Models Available', value: (liveStats.tiers?.[0]?.models?.length || 0).toString() },
+    { label: 'Requests Today', value: formatCompact(liveStats.totalCallsToday || 0) },
+    { label: 'Total Served', value: formatCompact(allTime) },
+    { label: 'Active Keys', value: formatCompact(liveStats.totalKeysIssued || 0) },
+    { label: 'AI Models', value: (liveStats.activeProviders || 0) * 2 + '' },
     { label: 'Cost Per Holder', value: '$0.00' },
   ];
 
@@ -1889,13 +2103,11 @@ function animateValue(el, end, duration, prefix, suffix) {
 
 function populateStats() {
   const calls = liveStats.totalCallsToday || 0;
-  const keys = liveStats.activeKeys || 0;
+  const keys = liveStats.totalKeysIssued || 0;
   const runway = liveTreasury.runwayDays || 0;
-  const balSol = liveTreasury.treasuryBalanceUsd
-    ? Math.round(liveTreasury.treasuryBalanceUsd / 150)
-    : 0;
+  const balSol = liveTreasury.treasuryBalanceSol || 0;
 
-  animateValue(document.getElementById('stat-balance'), balSol, 2000, '', ' SOL');
+  animateValue(document.getElementById('stat-balance'), Math.round(balSol), 2000, '', ' SOL');
   animateValue(document.getElementById('stat-calls'), calls, 2500, '', '');
   animateValue(document.getElementById('stat-holders'), keys, 2000, '', '');
   animateValue(document.getElementById('stat-runway'), runway, 2000, '', runway > 0 ? '+' : '');
@@ -2002,9 +2214,17 @@ function populateToken() {
 fetchLiveData().then(() => {
   buildTicker();
   populateToken();
+  populateProtocolStats();
   const fundedSection = document.querySelector('.funded-section');
   if (fundedSection) statsObserver.observe(fundedSection);
 });
+
+// Auto-refresh stats every 30s
+setInterval(async () => {
+  await fetchLiveData();
+  populateProtocolStats();
+  buildTicker();
+}, 30_000);
 
 // Parallax
 window.addEventListener('scroll', () => {
@@ -2023,13 +2243,13 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
 
-document.querySelectorAll('.how-section, .tools-section, .compare-section, .tiers-section, .funded-section, .faq-section, .cta-section').forEach(el => {
+document.querySelectorAll('.protocol-stats, .how-section, .tools-section, .compare-section, .tiers-section, .funded-section, .faq-section, .cta-section').forEach(el => {
   el.classList.add('scroll-reveal');
   revealObserver.observe(el);
 });
 
 // ═══════════ CARD MOUSE GLOW ═══════════
-document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step').forEach(card => {
+document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
     card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
