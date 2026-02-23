@@ -4,6 +4,7 @@ import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
 import { getTreasuryState } from './state.js';
+import { logger } from './lib/logger.js';
 
 async function authenticateApiKey(req, res, next) {
   const authHeader = req.headers.authorization;

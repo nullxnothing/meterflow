@@ -10,6 +10,7 @@
     "test": "node --test tests/smoke.test.js"
   },
   "dependencies": {
+    "@sentry/node": "^10.39.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "@upstash/redis": "^1.36.2",

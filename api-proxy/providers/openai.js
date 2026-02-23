@@ -1,10 +1,11 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
+import { fetchWithRetry } from '../lib/retry.js';
 
 const API_TIMEOUT = 30_000;
 
 async function proxyOpenAI(model, messages, maxTokens, temperature) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithRetry(() => fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +18,7 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
       messages,
     }),
     signal: AbortSignal.timeout(API_TIMEOUT),
-  });
+  }), 'OpenAI');
 
   if (!response.ok) {
     const err = await response.text();

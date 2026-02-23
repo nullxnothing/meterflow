@@ -1,7 +1,3 @@
-// In-memory store (swap for Redis in production)
-const apiKeys = new Map();      // apiKey -> { wallet, tier, createdAt }
-const walletKeys = new Map();   // wallet -> apiKey
-const usageCounts = new Map();  // apiKey -> { date, count, tokens }
 const balanceCache = new Map(); // wallet -> { balance, checkedAt }
 const videoOperations = new Map(); // operationName -> { apiKey, prompt, status, result }
 
@@ -39,7 +35,7 @@ const treasuryBalanceCache = { sol: 0, usd: 0, solPrice: 0, checkedAt: 0 };
 const TREASURY_CACHE_TTL = 5 * 60 * 1000;
 
 export {
-  apiKeys, walletKeys, usageCounts, balanceCache, videoOperations,
+  balanceCache, videoOperations,
   tradingWallets, tradingPositions, tradeHistory, activeDCA, activeCopyTraders, activeTriggers, safetyManagers,
   VALID_API_IDS,
   getTreasuryState, setTreasuryState,

@@ -1,10 +1,11 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
+import { fetchWithRetry } from '../lib/retry.js';
 
 const API_TIMEOUT = 30_000;
 
 async function proxyAnthropic(model, messages, maxTokens, temperature) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetchWithRetry(() => fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -18,7 +19,7 @@ async function proxyAnthropic(model, messages, maxTokens, temperature) {
       messages
     }),
     signal: AbortSignal.timeout(API_TIMEOUT),
-  });
+  }), 'Anthropic');
 
   if (!response.ok) {
     const err = await response.text();

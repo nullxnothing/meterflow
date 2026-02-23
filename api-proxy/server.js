@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { CONFIG } from './config.js';
+import { logger } from './lib/logger.js';
 import oauthRouter from './oauth/routes.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
@@ -14,6 +15,7 @@ import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import agentsRouter from './routes/agents.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
+import { initSentry } from './lib/sentry.js';
 
 const app = express();
 app.use(cors({
@@ -30,6 +32,22 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
+// Request logging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.path === '/health') return;
+    logger.info('request', {
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      ms: duration,
+    });
+  });
+  next();
+});
+
 app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
 app.use('/v1', chatRouter);
@@ -43,15 +61,12 @@ app.use('/v1/trading', tradingPortfolioRouter);
 app.use('/', adminRouter);
 app.use('/v1', agentsRouter);
 
+// Sentry error handler (must be after routes, before listen)
+initSentry(app);
+
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
-  console.log(`
-  ╔══════════════════════════════════════════╗
-  ║  ∞  INFINITE API Proxy                   ║
-  ║  Running on port ${PORT}                    ║
-  ║  Token: ${CONFIG.TOKEN_MINT.slice(0, 8) || 'NOT SET'}...              ║
-  ╚══════════════════════════════════════════╝
-  `);
+  logger.info('Server started', { port: PORT, token: CONFIG.TOKEN_MINT.slice(0, 8) });
 
   bootstrapScheduler().catch(err => {
     console.error('[Server] Agent scheduler bootstrap failed:', err.message);
@@ -62,13 +77,13 @@ const server = app.listen(PORT, () => {
 const SHUTDOWN_TIMEOUT = 15_000;
 
 function shutdown(signal) {
-  console.log(`[Server] ${signal} received, shutting down gracefully...`);
+  logger.info('Shutdown initiated', { signal });
   server.close(() => {
-    console.log('[Server] All connections closed.');
+    logger.info('All connections closed');
     process.exit(0);
   });
   setTimeout(() => {
-    console.error('[Server] Forced shutdown after timeout.');
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, SHUTDOWN_TIMEOUT);
 }

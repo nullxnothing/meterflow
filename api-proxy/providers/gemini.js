@@ -1,5 +1,6 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
+import { fetchWithRetry } from '../lib/retry.js';
 
 const API_TIMEOUT = 30_000;
 
@@ -9,7 +10,7 @@ async function proxyGemini(model, messages, maxTokens, temperature) {
     parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text).join('') }]
   }));
 
-  const response = await fetch(
+  const response = await fetchWithRetry(() => fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${CONFIG.GOOGLE_API_KEY}`,
     {
       method: 'POST',
@@ -23,7 +24,7 @@ async function proxyGemini(model, messages, maxTokens, temperature) {
       }),
       signal: AbortSignal.timeout(API_TIMEOUT),
     }
-  );
+  ), 'Gemini');
 
   if (!response.ok) {
     const err = await response.text();

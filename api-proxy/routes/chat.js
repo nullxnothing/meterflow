@@ -2,6 +2,8 @@ import { Router } from 'express';
 import crypto from 'crypto';
 import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
+import { logger } from '../lib/logger.js';
+import { captureError } from '../lib/sentry.js';
 import { getProviderForModel, isModelAvailable, translateToolsForProvider, injectImagesIntoMessages } from '../lib/providers.js';
 import { getSystemPromptWithContext } from '../lib/system-prompt.js';
 import { proxyAnthropic, streamAnthropic } from '../providers/anthropic.js';
@@ -71,7 +73,8 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Proxy error:', err.message);
+    logger.error('Proxy error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
+    captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8) });
     res.status(502).json({
       error: 'upstream_error',
       message: 'AI provider returned an error. Try again.',
@@ -144,7 +147,8 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     }
   } catch (err) {
     if (clientDisconnected || err.name === 'AbortError') return;
-    console.error('Stream error:', err.message);
+    logger.error('Stream error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
+    captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8), stream: true });
     if (!res.writableEnded) {
       res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
       res.end();
