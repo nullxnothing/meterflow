@@ -71,8 +71,8 @@ function renderBalanceCards(t, statusColor) {
       </div>
       <div class="stat-card">
         <div class="label">Runway</div>
-        <div class="value">${t.runwayDays || '—'}</div>
-        <div class="sub">days at current usage</div>
+        <div class="value">${t.runwayDays >= 999 ? '∞' : t.runwayDays || '—'}</div>
+        <div class="sub">${t.runwayDays >= 999 ? 'no active spend' : 'days at current usage'}</div>
       </div>
       <div class="stat-card">
         <div class="label">Daily Budget</div>

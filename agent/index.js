@@ -175,7 +175,7 @@ async function pushLimits() {
       body: JSON.stringify({
         multiplier: state.rateMultiplier,
         healthStatus: state.healthStatus,
-        runwayDays: state.runwayDays,
+        runwayDays: state.runwayDays === Infinity ? 999 : Math.round(state.runwayDays),
         dailyBudget: state.dailyCallsBudget,
         treasuryBalanceUsd: state.treasuryBalanceUsd,
       }),
