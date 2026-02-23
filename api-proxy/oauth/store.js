@@ -123,12 +123,13 @@ export async function getConnectedProviders(apiKey) {
     github: !!tokens.github,
     google: !!tokens.google,
     notion: !!tokens.notion,
+    twitter: !!(tokens.twitter || tokens.twitter_byok),
   };
 }
 
-export function createState(apiKey, provider) {
+export function createState(apiKey, provider, extra = {}) {
   const state = crypto.randomBytes(32).toString('hex');
-  pendingStates.set(state, { apiKey, provider, expiresAt: Date.now() + STATE_TTL });
+  pendingStates.set(state, { apiKey, provider, expiresAt: Date.now() + STATE_TTL, ...extra });
   return state;
 }
 

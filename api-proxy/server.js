@@ -15,6 +15,7 @@ import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import agentsRouter from './routes/agents.js';
 import tradesRouter from './routes/trades.js';
+import twitterRouter from './routes/twitter.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
 import { initSentry } from './lib/sentry.js';
 
@@ -61,6 +62,7 @@ app.use('/v1/trading', tradingPortfolioRouter);
 app.use('/', adminRouter);
 app.use('/v1', agentsRouter);
 app.use('/v1', tradesRouter);
+app.use('/v1', twitterRouter);
 
 // Sentry error handler (must be after routes, before listen)
 initSentry(app);
