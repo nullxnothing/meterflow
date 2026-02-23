@@ -48,14 +48,13 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
         const priceRes = await fetch(`https://api.jup.ag/price/v3?ids=${mints.join(',')}`, {
           headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
         });
-        const priceData = await priceRes.json();
-        prices = priceData.data || {};
+        prices = await priceRes.json();
       } catch {}
     }
 
-    let totalValueUsd = solBalance * (prices['So11111111111111111111111111111111111111112']?.price || 0);
+    let totalValueUsd = solBalance * (prices['So11111111111111111111111111111111111111112']?.usdPrice || 0);
     const enriched = holdings.map(h => {
-      const priceUsd = parseFloat(prices[h.mint]?.price || 0);
+      const priceUsd = parseFloat(prices[h.mint]?.usdPrice || 0);
       const valueUsd = h.amount * priceUsd;
       totalValueUsd += valueUsd;
       return { ...h, priceUsd, valueUsd };
@@ -67,7 +66,7 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
         headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
       });
       const solPriceData = await solPriceRes.json();
-      solPriceUsd = parseFloat(solPriceData.data?.['So11111111111111111111111111111111111111112']?.price || 0);
+      solPriceUsd = parseFloat(solPriceData['So11111111111111111111111111111111111111112']?.usdPrice || 0);
     } catch {}
 
     res.json({

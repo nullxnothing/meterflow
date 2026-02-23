@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { CONFIG, TOKEN_GATING_ENABLED } from '../config.js';
-import { getUsage as getUsageFromKV, incrementUsage as incrementUsageKV } from './kv-usage.js';
+import { getUsage as getUsageFromKV, incrementUsage as incrementUsageKV, incrementGlobalStats } from './kv-usage.js';
 
 function generateApiKey() {
   const random = crypto.randomBytes(24).toString('hex');
@@ -24,9 +24,13 @@ async function getUsage(apiKey) {
   return getUsageFromKV(apiKey);
 }
 
-// Increment usage (now persisted to Redis)
+// Increment usage (now persisted to Redis) + global stats
 async function incrementUsage(apiKey, tokens = 0) {
-  return incrementUsageKV(apiKey, tokens);
+  const [result] = await Promise.all([
+    incrementUsageKV(apiKey, tokens),
+    incrementGlobalStats(tokens),
+  ]);
+  return result;
 }
 
 async function fetchTokenInfo(address) {
@@ -50,8 +54,9 @@ async function fetchTokenInfo(address) {
     info.symbol = asset.content?.metadata?.symbol || null;
   }
 
-  if (priceResult.status === 'fulfilled' && priceResult.value.data?.[address]) {
-    info.price = parseFloat(priceResult.value.data[address].price) || null;
+  if (priceResult.status === 'fulfilled') {
+    const tokenData = priceResult.value?.[address] || priceResult.value?.data?.[address];
+    if (tokenData) info.price = parseFloat(tokenData.usdPrice ?? tokenData.price ?? 0) || null;
   }
 
   if (dexResult.status === 'fulfilled' && dexResult.value.pairs?.length > 0) {

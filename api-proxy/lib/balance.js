@@ -100,7 +100,8 @@ async function getTreasuryBalance() {
     }
 
     if (priceRes.status === 'fulfilled') {
-      const price = parseFloat(priceRes.value?.data?.['So11111111111111111111111111111111111111112']?.price);
+      const solData = priceRes.value?.['So11111111111111111111111111111111111111112'];
+      const price = parseFloat(solData?.usdPrice ?? solData?.price ?? 0);
       if (price > 0) treasuryBalanceCache.solPrice = price;
     }
 

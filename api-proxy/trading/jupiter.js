@@ -62,7 +62,8 @@ export async function getPrice(mintAddress) {
   const res = await fetch(`${JUPITER_PRICE_API}?ids=${mintAddress}`, { headers: jupiterHeaders() });
   if (!res.ok) return null;
   const data = await res.json();
-  return data.data?.[mintAddress]?.price ? parseFloat(data.data[mintAddress].price) : null;
+  const entry = data[mintAddress] || data.data?.[mintAddress];
+  return entry ? parseFloat(entry.usdPrice ?? entry.price ?? 0) || null : null;
 }
 
 export async function getPrices(mintAddresses) {
@@ -72,7 +73,8 @@ export async function getPrices(mintAddresses) {
   const data = await res.json();
   const result = {};
   for (const mint of mintAddresses) {
-    result[mint] = data.data?.[mint]?.price ? parseFloat(data.data[mint].price) : null;
+    const entry = data[mint] || data.data?.[mint];
+    result[mint] = entry ? parseFloat(entry.usdPrice ?? entry.price ?? 0) || null : null;
   }
   return result;
 }
