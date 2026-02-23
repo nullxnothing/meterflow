@@ -130,7 +130,14 @@ export function bindCodeCopyButtons() {
   document.querySelectorAll('.code-copy[data-copy-id]').forEach(btn => {
     btn.onclick = () => {
       const code = document.getElementById(btn.dataset.copyId);
-      if (code) copyText(code.textContent);
+      if (!code) return;
+      copyText(code.textContent);
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
     };
   });
 }

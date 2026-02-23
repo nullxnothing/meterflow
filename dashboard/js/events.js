@@ -71,6 +71,18 @@ export function bindEvents(scope = document) {
     });
   }
 
+  // Sidebar toggle
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', () => {
+      CHAT.sidebarOpen = !CHAT.sidebarOpen;
+      const wrapper = document.querySelector('.chat-with-sidebar');
+      if (wrapper) wrapper.classList.toggle('sidebar-collapsed', !CHAT.sidebarOpen);
+      sidebarToggle.textContent = CHAT.sidebarOpen ? '\u2759\u2759' : '\u2630';
+      sidebarToggle.title = CHAT.sidebarOpen ? 'Hide sidebar' : 'Show sidebar';
+    });
+  }
+
   // Connectors button — navigate to connections tab
   const connectorsBtn = document.getElementById('chatConnectorsBtn');
   if (connectorsBtn) {

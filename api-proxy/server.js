@@ -23,7 +23,6 @@ app.use(cors({
     'https://infinitekeys.fun',
     'https://www.infinitekeys.fun',
     /\.infinitekeys\.fun$/,
-    /\.vercel\.app$/,
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5500', 'http://localhost:3000', 'http://127.0.0.1:5500'] : []),
   ],
   methods: ['GET', 'POST', 'OPTIONS'],

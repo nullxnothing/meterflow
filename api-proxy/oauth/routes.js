@@ -1,18 +1,24 @@
 import { Router } from 'express';
 import { PROVIDERS, getRedirectUri, getDashboardUrl, isProviderConfigured } from './config.js';
 import { createState, consumeState, setToken, removeToken, getConnectedProviders, getToken } from './store.js';
+import { getKeyData } from '../lib/kv-keys.js';
 import { logger } from '../lib/logger.js';
 
 const router = Router();
 
+async function validateApiKey(req, res) {
+  const apiKey = req.headers.authorization?.split(' ')[1];
+  if (!apiKey) { res.status(401).json({ error: 'missing_api_key' }); return null; }
+  const keyData = await getKeyData(apiKey);
+  if (!keyData) { res.status(401).json({ error: 'invalid_api_key' }); return null; }
+  return apiKey;
+}
+
 // POST /oauth/:provider/init — Start OAuth flow
 router.post('/:provider/init', async (req, res) => {
   const { provider } = req.params;
-  const apiKey = req.headers.authorization?.split(' ')[1];
-
-  if (!apiKey) {
-    return res.status(401).json({ error: 'missing_api_key' });
-  }
+  const apiKey = await validateApiKey(req, res);
+  if (!apiKey) return;
 
   if (!PROVIDERS[provider]) {
     return res.status(400).json({ error: 'unknown_provider', message: `Unknown provider: ${provider}` });
@@ -74,10 +80,8 @@ router.get('/:provider/callback', async (req, res) => {
 
 // GET /oauth/status — Get connected providers
 router.get('/status', async (req, res) => {
-  const apiKey = req.headers.authorization?.split(' ')[1];
-  if (!apiKey) {
-    return res.status(401).json({ error: 'missing_api_key' });
-  }
+  const apiKey = await validateApiKey(req, res);
+  if (!apiKey) return;
   const providers = await getConnectedProviders(apiKey);
   res.json(providers);
 });
@@ -85,11 +89,8 @@ router.get('/status', async (req, res) => {
 // POST /oauth/:provider/disconnect — Remove OAuth connection
 router.post('/:provider/disconnect', async (req, res) => {
   const { provider } = req.params;
-  const apiKey = req.headers.authorization?.split(' ')[1];
-
-  if (!apiKey) {
-    return res.status(401).json({ error: 'missing_api_key' });
-  }
+  const apiKey = await validateApiKey(req, res);
+  if (!apiKey) return;
 
   if (!PROVIDERS[provider]) {
     return res.status(400).json({ error: 'unknown_provider' });

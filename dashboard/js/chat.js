@@ -163,7 +163,7 @@ function appendMessageToDOM(msg) {
   const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
   const imagesHtml = msg.images ? `<div class="chat-msg-images">${msg.images
     .filter(img => ALLOWED_MIME.includes(img.mimeType))
-    .map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`)
+    .map(img => `<img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="uploaded">`)
     .join('')}</div>` : '';
 
   const el = document.createElement('div');

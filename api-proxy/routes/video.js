@@ -105,6 +105,10 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
 // GET /v1/video/status/* — Poll video generation status
 router.get('/status/*', authenticateApiKey, async (req, res) => {
   const operationName = req.params[0];
+  const op = videoOperations.get(operationName);
+  if (op && op.apiKey !== req.infinite.apiKey) {
+    return res.status(403).json({ error: 'forbidden', message: 'This video belongs to another user.' });
+  }
 
   try {
     const data = await fetchVeoOperation(operationName);
@@ -162,12 +166,16 @@ router.get('/debug/*', authenticateAdmin, async (req, res) => {
 });
 
 // GET /v1/video/download/* — Proxy video file download (hides API key)
-router.get('/download/*', async (req, res) => {
+router.get('/download/*', authenticateApiKey, async (req, res) => {
   const operationName = req.params[0];
   const op = videoOperations.get(operationName);
 
   if (!op?.video?.uri) {
     return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
+  }
+
+  if (op.apiKey !== req.infinite.apiKey) {
+    return res.status(403).json({ error: 'forbidden', message: 'This video belongs to another user.' });
   }
 
   try {

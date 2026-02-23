@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { TRADING_SYSTEM_PROMPT } from '../config.js';
-import { authenticateApiKey } from '../middleware.js';
+import { authenticateApiKey, requireTradingTier } from '../middleware.js';
 import { fetchTokenInfo, incrementUsage } from '../lib/helpers.js';
 import { streamAnthropicWithSystem } from '../providers/anthropic.js';
 import { streamGeminiWithSystem } from '../providers/gemini.js';
@@ -10,7 +10,7 @@ import { logger } from '../lib/logger.js';
 const router = Router();
 
 // POST /v1/trading/analyze — AI trading analysis with optional token context
-router.post('/analyze', authenticateApiKey, async (req, res) => {
+router.post('/analyze', authenticateApiKey, requireTradingTier, async (req, res) => {
   const { query, tokenAddress, messages: clientMessages, model } = req.body;
   const { tierConfig, usage, apiKey } = req.infinite;
 
@@ -62,13 +62,14 @@ router.post('/analyze', authenticateApiKey, async (req, res) => {
     res.end();
   } catch (err) {
     logger.error('Trading analysis error', { err: err.message });
-    res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+    const safeMsg = process.env.NODE_ENV === 'development' ? err.message : 'An error occurred processing your request.';
+    res.write(`data: ${JSON.stringify({ type: 'error', message: safeMsg })}\n\n`);
     res.end();
   }
 });
 
 // GET /v1/trading/token/:address — Fetch token info
-router.get('/token/:address', authenticateApiKey, async (req, res) => {
+router.get('/token/:address', authenticateApiKey, requireTradingTier, async (req, res) => {
   try {
     const info = await fetchTokenInfo(req.params.address);
     res.json(info);

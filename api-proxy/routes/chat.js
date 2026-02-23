@@ -174,7 +174,8 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     logger.error('Stream error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8), stream: true });
     if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
+      const safeMsg = process.env.NODE_ENV === 'development' ? err.message : 'An error occurred processing your request.';
+      res.write(`data: ${JSON.stringify({ type: 'error', message: safeMsg })}\n\n`);
       res.end();
     }
   }

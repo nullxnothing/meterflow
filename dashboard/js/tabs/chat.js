@@ -22,8 +22,10 @@ export function renderChat() {
     document.getElementById('chatInput')?.focus();
   }, 50);
 
+  const sidebarClass = CHAT.sidebarOpen ? '' : ' sidebar-collapsed';
+
   return `
-    <div class="chat-with-sidebar">
+    <div class="chat-with-sidebar${sidebarClass}">
       <div class="chat-container">
         <div class="chat-header">
           <div class="chat-header-left">
@@ -42,6 +44,7 @@ export function renderChat() {
               </select>
             ` : ''}
             <button class="btn-sm primary" onclick="newConversation()">+ New</button>
+            <button class="btn-sm sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">${CHAT.sidebarOpen ? '\u2759\u2759' : '\u2630'}</button>
           </div>
         </div>
 
@@ -57,7 +60,7 @@ export function renderChat() {
               <div class="chat-msg-avatar">${m.role === 'user' ? 'You' : 'AI'}</div>
               <div class="chat-msg-body">
                 <div class="chat-msg-name">${m.role === 'user' ? 'You' : (m.model || 'AI')}</div>
-                ${m.images ? `<div class="chat-msg-images">${m.images.map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
+                ${m.images ? `<div class="chat-msg-images">${m.images.filter(img => ['image/png','image/jpeg','image/gif','image/webp'].includes(img.mimeType)).map(img => `<img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="uploaded">`).join('')}</div>` : ''}
                 <div class="chat-msg-content">${m.role === 'user' ? escapeHtml(m.content) : renderMarkdown(m.content)}</div>
                 ${m.sources ? `<div class="search-sources">${m.sources.slice(0,6).map(s => `<a class="search-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title || s.url)}</a>`).join('')}</div>` : ''}
                 ${m.toolResults ? m.toolResults.map(tr => renderToolResultCardHtml(tr.tool, tr.data)).join('') : ''}
@@ -68,9 +71,9 @@ export function renderChat() {
 
         ${CHAT.pendingImages.length > 0 ? `
           <div class="chat-image-preview" id="chatImagePreview">
-            ${CHAT.pendingImages.map((img, i) => `
+            ${CHAT.pendingImages.filter(img => ['image/png','image/jpeg','image/gif','image/webp'].includes(img.mimeType)).map((img, i) => `
               <div class="chat-image-thumb">
-                <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
+                <img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="upload">
                 <button class="remove-img" onclick="removePendingImage(${i})">x</button>
               </div>
             `).join('')}

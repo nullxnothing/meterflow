@@ -39,9 +39,10 @@ export function renderImagePreview() {
     return;
   }
 
-  const html = CHAT.pendingImages.map((img, i) => `
+  const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const html = CHAT.pendingImages.filter(img => ALLOWED_MIME.includes(img.mimeType)).map((img, i) => `
     <div class="chat-image-thumb">
-      <img src="data:${img.mimeType};base64,${img.data}" alt="upload">
+      <img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="upload">
       <button class="remove-img" onclick="removePendingImage(${i})">x</button>
     </div>
   `).join('');
@@ -107,12 +108,12 @@ export function renderImageState() {
   if (gallery) {
     gallery.innerHTML = IMAGES.isGenerating
       ? `<div class="image-loading"><div class="image-spinner"></div><span style="font-family:var(--font-mono);font-size:11px;">Generating image...</span></div>`
-      : IMAGES.gallery.map(img => `
+      : IMAGES.gallery.map((img, idx) => `
         <div class="image-card">
-          <img src="data:${img.mimeType};base64,${img.data}" alt="${escapeHtml(img.prompt)}" loading="lazy">
+          <img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="${escapeHtml(img.prompt)}" loading="lazy">
           <div class="image-card-footer">
             <div class="image-card-prompt">${escapeHtml(img.prompt)}</div>
-            <button class="btn-sm" onclick="downloadImage('${img.data}','${img.mimeType}')">Save</button>
+            <button class="btn-sm" onclick="downloadImageByIndex(${idx})">Save</button>
           </div>
         </div>
       `).join('') || '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px;padding:40px;text-align:center;">No images yet. Describe what you want to create.</div>';
@@ -120,13 +121,22 @@ export function renderImageState() {
 }
 
 export function downloadImage(base64, mimeType) {
+  const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const safeMime = ALLOWED_MIME.includes(mimeType) ? mimeType : 'image/png';
   const link = document.createElement('a');
-  link.href = `data:${mimeType};base64,${base64}`;
+  link.href = `data:${safeMime};base64,${base64}`;
   link.download = `infinite-${Date.now()}.png`;
   link.click();
+}
+
+export function downloadImageByIndex(idx) {
+  const img = IMAGES.gallery[idx];
+  if (!img) return;
+  downloadImage(img.data, img.mimeType);
 }
 
 // Attach to window for onclick handlers
 window.removePendingImage = removePendingImage;
 window.generateImage = generateImage;
 window.downloadImage = downloadImage;
+window.downloadImageByIndex = downloadImageByIndex;

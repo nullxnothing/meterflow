@@ -1,22 +1,19 @@
 // ═══════════════════════════════════════════════════
-// INFINITE Protocol — Treasury Agent v2
+// INFINITE Protocol — Treasury Agent v3
 // ═══════════════════════════════════════════════════
 //
-// HOW API BILLING ACTUALLY WORKS:
+// AUTOMATED PAYMENT PIPELINE:
 //
-// Anthropic/Google charge pay-per-use to an account with
-// a credit card. You can't pay them in SOL. So:
-//
-//   1. Your Anthropic/Google accounts hold the master API keys
-//   2. The INFINITE proxy routes all user requests through them
-//   3. Anthropic/Google bill YOUR accounts for the usage
-//   4. Creator fees (SOL) accumulate in the treasury wallet
-//   5. This agent tracks costs vs treasury, manages rate limits
-//   6. You periodically claim reimbursement from the treasury
-//      to cover what Anthropic/Google charged you
-//
-// The treasury is the FUNDING SOURCE, not the payment method.
-// You front the API costs. Treasury reimburses you.
+//   1. Creator fees (SOL) flow into treasury wallet
+//   2. Agent swaps SOL → USDC via Jupiter (existing)
+//   3. USDC splits two ways:
+//      a. Skyfire — direct API credit purchasing (existing)
+//      b. Bridge.xyz — USDC → USD off-ramp to bank account
+//   4. Bank account funds Privacy.com virtual cards
+//   5. Each vendor (Anthropic, OpenAI, etc.) has a
+//      merchant-locked card with spending limits
+//   6. Cards auto-adjust limits based on treasury health
+//   7. x402 protocol handles crypto-native API payments
 //
 // ═══════════════════════════════════════════════════
 
@@ -49,6 +46,34 @@ const CONFIG = {
   BALANCE_CHECK_MS: 5 * 60 * 1000,
   PRICE_UPDATE_MS: 15 * 60 * 1000,
   REPORT_MS: 60 * 60 * 1000,
+
+  // Payment automation
+  PRIVACY_API_KEY: process.env.PRIVACY_API_KEY || '',
+  PRIVACY_BASE_URL: process.env.PRIVACY_SANDBOX === 'true'
+    ? 'https://sandbox.privacy.com/v1'
+    : 'https://api.privacy.com/v1',
+
+  BRIDGE_API_KEY: process.env.BRIDGE_API_KEY || '',
+  BRIDGE_BASE_URL: process.env.BRIDGE_SANDBOX === 'true'
+    ? 'https://api.sandbox.bridge.xyz/v0'
+    : 'https://api.bridge.xyz/v0',
+  BRIDGE_CUSTOMER_ID: process.env.BRIDGE_CUSTOMER_ID || '',
+  BRIDGE_LIQUIDATION_ADDRESS: process.env.BRIDGE_LIQUIDATION_ADDRESS || '',
+  BRIDGE_LIQ_ADDR_ID: process.env.BRIDGE_LIQ_ADDR_ID || '',
+
+  MAX_DAILY_OFFRAMP_USD: parseFloat(process.env.MAX_DAILY_OFFRAMP_USD || '200'),
+  MIN_OFFRAMP_AMOUNT: parseFloat(process.env.MIN_OFFRAMP_AMOUNT || '10'),
+
+  // Vendor card limits (cents)
+  VENDOR_LIMITS: {
+    anthropic: 50000,
+    openai: 50000,
+    google: 20000,
+    helius: 10000,
+    railway: 5000,
+    render: 5000,
+    upstash: 5000,
+  },
 };
 
 const state = {
@@ -76,6 +101,16 @@ const state = {
   reimbursements: [],
   lastBalanceCheck: null,
   startedAt: Date.now(),
+
+  // Payment automation
+  cards: {},             // vendor -> { cardToken, lastFour, state }
+  cardSpendMonth: {},    // vendor -> totalCents this month
+  offrampTodayUsd: 0,
+  offrampLastReset: new Date().toISOString().slice(0, 10),
+  x402TodayUsd: 0,
+  x402LastReset: new Date().toISOString().slice(0, 10),
+  lastDrainCheck: null,
+  pendingDrains: [],     // { drainId, amountUsd, state, createdAt }
 };
 
 // ─── SOL Price ──────────────────────────────────────────────
@@ -215,6 +250,129 @@ function recordReimbursement(amountUsd, txSig = null) {
   state.reimbursements.push({ timestamp: Date.now(), amountUsd, sol: amountUsd / state.solPriceUsd, txSig });
 }
 
+// ─── Privacy.com Cards ──────────────────────────────────────
+
+async function privacyFetch(method, path, body = null) {
+  if (!CONFIG.PRIVACY_API_KEY) return null;
+  const opts = {
+    method,
+    headers: { 'Authorization': `api-key ${CONFIG.PRIVACY_API_KEY}`, 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${CONFIG.PRIVACY_BASE_URL}${path}`, opts);
+  if (!res.ok) throw new Error(`Privacy ${method} ${path}: ${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+async function syncCards() {
+  if (!CONFIG.PRIVACY_API_KEY) return;
+  try {
+    const { data } = await privacyFetch('GET', '/cards?page=1&page_size=50');
+    for (const card of data) {
+      const match = card.memo?.match(/^INFINITE-(\w+)$/);
+      if (!match) continue;
+      state.cards[match[1]] = {
+        cardToken: card.token,
+        lastFour: card.last_four,
+        state: card.state,
+        spendLimit: card.spend_limit,
+      };
+    }
+    console.log(`[Cards] Synced ${Object.keys(state.cards).length} vendor cards`);
+  } catch (err) {
+    console.error('[Cards] Sync failed:', err.message);
+  }
+}
+
+async function adjustCardLimits() {
+  if (!CONFIG.PRIVACY_API_KEY) return;
+  const multiplier = state.healthStatus === 'surplus' ? 1.0
+    : state.healthStatus === 'healthy' ? 1.0
+    : state.healthStatus === 'cautious' ? 0.7
+    : 0.3;
+
+  for (const [vendor, defaultLimit] of Object.entries(CONFIG.VENDOR_LIMITS)) {
+    const card = state.cards[vendor];
+    if (!card || card.state === 'CLOSED') continue;
+    const targetLimit = Math.round(defaultLimit * multiplier);
+    if (card.spendLimit === targetLimit) continue;
+    try {
+      await privacyFetch('PATCH', `/cards/${card.cardToken}`, { spend_limit: targetLimit, spend_limit_duration: 'MONTHLY' });
+      card.spendLimit = targetLimit;
+      console.log(`[Cards] ${vendor}: limit → $${(targetLimit / 100).toFixed(2)}/mo`);
+    } catch (err) {
+      console.error(`[Cards] Failed to adjust ${vendor}:`, err.message);
+    }
+  }
+}
+
+async function fetchCardSpending() {
+  if (!CONFIG.PRIVACY_API_KEY) return {};
+  const now = new Date();
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  const monthEnd = now.toISOString().slice(0, 10);
+  const spending = {};
+
+  for (const [vendor, card] of Object.entries(state.cards)) {
+    if (!card.cardToken) continue;
+    try {
+      const { data } = await privacyFetch('GET', `/transactions?card_token=${card.cardToken}&result=APPROVED&begin=${monthStart}&end=${monthEnd}&page=1&page_size=100`);
+      const totalCents = data.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      spending[vendor] = +(totalCents / 100).toFixed(2);
+    } catch (err) {
+      console.error(`[Cards] Failed to fetch ${vendor} spending:`, err.message);
+    }
+  }
+  state.cardSpendMonth = spending;
+  return spending;
+}
+
+// ─── Bridge.xyz Drains ──────────────────────────────────────
+
+async function bridgeFetch(method, path) {
+  if (!CONFIG.BRIDGE_API_KEY) return null;
+  const res = await fetch(`${CONFIG.BRIDGE_BASE_URL}${path}`, {
+    method,
+    headers: { 'Api-Key': CONFIG.BRIDGE_API_KEY, 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`Bridge ${method} ${path}: ${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+async function checkDrainStatus() {
+  if (!CONFIG.BRIDGE_API_KEY || !CONFIG.BRIDGE_CUSTOMER_ID || !CONFIG.BRIDGE_LIQ_ADDR_ID) return;
+  try {
+    const { data } = await bridgeFetch('GET',
+      `/customers/${CONFIG.BRIDGE_CUSTOMER_ID}/liquidation_addresses/${CONFIG.BRIDGE_LIQ_ADDR_ID}/drains?page=1&page_size=10`
+    );
+    state.pendingDrains = data
+      .filter(d => d.state !== 'payment_processed')
+      .map(d => ({ drainId: d.id, amountUsd: parseFloat(d.amount), state: d.state, createdAt: d.created_at }));
+
+    const failed = data.filter(d => ['undeliverable', 'returned', 'error'].includes(d.state));
+    if (failed.length > 0) {
+      console.error(`[Bridge] ${failed.length} failed drain(s) — manual intervention needed`);
+    }
+    state.lastDrainCheck = Date.now();
+  } catch (err) {
+    console.error('[Bridge] Drain check failed:', err.message);
+  }
+}
+
+function resetDailyTrackers() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (state.offrampLastReset !== today) {
+    state.offrampTodayUsd = 0;
+    state.offrampLastReset = today;
+  }
+  if (state.x402LastReset !== today) {
+    state.x402TodayUsd = 0;
+    state.x402LastReset = today;
+  }
+}
+
 // ─── Discord Webhook ────────────────────────────────────────
 
 const HEALTH_EMOJI = { surplus: '\u{1F7E2}', healthy: '\u{1F535}', cautious: '\u{1F7E1}', critical: '\u{1F534}', unknown: '\u2B1C' };
@@ -268,6 +426,13 @@ function generateReport() {
     inflows24h: { usd: +inflowUsd.toFixed(2), sol: +inflows.reduce((s, i) => s + i.sol, 0).toFixed(4), txCount: inflows.length },
     reimbursement: getReimbursementStatus(),
     net: { dailyUsd: +(inflowUsd - spendUsd).toFixed(2), sustainable: inflowUsd >= spendUsd },
+    payments: {
+      cards: Object.fromEntries(Object.entries(state.cards).map(([v, c]) => [v, { lastFour: c.lastFour, state: c.state, limitUsd: +(c.spendLimit / 100).toFixed(2) }])),
+      cardSpendMonth: state.cardSpendMonth,
+      offrampTodayUsd: +state.offrampTodayUsd.toFixed(2),
+      pendingDrains: state.pendingDrains.length,
+      x402TodayUsd: +state.x402TodayUsd.toFixed(2),
+    },
   };
 }
 
@@ -279,7 +444,7 @@ export const skills = {
     handler: async () => { await checkBalance(); return { sol: state.treasuryBalanceSol, usd: state.treasuryBalanceUsd, health: state.healthStatus, runway: state.runwayDays }; },
   },
   'treasury-report': {
-    description: 'Full treasury report',
+    description: 'Full treasury report including payment pipeline status',
     handler: async () => { await checkBalance(); await fetchProxyStats(); return generateReport(); },
   },
   'reimbursement-status': {
@@ -289,6 +454,33 @@ export const skills = {
   'record-reimbursement': {
     description: 'Record a reimbursement claim from treasury',
     handler: async ({ amountUsd, txSig }) => { recordReimbursement(amountUsd, txSig); return getReimbursementStatus(); },
+  },
+  'card-status': {
+    description: 'Check all Privacy.com vendor card states and spending',
+    handler: async () => { await syncCards(); const spending = await fetchCardSpending(); return { cards: state.cards, monthlySpend: spending }; },
+  },
+  'card-adjust': {
+    description: 'Adjust card spending limits based on current treasury health',
+    handler: async () => { await syncCards(); await adjustCardLimits(); return { health: state.healthStatus, cards: state.cards }; },
+  },
+  'drain-status': {
+    description: 'Check Bridge.xyz off-ramp drain status',
+    handler: async () => { await checkDrainStatus(); return { pendingDrains: state.pendingDrains, lastCheck: state.lastDrainCheck }; },
+  },
+  'payment-summary': {
+    description: 'Full payment pipeline summary: cards, off-ramp, x402',
+    handler: async () => {
+      await syncCards();
+      const spending = await fetchCardSpending();
+      await checkDrainStatus();
+      resetDailyTrackers();
+      return {
+        cards: Object.fromEntries(Object.entries(state.cards).map(([v, c]) => [v, { lastFour: c.lastFour, state: c.state, limitUsd: +(c.spendLimit / 100).toFixed(2) }])),
+        monthlySpend: spending,
+        offramp: { todayUsd: state.offrampTodayUsd, maxDailyUsd: CONFIG.MAX_DAILY_OFFRAMP_USD, pendingDrains: state.pendingDrains },
+        x402: { todayUsd: state.x402TodayUsd },
+      };
+    },
   },
 };
 
@@ -315,22 +507,27 @@ async function startServer(port) {
     else if (req.url === '/treasury') res.end(JSON.stringify({ sol: state.treasuryBalanceSol, usd: state.treasuryBalanceUsd, health: state.healthStatus, runway: state.runwayDays, multiplier: state.rateMultiplier, budget: state.dailyCallsBudget }));
     else if (req.url === '/report') { await fetchProxyStats(); res.end(JSON.stringify(generateReport())); }
     else if (req.url === '/reimbursement') res.end(JSON.stringify(getReimbursementStatus()));
+    else if (req.url === '/payments') res.end(JSON.stringify({ cards: state.cards, cardSpendMonth: state.cardSpendMonth, offrampTodayUsd: state.offrampTodayUsd, pendingDrains: state.pendingDrains, x402TodayUsd: state.x402TodayUsd }));
     else { res.statusCode = 404; res.end('{}'); }
   }).listen(port, () => console.log(`[Agent] :${port}`));
 }
 
 async function start() {
-  console.log(`∞ INFINITE Treasury Agent v2\n  Treasury: ${CONFIG.TREASURY_WALLET?.slice(0, 8) || 'NOT SET'}...\n  Proxy: ${CONFIG.PROXY_URL}`);
+  console.log(`∞ INFINITE Treasury Agent v3\n  Treasury: ${CONFIG.TREASURY_WALLET?.slice(0, 8) || 'NOT SET'}...\n  Proxy: ${CONFIG.PROXY_URL}\n  Payments: ${CONFIG.PRIVACY_API_KEY ? 'Privacy.com' : 'disabled'} | ${CONFIG.BRIDGE_API_KEY ? 'Bridge.xyz' : 'disabled'}`);
   await updateSolPrice();
   await checkBalance();
   await fetchProxyStats();
-  await pushLimits(); // always push on startup
+  await syncCards();
+  await checkDrainStatus();
+  await pushLimits();
   console.log(JSON.stringify(generateReport(), null, 2));
 
   setInterval(checkBalance, CONFIG.BALANCE_CHECK_MS);
   setInterval(updateSolPrice, CONFIG.PRICE_UPDATE_MS);
   setInterval(fetchProxyStats, CONFIG.BALANCE_CHECK_MS);
-  setInterval(pushLimits, CONFIG.BALANCE_CHECK_MS); // re-push every cycle to survive proxy restarts
+  setInterval(pushLimits, CONFIG.BALANCE_CHECK_MS);
+  setInterval(resetDailyTrackers, 60 * 60 * 1000);
+  setInterval(checkDrainStatus, 30 * 60 * 1000); // check drains every 30m
   setInterval(async () => {
     recordDailySpend();
     const report = generateReport();
@@ -354,4 +551,4 @@ if (process.argv[1]?.includes('index') || process.argv[1]?.includes('treasury'))
   });
 }
 
-export default { skills, state, generateReport, getReimbursementStatus };
+export default { skills, state, generateReport, getReimbursementStatus, syncCards, adjustCardLimits, fetchCardSpending, checkDrainStatus };

@@ -38,6 +38,7 @@ export const CHAT = {
   abortController: null,
   enabledTools: ['web_search', 'url_reader', 'code_runner', 'image_generate', 'github_lookup', 'google_lookup', 'notion_lookup'],
   pendingImages: [],
+  sidebarOpen: true,
 };
 
 export const IMAGES = {

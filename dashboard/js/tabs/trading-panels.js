@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { TRADING } from '../state.js';
+import { escapeHtml } from '../api.js';
 import { formatCompact, formatTokenPrice } from '../utils.js';
 
 export function renderBotPortfolio() {
@@ -181,7 +182,7 @@ export function renderBotHistoryTable(entries) {
             <td>${new Date(t.ts).toLocaleTimeString()}</td>
             <td>${t.action || '—'}</td>
             <td>${t.mint ? t.mint.slice(0, 8) + '...' : t.inputMint ? t.inputMint.slice(0, 6) + '→' + (t.outputMint||'').slice(0, 6) : '—'}</td>
-            <td>${t.sig ? '<a href="https://solscan.io/tx/' + t.sig + '" target="_blank" style="color:var(--accent);">' + t.sig.slice(0, 8) + '...</a>' : '—'}</td>
+            <td>${t.sig ? '<a href="https://solscan.io/tx/' + escapeHtml(t.sig) + '" target="_blank" style="color:var(--accent);">' + escapeHtml(t.sig.slice(0, 8)) + '...</a>' : '—'}</td>
           </tr>
         `).join('')}
       </tbody>

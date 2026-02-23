@@ -1,20 +1,26 @@
 {
   "name": "infinite-treasury",
-  "version": "1.0.0",
-  "description": "Autonomous treasury manager for INFINITE Protocol. Monitors creator fee inflows, manages API budget allocation, adjusts rate limits, and reports treasury health.",
+  "version": "2.0.0",
+  "description": "Autonomous treasury manager for INFINITE Protocol. Monitors creator fee inflows, manages API budget allocation, adjusts rate limits, automates vendor payments via Privacy.com cards, Bridge.xyz off-ramp, and x402 protocol.",
   "author": "INFINITE Protocol",
   "license": "MIT",
   "main": "index.js",
   "skills": [
     "treasury-monitor",
-    "budget-manager", 
-    "rate-limit-adjuster",
-    "treasury-report"
+    "treasury-report",
+    "card-status",
+    "card-adjust",
+    "drain-status",
+    "payment-summary"
   ],
   "type": "module",
   "dependencies": {
     "@solana/web3.js": "^1.95.0",
-"node-cron": "^3.0.3"
+    "@solana/spl-token": "^0.4.14",
+    "@x402/core": "^0.2.0",
+    "@x402/svm": "^0.2.0",
+    "@x402/fetch": "^0.2.0",
+    "node-cron": "^3.0.3"
   },
   "openclaw": {
     "minVersion": "2026.2.0",

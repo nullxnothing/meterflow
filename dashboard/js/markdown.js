@@ -11,7 +11,23 @@ export function renderMarkdown(text) {
   // Code blocks: ```lang\ncode\n```
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     const id = 'cb_' + Math.random().toString(36).slice(2, 8);
-    return `<pre><span class="code-lang">${lang || 'code'}</span><button class="code-copy" data-copy-id="${id}">copy</button><code id="${id}">${code.trimEnd()}</code></pre>`;
+    const trimmed = code.trimEnd();
+    const lines = trimmed.split('\n');
+    const hasLineNumbers = lines.length > 3;
+    const langLabel = lang || 'code';
+
+    let codeBody;
+    if (hasLineNumbers) {
+      const numberedLines = lines.map((line, i) => {
+        const num = `<span class="line-number">${i + 1}</span>`;
+        return `${num}${line}`;
+      }).join('\n');
+      codeBody = `<code id="${id}" class="has-line-numbers">${numberedLines}</code>`;
+    } else {
+      codeBody = `<code id="${id}">${trimmed}</code>`;
+    }
+
+    return `<div class="code-block"><div class="code-block-header"><span class="code-lang">${langLabel}</span><button class="code-copy" data-copy-id="${id}">copy</button></div><pre>${codeBody}</pre><div class="code-overflow-fade"></div></div>`;
   });
 
   // Inline code

@@ -107,7 +107,7 @@ export function renderDashboard() {
           <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
         </div>
         <div class="sidebar-socials">
-          <a href="https://x.com/infiniteonsol" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
+          <a href="https://x.com/infinitexkeys" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
           <a href="https://discord.gg/infinite" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
         </div>
         <div class="compliance-badge" title="INFINITE operates in full compliance with Anthropic, Google, and OpenAI usage policies. All API access is authorized and properly licensed.">
@@ -174,7 +174,7 @@ export function renderTab() {
         <p class="page-sub">This tab encountered an error. Try refreshing or switching tabs.</p>
       </div>
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);padding:24px;background:var(--surface);border:1px solid var(--border);">
-        ${err.message || 'Unknown error'}
+        ${escapeHtml(err.message || 'Unknown error')}
       </div>
     `;
   }
