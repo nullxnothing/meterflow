@@ -3,25 +3,38 @@ import Redis from 'ioredis';
 
 const KEY_PREFIX = 'infinite:apikey:';
 const WALLET_PREFIX = 'infinite:wallet:';
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 let redis = null;
+let redisHealthy = false;
 
 function getRedis() {
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) return null;
+    if (!redisUrl) {
+      if (IS_PROD) {
+        console.error('[FATAL] REDIS_URL is required in production. API keys will not persist without Redis.');
+        process.exit(1);
+      }
+      return null;
+    }
     try {
       redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => console.error('[KV-Keys] Redis error:', err.message));
+      redis.on('error', (err) => {
+        redisHealthy = false;
+        console.error('[KV-Keys] Redis error:', err.message);
+      });
+      redis.on('ready', () => { redisHealthy = true; });
     } catch (e) {
       console.error('[KV-Keys] Redis connection failed:', e.message);
+      if (IS_PROD) process.exit(1);
       return null;
     }
   }
   return redis;
 }
 
-// In-memory fallback
+// In-memory fallback (dev only — production requires Redis)
 const fallbackApiKeys = new Map();
 const fallbackWalletKeys = new Map();
 
@@ -33,10 +46,10 @@ export async function getKeyData(apiKey) {
   try {
     const data = await r.get(`${KEY_PREFIX}${apiKey}`);
     if (data) return JSON.parse(data);
-    // Check memory fallback (key may have been set before Redis connected)
     return fallbackApiKeys.get(apiKey) || null;
   } catch (e) {
     console.error('[KV-Keys] Failed to get key:', e.message);
+    if (IS_PROD) throw new Error('Key store unavailable');
     return fallbackApiKeys.get(apiKey) || null;
   }
 }
@@ -51,6 +64,7 @@ export async function setKeyData(apiKey, data) {
     await r.set(`${KEY_PREFIX}${apiKey}`, JSON.stringify(data));
   } catch (e) {
     console.error('[KV-Keys] Failed to set key:', e.message);
+    if (IS_PROD) throw new Error('Key store unavailable');
   }
 }
 
@@ -65,6 +79,7 @@ export async function getKeyForWallet(wallet) {
     return fallbackWalletKeys.get(wallet) || null;
   } catch (e) {
     console.error('[KV-Keys] Failed to get wallet key:', e.message);
+    if (IS_PROD) throw new Error('Key store unavailable');
     return fallbackWalletKeys.get(wallet) || null;
   }
 }

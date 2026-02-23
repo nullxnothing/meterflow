@@ -5,6 +5,15 @@
 import { STATE } from '../state.js';
 import { escapeHtml } from '../api.js';
 
+function getResetCountdown() {
+  const now = new Date();
+  const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  const diff = utcMidnight - now;
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return `${hours}h ${mins}m`;
+}
+
 function hasAnyChatProvider() {
   return STATE.providers.claude || STATE.providers.gemini || STATE.providers.openai;
 }
@@ -15,18 +24,27 @@ function isVideoTierAllowed() {
 }
 
 export function renderOverview() {
+  const isLoaded = STATE.usage.limit > 0 || STATE.tier;
   const usagePct = STATE.usage.limit > 0 ? (STATE.usage.today / STATE.usage.limit) * 100 : 0;
   const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+  const resetTime = getResetCountdown();
   return `
     <div class="page-header">
       <h1 class="page-title">Welcome back</h1>
-      <p class="page-sub">${STATE.tier || '—'} tier — ${STATE.usage.remaining.toLocaleString()} API calls remaining today</p>
+      <p class="page-sub">${STATE.tier || '—'} tier \u2014 ${STATE.usage.remaining.toLocaleString()} API calls remaining today</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="label">Your Tier</div><div class="value accent">${STATE.tier || '—'}</div><div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div></div>
-      <div class="stat-card"><div class="label">Calls Today</div><div class="value">${STATE.usage.today.toLocaleString()}</div><div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div></div>
-      <div class="stat-card"><div class="label">Models Available</div><div class="value green">${STATE.models.length}</div><div class="sub">AI providers active</div></div>
-      <div class="stat-card"><div class="label">Your Cost</div><div class="value accent">$0</div><div class="sub">funded by treasury</div></div>
+      ${isLoaded ? `
+        <div class="stat-card"><div class="label">Your Tier</div><div class="value accent">${STATE.tier || '—'}</div><div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div></div>
+        <div class="stat-card"><div class="label">Calls Today</div><div class="value">${STATE.usage.today.toLocaleString()}</div><div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div></div>
+        <div class="stat-card"><div class="label">Models Available</div><div class="value green">${STATE.models.length}</div><div class="sub">AI providers active</div></div>
+        <div class="stat-card"><div class="label">Your Cost</div><div class="value accent">$0</div><div class="sub">funded by treasury</div></div>
+      ` : `
+        <div class="stat-card skeleton"><div class="label">Your Tier</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Calls Today</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Models Available</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Your Cost</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+      `}
     </div>
     <div class="section">
       <div class="section-title">Daily Usage</div>
@@ -39,7 +57,7 @@ export function renderOverview() {
         <div class="usage-legend">
           <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--accent)"></div>Used</div>
           <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--border)"></div>Remaining</div>
-          <div class="usage-legend-item" style="margin-left: auto">Resets at 00:00 UTC</div>
+          <div class="usage-legend-item" style="margin-left: auto">Resets in ${resetTime}</div>
         </div>
       </div>
     </div>

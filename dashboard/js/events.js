@@ -112,4 +112,83 @@ export function bindEvents() {
   }
 
   bindCodeCopyButtons();
+
+  // Mouse-tracking glow on cards
+  document.querySelectorAll('.stat-card, .tool-card, .connection-card, .recipe-card, .agent-card, .api-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    });
+  });
+
+  // Mobile hamburger menu
+  const menuBtn = document.getElementById('mobileMenuBtn');
+  const overlay = document.getElementById('mobileNavOverlay');
+  const drawer = document.getElementById('mobileNavDrawer');
+  const closeBtn = document.getElementById('mobileNavClose');
+
+  if (menuBtn && overlay && drawer) {
+    menuBtn.addEventListener('click', () => {
+      overlay.classList.add('open');
+      drawer.classList.add('open');
+    });
+    const closeMobileNav = () => {
+      drawer.classList.remove('open');
+      setTimeout(() => overlay.classList.remove('open'), 300);
+    };
+    if (closeBtn) closeBtn.addEventListener('click', closeMobileNav);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeMobileNav();
+    });
+
+    // Bind nav items inside mobile drawer
+    drawer.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+      item.addEventListener('click', () => {
+        setTab(item.dataset.tab);
+        closeMobileNav();
+      });
+    });
+  }
 }
+
+// ─── Global Keyboard Shortcuts ───
+
+document.addEventListener('keydown', (e) => {
+  const isMod = e.metaKey || e.ctrlKey;
+
+  // Cmd/Ctrl+K → focus chat input
+  if (isMod && e.key === 'k') {
+    e.preventDefault();
+    const chatInput = document.getElementById('chatInput') || document.getElementById('tradingInput');
+    if (chatInput) {
+      chatInput.focus();
+    } else {
+      // Switch to chat tab and focus
+      import('./actions.js').then(m => m.setTab('chat'));
+      setTimeout(() => document.getElementById('chatInput')?.focus(), 100);
+    }
+  }
+
+  // Escape → close mobile nav, notification panels
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('mobileNavOverlay');
+    const drawer = document.getElementById('mobileNavDrawer');
+    if (overlay?.classList.contains('open')) {
+      drawer?.classList.remove('open');
+      setTimeout(() => overlay.classList.remove('open'), 300);
+    }
+    // Close agent notification panel
+    const notifPanel = document.querySelector('.agent-notif-panel');
+    if (notifPanel) {
+      import('./state.js').then(m => { m.AGENTS.notifOpen = false; });
+      notifPanel.remove();
+    }
+  }
+
+  // Cmd/Ctrl+Shift+N → new conversation
+  if (isMod && e.shiftKey && e.key === 'N') {
+    e.preventDefault();
+    import('./session.js').then(m => m.newConversation());
+  }
+});

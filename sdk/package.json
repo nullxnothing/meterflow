@@ -1,0 +1,29 @@
+{
+  "name": "@infinite-protocol/sdk",
+  "version": "1.0.0",
+  "description": "SDK for INFINITE Protocol — token-gated AI API access on Solana",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "keywords": [
+    "solana",
+    "ai",
+    "api",
+    "claude",
+    "gemini",
+    "infinite"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infinite-protocol/sdk"
+  }
+}

@@ -15,6 +15,7 @@ router.get('/stats', async (req, res) => {
 
   res.json({
     totalKeysIssued,
+    tokenMint: CONFIG.TOKEN_MINT || null,
     tiers: Object.entries(CONFIG.TIERS).map(([key, t]) => ({
       name: t.label,
       min: t.min,
@@ -81,12 +82,25 @@ router.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
 router.get('/treasury', async (req, res) => {
   const balance = await getTreasuryBalance();
   const treasuryState = getTreasuryState();
+  const totalKeysIssued = await countKeys();
+
+  const tiers = Object.entries(CONFIG.TIERS).map(([key, t]) => ({
+    name: t.label,
+    key,
+    min: t.min,
+    dailyLimit: t.dailyLimit,
+    effectiveLimit: Math.floor(t.dailyLimit * (treasuryState.multiplier || 1.0)),
+    models: t.models,
+  }));
+
   res.json({
     ...treasuryState,
     treasuryBalanceSol: balance.sol,
     treasuryBalanceUsd: balance.usd,
     solPrice: balance.solPrice,
-    wallet: CONFIG.TREASURY_WALLET ? CONFIG.TREASURY_WALLET.slice(0, 8) + '...' : null,
+    wallet: CONFIG.TREASURY_WALLET || null,
+    totalKeysIssued,
+    tiers,
   });
 });
 

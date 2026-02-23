@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
@@ -11,8 +12,16 @@ import { resetUsage } from '../lib/kv-usage.js';
 
 const router = Router();
 
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'rate_limited', message: 'Too many registration attempts. Try again in 15 minutes.' },
+});
+
 // POST /auth/register — Verify wallet ownership and issue API key
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   const { wallet, signature, message } = req.body;
 
   if (!wallet || !signature || !message) {
@@ -23,6 +32,23 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Replay protection: require timestamp in signed message, reject if > 5 min old
+    const SIG_MAX_AGE_MS = 5 * 60 * 1000;
+    const tsMatch = message.match(/Timestamp:\s*(\d+)/);
+    if (!tsMatch) {
+      return res.status(400).json({
+        error: 'invalid_message',
+        message: 'Signed message must include a Timestamp field.',
+      });
+    }
+    const sigTimestamp = parseInt(tsMatch[1], 10);
+    if (Math.abs(Date.now() - sigTimestamp) > SIG_MAX_AGE_MS) {
+      return res.status(401).json({
+        error: 'signature_expired',
+        message: 'Signature has expired. Please sign a new message.',
+      });
+    }
+
     // Dashboard sends base64, CLI clients may send base58
     let sigBytes;
     try {
@@ -102,7 +128,10 @@ router.post('/register', async (req, res) => {
 
   } catch (err) {
     console.error('Registration error:', err);
-    res.status(500).json({ error: 'registration_failed', message: err.message });
+    res.status(500).json({
+      error: 'registration_failed',
+      message: process.env.NODE_ENV === 'production' ? 'Registration failed. Try again.' : err.message,
+    });
   }
 });
 

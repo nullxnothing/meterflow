@@ -82,11 +82,15 @@ const state = {
 
 async function updateSolPrice() {
   try {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd', {
+      signal: AbortSignal.timeout(10_000),
+    });
     const data = await res.json();
     const price = parseFloat(data?.solana?.usd);
     if (price > 0) state.solPriceUsd = price;
-  } catch {}
+  } catch (err) {
+    console.error('[SOL Price] Failed to fetch:', err.message);
+  }
 }
 
 // ─── Treasury Balance ───────────────────────────────────────
@@ -118,11 +122,13 @@ async function checkBalance() {
 
 async function fetchProxyStats() {
   try {
-    const res = await fetch(`${CONFIG.PROXY_URL}/stats`);
+    const res = await fetch(`${CONFIG.PROXY_URL}/stats`, { signal: AbortSignal.timeout(10_000) });
     const data = await res.json();
     state.dailyCallsUsed = data.totalCallsToday || 0;
     state.activeKeys = data.activeKeys || 0;
-  } catch {}
+  } catch (err) {
+    console.error('[Proxy Stats] Failed to fetch:', err.message);
+  }
 }
 
 // ─── Budget ─────────────────────────────────────────────────
@@ -173,15 +179,18 @@ async function pushLimits() {
         dailyBudget: state.dailyCallsBudget,
         treasuryBalanceUsd: state.treasuryBalanceUsd,
       }),
+      signal: AbortSignal.timeout(10_000),
     });
-  } catch {}
+  } catch (err) {
+    console.error('[Push Limits] Failed to push to proxy:', err.message);
+  }
 }
 
 // ─── Reimbursement ──────────────────────────────────────────
 
 function getReimbursementStatus() {
   const pending = state.pendingReimbursementUsd;
-  const pendingSol = pending / state.solPriceUsd;
+  const pendingSol = state.solPriceUsd > 0 ? pending / state.solPriceUsd : 0;
   return {
     totalApiSpend: +state.totalApiSpendUsd.toFixed(2),
     totalReimbursed: +state.totalReimbursedUsd.toFixed(2),
@@ -236,6 +245,7 @@ async function postToDiscord(report, isAlert = false) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ embeds: [embed] }),
+      signal: AbortSignal.timeout(10_000),
     });
   } catch (err) {
     console.error('[Discord]', err.message);
@@ -286,9 +296,21 @@ export const skills = {
 
 async function startServer(port) {
   const { createServer } = await import('http');
+
+  function requireAuth(req, res) {
+    if (req.url === '/health') return true; // health is public
+    const authHeader = req.headers.authorization;
+    if (!CONFIG.PROXY_ADMIN_KEY) { res.statusCode = 503; res.end('{"error":"admin_not_configured"}'); return false; }
+    if (!authHeader || authHeader !== `Bearer ${CONFIG.PROXY_ADMIN_KEY}`) {
+      res.statusCode = 401; res.end('{"error":"unauthorized"}'); return false;
+    }
+    return true;
+  }
+
   createServer(async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', CONFIG.PROXY_URL);
+    if (!requireAuth(req, res)) return;
     if (req.url === '/health') res.end(JSON.stringify({ ok: true }));
     else if (req.url === '/treasury') res.end(JSON.stringify({ sol: state.treasuryBalanceSol, usd: state.treasuryBalanceUsd, health: state.healthStatus, runway: state.runwayDays, multiplier: state.rateMultiplier, budget: state.dailyCallsBudget }));
     else if (req.url === '/report') { await fetchProxyStats(); res.end(JSON.stringify(generateReport())); }
@@ -316,8 +338,18 @@ async function start() {
 }
 
 if (process.argv[1]?.includes('index') || process.argv[1]?.includes('treasury')) {
-  start();
+  start().catch(err => {
+    console.error('[FATAL] Agent startup failed:', err);
+    process.exit(1);
+  });
   startServer(parseInt(process.env.AGENT_PORT || '3002'));
+
+  process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught exception:', err);
+  });
+  process.on('unhandledRejection', (err) => {
+    console.error('[FATAL] Unhandled rejection:', err);
+  });
 }
 
 export default { skills, state, generateReport, getReimbursementStatus };

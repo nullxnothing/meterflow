@@ -39,7 +39,7 @@ export function renderConnectScreen() {
         <p>Connect your wallet to access AI chat, image generation, trading tools, and raw API keys.</p>
         ${STATE.error ? `<div class="connect-error">${escapeHtml(STATE.error)}</div>` : ''}
         <div class="connect-wallets">
-          ${STATE.connecting ? `<div class="connect-btn" style="opacity:0.6;cursor:wait;">Connecting...</div>` : hasWallet ? providers.map((p, i) => `
+          ${STATE.connecting ? `<button class="connect-btn btn-loading" disabled style="min-height:52px;">Connecting...</button>` : hasWallet ? providers.map((p, i) => `
             <button class="connect-btn${i > 0 ? ' connect-btn-secondary' : ''}" data-provider="${i}">
               <img src="${p.icon}" alt="${p.name}" width="20" height="20" style="border-radius:4px;">
               Connect ${p.name}
@@ -56,28 +56,41 @@ export function renderConnectScreen() {
 
 export function renderDashboard() {
   const isChat = STATE.activeTab === 'chat' || STATE.activeTab === 'trading';
+  const usagePct = STATE.usage.limit > 0 ? Math.min((STATE.usage.today / STATE.usage.limit) * 100, 100) : 0;
+  const usageBarClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+  const resetTime = getResetCountdown();
   return `
+    <div class="mobile-header">
+      <span class="mobile-logo">INFINITE</span>
+      <button class="mobile-hamburger" id="mobileMenuBtn">\u2630</button>
+    </div>
+    <div class="mobile-nav-overlay" id="mobileNavOverlay">
+      <div class="mobile-nav-drawer" id="mobileNavDrawer">
+        <button class="mobile-nav-close" id="mobileNavClose">\u00d7</button>
+        <div class="sidebar-logo" style="margin-bottom:32px;">INFINITE</div>
+        ${renderNavItems()}
+      </div>
+    </div>
     <aside class="sidebar">
-      <div class="sidebar-logo">INFINITE</div>
+      <div class="sidebar-logo">
+        INFINITE
+        <span class="status-dot ${STATE.apiKeyFull ? 'online' : 'offline'}" id="connectionDot" title="${STATE.apiKeyFull ? 'Connected' : 'Disconnected'}"></span>
+      </div>
       <nav class="sidebar-nav">
-        <div class="nav-group-label">Dashboard</div>
-        <div class="nav-item ${STATE.activeTab === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
-        <div class="nav-item ${STATE.activeTab === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
-        <div class="nav-item ${STATE.activeTab === 'models' ? 'active' : ''}" data-tab="models">Models</div>
-        <div class="nav-item ${STATE.activeTab === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
-        <div class="nav-group-label">Tools</div>
-        <div class="nav-item ${STATE.activeTab === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
-        <div class="nav-item ${STATE.activeTab === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
-        <div class="nav-item ${STATE.activeTab === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
-        <div class="nav-item ${STATE.activeTab === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
-        <div class="nav-item ${STATE.activeTab === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agents</div>
-        <div class="nav-item ${STATE.activeTab === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
-        <div class="nav-group-label">Protocol</div>
-        <div class="nav-item ${STATE.activeTab === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
-        <div class="nav-item ${STATE.activeTab === 'treasury' ? 'active' : ''}" data-tab="treasury">Treasury</div>
+        ${renderNavItems()}
       </nav>
       <div class="sidebar-footer">
-        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier || '—'} Tier — ${STATE.balance.toLocaleString()} $INF</div>
+        <div class="sidebar-usage" id="sidebarUsage">
+          <div class="sidebar-usage-header">
+            <span class="sidebar-usage-label">API Usage</span>
+            <span class="sidebar-usage-count">${STATE.usage.remaining.toLocaleString()} left</span>
+          </div>
+          <div class="sidebar-usage-track">
+            <div class="sidebar-usage-fill ${usageBarClass}" style="width: ${usagePct}%"></div>
+          </div>
+          <div class="sidebar-usage-reset">resets ${resetTime}</div>
+        </div>
+        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier || '—'} Tier \u2014 ${STATE.balance.toLocaleString()} $INF</div>
         <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
           ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '—'}
           <span class="copy">COPY</span>
@@ -93,6 +106,36 @@ export function renderDashboard() {
     </aside>
     <main class="main${isChat ? ' chat-mode' : ''}">${renderTab()}</main>
   `;
+}
+
+function renderNavItems() {
+  const t = STATE.activeTab;
+  return `
+    <div class="nav-group-label">Dashboard</div>
+    <div class="nav-item ${t === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
+    <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
+    <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Models</div>
+    <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
+    <div class="nav-group-label">Tools</div>
+    <div class="nav-item ${t === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
+    <div class="nav-item ${t === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
+    <div class="nav-item ${t === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
+    <div class="nav-item ${t === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
+    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agents</div>
+    <div class="nav-item ${t === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
+    <div class="nav-group-label">Protocol</div>
+    <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
+    <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Treasury</div>
+  `;
+}
+
+function getResetCountdown() {
+  const now = new Date();
+  const utcMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  const diff = utcMidnight - now;
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return `in ${hours}h ${mins}m`;
 }
 
 export function renderTab() {

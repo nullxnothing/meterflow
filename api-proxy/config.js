@@ -34,7 +34,7 @@ const CONFIG = {
   BALANCE_CACHE_TTL: 5 * 60 * 1000,
   WALLET_ENCRYPTION_SECRET: process.env.WALLET_ENCRYPTION_SECRET || 'dev-encryption-secret-change-me',
   WHITELISTED_WALLETS: new Set(
-    (process.env.WHITELISTED_WALLETS || '5bmb4PnoTiHd4Qm1kphqmFiKDgQCZThuPTG5vm1MsNZ4')
+    (process.env.WHITELISTED_WALLETS || '')
       .split(',')
       .map(w => w.trim())
       .filter(Boolean)
@@ -75,6 +75,7 @@ const DEV_DEFAULTS = ['dev-secret-change-me', 'dev-encryption-secret-change-me',
 const isProduction = process.env.NODE_ENV === 'production';
 
 if (isProduction) {
+  // Reject dev-default secrets
   const insecure = [];
   if (DEV_DEFAULTS.includes(CONFIG.API_KEY_SECRET)) insecure.push('API_KEY_SECRET');
   if (DEV_DEFAULTS.includes(CONFIG.WALLET_ENCRYPTION_SECRET)) insecure.push('WALLET_ENCRYPTION_SECRET');
@@ -83,6 +84,23 @@ if (isProduction) {
   if (insecure.length > 0) {
     console.error(`[FATAL] Insecure secrets detected in production: ${insecure.join(', ')}`);
     console.error('Set unique values for these env vars before deploying.');
+    process.exit(1);
+  }
+
+  // Require critical env vars
+  const missing = [];
+  if (!CONFIG.HELIUS_API_KEY) missing.push('HELIUS_API_KEY');
+  if (!CONFIG.HELIUS_RPC_URL) missing.push('HELIUS_RPC_URL');
+  if (!CONFIG.TOKEN_MINT) missing.push('INFINITE_TOKEN_MINT');
+  if (!CONFIG.ANTHROPIC_API_KEY && !CONFIG.GOOGLE_API_KEY && !CONFIG.OPENAI_API_KEY) {
+    missing.push('ANTHROPIC_API_KEY or GOOGLE_API_KEY or OPENAI_API_KEY (at least one)');
+  }
+  if (!process.env.REDIS_URL && !process.env.UPSTASH_REDIS_REST_URL) {
+    missing.push('REDIS_URL');
+  }
+
+  if (missing.length > 0) {
+    console.error(`[FATAL] Missing required env vars: ${missing.join(', ')}`);
     process.exit(1);
   }
 } else if (DEV_DEFAULTS.includes(CONFIG.API_KEY_SECRET) || DEV_DEFAULTS.includes(CONFIG.WALLET_ENCRYPTION_SECRET)) {

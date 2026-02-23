@@ -145,9 +145,11 @@ function appendMessageToDOM(msg) {
   const empty = container.querySelector('.chat-empty');
   if (empty) empty.remove();
 
-  const imagesHtml = msg.images ? `<div class="chat-msg-images">${msg.images.map(img =>
-    `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`
-  ).join('')}</div>` : '';
+  const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const imagesHtml = msg.images ? `<div class="chat-msg-images">${msg.images
+    .filter(img => ALLOWED_MIME.includes(img.mimeType))
+    .map(img => `<img src="data:${img.mimeType};base64,${img.data}" alt="uploaded">`)
+    .join('')}</div>` : '';
 
   const el = document.createElement('div');
   el.className = `chat-message ${msg.role}`;

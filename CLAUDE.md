@@ -25,15 +25,64 @@ Three independent services + static frontends:
 Wallet signs message → POST /auth/register → Helius balance check → Tier assignment → API key (inf_xxxxx) issued
 ↓
 POST /v1/chat with Bearer token → Auth middleware re-checks balance → Rate limit check → Proxy to Anthropic or Gemini
+POST /v1/chat/stream → Same auth flow → SSE streaming with agentic tool loops
+POST /v1/multi → Same auth flow → Fan-out to multiple models in parallel → Return all responses
+POST /v1/multi/stream → Same auth flow → SSE streaming fan-out with per-model events
 ↓
 Treasury agent monitors SOL wallet → Calculates runway days → Pushes multiplier to proxy /admin/rate-limits
 ```
+
+## Multi-Model Endpoint
+
+`POST /v1/multi` sends the same prompt to up to 4 models simultaneously and returns all responses. Unique to INFINITE — no other token-gated proxy offers parallel multi-model inference.
+
+```json
+// Request
+{ "models": ["claude-sonnet-4-5-20250929", "gemini-2.5-flash"], "messages": [...], "max_tokens": 1024 }
+
+// Response
+{ "id": "inf-multi-xxx", "type": "multi", "responses": [
+  { "model": "claude-sonnet-4-5-20250929", "content": [...], "usage": {...} },
+  { "model": "gemini-2.5-flash", "content": [...], "usage": {...} }
+]}
+```
+
+The streaming variant `POST /v1/multi/stream` emits SSE events prefixed with `model_start`, `model_result`, and `model_error` per model. Defaults to Claude Sonnet + Gemini Flash if no `models` array provided. Max 4 models per request.
 
 ## Tier System
 
 - **Signal**: 10K tokens, 1K calls/day, Claude Sonnet + Gemini Flash
 - **Operator**: 100K tokens, 10K calls/day, + Gemini Pro
 - **Architect**: 1M tokens, unlimited, + Claude Opus
+
+## Treasury Endpoint (Enhanced)
+
+`GET /treasury` returns expanded data for the transparency dashboard:
+- `treasuryBalanceSol`, `treasuryBalanceUsd`, `solPrice` — live balance
+- `healthStatus`, `multiplier`, `runwayDays`, `dailyBudget` — treasury agent state
+- `wallet` — full treasury wallet address (for Solscan verification)
+- `totalKeysIssued` — active API key count
+- `tiers[]` — each tier with `name`, `key`, `min`, `dailyLimit`, `effectiveLimit` (base * multiplier)
+- `updatedAt` — last treasury agent push timestamp
+
+## SDK (`@infinite-protocol/sdk`)
+
+Zero-dependency SDK in `sdk/` directory. ESM-only, Node 18+ and browser compatible.
+
+```js
+import { InfiniteClient } from '@infinite-protocol/sdk';
+const client = new InfiniteClient({ apiKey: 'inf_xxxxx' });
+
+await client.chat({ model: 'claude-sonnet-4-5-20250929', messages: [...] });
+client.chatStream({ ... });   // async iterable SSE
+await client.multi({ models: [...], messages: [...] });
+client.multiStream({ ... });  // async iterable per-model SSE
+await client.image({ prompt: '...' });
+await client.status();
+await client.treasury();
+```
+
+Files: `sdk/src/client.js` (InfiniteClient class), `sdk/src/streaming.js` (SSE parser), `sdk/src/types.js` (JSDoc typedefs), `sdk/src/index.js` (barrel export).
 
 ## Development Commands
 
@@ -56,8 +105,8 @@ node index.js           # Starts daemon + health server on :3002
 ## Important Details
 
 - Both `api-proxy/server.js` and `agent/index.js` use ES module syntax (`import`/`export`). The package.json files likely need `"type": "module"`.
-- Signature verification in `/auth/register` is stubbed out (TODO comment at line ~208 of server.js) — tweetnacl + bs58 are dependencies but not wired up yet.
-- The proxy currently has no streaming support — the `stream` param in `/v1/chat` is destructured but unused.
+- Signature verification in `/auth/register` is fully implemented (`api-proxy/routes/auth.js`) — Ed25519 verify via tweetnacl with replay protection (5-min timestamp window) and dual base58/base64 signature support.
+- Full SSE streaming is implemented via `POST /v1/chat/stream` with all three providers (Anthropic, Gemini, OpenAI). Each supports agentic tool-use loops (up to 3 rounds), abort on client disconnect, web search with source extraction, and proper SSE termination.
 - The dashboard is wired to real Solana wallet adapters (Phantom, Backpack, Solflare) and connects to the API proxy via `/proxy` Vercel rewrite. Session persists in localStorage.
 - Balance cache TTL is 5 minutes. Treasury agent checks balance every 5 minutes, SOL price every 15 minutes.
 - Admin auth for treasury agent push uses `ADMIN_KEY` env var (defaults to `dev-admin-key`).

@@ -11,6 +11,8 @@ import { render } from './render.js';
 
 export async function rotateKey() {
   if (!confirm('Rotate your API key? The old key will stop working immediately.')) return;
+  const btn = document.querySelector('[onclick="rotateKey()"]');
+  if (btn) btn.classList.add('btn-loading');
   try {
     const data = await api('/auth/rotate', { method: 'POST' });
     STATE.apiKeyFull = data.apiKey;
@@ -18,16 +20,25 @@ export async function rotateKey() {
     STATE.tier = data.tier;
     STATE.keyVisible = false;
     saveSession();
-    showToast('Key rotated');
+    showToast('Key rotated successfully');
   } catch (err) {
     showToast(err.message || 'Rotate failed', true);
   }
+  if (btn) btn.classList.remove('btn-loading');
   render();
 }
 
 export async function revokeKey() {
   if (!confirm('Revoke your API key? All active sessions will be terminated.')) return;
-  try { await api('/auth/revoke', { method: 'POST' }); showToast('Key revoked'); } catch {}
+  const btn = document.querySelector('[onclick="revokeKey()"]');
+  if (btn) btn.classList.add('btn-loading');
+  try {
+    await api('/auth/revoke', { method: 'POST' });
+    showToast('Key revoked');
+  } catch (err) {
+    showToast(err.message || 'Revoke failed', true);
+  }
+  if (btn) btn.classList.remove('btn-loading');
   clearSession();
   render();
 }
@@ -70,13 +81,51 @@ export function copyText(text) {
 }
 
 export function showToast(msg, isError = false) {
-  document.getElementById('toast')?.remove();
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const variant = isError === true ? 'error' : (isError === 'warning' ? 'warning' : '');
+  const icon = variant === 'error' ? '\u2717' : variant === 'warning' ? '!' : '\u2713';
+
   const el = document.createElement('div');
-  el.id = 'toast';
-  el.style.cssText = `position:fixed;bottom:24px;right:24px;padding:12px 20px;font-family:var(--font-mono);font-size:11px;letter-spacing:1px;z-index:10000;border:1px solid ${isError ? 'var(--red)' : 'var(--accent)'};color:${isError ? 'var(--red)' : 'var(--accent)'};background:var(--surface);`;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2500);
+  el.className = `toast ${variant}`;
+
+  const iconSpan = document.createElement('span');
+  iconSpan.className = 'toast-icon';
+  iconSpan.textContent = icon;
+
+  const msgSpan = document.createElement('span');
+  msgSpan.className = 'toast-msg';
+  msgSpan.textContent = msg;
+
+  const dismissBtn = document.createElement('button');
+  dismissBtn.className = 'toast-dismiss';
+  dismissBtn.textContent = '\u00d7';
+  dismissBtn.onclick = () => {
+    el.classList.add('exiting');
+    setTimeout(() => el.remove(), 250);
+  };
+
+  el.append(iconSpan, msgSpan, dismissBtn);
+  container.appendChild(el);
+
+  // Auto-dismiss after 3s
+  setTimeout(() => {
+    if (el.parentElement) {
+      el.classList.add('exiting');
+      setTimeout(() => el.remove(), 250);
+    }
+  }, 3000);
+
+  // Cap at 4 visible toasts
+  while (container.children.length > 4) {
+    container.firstChild.remove();
+  }
 }
 
 // Attach to window for onclick handlers

@@ -9,7 +9,7 @@ import { maskKey } from './api.js';
 
 export function saveSession() {
   if (!STATE.connected) return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
     wallet: STATE.wallet,
     apiKey: STATE.apiKeyFull,
     tier: STATE.tier,
@@ -20,7 +20,7 @@ export function saveSession() {
 
 export function loadSession() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
     const saved = JSON.parse(raw);
     if (!saved.wallet || !saved.apiKey) return false;
@@ -36,7 +36,7 @@ export function loadSession() {
 }
 
 export function clearSession() {
-  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
   clearStatusPollInterval();
   Object.assign(STATE, {
     connected: false, connecting: false, wallet: null, walletProvider: null,

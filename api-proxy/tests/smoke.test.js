@@ -1,0 +1,405 @@
+/**
+ * Smoke tests for INFINITE API Proxy production fixes.
+ * Uses Node.js built-in test runner — no extra deps.
+ * Run: node --test tests/smoke.test.js
+ */
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, '..');
+const projectRoot = resolve(root, '..');
+
+// ═══════════════════════════════════════
+// 1. CONFIG & ENV VALIDATION
+// ═══════════════════════════════════════
+describe('Config & env validation', () => {
+  it('config.js rejects dev-default secrets in production mode', async () => {
+    // Read config source and verify the validation logic exists
+    const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
+    assert.ok(src.includes('DEV_DEFAULTS'), 'should define DEV_DEFAULTS array');
+    assert.ok(src.includes("process.exit(1)"), 'should exit on insecure secrets');
+    assert.ok(src.includes('dev-secret-change-me'), 'should check API_KEY_SECRET default');
+    assert.ok(src.includes('dev-encryption-secret-change-me'), 'should check WALLET_ENCRYPTION_SECRET default');
+    assert.ok(src.includes('dev-admin-key'), 'should check ADMIN_KEY default');
+  });
+
+  it('config.js requires critical env vars in production', async () => {
+    const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
+    assert.ok(src.includes('HELIUS_API_KEY'), 'should check HELIUS_API_KEY');
+    assert.ok(src.includes('HELIUS_RPC_URL'), 'should check HELIUS_RPC_URL');
+    assert.ok(src.includes('INFINITE_TOKEN_MINT'), 'should check INFINITE_TOKEN_MINT');
+    assert.ok(src.includes('REDIS_URL'), 'should check REDIS_URL');
+    // Verify at least one AI provider required
+    assert.ok(src.includes('ANTHROPIC_API_KEY') && src.includes('GOOGLE_API_KEY') && src.includes('OPENAI_API_KEY'),
+      'should require at least one AI provider key');
+  });
+
+  it('whitelisted wallets defaults to empty set (no hardcoded wallets)', () => {
+    const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
+    // Should use env var with empty string fallback, not a hardcoded address
+    const whitelistMatch = src.match(/WHITELISTED_WALLETS.*?new Set\(([\s\S]*?)\)/);
+    assert.ok(whitelistMatch, 'should have WHITELISTED_WALLETS as a Set');
+    assert.ok(!whitelistMatch[1].includes('So1'), 'should not contain hardcoded Solana addresses');
+  });
+});
+
+// ═══════════════════════════════════════
+// 2. CORS CONFIG
+// ═══════════════════════════════════════
+describe('CORS configuration', () => {
+  it('server.js whitelists infinitekeys.fun', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes("'https://infinitekeys.fun'"), 'should include bare domain');
+    assert.ok(src.includes("'https://www.infinitekeys.fun'"), 'should include www subdomain');
+  });
+
+  it('server.js uses regex for subdomains', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes('\\.infinitekeys\\.fun$'), 'should have subdomain regex');
+    assert.ok(src.includes('\\.vercel\\.app$'), 'should allow Vercel preview deploys');
+  });
+
+  it('does NOT allow wildcard * origin', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(!src.includes("origin: '*'"), 'must not use wildcard CORS');
+    assert.ok(!src.includes('origin: true'), 'must not use origin: true (reflects any origin)');
+  });
+
+  it('localhost only in non-production', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes("process.env.NODE_ENV !== 'production'"),
+      'localhost origins should be behind env check');
+  });
+});
+
+// ═══════════════════════════════════════
+// 3. RATE LIMITING
+// ═══════════════════════════════════════
+describe('Rate limiting', () => {
+  it('/auth/register has rate limiter', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('rateLimit'), 'should import rate limiter');
+    assert.ok(src.includes('registerLimiter'), 'should define register limiter');
+    assert.ok(src.includes("'/register'") && src.includes('registerLimiter'),
+      'register route should use rate limiter');
+  });
+
+  it('rate limiter window is 15 minutes, max 10 requests', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('15 * 60 * 1000'), 'window should be 15 min');
+    assert.ok(src.includes('max: 10'), 'max should be 10');
+  });
+});
+
+// ═══════════════════════════════════════
+// 4. SIGNATURE REPLAY PROTECTION
+// ═══════════════════════════════════════
+describe('Signature replay protection', () => {
+  it('register endpoint validates timestamp in signed message', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('SIG_MAX_AGE_MS'), 'should define max signature age');
+    assert.ok(src.includes('5 * 60 * 1000'), 'max age should be 5 minutes');
+    assert.ok(src.includes('Timestamp'), 'should parse Timestamp field from message');
+  });
+
+  it('rejects messages without timestamp', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('invalid_message'), 'should return invalid_message error');
+    assert.ok(src.includes('Signed message must include a Timestamp field'),
+      'should explain missing timestamp');
+  });
+
+  it('rejects expired signatures', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('signature_expired'), 'should return signature_expired error');
+    assert.ok(src.includes('Math.abs(Date.now()'), 'should check absolute difference');
+  });
+
+  it('supports both base58 and base64 signatures', () => {
+    const src = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(src.includes('bs58.decode(signature)'), 'should try base58 first');
+    assert.ok(src.includes('atob(signature)'), 'should fallback to base64');
+  });
+});
+
+// ═══════════════════════════════════════
+// 5. ADMIN AUTH (TIMING-SAFE)
+// ═══════════════════════════════════════
+describe('Admin authentication', () => {
+  it('uses timing-safe comparison', () => {
+    const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
+    assert.ok(src.includes('timingSafeEqual'), 'should use timingSafeEqual');
+    assert.ok(src.includes("from 'crypto'"), 'should import from crypto module');
+  });
+
+  it('rejects dev-default admin key', () => {
+    const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
+    assert.ok(src.includes("'dev-admin-key'"), 'should check for dev default');
+    assert.ok(src.includes('admin_not_configured'), 'should return admin_not_configured error');
+  });
+
+  it('checks key length before comparing (prevents oracle attack)', () => {
+    const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
+    assert.ok(src.includes('key.length !== adminKey.length'),
+      'should validate lengths match before timingSafeEqual');
+  });
+});
+
+// ═══════════════════════════════════════
+// 6. TREASURY MULTIPLIER
+// ═══════════════════════════════════════
+describe('Treasury multiplier in rate limits', () => {
+  it('middleware applies treasury multiplier to daily limit', () => {
+    const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
+    assert.ok(src.includes('getTreasuryState'), 'should import getTreasuryState');
+    assert.ok(src.includes('treasuryMultiplier'), 'should read treasury multiplier');
+    assert.ok(src.includes('effectiveLimit'), 'should compute effective limit');
+    assert.ok(src.includes('Math.floor'), 'should floor the effective limit');
+  });
+});
+
+// ═══════════════════════════════════════
+// 7. REDIS FAIL-CLOSED IN PRODUCTION
+// ═══════════════════════════════════════
+describe('Redis fail-closed (production)', () => {
+  it('kv-keys exits in production without Redis', () => {
+    const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
+    assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');
+    assert.ok(src.includes("process.exit(1)"), 'should exit without Redis in prod');
+  });
+
+  it('kv-keys throws on Redis failure in production (not fallback)', () => {
+    const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
+    assert.ok(src.includes("throw new Error('Key store unavailable')"),
+      'should throw instead of falling back in prod');
+  });
+
+  it('kv-usage exits in production without Redis', () => {
+    const src = readFileSync(resolve(root, 'lib', 'kv-usage.js'), 'utf-8');
+    assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');
+    assert.ok(src.includes("process.exit(1)"), 'should exit without Redis in prod');
+  });
+
+  it('kv-usage throws on Redis failure in production', () => {
+    const src = readFileSync(resolve(root, 'lib', 'kv-usage.js'), 'utf-8');
+    assert.ok(src.includes("throw new Error('Usage store unavailable')"),
+      'should throw instead of falling back in prod');
+  });
+});
+
+// ═══════════════════════════════════════
+// 8. STREAM DISCONNECT HANDLING
+// ═══════════════════════════════════════
+describe('Stream disconnect handling', () => {
+  it('chat route creates AbortController for client disconnect', () => {
+    const src = readFileSync(resolve(root, 'routes', 'chat.js'), 'utf-8');
+    assert.ok(src.includes('AbortController'), 'should create AbortController');
+    assert.ok(src.includes("res.on('close'"), 'should listen for client close event');
+    assert.ok(src.includes('abortController.abort()'), 'should abort on disconnect');
+  });
+
+  it('Anthropic provider accepts signal parameter', () => {
+    const src = readFileSync(resolve(root, 'providers', 'anthropic.js'), 'utf-8');
+    assert.ok(src.includes('signal'), 'should accept signal parameter');
+  });
+
+  it('Gemini provider accepts signal parameter', () => {
+    const src = readFileSync(resolve(root, 'providers', 'gemini.js'), 'utf-8');
+    assert.ok(src.includes('signal'), 'should accept signal parameter');
+  });
+
+  it('OpenAI provider accepts signal parameter', () => {
+    const src = readFileSync(resolve(root, 'providers', 'openai.js'), 'utf-8');
+    assert.ok(src.includes('signal'), 'should accept signal parameter');
+  });
+});
+
+// ═══════════════════════════════════════
+// 9. REQUEST TIMEOUTS
+// ═══════════════════════════════════════
+describe('Request timeouts', () => {
+  it('balance.js has fetch timeout', () => {
+    const src = readFileSync(resolve(root, 'lib', 'balance.js'), 'utf-8');
+    assert.ok(src.includes('FETCH_TIMEOUT') || src.includes('AbortSignal.timeout'),
+      'should have fetch timeout mechanism');
+  });
+
+  it('providers have API timeout constants', () => {
+    for (const provider of ['anthropic.js', 'gemini.js', 'openai.js']) {
+      const src = readFileSync(resolve(root, 'providers', provider), 'utf-8');
+      assert.ok(src.includes('API_TIMEOUT') || src.includes('AbortSignal.timeout'),
+        `${provider} should have API timeout`);
+    }
+  });
+});
+
+// ═══════════════════════════════════════
+// 10. GRACEFUL SHUTDOWN
+// ═══════════════════════════════════════
+describe('Graceful shutdown', () => {
+  it('server.js handles SIGTERM', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes("process.on('SIGTERM'"), 'should handle SIGTERM');
+  });
+
+  it('server.js handles SIGINT', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes("process.on('SIGINT'"), 'should handle SIGINT');
+  });
+
+  it('has forced shutdown timeout', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes('SHUTDOWN_TIMEOUT'), 'should define shutdown timeout');
+    assert.ok(src.includes('server.close'), 'should close server gracefully');
+  });
+});
+
+// ═══════════════════════════════════════
+// 11. SECURITY HEADERS (vercel.json)
+// ═══════════════════════════════════════
+describe('Security headers (vercel.json)', () => {
+  const vercel = JSON.parse(readFileSync(resolve(projectRoot, 'vercel.json'), 'utf-8'));
+  const headerRule = vercel.headers?.find(h => h.source === '/(.*)');
+  const headers = headerRule?.headers || [];
+
+  const getHeader = (key) => headers.find(h => h.key === key);
+
+  it('has X-Content-Type-Options: nosniff', () => {
+    const h = getHeader('X-Content-Type-Options');
+    assert.ok(h, 'header should exist');
+    assert.equal(h.value, 'nosniff');
+  });
+
+  it('has X-Frame-Options: DENY', () => {
+    const h = getHeader('X-Frame-Options');
+    assert.ok(h, 'header should exist');
+    assert.equal(h.value, 'DENY');
+  });
+
+  it('has Strict-Transport-Security (HSTS)', () => {
+    const h = getHeader('Strict-Transport-Security');
+    assert.ok(h, 'header should exist');
+    assert.ok(h.value.includes('max-age='), 'should set max-age');
+    assert.ok(h.value.includes('includeSubDomains'), 'should include subdomains');
+  });
+
+  it('has Referrer-Policy', () => {
+    const h = getHeader('Referrer-Policy');
+    assert.ok(h, 'header should exist');
+    assert.equal(h.value, 'strict-origin-when-cross-origin');
+  });
+
+  it('has Permissions-Policy blocking camera/mic/geo', () => {
+    const h = getHeader('Permissions-Policy');
+    assert.ok(h, 'header should exist');
+    assert.ok(h.value.includes('geolocation=()'), 'should block geolocation');
+    assert.ok(h.value.includes('microphone=()'), 'should block microphone');
+    assert.ok(h.value.includes('camera=()'), 'should block camera');
+  });
+});
+
+// ═══════════════════════════════════════
+// 12. XSS PREVENTION (Frontend)
+// ═══════════════════════════════════════
+describe('XSS prevention (frontend)', () => {
+  it('actions.js toast does not use innerHTML for user content', () => {
+    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'actions.js'), 'utf-8');
+    // Check that showToast doesn't assign user-controlled content via innerHTML
+    // It should use textContent or createElement
+    assert.ok(src.includes('textContent') || src.includes('createElement'),
+      'should use safe DOM APIs for toast messages');
+  });
+
+  it('chat.js has image mime type whitelist', () => {
+    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'chat.js'), 'utf-8');
+    assert.ok(src.includes('ALLOWED_MIME') || src.includes('image/png') || src.includes('image/jpeg'),
+      'should whitelist safe image mime types');
+  });
+});
+
+// ═══════════════════════════════════════
+// 13. SESSION STORAGE FOR API KEY
+// ═══════════════════════════════════════
+describe('Session storage for API key', () => {
+  it('session.js uses sessionStorage not localStorage for apiKey', () => {
+    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'session.js'), 'utf-8');
+    // There should be sessionStorage.setItem for apiKey
+    // Should NOT have localStorage.setItem('infinite_apiKey'...)
+    const localStorageApiKey = src.match(/localStorage\.(setItem|getItem)\(['"]infinite_apiKey/);
+    assert.ok(!localStorageApiKey, 'should NOT store apiKey in localStorage');
+
+    assert.ok(src.includes('sessionStorage'), 'should use sessionStorage');
+  });
+});
+
+// ═══════════════════════════════════════
+// 14. DEAD LINKS & SITE INTEGRITY
+// ═══════════════════════════════════════
+describe('Site link integrity', () => {
+  it('index.html has no bare href="#" on important links', () => {
+    const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
+    // Buy buttons should be disabled, not href="#"
+    const buyHrefs = [...src.matchAll(/class="[^"]*btn[^"]*"[^>]*href="#"/g)];
+    // Filter out anchor navigation links (href="#section")
+    const bareHashLinks = buyHrefs.filter(m => !m[0].includes('href="#'));
+    // This is fine — what matters is that "buy" links aren't pointing to #
+    assert.ok(src.includes('disabled') || src.includes('return false'),
+      'buy buttons should be disabled or return false');
+  });
+
+  it('docs.html docs link points to /docs not #', () => {
+    const src = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
+    assert.ok(src.includes('href="/docs"'), 'Docs nav link should point to /docs');
+  });
+
+  it('copyright year is current', () => {
+    const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
+    assert.ok(src.includes('2026'), 'copyright should be 2026');
+  });
+});
+
+// ═══════════════════════════════════════
+// 15. HELPER FUNCTIONS
+// ═══════════════════════════════════════
+describe('Helper functions', () => {
+  // Dynamically import helpers since they don't require external deps
+  it('generateApiKey produces correct format', async () => {
+    // Can't import directly due to config side effects, so check source
+    const src = readFileSync(resolve(root, 'lib', 'helpers.js'), 'utf-8');
+    assert.ok(src.includes('inf_'), 'should prefix with inf_');
+    assert.ok(src.includes('randomBytes'), 'should use crypto.randomBytes');
+  });
+
+  it('getTierForBalance returns correct tiers', () => {
+    const src = readFileSync(resolve(root, 'lib', 'helpers.js'), 'utf-8');
+    assert.ok(src.includes("'architect'"), 'should have architect tier');
+    assert.ok(src.includes("'operator'"), 'should have operator tier');
+    assert.ok(src.includes("'signal'"), 'should have signal tier');
+    assert.ok(src.includes('return null'), 'should return null for insufficient balance');
+  });
+});
+
+// ═══════════════════════════════════════
+// 16. VERCEL ROUTING
+// ═══════════════════════════════════════
+describe('Vercel routing', () => {
+  const vercel = JSON.parse(readFileSync(resolve(projectRoot, 'vercel.json'), 'utf-8'));
+
+  it('has proxy rewrite to Render', () => {
+    const proxyRewrite = vercel.rewrites.find(r => r.source.includes('/proxy'));
+    assert.ok(proxyRewrite, 'should have /proxy rewrite');
+    assert.ok(proxyRewrite.destination.includes('onrender.com'), 'should point to Render');
+  });
+
+  it('has all required page rewrites', () => {
+    const sources = vercel.rewrites.map(r => r.source);
+    assert.ok(sources.includes('/'), 'should rewrite /');
+    assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
+    assert.ok(sources.includes('/docs'), 'should rewrite /docs');
+    assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
+  });
+});

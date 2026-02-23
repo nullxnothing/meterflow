@@ -2,14 +2,18 @@
 import Redis from 'ioredis';
 
 const USAGE_PREFIX = 'infinite:usage:';
+const IS_PROD = process.env.NODE_ENV === 'production';
 
-// Initialize Redis client
 let redis = null;
 
 function getRedis() {
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     if (!redisUrl) {
+      if (IS_PROD) {
+        console.error('[FATAL] REDIS_URL is required in production for usage tracking.');
+        process.exit(1);
+      }
       return null;
     }
     try {
@@ -20,13 +24,14 @@ function getRedis() {
       redis.on('error', (err) => console.error('[KV-Usage] Redis error:', err.message));
     } catch (e) {
       console.error('[KV-Usage] Redis connection failed:', e.message);
+      if (IS_PROD) process.exit(1);
       return null;
     }
   }
   return redis;
 }
 
-// In-memory fallback
+// In-memory fallback (dev only)
 const fallbackUsage = new Map();
 
 function getTodayKey() {
@@ -62,7 +67,8 @@ export async function getUsage(apiKey) {
       tokens: parseInt(data.tokens, 10) || 0,
     };
   } catch (e) {
-    console.error('[KV-Usage] Failed to get usage:', e);
+    console.error('[KV-Usage] Failed to get usage:', e.message);
+    if (IS_PROD) throw new Error('Usage store unavailable');
     const usage = fallbackUsage.get(apiKey);
     if (!usage || usage.date !== today) {
       return { date: today, count: 0, tokens: 0 };
@@ -106,8 +112,8 @@ export async function incrementUsage(apiKey, tokens = 0) {
       tokens: tokensResult,
     };
   } catch (e) {
-    console.error('[KV-Usage] Failed to increment usage:', e);
-    // Fallback to memory
+    console.error('[KV-Usage] Failed to increment usage:', e.message);
+    if (IS_PROD) throw new Error('Usage store unavailable');
     let usage = fallbackUsage.get(apiKey);
     if (!usage || usage.date !== today) {
       usage = { date: today, count: 0, tokens: 0 };

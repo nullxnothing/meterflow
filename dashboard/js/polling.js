@@ -55,5 +55,23 @@ export function startStatusPolling() {
 
 export function updateSidebarFooter() {
   const el = document.getElementById('sidebarFooterInfo');
-  if (el) el.textContent = `${STATE.tier || '—'} Tier — ${STATE.balance.toLocaleString()} $INF`;
+  if (el) el.textContent = `${STATE.tier || '—'} Tier \u2014 ${STATE.balance.toLocaleString()} $INF`;
+
+  // Update sidebar usage bar
+  const usageEl = document.getElementById('sidebarUsage');
+  if (usageEl) {
+    const pct = STATE.usage.limit > 0 ? Math.min((STATE.usage.today / STATE.usage.limit) * 100, 100) : 0;
+    const barClass = pct > 90 ? 'danger' : pct > 70 ? 'warning' : '';
+    const fill = usageEl.querySelector('.sidebar-usage-fill');
+    const count = usageEl.querySelector('.sidebar-usage-count');
+    if (fill) { fill.style.width = `${pct}%`; fill.className = `sidebar-usage-fill ${barClass}`; }
+    if (count) count.textContent = `${STATE.usage.remaining.toLocaleString()} left`;
+  }
+
+  // Update connection dot
+  const dot = document.getElementById('connectionDot');
+  if (dot) {
+    dot.className = `status-dot ${STATE.apiKeyFull ? 'online' : 'offline'}`;
+    dot.title = STATE.apiKeyFull ? 'Connected' : 'Disconnected';
+  }
 }

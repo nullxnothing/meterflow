@@ -1,6 +1,8 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
 
+const API_TIMEOUT = 30_000;
+
 async function proxyAnthropic(model, messages, maxTokens, temperature) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -14,7 +16,8 @@ async function proxyAnthropic(model, messages, maxTokens, temperature) {
       max_tokens: Math.min(maxTokens, 4096),
       temperature: temperature ?? 0.7,
       messages
-    })
+    }),
+    signal: AbortSignal.timeout(API_TIMEOUT),
   });
 
   if (!response.ok) {
@@ -33,7 +36,7 @@ async function proxyAnthropic(model, messages, maxTokens, temperature) {
   };
 }
 
-async function streamAnthropic(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt) {
+async function streamAnthropic(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt, signal) {
   const MAX_TOOL_LOOPS = 3;
   let loopMessages = [...messages];
 
@@ -55,7 +58,8 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
         'x-api-key': CONFIG.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal,
     });
 
     if (!response.ok) {
@@ -70,6 +74,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
     const contentBlocks = [];
     let currentBlockIndex = -1;
 
+    try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -128,6 +133,9 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
           }
         } catch {}
       }
+    }
+    } finally {
+      reader.releaseLock();
     }
 
     const toolUseBlocks = contentBlocks.filter(b => b?.type === 'tool_use' && isServerTool(b.name));

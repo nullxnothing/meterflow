@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="INFINITE Protocol — token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs funded by pump.fun creator fees.">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:title" content="INFINITE — Own the token. Use the AI.">
+<meta property="og:description" content="Token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs funded by pump.fun creator fees.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="INFINITE — Own the token. Use the AI.">
+<meta name="twitter:description" content="Token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs.">
 <title>INFINITE — Own the token. Use the AI.</title>
 <link rel="icon" type="image/png" href="/site/favicon.png">
+<link rel="apple-touch-icon" href="/site/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
@@ -30,6 +41,7 @@ nav {
   justify-content: space-between;
   align-items: center;
   background: rgba(10, 10, 10, 0.8);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
@@ -86,6 +98,18 @@ nav {
   transform: translateY(-1px);
 }
 
+.nav-cta.ghost {
+  background: transparent !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+.nav-cta.ghost:hover {
+  border-color: var(--accent) !important;
+  background: rgba(200, 255, 0, 0.08) !important;
+  color: var(--accent) !important;
+}
+
 /* Hamburger */
 .hamburger {
   display: none;
@@ -115,6 +139,7 @@ nav {
   top: 65px;
   left: 0; right: 0;
   background: rgba(10, 10, 10, 0.95);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 24px 40px;
@@ -158,6 +183,7 @@ nav {
     linear-gradient(rgba(200, 255, 0, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(200, 255, 0, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 70%);
   mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 70%);
 }
 
@@ -575,7 +601,7 @@ nav {
 .img-preview-box::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   background: linear-gradient(135deg, rgba(200,255,0,0.05), transparent);
 }
 
@@ -1200,11 +1226,15 @@ nav {
 }
 
 .cta-chart {
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
-  padding: 24px;
+  border-radius: 2px;
+  padding: 0;
   text-align: center;
-  margin-top: 32px;
+  margin-top: 48px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(200, 255, 0, 0.06);
 }
 
 .cta-chart .chart-label {
@@ -1213,13 +1243,23 @@ nav {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  padding: 16px 24px 0;
+  margin-bottom: 0;
 }
 
 .cta-chart iframe {
   width: 100%;
-  height: 400px;
+  height: 600px;
   border: none;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .cta-chart iframe { height: 480px; }
+}
+
+@media (max-width: 480px) {
+  .cta-chart iframe { height: 400px; }
 }
 
 /* ═══════════ FOOTER ═══════════ */
@@ -1254,6 +1294,107 @@ footer {
 
 .footer-links a:hover { color: var(--accent); }
 
+/* ═══════════ VISUAL EFFECTS ═══════════ */
+
+#bgCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hero entrance */
+.hero-content > * {
+  opacity: 0;
+  animation: heroEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-content > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-content > *:nth-child(2) { animation-delay: 0.3s; }
+.hero-content > *:nth-child(3) { animation-delay: 0.55s; }
+.hero-content > *:nth-child(4) { animation-delay: 0.75s; }
+
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(30px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.hero-headline .accent {
+  text-shadow: 0 0 60px rgba(200, 255, 0, 0.25), 0 0 120px rgba(200, 255, 0, 0.1);
+}
+
+/* Gradient section dividers */
+.tools-section,
+.compare-section,
+.tiers-section,
+.faq-section,
+.cta-section,
+.funded-section {
+  border-top: none;
+  position: relative;
+}
+
+.tools-section::before,
+.compare-section::before,
+.tiers-section::before,
+.faq-section::before,
+.cta-section::before,
+.funded-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.12) 20%, rgba(200, 255, 0, 0.3) 50%, rgba(200, 255, 0, 0.12) 80%, transparent);
+}
+
+/* Scroll reveal */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mouse-tracking card glow */
+.tool-card { position: relative; }
+
+.tool-card::after,
+.how-step::after,
+.tier-card::after,
+.funded-step::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(200, 255, 0, 0.06),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.tool-card:hover::after,
+.how-step:hover::after,
+.tier-card:hover::after,
+.funded-step:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content > * { animation: none; opacity: 1; }
+  .scroll-reveal { transition: none; opacity: 1; transform: none; }
+  #bgCanvas { display: none; }
+}
+
 /* ═══════════ RESPONSIVE ═══════════ */
 @media (max-width: 768px) {
   nav { padding: 16px 20px; }
@@ -1275,9 +1416,25 @@ footer {
   footer { flex-direction: column; gap: 20px; }
   .img-preview-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+@media (max-width: 480px) {
+  .hero { padding: 100px 16px 40px; }
+  .hero h1 { font-size: 32px; }
+  .hero p { font-size: 14px; }
+  .how-section, .tools-section, .compare-section, .tiers-section, .funded-section, .proof-section, .faq-section, .cta-section {
+    padding: 60px 16px;
+  }
+  .funded-stats { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .proof-stats { flex-direction: column; gap: 20px; }
+  .img-preview-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cta-ca code { font-size: 8px; word-break: break-all; }
+  .tier-card { padding: 24px 20px; }
+  .tool-card { padding: 20px 16px; }
+}
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
 
 <!-- NAV -->
 <nav>
@@ -1289,7 +1446,7 @@ footer {
     <a href="#tiers">Tiers</a>
     <a href="#faq">FAQ</a>
     <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
-    <a class="nav-cta" href="#buy">Buy $INFINITE</a>
+    <a class="nav-cta ghost" href="#buy">Buy $INFINITE</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span>
@@ -1540,7 +1697,7 @@ footer {
 
     <p class="funded-note">
       The treasury wallet is public. Every transaction is verifiable on-chain.<br>
-      <a href="#">View treasury on Solscan</a>
+      <a href="https://solscan.io" target="_blank" rel="noopener" id="treasurySolscan">View treasury on Solscan</a>
     </p>
   </div>
 </section>
@@ -1628,8 +1785,8 @@ footer {
     </div>
 
     <div class="cta-links">
-      <a href="#" class="btn-primary">Buy on PumpSwap</a>
-      <a href="#" class="btn-secondary">DexScreener</a>
+      <a class="btn-primary disabled" id="buyLink" onclick="return false;" title="Available after token launch">Buy on PumpSwap</a>
+      <a class="btn-secondary disabled" id="dexLink" onclick="return false;" title="Available after token launch">DexScreener</a>
     </div>
 
     <div class="cta-chart">
@@ -1643,12 +1800,12 @@ footer {
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-left">&copy; 2025 INFINITE PROTOCOL</div>
+  <div class="footer-left">&copy; 2026 INFINITE PROTOCOL</div>
   <div class="footer-links">
     <a href="https://x.com/infinitexkeys">X / Twitter</a>
     <a href="https://discord.gg/UGPwBKXV">Discord</a>
     <a href="docs.html">Docs</a>
-    <a href="#">DexScreener</a>
+    <a id="footerDex" href="https://dexscreener.com/solana" target="_blank" rel="noopener">DexScreener</a>
   </div>
 </footer>
 
@@ -1666,6 +1823,10 @@ function closeMobile() {
   hamburger.classList.remove('active');
   mobileMenu.classList.remove('open');
 }
+
+// ═══════════ TOKEN CONFIG ═══════════
+// Set this to the token mint address once launched — everything else auto-populates
+const TOKEN_MINT = '';
 
 // ═══════════ LIVE DATA ═══════════
 const PROXY_BASE = '/proxy';
@@ -1788,9 +1949,59 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
+// ═══════════ TOKEN CA ═══════════
+function populateToken() {
+  const mint = TOKEN_MINT || liveStats.tokenMint;
+  if (!mint) return;
+
+  const caEl = document.getElementById('caAddress');
+  const buyLink = document.getElementById('buyLink');
+  const dexLink = document.getElementById('dexLink');
+  const footerDex = document.getElementById('footerDex');
+  const treasuryLink = document.getElementById('treasurySolscan');
+  const chartBox = document.querySelector('.cta-chart');
+
+  if (caEl) caEl.textContent = mint;
+
+  if (buyLink) {
+    buyLink.href = `https://pump.fun/coin/${mint}`;
+    buyLink.target = '_blank';
+    buyLink.rel = 'noopener';
+    buyLink.classList.remove('disabled');
+    buyLink.removeAttribute('onclick');
+    buyLink.removeAttribute('title');
+  }
+
+  if (dexLink) {
+    dexLink.href = `https://dexscreener.com/solana/${mint}`;
+    dexLink.target = '_blank';
+    dexLink.rel = 'noopener';
+    dexLink.classList.remove('disabled');
+    dexLink.removeAttribute('onclick');
+    dexLink.removeAttribute('title');
+  }
+
+  if (footerDex) {
+    footerDex.href = `https://dexscreener.com/solana/${mint}`;
+  }
+
+  if (chartBox) {
+    chartBox.innerHTML = `
+      <div class="chart-label">Live Chart \u2014 <a href="https://dexscreener.com/solana/${mint}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Open Full Chart &rarr;</a></div>
+      <iframe src="https://dexscreener.com/solana/${mint}?embed=1&theme=dark&trades=0&info=0" loading="lazy" allowfullscreen></iframe>
+    `;
+  }
+
+  // Enable all tier buy buttons
+  document.querySelectorAll('.tier-btn').forEach(btn => {
+    btn.onclick = () => window.open(`https://pump.fun/coin/${mint}`, '_blank');
+  });
+}
+
 // ═══════════ INIT ═══════════
 fetchLiveData().then(() => {
   buildTicker();
+  populateToken();
   const fundedSection = document.querySelector('.funded-section');
   if (fundedSection) statsObserver.observe(fundedSection);
 });
@@ -1801,6 +2012,94 @@ window.addEventListener('scroll', () => {
   const glow = document.querySelector('.hero-glow');
   if (glow) glow.style.transform = `translate(0, ${scroll * 0.3}px)`;
 });
+
+// ═══════════ SCROLL REVEAL ═══════════
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.how-section, .tools-section, .compare-section, .tiers-section, .funded-section, .faq-section, .cta-section').forEach(el => {
+  el.classList.add('scroll-reveal');
+  revealObserver.observe(el);
+});
+
+// ═══════════ CARD MOUSE GLOW ═══════════
+document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  });
+});
+
+// ═══════════ BACKGROUND PARTICLES ═══════════
+const bgCanvas = document.getElementById('bgCanvas');
+if (bgCanvas && window.innerWidth > 768) {
+  const ctx = bgCanvas.getContext('2d');
+  const particles = [];
+  const PARTICLE_COUNT = 50;
+
+  function resizeBg() {
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles.length = 0;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        r: Math.random() * 1.5 + 0.5,
+        a: Math.random() * 0.15 + 0.03,
+      });
+    }
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x += bgCanvas.width;
+      if (p.x > bgCanvas.width) p.x -= bgCanvas.width;
+      if (p.y < 0) p.y += bgCanvas.height;
+      if (p.y > bgCanvas.height) p.y -= bgCanvas.height;
+      ctx.fillStyle = `rgba(200, 255, 0, ${p.a})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = dx * dx + dy * dy;
+        if (dist < 22500) {
+          ctx.strokeStyle = `rgba(200, 255, 0, ${0.02 * (1 - dist / 22500)})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+
+  resizeBg();
+  initParticles();
+  drawParticles();
+  window.addEventListener('resize', () => { resizeBg(); initParticles(); });
+}
 </script>
 
 </body>

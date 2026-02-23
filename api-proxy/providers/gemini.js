@@ -1,6 +1,8 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
 
+const API_TIMEOUT = 30_000;
+
 async function proxyGemini(model, messages, maxTokens, temperature) {
   const geminiContents = messages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
@@ -18,7 +20,8 @@ async function proxyGemini(model, messages, maxTokens, temperature) {
           maxOutputTokens: Math.min(maxTokens, 4096),
           temperature: temperature ?? 0.7
         }
-      })
+      }),
+      signal: AbortSignal.timeout(API_TIMEOUT),
     }
   );
 
@@ -40,7 +43,7 @@ async function proxyGemini(model, messages, maxTokens, temperature) {
   };
 }
 
-async function streamGemini(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt) {
+async function streamGemini(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt, signal) {
   const MAX_TOOL_LOOPS = 3;
 
   function buildGeminiContents(msgs) {
@@ -90,6 +93,7 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal,
       }
     );
 
@@ -104,6 +108,7 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
     let emittedGroundingStart = false;
     const functionCalls = [];
 
+    try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -150,6 +155,9 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
           }
         } catch {}
       }
+    }
+    } finally {
+      reader.releaseLock();
     }
 
     if (functionCalls.length === 0 || loop === MAX_TOOL_LOOPS) break;

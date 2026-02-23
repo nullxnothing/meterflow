@@ -4,6 +4,8 @@ import { balanceCache, treasuryBalanceCache, TREASURY_CACHE_TTL } from '../state
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 300;
 
+const FETCH_TIMEOUT = 10_000;
+
 async function fetchBalanceFromRPC(walletAddress) {
   const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
     method: 'POST',
@@ -17,7 +19,8 @@ async function fetchBalanceFromRPC(walletAddress) {
         { mint: CONFIG.TOKEN_MINT },
         { encoding: 'jsonParsed' }
       ]
-    })
+    }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT),
   });
 
   const data = await response.json();
@@ -82,10 +85,12 @@ async function getTreasuryBalance() {
           jsonrpc: '2.0', id: 'treasury-balance',
           method: 'getBalance',
           params: [CONFIG.TREASURY_WALLET]
-        })
+        }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
       }).then(r => r.json()),
-      fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112')
-        .then(r => r.json()),
+      fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112', {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      }).then(r => r.json()),
     ]);
 
     if (balanceRes.status === 'fulfilled' && balanceRes.value.result?.value !== undefined) {

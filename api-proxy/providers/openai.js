@@ -1,6 +1,8 @@
 import { CONFIG } from '../config.js';
 import { isServerTool, executeTool } from '../tools/index.js';
 
+const API_TIMEOUT = 30_000;
+
 async function proxyOpenAI(model, messages, maxTokens, temperature) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -13,7 +15,8 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
       max_tokens: Math.min(maxTokens, 4096),
       temperature: temperature ?? 0.7,
       messages,
-    })
+    }),
+    signal: AbortSignal.timeout(API_TIMEOUT),
   });
 
   if (!response.ok) {
@@ -34,25 +37,24 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
   };
 }
 
-async function streamOpenAI(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt) {
+async function streamOpenAI(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, systemPrompt, signal) {
   const hasServerTools = serverTools && serverTools.length > 0;
   const hasNativeToolsOnly = tools && tools.length > 0 && !hasServerTools;
 
-  // Inject system prompt as first message for OpenAI
   const messagesWithSystem = systemPrompt
     ? [{ role: 'system', content: systemPrompt }, ...messages]
     : messages;
 
   if (hasServerTools) {
-    await streamOpenAIChatWithTools(model, messagesWithSystem, maxTokens, temperature, res, tools, serverTools, apiKey);
+    await streamOpenAIChatWithTools(model, messagesWithSystem, maxTokens, temperature, res, tools, serverTools, apiKey, signal);
   } else if (hasNativeToolsOnly) {
-    await streamOpenAIResponses(model, messagesWithSystem, maxTokens, temperature, res, tools);
+    await streamOpenAIResponses(model, messagesWithSystem, maxTokens, temperature, res, tools, signal);
   } else {
-    await streamOpenAIChatCompletions(model, messagesWithSystem, maxTokens, temperature, res);
+    await streamOpenAIChatCompletions(model, messagesWithSystem, maxTokens, temperature, res, signal);
   }
 }
 
-async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey) {
+async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature, res, tools, serverTools, apiKey, signal) {
   const MAX_TOOL_LOOPS = 3;
   const functionTools = tools.filter(t => t.type === 'function');
 
@@ -75,6 +77,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
         'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`,
       },
       body: JSON.stringify(body),
+      signal,
     });
 
     if (!response.ok) {
@@ -89,6 +92,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
     const toolCallAccumulator = {};
     let collectedText = '';
 
+    try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -131,6 +135,9 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
         } catch {}
       }
     }
+    } finally {
+      reader.releaseLock();
+    }
 
     const toolCalls = Object.values(toolCallAccumulator).filter(tc => isServerTool(tc.name));
 
@@ -153,7 +160,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
   }
 }
 
-async function streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res) {
+async function streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res, signal) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -166,7 +173,8 @@ async function streamOpenAIChatCompletions(model, messages, maxTokens, temperatu
       temperature: temperature ?? 0.7,
       messages,
       stream: true,
-    })
+    }),
+    signal,
   });
 
   if (!response.ok) {
@@ -202,7 +210,7 @@ async function streamOpenAIChatCompletions(model, messages, maxTokens, temperatu
   }
 }
 
-async function streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools) {
+async function streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools, signal) {
   const input = messages.map(m => ({ role: m.role, content: m.content }));
 
   const response = await fetch('https://api.openai.com/v1/responses', {
@@ -218,7 +226,8 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
       input,
       tools,
       stream: true,
-    })
+    }),
+    signal,
   });
 
   if (!response.ok) {
@@ -230,6 +239,7 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
   const decoder = new TextDecoder();
   let buffer = '';
 
+  try {
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -268,6 +278,9 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
         }
       } catch {}
     }
+  }
+  } finally {
+    reader.releaseLock();
   }
 }
 

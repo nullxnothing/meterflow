@@ -1,7 +1,9 @@
+import { timingSafeEqual } from 'crypto';
 import { CONFIG, TRADING_TIERS } from './config.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
+import { getTreasuryState } from './state.js';
 
 async function authenticateApiKey(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -40,13 +42,15 @@ async function authenticateApiKey(req, res, next) {
 
   const usage = await getUsage(apiKey);
   const tierConfig = CONFIG.TIERS[tier];
+  const treasuryMultiplier = getTreasuryState().multiplier || 1.0;
+  const effectiveLimit = Math.floor(tierConfig.dailyLimit * treasuryMultiplier);
 
-  if (usage.count >= tierConfig.dailyLimit) {
+  if (usage.count >= effectiveLimit) {
     return res.status(429).json({
       error: 'rate_limit_exceeded',
-      message: `Daily limit of ${tierConfig.dailyLimit.toLocaleString()} calls reached for ${tierConfig.label} tier.`,
+      message: `Daily limit of ${effectiveLimit.toLocaleString()} calls reached for ${tierConfig.label} tier.`,
       tier: tierConfig.label,
-      limit: tierConfig.dailyLimit,
+      limit: effectiveLimit,
       used: usage.count,
       resetsAt: getTodayKey() + 'T00:00:00Z'
     });
@@ -62,7 +66,8 @@ function authenticateAdmin(req, res, next) {
     return res.status(503).json({ error: 'admin_not_configured', message: 'ADMIN_KEY env var not set.' });
   }
   const key = req.headers.authorization?.split(' ')[1];
-  if (key !== adminKey) {
+  if (!key || key.length !== adminKey.length ||
+      !timingSafeEqual(Buffer.from(key), Buffer.from(adminKey))) {
     return res.status(401).json({ error: 'unauthorized' });
   }
   next();
