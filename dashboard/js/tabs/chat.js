@@ -6,7 +6,7 @@ import { STATE, CHAT } from '../state.js';
 import { escapeHtml } from '../api.js';
 import { getActiveConversation, newConversation } from '../session.js';
 import { renderMarkdown } from '../markdown.js';
-import { renderToolResultCardHtml, bindCodeCopyButtons } from '../tools.js';
+import { renderToolResultCardHtml, bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
 import { scrollChat } from '../chat.js';
 
 export function renderChat() {
@@ -19,6 +19,7 @@ export function renderChat() {
   setTimeout(() => {
     scrollChat();
     bindCodeCopyButtons();
+    bindCodeToggleButtons();
     document.getElementById('chatInput')?.focus();
   }, 50);
 

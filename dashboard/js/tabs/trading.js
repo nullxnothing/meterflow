@@ -5,7 +5,7 @@
 import { STATE, TRADING } from '../state.js';
 import { api, API_BASE, escapeHtml } from '../api.js';
 import { renderMarkdown } from '../markdown.js';
-import { bindCodeCopyButtons } from '../tools.js';
+import { bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
 import { showToast, setTab, copyText, stopBotPolling } from '../actions.js';
 import { render } from '../render.js';
 import {
@@ -315,6 +315,7 @@ export async function sendTradingMessage(tokenAddress) {
     conv.messages.push({ role: 'assistant', content: fullText });
     saveTradingHistory();
     bindCodeCopyButtons();
+    bindCodeToggleButtons();
 
   } catch (err) {
     removeTradingTypingIndicator();

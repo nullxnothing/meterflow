@@ -175,9 +175,27 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.chat-msg-content .code-block-header .code-copy {
+.chat-msg-content .code-block-header .code-lines {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  text-transform: lowercase;
+}
+
+.chat-msg-content .code-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-msg-content .code-block-header .code-copy,
+.chat-msg-content .code-block-header .code-toggle {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.5px;
@@ -190,7 +208,8 @@
   transition: all 0.2s;
 }
 
-.chat-msg-content .code-block-header .code-copy:hover {
+.chat-msg-content .code-block-header .code-copy:hover,
+.chat-msg-content .code-block-header .code-toggle:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -200,6 +219,7 @@
   border-color: #4ade80;
 }
 
+/* Collapsible code block */
 .chat-msg-content .code-block pre {
   background: var(--surface);
   padding: 14px 16px;
@@ -210,6 +230,14 @@
   line-height: 1.6;
   color: var(--text-dim);
   border: none;
+  max-height: 2000px;
+  transition: max-height 0.35s ease;
+}
+
+.chat-msg-content .code-block.collapsed pre {
+  max-height: 0;
+  padding: 0 16px;
+  overflow: hidden;
 }
 
 .chat-msg-content .code-block pre code {
@@ -235,27 +263,6 @@
 
 .chat-msg-content .code-block pre code.has-line-numbers {
   padding-left: 0;
-}
-
-.code-overflow-fade {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 24px;
-  background: linear-gradient(to right, transparent, var(--surface));
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.chat-msg-content .code-block pre:hover ~ .code-overflow-fade {
-  opacity: 0;
-}
-
-/* Show fade only when content overflows */
-.chat-msg-content .code-block:has(pre::-webkit-scrollbar) .code-overflow-fade {
-  opacity: 1;
 }
 
 /* Legacy pre blocks (fallback) */
@@ -815,6 +822,8 @@
 
 @media (max-width: 480px) {
   .chat-msg-content .code-block pre { font-size: 11px; padding: 10px 12px; }
+  .chat-msg-content .code-block.collapsed pre { padding: 0 12px; }
   .chat-msg-content .code-block-header { padding: 4px 10px; }
-  .chat-msg-content .code-block-header .code-copy { padding: 3px 8px; font-size: 9px; }
+  .chat-msg-content .code-block-header .code-copy,
+  .chat-msg-content .code-block-header .code-toggle { padding: 3px 8px; font-size: 9px; }
 }

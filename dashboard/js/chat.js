@@ -8,7 +8,7 @@ import { showToast } from './actions.js';
 import { getActiveConversation, saveChatHistory } from './session.js';
 import { renderMarkdown } from './markdown.js';
 import { renderImagePreview } from './images.js';
-import { showToolIndicator, removeToolIndicator, showSearchSources, showToolResultCard, bindCodeCopyButtons } from './tools.js';
+import { showToolIndicator, removeToolIndicator, showSearchSources, showToolResultCard, bindCodeCopyButtons, bindCodeToggleButtons } from './tools.js';
 
 // ─── Main Chat Function ───
 
@@ -126,6 +126,7 @@ export async function sendChatMessage() {
     });
     saveChatHistory();
     bindCodeCopyButtons();
+    bindCodeToggleButtons();
 
   } catch (err) {
     removeTypingIndicator();

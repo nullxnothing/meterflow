@@ -7,7 +7,7 @@ import { getWalletProviders, connectWallet } from './wallet.js';
 import { setTab } from './actions.js';
 import { sendChatMessage } from './chat.js';
 import { handleImageUpload } from './images.js';
-import { bindCodeCopyButtons } from './tools.js';
+import { bindCodeCopyButtons, bindCodeToggleButtons } from './tools.js';
 import { render } from './render.js';
 
 export function bindEvents(scope = document) {
@@ -124,6 +124,7 @@ export function bindEvents(scope = document) {
   }
 
   bindCodeCopyButtons();
+  bindCodeToggleButtons();
 
   // Mouse-tracking glow on cards
   scope.querySelectorAll('.stat-card, .tool-card, .connection-card, .recipe-card, .agent-card, .api-card').forEach(card => {

@@ -128,16 +128,35 @@ export function showToolResultCard(bodyEl, tool, data) {
 
 export function bindCodeCopyButtons() {
   document.querySelectorAll('.code-copy[data-copy-id]').forEach(btn => {
+    if (btn._bound) return;
+    btn._bound = true;
     btn.onclick = () => {
       const code = document.getElementById(btn.dataset.copyId);
       if (!code) return;
-      copyText(code.textContent);
+      const lines = code.querySelectorAll('.line-number');
+      lines.forEach(ln => ln.style.display = 'none');
+      const raw = code.textContent;
+      lines.forEach(ln => ln.style.display = '');
+      copyText(raw);
       btn.textContent = 'copied!';
       btn.classList.add('copied');
       setTimeout(() => {
         btn.textContent = 'copy';
         btn.classList.remove('copied');
       }, 2000);
+    };
+  });
+}
+
+export function bindCodeToggleButtons() {
+  document.querySelectorAll('.code-toggle[data-toggle-target]').forEach(btn => {
+    if (btn._bound) return;
+    btn._bound = true;
+    btn.onclick = () => {
+      const block = btn.closest('.code-block');
+      if (!block) return;
+      const isCollapsed = block.classList.toggle('collapsed');
+      btn.textContent = isCollapsed ? 'expand' : 'collapse';
     };
   });
 }

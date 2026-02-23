@@ -27,7 +27,10 @@ export function renderMarkdown(text) {
       codeBody = `<code id="${id}">${trimmed}</code>`;
     }
 
-    return `<div class="code-block"><div class="code-block-header"><span class="code-lang">${langLabel}</span><button class="code-copy" data-copy-id="${id}">copy</button></div><pre>${codeBody}</pre><div class="code-overflow-fade"></div></div>`;
+    const lineCount = lines.length;
+    const isLong = lineCount > 10;
+    const collapsedClass = isLong ? ' collapsed' : '';
+    return `<div class="code-block${collapsedClass}" data-lines="${lineCount}"><div class="code-block-header"><span class="code-lang">${langLabel} <span class="code-lines">${lineCount} lines</span></span><div class="code-header-actions">${isLong ? `<button class="code-toggle" data-toggle-target="${id}">expand</button>` : ''}<button class="code-copy" data-copy-id="${id}">copy</button></div></div><pre>${codeBody}</pre></div>`;
   });
 
   // Inline code
