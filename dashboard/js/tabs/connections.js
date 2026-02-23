@@ -19,10 +19,8 @@ export function renderConnections() {
     `;
   }
 
-  const isArchitect = STATE.tier === 'Architect';
   const providers = [
     { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH', ready: true },
-    { id: 'twitter', name: 'X / Twitter', desc: 'Search tweets, read timelines, post tweets', icon: '𝕏', ready: true, tierGated: true },
     { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', icon: 'G', ready: false },
     { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', icon: 'N', ready: false },
   ];
@@ -35,37 +33,23 @@ export function renderConnections() {
     <div class="connections-grid">
       ${providers.map(p => {
         const isConnected = STATE.connections[p.id];
-        const isLocked = p.tierGated && !isArchitect;
         return `
-          <div class="card connection-card${!p.ready || isLocked ? ' coming-soon' : ''}">
+          <div class="card connection-card${!p.ready ? ' coming-soon' : ''}">
             <div class="connection-icon">${p.icon}</div>
             <div class="connection-info">
               <div class="connection-name">${p.name}</div>
               <div class="connection-desc dim">${p.desc}</div>
             </div>
             <div class="connection-action">
-              ${isLocked
-                ? '<span class="connection-status coming-soon-label">Architect Only</span>'
-                : !p.ready
-                  ? '<span class="connection-status coming-soon-label">Coming Soon</span>'
-                  : isConnected
-                    ? `<span class="connection-status connected">Connected</span>
-                       <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
-                    : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
+              ${!p.ready
+                ? '<span class="connection-status coming-soon-label">Coming Soon</span>'
+                : isConnected
+                  ? `<span class="connection-status connected">Connected</span>
+                     <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
+                  : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
               }
             </div>
           </div>
-          ${p.id === 'twitter' && !isConnected && !isLocked ? `
-            <div class="card connection-card" style="margin-top:-8px;padding:16px 24px;border-top:none;border-top-left-radius:0;border-top-right-radius:0;">
-              <div class="connection-info" style="width:100%;">
-                <div class="connection-desc dim" style="margin-bottom:8px;">Or paste your own X API Bearer Token:</div>
-                <div style="display:flex;gap:8px;">
-                  <input type="password" id="twitterByokInput" placeholder="Bearer Token" style="flex:1;padding:8px 12px;font-size:13px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);">
-                  <button class="btn-sm primary" onclick="submitTwitterByok()">Save</button>
-                </div>
-              </div>
-            </div>
-          ` : ''}
         `;
       }).join('')}
     </div>
@@ -100,27 +84,6 @@ export async function disconnectOAuth(provider) {
   }
 }
 
-export async function submitTwitterByok() {
-  const input = document.getElementById('twitterByokInput');
-  if (!input || !input.value.trim()) {
-    showToast('Enter a Bearer Token', true);
-    return;
-  }
-
-  try {
-    await api('/oauth/twitter/byok', {
-      method: 'POST',
-      body: JSON.stringify({ token: input.value.trim() }),
-    });
-    STATE.connections.twitter = true;
-    render();
-    showToast('X Bearer Token saved');
-  } catch (err) {
-    showToast(err.message || 'Failed to save token', true);
-  }
-}
-
 // Attach to window for onclick handlers
 window.connectOAuth = connectOAuth;
 window.disconnectOAuth = disconnectOAuth;
-window.submitTwitterByok = submitTwitterByok;
