@@ -1,5 +1,6 @@
-// Persistent vote storage using Redis (Railway or Upstash)
+// Persistent vote storage using Redis
 import Redis from 'ioredis';
+import { logger } from './logger.js';
 
 // Keys
 const VOTE_COUNTS_KEY = 'infinite:vote_counts';
@@ -12,7 +13,7 @@ function getRedis() {
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     if (!redisUrl) {
-      console.warn('[KV] Redis not configured — votes will use in-memory fallback');
+      logger.warn('Redis not configured — votes will use in-memory fallback');
       return null;
     }
     try {
@@ -20,9 +21,9 @@ function getRedis() {
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
-      redis.on('error', (err) => console.error('[KV] Redis error:', err.message));
+      redis.on('error', (err) => logger.error('KV-Votes Redis error', { err: err.message }));
     } catch (e) {
-      console.error('[KV] Redis connection failed:', e.message);
+      logger.error('KV-Votes Redis connection failed', { err: e.message });
       return null;
     }
   }
@@ -50,7 +51,7 @@ export async function getVoteCounts() {
     }
     return result;
   } catch (e) {
-    console.error('[KV] Failed to get vote counts:', e);
+    logger.error('KV-Votes failed to get vote counts', { err: e.message });
     return { ...fallbackVoteCounts };
   }
 }
@@ -71,7 +72,7 @@ export async function getWalletVotes(wallet) {
     const votes = await r.smembers(`${WALLET_VOTES_PREFIX}${wallet}`);
     return votes || [];
   } catch (e) {
-    console.error('[KV] Failed to get wallet votes:', e);
+    logger.error('KV-Votes failed to get wallet votes', { err: e.message });
     return [];
   }
 }
@@ -135,7 +136,7 @@ export async function toggleVote(wallet, apiId) {
     
     return { voted, counts, userVotes };
   } catch (e) {
-    console.error('[KV] Failed to toggle vote:', e);
+    logger.error('KV-Votes failed to toggle vote', { err: e.message });
     throw new Error('Failed to save vote');
   }
 }

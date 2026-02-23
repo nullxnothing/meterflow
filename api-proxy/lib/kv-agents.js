@@ -1,5 +1,6 @@
 // Persistent agent storage using Redis
 import Redis from 'ioredis';
+import { logger } from './logger.js';
 
 const AGENT_PREFIX = 'infinite:agent:';
 const AGENT_LIST_PREFIX = 'infinite:agents:';
@@ -13,9 +14,9 @@ function getRedis() {
     if (!redisUrl) return null;
     try {
       redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => console.error('[KV-Agents] Redis error:', err.message));
+      redis.on('error', (err) => logger.error('KV-Agents Redis error', { err: err.message }));
     } catch (e) {
-      console.error('[KV-Agents] Redis connection failed:', e.message);
+      logger.error('KV-Agents Redis connection failed', { err: e.message });
       return null;
     }
   }
@@ -45,7 +46,7 @@ export async function saveAgent(agentId, config) {
     await r.set(`${AGENT_PREFIX}${agentId}`, json);
     await r.sadd(`${AGENT_LIST_PREFIX}${config.apiKey}`, agentId);
   } catch (e) {
-    console.error('[KV-Agents] Failed to save:', e.message);
+    logger.error('KV-Agents failed to save', { err: e.message });
     fallbackAgents.set(agentId, config);
     if (!fallbackLists.has(config.apiKey)) fallbackLists.set(config.apiKey, new Set());
     fallbackLists.get(config.apiKey).add(agentId);
@@ -64,7 +65,7 @@ export async function getAgent(agentId) {
     const data = await r.get(`${AGENT_PREFIX}${agentId}`);
     return data ? JSON.parse(data) : null;
   } catch (e) {
-    console.error('[KV-Agents] Failed to get:', e.message);
+    logger.error('KV-Agents failed to get', { err: e.message });
     return fallbackAgents.get(agentId) || null;
   }
 }
@@ -87,7 +88,7 @@ export async function listAgents(apiKey) {
     const agents = await Promise.all(ids.map(id => getAgent(id)));
     return agents.filter(Boolean);
   } catch (e) {
-    console.error('[KV-Agents] Failed to list:', e.message);
+    logger.error('KV-Agents failed to list', { err: e.message });
     const ids = fallbackLists.get(apiKey);
     if (!ids) return [];
     return Promise.all([...ids].map(id => getAgent(id))).then(arr => arr.filter(Boolean));
@@ -112,7 +113,7 @@ export async function deleteAgent(agentId, apiKey) {
     await r.srem(`${AGENT_LIST_PREFIX}${apiKey}`, agentId);
     await r.del(`${AGENT_LOG_PREFIX}${agentId}`);
   } catch (e) {
-    console.error('[KV-Agents] Failed to delete:', e.message);
+    logger.error('KV-Agents failed to delete', { err: e.message });
     fallbackAgents.delete(agentId);
     fallbackLists.get(apiKey)?.delete(agentId);
   }
@@ -138,7 +139,7 @@ export async function appendAgentLog(agentId, entry) {
     await r.ltrim(`${AGENT_LOG_PREFIX}${agentId}`, 0, 99); // keep last 100
     await r.expire(`${AGENT_LOG_PREFIX}${agentId}`, 7 * 24 * 3600); // 7 day TTL
   } catch (e) {
-    console.error('[KV-Agents] Failed to append log:', e.message);
+    logger.error('KV-Agents failed to append log', { err: e.message });
   }
 }
 
@@ -157,7 +158,7 @@ export async function getAgentLogs(agentId, limit = 50) {
     const raw = await r.lrange(`${AGENT_LOG_PREFIX}${agentId}`, 0, limit - 1);
     return raw.map(s => JSON.parse(s));
   } catch (e) {
-    console.error('[KV-Agents] Failed to get logs:', e.message);
+    logger.error('KV-Agents failed to get logs', { err: e.message });
     return [];
   }
 }
@@ -191,7 +192,7 @@ export async function getAllActiveAgents() {
     } while (cursor !== '0');
     return agents;
   } catch (e) {
-    console.error('[KV-Agents] Failed to get all active:', e.message);
+    logger.error('KV-Agents failed to get all active', { err: e.message });
     return [...fallbackAgents.values()].filter(a => a.status === 'active');
   }
 }

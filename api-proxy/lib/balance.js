@@ -1,5 +1,6 @@
 import { CONFIG, TOKEN_GATING_ENABLED } from '../config.js';
 import { balanceCache, treasuryBalanceCache, TREASURY_CACHE_TTL } from '../state.js';
+import { logger } from './logger.js';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 300;
@@ -50,7 +51,7 @@ async function getTokenBalance(walletAddress) {
       balanceCache.set(walletAddress, { balance, checkedAt: Date.now() });
       return balance;
     } catch (err) {
-      console.error(`[Balance] Attempt ${attempt + 1}/${MAX_RETRIES} failed for ${walletAddress.slice(0, 8)}...: ${err.message}`);
+      logger.error(`Balance check attempt ${attempt + 1}/${MAX_RETRIES} failed`, { wallet: walletAddress.slice(0, 8), err: err.message });
       if (attempt < MAX_RETRIES - 1) {
         await new Promise(r => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt)));
       }
@@ -59,11 +60,11 @@ async function getTokenBalance(walletAddress) {
 
   // All retries exhausted — use stale cache if available
   if (cached) {
-    console.warn(`[Balance] Using stale cache for ${walletAddress.slice(0, 8)}... (age: ${Math.round((Date.now() - cached.checkedAt) / 1000)}s)`);
+    logger.warn('Using stale balance cache', { wallet: walletAddress.slice(0, 8), ageSec: Math.round((Date.now() - cached.checkedAt) / 1000) });
     return cached.balance;
   }
 
-  console.error(`[Balance] No cache available for ${walletAddress.slice(0, 8)}..., returning 0`);
+  logger.error('No balance cache available, returning 0', { wallet: walletAddress.slice(0, 8) });
   return 0;
 }
 
@@ -108,7 +109,7 @@ async function getTreasuryBalance() {
     treasuryBalanceCache.usd = treasuryBalanceCache.sol * treasuryBalanceCache.solPrice;
     treasuryBalanceCache.checkedAt = Date.now();
   } catch (err) {
-    console.error('[Treasury] Balance check failed:', err.message);
+    logger.error('Treasury balance check failed', { err: err.message });
   }
 
   return treasuryBalanceCache;

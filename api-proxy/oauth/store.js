@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import Redis from 'ioredis';
+import { logger } from '../lib/logger.js';
 
 // Redis key prefix for OAuth tokens
 const OAUTH_TOKEN_PREFIX = 'infinite:oauth:';
@@ -11,7 +12,7 @@ function getRedis() {
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     if (!redisUrl) {
-      console.warn('[OAuth] Redis not configured — tokens will use in-memory fallback');
+      logger.warn('OAuth Redis not configured — tokens will use in-memory fallback');
       return null;
     }
     try {
@@ -19,9 +20,9 @@ function getRedis() {
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
-      redis.on('error', (err) => console.error('[OAuth] Redis error:', err.message));
+      redis.on('error', (err) => logger.error('OAuth Redis error', { err: err.message }));
     } catch (e) {
-      console.error('[OAuth] Redis connection failed:', e.message);
+      logger.error('OAuth Redis connection failed', { err: e.message });
       return null;
     }
   }
@@ -52,7 +53,7 @@ export async function setToken(apiKey, provider, tokenData) {
     existing[provider] = tokenData;
     await r.set(key, JSON.stringify(existing));
   } catch (e) {
-    console.error('[OAuth] Failed to save token to Redis:', e);
+    logger.error('OAuth failed to save token', { err: e.message });
     // Fallback to memory
     const existing = oauthTokens.get(apiKey) || {};
     existing[provider] = tokenData;
@@ -73,7 +74,7 @@ export async function getToken(apiKey, provider) {
     const tokens = raw ? JSON.parse(raw) : null;
     return tokens?.[provider] || null;
   } catch (e) {
-    console.error('[OAuth] Failed to get token from Redis:', e);
+    logger.error('OAuth failed to get token', { err: e.message });
     const tokens = oauthTokens.get(apiKey);
     return tokens?.[provider] || null;
   }
@@ -97,7 +98,7 @@ export async function removeToken(apiKey, provider) {
     delete tokens[provider];
     await r.set(key, JSON.stringify(tokens));
   } catch (e) {
-    console.error('[OAuth] Failed to remove token from Redis:', e);
+    logger.error('OAuth failed to remove token', { err: e.message });
   }
 }
 
@@ -113,7 +114,7 @@ export async function getConnectedProviders(apiKey) {
       const raw = await r.get(key);
       tokens = raw ? JSON.parse(raw) : {};
     } catch (e) {
-      console.error('[OAuth] Failed to get providers from Redis:', e);
+      logger.error('OAuth failed to get providers', { err: e.message });
       tokens = oauthTokens.get(apiKey) || {};
     }
   }

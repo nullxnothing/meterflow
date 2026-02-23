@@ -1,5 +1,6 @@
 // Persistent API key storage using Redis
 import Redis from 'ioredis';
+import { logger } from './logger.js';
 
 const KEY_PREFIX = 'infinite:apikey:';
 const WALLET_PREFIX = 'infinite:wallet:';
@@ -13,7 +14,7 @@ function getRedis() {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     if (!redisUrl) {
       if (IS_PROD) {
-        console.error('[FATAL] REDIS_URL is required in production. API keys will not persist without Redis.');
+        logger.error('REDIS_URL is required in production — API keys will not persist without Redis');
         process.exit(1);
       }
       return null;
@@ -22,11 +23,11 @@ function getRedis() {
       redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
       redis.on('error', (err) => {
         redisHealthy = false;
-        console.error('[KV-Keys] Redis error:', err.message);
+        logger.error('KV-Keys Redis error', { err: err.message });
       });
       redis.on('ready', () => { redisHealthy = true; });
     } catch (e) {
-      console.error('[KV-Keys] Redis connection failed:', e.message);
+      logger.error('KV-Keys Redis connection failed', { err: e.message });
       if (IS_PROD) process.exit(1);
       return null;
     }
@@ -48,7 +49,7 @@ export async function getKeyData(apiKey) {
     if (data) return JSON.parse(data);
     return fallbackApiKeys.get(apiKey) || null;
   } catch (e) {
-    console.error('[KV-Keys] Failed to get key:', e.message);
+    logger.error('KV-Keys failed to get key', { err: e.message });
     if (IS_PROD) throw new Error('Key store unavailable');
     return fallbackApiKeys.get(apiKey) || null;
   }
@@ -63,7 +64,7 @@ export async function setKeyData(apiKey, data) {
   try {
     await r.set(`${KEY_PREFIX}${apiKey}`, JSON.stringify(data));
   } catch (e) {
-    console.error('[KV-Keys] Failed to set key:', e.message);
+    logger.error('KV-Keys failed to set key', { err: e.message });
     if (IS_PROD) throw new Error('Key store unavailable');
   }
 }
@@ -78,7 +79,7 @@ export async function getKeyForWallet(wallet) {
     if (apiKey) return apiKey;
     return fallbackWalletKeys.get(wallet) || null;
   } catch (e) {
-    console.error('[KV-Keys] Failed to get wallet key:', e.message);
+    logger.error('KV-Keys failed to get wallet key', { err: e.message });
     if (IS_PROD) throw new Error('Key store unavailable');
     return fallbackWalletKeys.get(wallet) || null;
   }
@@ -93,7 +94,7 @@ export async function setKeyForWallet(wallet, apiKey) {
   try {
     await r.set(`${WALLET_PREFIX}${wallet}`, apiKey);
   } catch (e) {
-    console.error('[KV-Keys] Failed to set wallet key:', e.message);
+    logger.error('KV-Keys failed to set wallet key', { err: e.message });
   }
 }
 
@@ -108,7 +109,7 @@ export async function deleteKey(apiKey, wallet) {
     await r.del(`${KEY_PREFIX}${apiKey}`);
     if (wallet) await r.del(`${WALLET_PREFIX}${wallet}`);
   } catch (e) {
-    console.error('[KV-Keys] Failed to delete key:', e.message);
+    logger.error('KV-Keys failed to delete key', { err: e.message });
   }
 }
 

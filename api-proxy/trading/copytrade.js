@@ -1,5 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import { getQuote, executeSwap, SOL_MINT } from './jupiter.js';
+import { logger } from '../lib/logger.js';
 
 export class CopyTrader {
   constructor(connection, keypair, options = {}) {
@@ -96,7 +97,7 @@ export class CopyTrader {
       }, 'confirmed');
       this.subscriptions.set(target.id, subId);
     } catch (err) {
-      console.error(`[CopyTrade] Failed to subscribe to ${target.address}:`, err.message);
+      logger.error('Failed to subscribe to copy target', { address: target.address, err: err.message });
     }
   }
 
@@ -147,7 +148,7 @@ export class CopyTrader {
     } catch (err) {
       this.stats.failCount++;
       this._recordHistory({ target: target.id, action: 'unknown', mint: null, solAmount: 0, signature: null, success: false, error: err.message });
-      console.error(`[CopyTrade] Failed to copy trade from ${target.address}:`, err.message);
+      logger.error('Failed to copy trade', { address: target.address, err: err.message });
     }
   }
 

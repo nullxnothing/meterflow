@@ -3,6 +3,7 @@ import { CONFIG, PROVIDER_AVAILABLE, VIDEO_ALLOWED_TIERS, VIDEO_CALL_COST } from
 import { videoOperations } from '../state.js';
 import { authenticateApiKey, authenticateAdmin } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -92,7 +93,7 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
       estimatedTime: '1-3 minutes',
     });
   } catch (err) {
-    console.error('Video generation error:', err.message);
+    logger.error('Video generation error', { err: err.message });
     res.status(502).json({
       error: 'upstream_error',
       message: 'Video generation failed. Try a different prompt.',
@@ -117,10 +118,10 @@ router.get('/status/*', authenticateApiKey, async (req, res) => {
       const video = extractVideoFromResponse(data);
 
       const responseKeys = data.response ? Object.keys(data.response) : [];
-      console.log('[Veo] Operation complete. Response keys:', responseKeys);
-      console.log('[Veo] Extracted video:', video ? JSON.stringify(video).slice(0, 300) : 'null');
+      logger.info('Veo operation complete', { responseKeys });
+      logger.debug('Veo extracted video', { video: video ? JSON.stringify(video).slice(0, 300) : null });
       if (!video) {
-        console.error('[Veo] Full response:', JSON.stringify(data.response).slice(0, 1000));
+        logger.error('Veo missing video in response', { response: JSON.stringify(data.response).slice(0, 1000) });
       }
 
       if (!video?.uri) {
@@ -138,7 +139,7 @@ router.get('/status/*', authenticateApiKey, async (req, res) => {
 
     res.json({ status: 'pending', metadata: data.metadata || null });
   } catch (err) {
-    console.error('Video status error:', err.message);
+    logger.error('Video status error', { err: err.message });
     res.status(502).json({ error: 'upstream_error', message: err.message });
   }
 });
@@ -177,7 +178,7 @@ router.get('/download/*', async (req, res) => {
 
     if (!videoRes.ok) {
       const errBody = await videoRes.text().catch(() => '');
-      console.error('Video download upstream error:', videoRes.status, errBody.slice(0, 200));
+      logger.error('Video download upstream error', { status: videoRes.status, body: errBody.slice(0, 200) });
       return res.status(502).json({ error: 'download_failed', message: `Upstream returned ${videoRes.status}` });
     }
 
@@ -188,7 +189,7 @@ router.get('/download/*', async (req, res) => {
     const arrayBuffer = await videoRes.arrayBuffer();
     res.send(Buffer.from(arrayBuffer));
   } catch (err) {
-    console.error('Video download error:', err.message);
+    logger.error('Video download error', { err: err.message });
     res.status(502).json({ error: 'download_failed', message: err.message });
   }
 });

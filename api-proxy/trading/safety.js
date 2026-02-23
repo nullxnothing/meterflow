@@ -1,3 +1,5 @@
+import { logger } from '../lib/logger.js';
+
 const DEFAULT_CONFIG = {
   dailyLossLimitSol: 2.0,
   dailyLossLimitPct: 10,
@@ -118,7 +120,7 @@ export function createSafetyManager(config = {}) {
     state.isCooldown = true;
     state.cooldownUntil = Date.now() + cfg.cooldownMs;
     addAlert(category, reason, 'critical');
-    console.error(`[Safety] Circuit breaker tripped: ${category} — ${reason}`);
+    logger.error('Circuit breaker tripped', { category, reason });
 
     if (cooldownTimer) clearTimeout(cooldownTimer);
     cooldownTimer = setTimeout(() => {
@@ -132,7 +134,7 @@ export function createSafetyManager(config = {}) {
     state.isKilled = true;
     state.killReason = reason;
     addAlert('kill_switch', reason, 'critical');
-    console.error(`[Safety] KILL SWITCH: ${reason}`);
+    logger.error('KILL SWITCH activated', { reason });
   }
 
   function resumeTrading() {

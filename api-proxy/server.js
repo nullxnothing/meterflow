@@ -69,7 +69,7 @@ const server = app.listen(PORT, () => {
   logger.info('Server started', { port: PORT, token: CONFIG.TOKEN_MINT.slice(0, 8) });
 
   bootstrapScheduler().catch(err => {
-    console.error('[Server] Agent scheduler bootstrap failed:', err.message);
+    logger.error('Agent scheduler bootstrap failed', { err: err.message });
   });
 });
 

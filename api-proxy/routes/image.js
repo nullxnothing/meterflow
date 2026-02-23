@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { CONFIG, PROVIDER_AVAILABLE } from '../config.js';
 import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -79,7 +80,7 @@ router.post('/image', authenticateApiKey, async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Image generation error:', err.message);
+    logger.error('Image generation error', { err: err.message });
     res.status(502).json({
       error: 'upstream_error',
       message: 'Image generation failed. Try a different prompt.',

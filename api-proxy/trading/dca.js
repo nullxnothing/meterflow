@@ -1,4 +1,5 @@
 import { getQuote, executeSwap, SOL_MINT } from './jupiter.js';
+import { logger } from '../lib/logger.js';
 
 export function createDCAOrder(connection, keypair, { inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs, slippageBps = 300, maxCycles, maxPrice }) {
   const id = `dca_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -80,7 +81,7 @@ export function createDCAOrder(connection, keypair, { inputMint, outputMint, tot
 
       if (order.consecutiveFailures >= 5) {
         order.status = 'paused';
-        console.error(`[DCA] Order ${order.id} auto-paused after 5 consecutive failures`);
+        logger.error('DCA order auto-paused after 5 consecutive failures', { orderId: order.id });
       }
     }
   }, order.cycleIntervalMs);

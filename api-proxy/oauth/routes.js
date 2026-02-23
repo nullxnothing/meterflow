@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { PROVIDERS, getRedirectUri, getDashboardUrl, isProviderConfigured } from './config.js';
 import { createState, consumeState, setToken, removeToken, getConnectedProviders, getToken } from './store.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -66,7 +67,7 @@ router.get('/:provider/callback', async (req, res) => {
     await setToken(stateData.apiKey, provider, token);
     res.redirect(getDashboardUrl(`connected=${provider}`));
   } catch (err) {
-    console.error(`OAuth ${provider} exchange failed:`, err.message);
+    logger.error(`OAuth ${provider} exchange failed`, { err: err.message });
     res.redirect(getDashboardUrl(`oauth_error=${encodeURIComponent(err.message)}`));
   }
 });

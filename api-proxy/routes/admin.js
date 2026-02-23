@@ -7,6 +7,7 @@ import { getTreasuryBalance } from '../lib/balance.js';
 import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
 import { getKeyData, countKeys } from '../lib/kv-keys.js';
 import { getGlobalStats } from '../lib/kv-usage.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -60,7 +61,7 @@ router.get('/votes', async (req, res) => {
     const counts = await getVoteCounts();
     res.json({ counts, userVotes });
   } catch (e) {
-    console.error('[Votes] Failed to get votes:', e);
+    logger.error('Failed to get votes', { err: e.message });
     res.status(500).json({ error: 'internal_error', message: 'Failed to load votes' });
   }
 });
@@ -77,7 +78,7 @@ router.post('/votes', authenticateApiKey, async (req, res) => {
     const result = await toggleVote(wallet, apiId);
     res.json(result);
   } catch (e) {
-    console.error('[Votes] Failed to toggle vote:', e);
+    logger.error('Failed to toggle vote', { err: e.message });
     res.status(500).json({ error: 'internal_error', message: 'Failed to save vote' });
   }
 });
@@ -95,7 +96,7 @@ router.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
     updatedAt: Date.now(),
   });
 
-  console.log(`[Admin] Rate limits updated: ${multiplier}x (${healthStatus}), runway: ${runwayDays} days`);
+  logger.info('Rate limits updated', { multiplier, healthStatus, runwayDays });
   res.json({ ok: true, applied: getTreasuryState() });
 });
 

@@ -5,6 +5,7 @@ import { fetchTokenInfo, incrementUsage } from '../lib/helpers.js';
 import { streamAnthropicWithSystem } from '../providers/anthropic.js';
 import { streamGeminiWithSystem } from '../providers/gemini.js';
 import { streamOpenAIWithSystem } from '../providers/openai.js';
+import { logger } from '../lib/logger.js';
 
 const router = Router();
 
@@ -60,7 +61,7 @@ router.post('/analyze', authenticateApiKey, async (req, res) => {
     res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
     res.end();
   } catch (err) {
-    console.error('Trading analysis error:', err.message);
+    logger.error('Trading analysis error', { err: err.message });
     res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
     res.end();
   }
@@ -72,7 +73,7 @@ router.get('/token/:address', authenticateApiKey, async (req, res) => {
     const info = await fetchTokenInfo(req.params.address);
     res.json(info);
   } catch (err) {
-    console.error('Token lookup error:', err.message);
+    logger.error('Token lookup error', { err: err.message });
     res.status(502).json({ error: 'lookup_failed', message: err.message });
   }
 });

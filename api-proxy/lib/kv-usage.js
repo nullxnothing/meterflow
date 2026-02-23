@@ -1,5 +1,6 @@
-// Persistent usage tracking using Redis (Railway or Upstash)
+// Persistent usage tracking using Redis
 import Redis from 'ioredis';
+import { logger } from './logger.js';
 
 const USAGE_PREFIX = 'infinite:usage:';
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -11,7 +12,7 @@ function getRedis() {
     const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
     if (!redisUrl) {
       if (IS_PROD) {
-        console.error('[FATAL] REDIS_URL is required in production for usage tracking.');
+        logger.error('REDIS_URL is required in production for usage tracking');
         process.exit(1);
       }
       return null;
@@ -21,9 +22,9 @@ function getRedis() {
         maxRetriesPerRequest: 3,
         lazyConnect: true,
       });
-      redis.on('error', (err) => console.error('[KV-Usage] Redis error:', err.message));
+      redis.on('error', (err) => logger.error('KV-Usage Redis error', { err: err.message }));
     } catch (e) {
-      console.error('[KV-Usage] Redis connection failed:', e.message);
+      logger.error('KV-Usage Redis connection failed', { err: e.message });
       if (IS_PROD) process.exit(1);
       return null;
     }
@@ -67,7 +68,7 @@ export async function getUsage(apiKey) {
       tokens: parseInt(data.tokens, 10) || 0,
     };
   } catch (e) {
-    console.error('[KV-Usage] Failed to get usage:', e.message);
+    logger.error('KV-Usage failed to get usage', { err: e.message });
     if (IS_PROD) throw new Error('Usage store unavailable');
     const usage = fallbackUsage.get(apiKey);
     if (!usage || usage.date !== today) {
@@ -112,7 +113,7 @@ export async function incrementUsage(apiKey, tokens = 0) {
       tokens: tokensResult,
     };
   } catch (e) {
-    console.error('[KV-Usage] Failed to increment usage:', e.message);
+    logger.error('KV-Usage failed to increment usage', { err: e.message });
     if (IS_PROD) throw new Error('Usage store unavailable');
     let usage = fallbackUsage.get(apiKey);
     if (!usage || usage.date !== today) {
@@ -158,7 +159,7 @@ export async function incrementGlobalStats(tokens = 0) {
     pipeline.hincrby(GLOBAL_ALLTIME_KEY, 'tokens', tokens);
     await pipeline.exec();
   } catch (e) {
-    console.error('[KV-Usage] Failed to increment global stats:', e.message);
+    logger.error('KV-Usage failed to increment global stats', { err: e.message });
     fallbackGlobal.calls += 1;
     fallbackGlobal.tokens += tokens;
     fallbackGlobal.allTimeCalls += 1;
@@ -196,7 +197,7 @@ export async function getGlobalStats() {
       allTimeTokens: parseInt(allTime?.tokens, 10) || 0,
     };
   } catch (e) {
-    console.error('[KV-Usage] Failed to get global stats:', e.message);
+    logger.error('KV-Usage failed to get global stats', { err: e.message });
     return {
       todayCalls: fallbackGlobal.calls,
       todayTokens: fallbackGlobal.tokens,
@@ -218,7 +219,7 @@ export async function resetUsage(apiKey) {
       const today = getTodayKey();
       await r.del(`${USAGE_PREFIX}${apiKey}:${today}`);
     } catch (e) {
-      console.error('[KV-Usage] Failed to reset usage:', e);
+      logger.error('KV-Usage failed to reset usage', { err: e.message });
     }
   }
 }

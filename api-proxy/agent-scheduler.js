@@ -7,6 +7,7 @@ import { proxyAnthropic } from './providers/anthropic.js';
 import { proxyGemini } from './providers/gemini.js';
 import { proxyOpenAI } from './providers/openai.js';
 import { incrementUsage, incrementGlobalStats } from './lib/kv-usage.js';
+import { logger } from './lib/logger.js';
 
 const activeJobs = new Map(); // agentId -> cron.ScheduledTask
 
@@ -251,7 +252,7 @@ const AGENT_TEMPLATES = {
  */
 async function executeAgentRun(agent) {
   const startTime = Date.now();
-  console.log(`[Agent] Running ${agent.id} (${agent.template})`);
+  logger.info(`Running agent ${agent.id} (${agent.template})`);
 
   try {
     await appendAgentLog(agent.id, { type: 'run_start', message: 'Agent run started' });
@@ -320,11 +321,11 @@ async function executeAgentRun(agent) {
       elapsed,
     });
 
-    console.log(`[Agent] ${agent.id} completed in ${elapsed}ms`);
+    logger.info(`Agent ${agent.id} completed`, { elapsed });
     return { ok: true, content, elapsed };
 
   } catch (err) {
-    console.error(`[Agent] ${agent.id} error:`, err.message);
+    logger.error(`Agent ${agent.id} error`, { err: err.message });
     await appendAgentLog(agent.id, { type: 'run_error', message: err.message });
 
     const updated = await getAgent(agent.id);
@@ -348,18 +349,18 @@ function scheduleAgent(agent) {
   if (agent.status !== 'active' || !agent.schedule) return;
 
   if (!cron.validate(agent.schedule)) {
-    console.error(`[Agent] Invalid cron schedule for ${agent.id}: ${agent.schedule}`);
+    logger.error(`Invalid cron schedule for ${agent.id}`, { schedule: agent.schedule });
     return;
   }
 
   const job = cron.schedule(agent.schedule, () => {
     executeAgentRun(agent).catch(err => {
-      console.error(`[Agent] Scheduled run failed for ${agent.id}:`, err.message);
+      logger.error(`Scheduled run failed for ${agent.id}`, { err: err.message });
     });
   });
 
   activeJobs.set(agent.id, job);
-  console.log(`[Agent] Scheduled ${agent.id} with cron: ${agent.schedule}`);
+  logger.info(`Scheduled ${agent.id}`, { cron: agent.schedule });
 }
 
 /**
@@ -379,12 +380,12 @@ function unscheduleAgent(agentId) {
 async function bootstrapScheduler() {
   try {
     const agents = await getAllActiveAgents();
-    console.log(`[Agent Scheduler] Bootstrapping ${agents.length} active agents`);
+    logger.info(`Bootstrapping ${agents.length} active agents`);
     for (const agent of agents) {
       scheduleAgent(agent);
     }
   } catch (err) {
-    console.error('[Agent Scheduler] Bootstrap failed:', err.message);
+    logger.error('Agent scheduler bootstrap failed', { err: err.message });
   }
 }
 

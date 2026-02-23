@@ -8,6 +8,7 @@ import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
 import { isModelAvailable } from '../lib/providers.js';
 import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } from '../lib/kv-keys.js';
+import { logger } from '../lib/logger.js';
 import { resetUsage } from '../lib/kv-usage.js';
 
 const router = Router();
@@ -127,7 +128,7 @@ router.post('/register', registerLimiter, async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Registration error:', err);
+    logger.error('Registration error', { err: err.message });
     res.status(500).json({
       error: 'registration_failed',
       message: process.env.NODE_ENV === 'production' ? 'Registration failed. Try again.' : err.message,
