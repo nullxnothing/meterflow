@@ -276,7 +276,7 @@ router.post('/twitter/byok', async (req, res) => {
   }
 
   try {
-    const verify = await fetch('https://api.twitter.com/2/users/me', {
+    const verify = await fetch('https://api.twitter.com/2/tweets/search/recent?query=test&max_results=10', {
       headers: { 'Authorization': `Bearer ${token.trim()}` },
     });
     if (!verify.ok) {
