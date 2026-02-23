@@ -6,15 +6,36 @@ import { getTodayKey } from '../lib/helpers.js';
 import { getTreasuryBalance } from '../lib/balance.js';
 import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
 import { getKeyData, countKeys } from '../lib/kv-keys.js';
+import { getGlobalStats } from '../lib/kv-usage.js';
 
 const router = Router();
 
-// GET /stats
+const startedAt = Date.now();
+
+// GET /stats — public protocol metrics (no auth required)
 router.get('/stats', async (req, res) => {
-  const totalKeysIssued = await countKeys();
+  const [totalKeysIssued, globalStats] = await Promise.all([
+    countKeys(),
+    getGlobalStats(),
+  ]);
+
+  const uptimeMs = Date.now() - startedAt;
+  const providers = {
+    claude: PROVIDER_AVAILABLE.claude,
+    gemini: PROVIDER_AVAILABLE.gemini,
+    openai: PROVIDER_AVAILABLE.openai,
+  };
+  const activeProviders = Object.values(providers).filter(Boolean).length;
 
   res.json({
     totalKeysIssued,
+    totalCallsToday: globalStats.todayCalls,
+    totalTokensToday: globalStats.todayTokens,
+    allTimeCalls: globalStats.allTimeCalls,
+    allTimeTokens: globalStats.allTimeTokens,
+    activeProviders,
+    providers,
+    uptimeMs,
     tokenMint: CONFIG.TOKEN_MINT || null,
     tiers: Object.entries(CONFIG.TIERS).map(([key, t]) => ({
       name: t.label,

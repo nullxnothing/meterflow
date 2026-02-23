@@ -6,7 +6,7 @@ import { getProviderForModel, isModelAvailable } from './lib/providers.js';
 import { proxyAnthropic } from './providers/anthropic.js';
 import { proxyGemini } from './providers/gemini.js';
 import { proxyOpenAI } from './providers/openai.js';
-import { incrementUsage } from './lib/kv-usage.js';
+import { incrementUsage, incrementGlobalStats } from './lib/kv-usage.js';
 
 const activeJobs = new Map(); // agentId -> cron.ScheduledTask
 
@@ -293,10 +293,12 @@ async function executeAgentRun(agent) {
       throw new Error(`Unsupported model: ${model}`);
     }
 
-    // Track usage against the agent owner's API key
+    // Track usage against the agent owner's API key + global stats
+    const usageTokens = result.usage?.totalTokens || 0;
     if (agent.apiKey) {
-      await incrementUsage(agent.apiKey, result.usage?.totalTokens || 0);
+      await incrementUsage(agent.apiKey, usageTokens);
     }
+    await incrementGlobalStats(usageTokens);
 
     const elapsed = Date.now() - startTime;
     const content = typeof result.content === 'string' ? result.content : JSON.stringify(result.content);
