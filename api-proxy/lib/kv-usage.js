@@ -125,6 +125,87 @@ export async function incrementUsage(apiKey, tokens = 0) {
   }
 }
 
+// ═══════════ GLOBAL STATS ═══════════
+
+const GLOBAL_DAILY_KEY = 'infinite:stats:daily:';
+const GLOBAL_ALLTIME_KEY = 'infinite:stats:alltime';
+
+// In-memory fallback for global stats
+const fallbackGlobal = { calls: 0, tokens: 0, allTimeCalls: 0, allTimeTokens: 0 };
+
+/**
+ * Increment global counters (called alongside per-key usage)
+ */
+export async function incrementGlobalStats(tokens = 0) {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    fallbackGlobal.calls += 1;
+    fallbackGlobal.tokens += tokens;
+    fallbackGlobal.allTimeCalls += 1;
+    fallbackGlobal.allTimeTokens += tokens;
+    return;
+  }
+
+  try {
+    const dailyKey = `${GLOBAL_DAILY_KEY}${today}`;
+    const pipeline = r.pipeline();
+    pipeline.hincrby(dailyKey, 'calls', 1);
+    pipeline.hincrby(dailyKey, 'tokens', tokens);
+    pipeline.expire(dailyKey, 48 * 60 * 60);
+    pipeline.hincrby(GLOBAL_ALLTIME_KEY, 'calls', 1);
+    pipeline.hincrby(GLOBAL_ALLTIME_KEY, 'tokens', tokens);
+    await pipeline.exec();
+  } catch (e) {
+    console.error('[KV-Usage] Failed to increment global stats:', e.message);
+    fallbackGlobal.calls += 1;
+    fallbackGlobal.tokens += tokens;
+    fallbackGlobal.allTimeCalls += 1;
+    fallbackGlobal.allTimeTokens += tokens;
+  }
+}
+
+/**
+ * Get global stats for the public /stats endpoint
+ * @returns {Promise<{ todayCalls: number, todayTokens: number, allTimeCalls: number, allTimeTokens: number }>}
+ */
+export async function getGlobalStats() {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    return {
+      todayCalls: fallbackGlobal.calls,
+      todayTokens: fallbackGlobal.tokens,
+      allTimeCalls: fallbackGlobal.allTimeCalls,
+      allTimeTokens: fallbackGlobal.allTimeTokens,
+    };
+  }
+
+  try {
+    const dailyKey = `${GLOBAL_DAILY_KEY}${today}`;
+    const [daily, allTime] = await Promise.all([
+      r.hgetall(dailyKey),
+      r.hgetall(GLOBAL_ALLTIME_KEY),
+    ]);
+    return {
+      todayCalls: parseInt(daily?.calls, 10) || 0,
+      todayTokens: parseInt(daily?.tokens, 10) || 0,
+      allTimeCalls: parseInt(allTime?.calls, 10) || 0,
+      allTimeTokens: parseInt(allTime?.tokens, 10) || 0,
+    };
+  } catch (e) {
+    console.error('[KV-Usage] Failed to get global stats:', e.message);
+    return {
+      todayCalls: fallbackGlobal.calls,
+      todayTokens: fallbackGlobal.tokens,
+      allTimeCalls: fallbackGlobal.allTimeCalls,
+      allTimeTokens: fallbackGlobal.allTimeTokens,
+    };
+  }
+}
+
 /**
  * Reset usage for an API key (used when reconnecting wallet, etc)
  * @param {string} apiKey
