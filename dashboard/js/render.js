@@ -20,6 +20,7 @@ import { renderAgents } from './tabs/agents.js';
 import { renderMyAgents } from './tabs/my-agents.js';
 import { renderFutureApis } from './tabs/future-apis.js';
 import { renderTreasury } from './tabs/treasury.js';
+import { renderLiveTrades } from './tabs/live-trades.js';
 
 export function render() {
   const app = document.getElementById('app');
@@ -128,6 +129,7 @@ function renderNavItems() {
     <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Models</div>
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
     <div class="nav-group-label">Tools</div>
+    <div class="nav-item ${t === 'live-trades' ? 'active' : ''}" data-tab="live-trades">Live Trades</div>
     <div class="nav-item ${t === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
     <div class="nav-item ${t === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
     <div class="nav-item ${t === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
@@ -159,6 +161,7 @@ export function renderTab() {
       case 'chat': return renderChat();
       case 'images': return renderImages();
       case 'video': return renderVideo();
+      case 'live-trades': return renderLiveTrades();
       case 'trading': return renderTrading();
       case 'my-agents': return renderMyAgents();
       case 'agents': return renderAgents();

@@ -2,6 +2,7 @@
 @import url('./css/features.css');
 @import url('./css/agents.css');
 @import url('./css/trading.css');
+@import url('./css/live-trades.css');
 
 /* ─── Layout ─── */
 .app {

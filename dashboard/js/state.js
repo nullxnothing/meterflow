@@ -90,6 +90,13 @@ export const AGENTS = {
   runningAgents: new Set(),
 };
 
+export const LIVE_TRADES = {
+  ws: null,
+  reconnectTimer: null,
+  trades: [],
+  stats: { buys: 0, sells: 0, volumeSol: 0, whales: 0 },
+};
+
 export const VOTES = {
   userVotes: new Set(),
   voteCounts: {},

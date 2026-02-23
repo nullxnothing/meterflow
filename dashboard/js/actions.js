@@ -2,7 +2,8 @@
 // INFINITE Dashboard - Actions
 // ═══════════════════════════════════════════
 
-import { STATE, TRADING } from './state.js';
+import { STATE, TRADING, LIVE_TRADES } from './state.js';
+import { stopLiveTrades } from './tabs/live-trades.js';
 import { api, maskKey } from './api.js';
 import { saveSession, clearSession } from './session.js';
 import { render, switchTabInPlace } from './render.js';
@@ -60,6 +61,9 @@ export function toggleKeyVisibility() {
 export function setTab(tab) {
   if (STATE.activeTab === 'trading' && tab !== 'trading') {
     stopBotPolling();
+  }
+  if (STATE.activeTab === 'live-trades' && tab !== 'live-trades') {
+    stopLiveTrades();
   }
   // Fast path: only re-render <main> + nav highlights, keep sidebar intact
   if (STATE.connected && switchTabInPlace(tab)) return;
