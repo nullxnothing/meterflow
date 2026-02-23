@@ -324,11 +324,13 @@ async function start() {
   await updateSolPrice();
   await checkBalance();
   await fetchProxyStats();
+  await pushLimits(); // always push on startup
   console.log(JSON.stringify(generateReport(), null, 2));
 
   setInterval(checkBalance, CONFIG.BALANCE_CHECK_MS);
   setInterval(updateSolPrice, CONFIG.PRICE_UPDATE_MS);
   setInterval(fetchProxyStats, CONFIG.BALANCE_CHECK_MS);
+  setInterval(pushLimits, CONFIG.BALANCE_CHECK_MS); // re-push every cycle to survive proxy restarts
   setInterval(async () => {
     recordDailySpend();
     const report = generateReport();
