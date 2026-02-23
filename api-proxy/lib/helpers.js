@@ -38,7 +38,9 @@ async function fetchTokenInfo(address) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 'token-info', method: 'getAsset', params: { id: address } })
     }).then(r => r.json()),
-    fetch(`https://api.jup.ag/price/v2?ids=${address}`).then(r => r.json()),
+    fetch(`https://api.jup.ag/price/v3?ids=${address}`, {
+      headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
+    }).then(r => r.json()),
     fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`).then(r => r.json()),
   ]);
 

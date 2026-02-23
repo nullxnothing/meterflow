@@ -88,7 +88,8 @@ async function getTreasuryBalance() {
         }),
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       }).then(r => r.json()),
-      fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112', {
+      fetch('https://api.jup.ag/price/v3?ids=So11111111111111111111111111111111111111112', {
+        headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       }).then(r => r.json()),
     ]);

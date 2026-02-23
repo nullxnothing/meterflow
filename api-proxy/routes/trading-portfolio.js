@@ -45,7 +45,9 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
     let prices = {};
     if (mints.length > 0) {
       try {
-        const priceRes = await fetch(`https://api.jup.ag/price/v2?ids=${mints.join(',')}`);
+        const priceRes = await fetch(`https://api.jup.ag/price/v3?ids=${mints.join(',')}`, {
+          headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
+        });
         const priceData = await priceRes.json();
         prices = priceData.data || {};
       } catch {}
@@ -61,7 +63,9 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
 
     let solPriceUsd = 0;
     try {
-      const solPriceRes = await fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112');
+      const solPriceRes = await fetch('https://api.jup.ag/price/v3?ids=So11111111111111111111111111111111111111112', {
+        headers: CONFIG.JUPITER_API_KEY ? { 'x-api-key': CONFIG.JUPITER_API_KEY } : {},
+      });
       const solPriceData = await solPriceRes.json();
       solPriceUsd = parseFloat(solPriceData.data?.['So11111111111111111111111111111111111111112']?.price || 0);
     } catch {}

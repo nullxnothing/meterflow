@@ -9,6 +9,7 @@ const CONFIG = {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  JUPITER_API_KEY: process.env.JUPITER_API_KEY || '',
   TREASURY_WALLET: process.env.TREASURY_WALLET || '',
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {

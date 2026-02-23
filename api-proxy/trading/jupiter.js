@@ -1,7 +1,14 @@
 import { VersionedTransaction } from '@solana/web3.js';
+import { CONFIG } from '../config.js';
 
 const JUPITER_API = 'https://lite-api.jup.ag/swap/v1';
-const JUPITER_PRICE_API = 'https://api.jup.ag/price/v2';
+const JUPITER_PRICE_API = 'https://api.jup.ag/price/v3';
+
+function jupiterHeaders() {
+  const h = {};
+  if (CONFIG.JUPITER_API_KEY) h['x-api-key'] = CONFIG.JUPITER_API_KEY;
+  return h;
+}
 
 export async function getQuote({ inputMint, outputMint, amount, slippageBps = 300, onlyDirectRoutes = false }) {
   const params = new URLSearchParams({
@@ -52,7 +59,7 @@ export async function executeSwap(connection, keypair, quoteResponse, { priority
 }
 
 export async function getPrice(mintAddress) {
-  const res = await fetch(`${JUPITER_PRICE_API}?ids=${mintAddress}`);
+  const res = await fetch(`${JUPITER_PRICE_API}?ids=${mintAddress}`, { headers: jupiterHeaders() });
   if (!res.ok) return null;
   const data = await res.json();
   return data.data?.[mintAddress]?.price ? parseFloat(data.data[mintAddress].price) : null;
@@ -60,7 +67,7 @@ export async function getPrice(mintAddress) {
 
 export async function getPrices(mintAddresses) {
   if (!mintAddresses.length) return {};
-  const res = await fetch(`${JUPITER_PRICE_API}?ids=${mintAddresses.join(',')}`);
+  const res = await fetch(`${JUPITER_PRICE_API}?ids=${mintAddresses.join(',')}`, { headers: jupiterHeaders() });
   if (!res.ok) return {};
   const data = await res.json();
   const result = {};
