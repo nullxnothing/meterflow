@@ -110,6 +110,9 @@ export function renderDashboard() {
           <a href="https://x.com/infiniteonsol" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
           <a href="https://discord.gg/infinite" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
         </div>
+        <div class="compliance-badge" title="INFINITE operates in full compliance with Anthropic, Google, and OpenAI usage policies. All API access is authorized and properly licensed.">
+          <span class="compliance-dot"></span> ToS Compliant
+        </div>
       </div>
     </aside>
     <main class="main${isChat ? ' chat-mode' : ''}">${renderTab()}</main>

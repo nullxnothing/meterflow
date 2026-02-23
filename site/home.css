@@ -540,8 +540,13 @@ nav {
 }
 
 .tool-preview-icon {
-  font-size: 36px;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
   line-height: 1;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(200, 255, 0, 0.3);
 }
 
 .tool-preview-label {
@@ -1198,6 +1203,8 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .footer-left {
@@ -1222,6 +1229,17 @@ footer {
 }
 
 .footer-links a:hover { color: var(--accent); }
+
+.footer-compliance {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
 
 /* ─── Visual Effects ─── */
 #bgCanvas {

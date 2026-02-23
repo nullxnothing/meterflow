@@ -72,5 +72,12 @@ export function renderOverview() {
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key</div></div>
       </div>
     </div>
+    <div class="compliance-notice">
+      <div class="compliance-notice-header"><span class="compliance-dot"></span> Provider Compliance</div>
+      <div class="compliance-notice-text">
+        INFINITE operates in full compliance with the terms of service of all integrated AI providers, including Anthropic, Google, and OpenAI.
+        All API access is properly authorized and licensed. Rate limits, usage policies, and content guidelines from each provider are enforced at the proxy layer.
+      </div>
+    </div>
   `;
 }
