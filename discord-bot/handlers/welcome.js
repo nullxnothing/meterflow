@@ -11,7 +11,7 @@ async function handleMemberJoin(member) {
       `Welcome **${member.user.username}**\n\n` +
       `INFINITE is token-gated AI access on Solana. Hold $INFINITE to unlock Claude, Gemini, and GPT APIs funded by creator fees — no subscriptions.\n\n` +
       `**Get started:**\n` +
-      `1. Buy $INFINITE on [pump.fun](https://pump.fun) or [Jupiter](https://jup.ag)\n` +
+      `1. Buy $INFINITE on [pump.fun](https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump) or [Jupiter](https://jup.ag)\n` +
       `2. Connect your wallet at [infinite.sh/dashboard](https://infinitekeys.fun/dashboard)\n` +
       `3. Your tier is auto-detected — start using AI immediately\n\n` +
       `**Server guide:**\n` +

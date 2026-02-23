@@ -19,7 +19,7 @@ DASHBOARD FEATURES:
 - Real-time usage tracking and API key management
 
 HOW TO GET STARTED:
-1. Buy $INFINITE on pump.fun or Jupiter
+1. Buy $INFINITE on pump.fun (https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump) or Jupiter
 2. Go to the dashboard at infinite.sh/dashboard
 3. Connect your Solana wallet (Phantom, Backpack, Solflare)
 4. Your tier is auto-detected from token balance

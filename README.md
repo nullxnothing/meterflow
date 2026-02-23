@@ -17,7 +17,7 @@
 
 ## How It Works
 
-1. **Buy $INFINITE** on pump.fun
+1. **Buy $INFINITE** on [pump.fun](https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump)
 2. **Connect your wallet** at [infinite.sh/dashboard](https://infinite.sh/dashboard)
 3. **Get an API key** — tier based on your token balance
 4. **Use AI** — Claude, Gemini, multi-model, image gen, trading tools

@@ -13,7 +13,7 @@ function closeMobile() {
 }
 
 // ═══════════ TOKEN CONFIG ═══════════
-const TOKEN_MINT = '';
+const TOKEN_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
 
 // ═══════════ LIVE DATA ═══════════
 const PROXY_BASE = '/proxy';
