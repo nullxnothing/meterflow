@@ -61,6 +61,9 @@ export async function sendChatMessage() {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      if (response.status === 429) {
+        throw new Error('Rate limit reached. Your daily quota has been exhausted — limits reset at midnight UTC.');
+      }
       throw new Error(err.message || 'Request failed');
     }
 
@@ -135,6 +138,18 @@ export async function sendChatMessage() {
     updateSendButton();
   }
 }
+
+// ─── Quick Prompt ───
+
+export function sendQuickPrompt(text) {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  input.value = text;
+  input.dispatchEvent(new Event('input'));
+  sendChatMessage();
+}
+
+window.sendQuickPrompt = sendQuickPrompt;
 
 // ─── DOM Helpers ───
 

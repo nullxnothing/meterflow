@@ -6,6 +6,7 @@ import { logger } from '../lib/logger.js';
 import { captureError } from '../lib/sentry.js';
 import { getProviderForModel, isModelAvailable, translateToolsForProvider, injectImagesIntoMessages } from '../lib/providers.js';
 import { getSystemPromptWithContext } from '../lib/system-prompt.js';
+import { detectOptimalModel } from '../lib/router.js';
 import { proxyAnthropic, streamAnthropic } from '../providers/anthropic.js';
 import { proxyGemini, streamGemini } from '../providers/gemini.js';
 import { proxyOpenAI, streamOpenAI } from '../providers/openai.js';
@@ -17,13 +18,22 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature } = req.body;
   const { tierConfig, usage, apiKey } = req.infinite;
 
-  const requestedModel = model || tierConfig.models[0];
+  let requestedModel = model || tierConfig.models[0];
+  let routingReason = null;
 
-  if (!tierConfig.models.includes(requestedModel)) {
+  // Auto-routing: detect optimal model from prompt content
+  const availableModels = tierConfig.models.filter(m => m !== 'auto');
+  if (requestedModel === 'auto') {
+    const routing = detectOptimalModel(messages, availableModels);
+    requestedModel = routing.model;
+    routingReason = routing.reason;
+  }
+
+  if (!availableModels.includes(requestedModel)) {
     return res.status(403).json({
       error: 'model_not_available',
       message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
-      availableModels: tierConfig.models
+      availableModels
     });
   }
 
@@ -31,7 +41,7 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     return res.status(503).json({
       error: 'model_coming_soon',
       message: `${requestedModel} is coming soon. Stay tuned.`,
-      availableModels: tierConfig.models.filter(isModelAvailable),
+      availableModels: availableModels.filter(isModelAvailable),
     });
   }
 
@@ -60,6 +70,7 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     res.json({
       id: `inf-${crypto.randomBytes(12).toString('hex')}`,
       model: requestedModel,
+      ...(routingReason && { routing: { model: requestedModel, reason: routingReason } }),
       content: result.content,
       usage: {
         inputTokens: result.usage?.inputTokens || 0,
@@ -88,13 +99,21 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature, tools, images } = req.body;
   const { tierConfig, usage, apiKey } = req.infinite;
 
-  const requestedModel = model || tierConfig.models[0];
+  let requestedModel = model || tierConfig.models[0];
+  let routingReason = null;
 
-  if (!tierConfig.models.includes(requestedModel)) {
+  const availableModels = tierConfig.models.filter(m => m !== 'auto');
+  if (requestedModel === 'auto') {
+    const routing = detectOptimalModel(messages, availableModels);
+    requestedModel = routing.model;
+    routingReason = routing.reason;
+  }
+
+  if (!availableModels.includes(requestedModel)) {
     return res.status(403).json({
       error: 'model_not_available',
       message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
-      availableModels: tierConfig.models
+      availableModels
     });
   }
 
@@ -102,7 +121,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     return res.status(503).json({
       error: 'model_coming_soon',
       message: `${requestedModel} is coming soon. Stay tuned.`,
-      availableModels: tierConfig.models.filter(isModelAvailable),
+      availableModels: availableModels.filter(isModelAvailable),
     });
   }
 
@@ -119,6 +138,11 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+
+  // Emit routing info if auto-routed
+  if (routingReason) {
+    res.write(`data: ${JSON.stringify({ type: 'routing', model: requestedModel, reason: routingReason })}\n\n`);
+  }
 
   const abortController = new AbortController();
   const { signal } = abortController;

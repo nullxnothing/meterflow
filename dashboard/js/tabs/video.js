@@ -36,7 +36,7 @@ export function renderVideo() {
       <div class="video-tier-gate">
         <h3>Operator Tier Required</h3>
         <p>Video generation requires Operator tier (100K+ $INFINITE) or above.</p>
-        <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px;margin-top:16px;">Current: ${STATE.tier || '—'} (${STATE.balance.toLocaleString()} $INFINITE)</p>
+        <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:11px;margin-top:16px;">Current: ${STATE.tier || '—'} (${(STATE.balance ?? 0).toLocaleString()} $INFINITE)</p>
       </div>
     `;
   }

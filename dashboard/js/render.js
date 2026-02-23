@@ -62,13 +62,21 @@ export function renderDashboard() {
   return `
     <div class="mobile-header">
       <span class="mobile-logo">INFINITE</span>
-      <button class="mobile-hamburger" id="mobileMenuBtn">\u2630</button>
+      <div class="mobile-header-right">
+        <span class="mobile-tier">${STATE.tier || ''}</span>
+        <button class="mobile-hamburger" id="mobileMenuBtn">\u2630</button>
+      </div>
     </div>
     <div class="mobile-nav-overlay" id="mobileNavOverlay">
       <div class="mobile-nav-drawer" id="mobileNavDrawer">
         <button class="mobile-nav-close" id="mobileNavClose">\u00d7</button>
         <div class="sidebar-logo" style="margin-bottom:32px;">INFINITE</div>
         ${renderNavItems()}
+        <div class="mobile-nav-account">
+          <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+          <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy" style="color:var(--accent);font-size:10px;">COPY</span></div>
+          <button class="btn-sm danger" style="width:100%;padding:10px;margin-top:4px;" onclick="disconnectWallet()">Disconnect</button>
+        </div>
       </div>
     </div>
     <aside class="sidebar">
@@ -83,14 +91,14 @@ export function renderDashboard() {
         <div class="sidebar-usage" id="sidebarUsage">
           <div class="sidebar-usage-header">
             <span class="sidebar-usage-label">API Usage</span>
-            <span class="sidebar-usage-count">${STATE.usage.remaining.toLocaleString()} left</span>
+            <span class="sidebar-usage-count">${STATE.usage.limit === 0 ? '...' : STATE.usage.remaining.toLocaleString() + ' left'}</span>
           </div>
           <div class="sidebar-usage-track">
             <div class="sidebar-usage-fill ${usageBarClass}" style="width: ${usagePct}%"></div>
           </div>
           <div class="sidebar-usage-reset">resets ${resetTime}</div>
         </div>
-        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier || '—'} Tier \u2014 ${STATE.balance.toLocaleString()} $INF</div>
+        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
         <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
           ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '—'}
           <span class="copy">COPY</span>
@@ -139,19 +147,58 @@ function getResetCountdown() {
 }
 
 export function renderTab() {
-  switch (STATE.activeTab) {
-    case 'overview': return renderOverview();
-    case 'keys': return renderKeys();
-    case 'models': return renderModels();
-    case 'connections': return renderConnections();
-    case 'chat': return renderChat();
-    case 'images': return renderImages();
-    case 'video': return renderVideo();
-    case 'trading': return renderTrading();
-    case 'my-agents': return renderMyAgents();
-    case 'agents': return renderAgents();
-    case 'future-apis': return renderFutureApis();
-    case 'treasury': return renderTreasury();
-    default: return renderOverview();
+  try {
+    switch (STATE.activeTab) {
+      case 'overview': return renderOverview();
+      case 'keys': return renderKeys();
+      case 'models': return renderModels();
+      case 'connections': return renderConnections();
+      case 'chat': return renderChat();
+      case 'images': return renderImages();
+      case 'video': return renderVideo();
+      case 'trading': return renderTrading();
+      case 'my-agents': return renderMyAgents();
+      case 'agents': return renderAgents();
+      case 'future-apis': return renderFutureApis();
+      case 'treasury': return renderTreasury();
+      default: return renderOverview();
+    }
+  } catch (err) {
+    console.error(`[INFINITE] Tab render error (${STATE.activeTab}):`, err);
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Something went wrong</h1>
+        <p class="page-sub">This tab encountered an error. Try refreshing or switching tabs.</p>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);padding:24px;background:var(--surface);border:1px solid var(--border);">
+        ${err.message || 'Unknown error'}
+      </div>
+    `;
   }
+}
+
+// Fast tab switch — only updates <main> content + nav active states, preserves sidebar scroll
+export function switchTabInPlace(tab) {
+  const mainEl = document.querySelector('.main');
+  if (!mainEl) return false;
+
+  STATE.activeTab = tab;
+
+  // Update main content
+  const isChat = tab === 'chat' || tab === 'trading';
+  mainEl.className = 'main' + (isChat ? ' chat-mode' : '');
+  mainEl.innerHTML = renderTab();
+
+  // Update nav active states (sidebar + mobile drawer)
+  document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+    item.classList.toggle('active', item.dataset.tab === tab);
+  });
+
+  // Re-bind events scoped to main content only (sidebar already has listeners)
+  bindEvents(mainEl);
+
+  // Scroll main to top for new tab
+  mainEl.scrollTop = 0;
+
+  return true;
 }

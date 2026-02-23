@@ -16,19 +16,19 @@ const CONFIG = {
     architect: {
       min: parseInt(process.env.TIER_ARCHITECT_MIN || '1000000'),
       dailyLimit: parseInt(process.env.TIER_ARCHITECT_DAILY_LIMIT || '999999'),
-      models: ['claude-sonnet-4-5-20250929', 'claude-opus-4-6', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
+      models: ['auto', 'claude-sonnet-4-5-20250929', 'claude-opus-4-6', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
       label: 'Architect'
     },
     operator: {
       min: parseInt(process.env.TIER_OPERATOR_MIN || '100000'),
       dailyLimit: parseInt(process.env.TIER_OPERATOR_DAILY_LIMIT || '10000'),
-      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
+      models: ['auto', 'claude-sonnet-4-5-20250929', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
       label: 'Operator'
     },
     signal: {
       min: parseInt(process.env.TIER_SIGNAL_MIN || '10000'),
       dailyLimit: parseInt(process.env.TIER_SIGNAL_DAILY_LIMIT || '1000'),
-      models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash', 'gpt-4o-mini'],
+      models: ['auto', 'claude-sonnet-4-5-20250929', 'gemini-2.5-flash', 'gpt-4o-mini'],
       label: 'Signal'
     }
   },

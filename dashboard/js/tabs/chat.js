@@ -93,10 +93,10 @@ export function renderChat() {
         <div class="bot-card">
           <div class="bot-card-title">Quick Actions</div>
           <div class="trading-quick-btns">
-            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the top trending Solana tokens right now? Analyze volume, social buzz, and on-chain activity.')">Trending</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('Give me a broad Solana market overview. SOL price action, DEX volumes, new token launches, and overall sentiment.')">Market</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('What are the biggest risk factors to watch for in the current Solana ecosystem? Any major red flags?')">Risk Check</button>
-            <button class="trading-quick-btn" onclick="sendTradingQuery('Find me high-potential alpha opportunities on Solana right now. New protocols, undervalued tokens, or emerging narratives.')">Find Alpha</button>
+            <button class="trading-quick-btn" onclick="sendQuickPrompt('What is INFINITE Protocol? How does the token-gated AI access work?')">About INFINITE</button>
+            <button class="trading-quick-btn" onclick="sendQuickPrompt('Help me write clean, efficient code. Ask me what language and what I need.')">Code Help</button>
+            <button class="trading-quick-btn" onclick="sendQuickPrompt('I need help researching a topic. Ask me what to research and provide a thorough analysis.')">Research</button>
+            <button class="trading-quick-btn" onclick="sendQuickPrompt('Help me brainstorm ideas. Ask me what the topic or problem is.')">Brainstorm</button>
           </div>
         </div>
         <div class="bot-card">

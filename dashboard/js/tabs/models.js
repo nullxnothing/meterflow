@@ -20,7 +20,7 @@ export function renderModels() {
     <div class="section">
       <div class="section-title">AI Models</div>
       <div class="models-list">
-        <div class="model-row" style="background:transparent;border-color:transparent;">
+        <div class="model-row model-header-row">
           <div class="model-name" style="color:var(--text-muted);font-size:10px;letter-spacing:2px;">MODEL</div>
           <div class="model-provider" style="font-size:10px;letter-spacing:2px;">PROVIDER</div>
           <div class="model-tier" style="font-size:10px;letter-spacing:2px;">MIN TIER</div>
@@ -30,8 +30,8 @@ export function renderModels() {
           const hasAccess = userModels.some(um => um.includes(m.name.split('-')[0]));
           return `<div class="model-row" style="${hasAccess ? '' : 'opacity:0.4'}">
             <div class="model-name">${m.name}</div>
-            <div class="model-provider">${m.provider}</div>
-            <div class="model-tier">${m.tier}</div>
+            <div class="model-provider"><span class="model-mobile-label">Provider: </span>${m.provider}</div>
+            <div class="model-tier"><span class="model-mobile-label">Min Tier: </span>${m.tier}</div>
             <div class="model-status">${hasAccess ? '<span class="live">LIVE</span>' : '<span style="color:var(--text-muted)">LOCKED</span>'}</div>
           </div>`;
         }).join('')}

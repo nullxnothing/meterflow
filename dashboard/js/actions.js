@@ -5,7 +5,7 @@
 import { STATE, TRADING } from './state.js';
 import { api, maskKey } from './api.js';
 import { saveSession, clearSession } from './session.js';
-import { render } from './render.js';
+import { render, switchTabInPlace } from './render.js';
 
 // ─── API Key Actions ───
 
@@ -61,6 +61,9 @@ export function setTab(tab) {
   if (STATE.activeTab === 'trading' && tab !== 'trading') {
     stopBotPolling();
   }
+  // Fast path: only re-render <main> + nav highlights, keep sidebar intact
+  if (STATE.connected && switchTabInPlace(tab)) return;
+  // Fallback: full re-render (e.g. connect screen)
   STATE.activeTab = tab;
   render();
 }
@@ -77,7 +80,28 @@ export function stopBotPolling() {
 // ─── Clipboard & Toast ───
 
 export function copyText(text) {
-  navigator.clipboard?.writeText(text).then(() => showToast('Copied'));
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('Copied'))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied');
+  } catch {
+    showToast('Copy failed — please copy manually', true);
+  }
 }
 
 export function showToast(msg, isError = false) {

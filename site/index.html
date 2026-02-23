@@ -419,6 +419,8 @@ if (window.innerWidth > 768) {
   const globeCanvas = document.getElementById('cobeGlobe');
   if (globeCanvas) {
     let globePhi = 0;
+    let globeTheta = 0.25;
+
     const cobeGlobe = createGlobe(globeCanvas, {
       devicePixelRatio: 1,
       width: 580,
@@ -444,19 +446,29 @@ if (window.innerWidth > 768) {
       ],
       onRender: (state) => {
         state.phi = globePhi;
+        state.theta = globeTheta;
         globePhi += 0.003;
       }
     });
 
+    // Drag: horizontal + vertical
     let pointerDown = false;
     let pointerX = 0;
-    globeCanvas.addEventListener('pointerdown', (e) => { pointerDown = true; pointerX = e.clientX; });
+    let pointerY = 0;
+    globeCanvas.addEventListener('pointerdown', (e) => {
+      pointerDown = true;
+      pointerX = e.clientX;
+      pointerY = e.clientY;
+    });
     window.addEventListener('pointerup', () => { pointerDown = false; });
     globeCanvas.addEventListener('pointermove', (e) => {
       if (pointerDown) {
-        const delta = e.clientX - pointerX;
+        const dx = e.clientX - pointerX;
+        const dy = e.clientY - pointerY;
         pointerX = e.clientX;
-        globePhi += delta * 0.005;
+        pointerY = e.clientY;
+        globePhi += dx * 0.005;
+        globeTheta = Math.max(-1.2, Math.min(1.2, globeTheta - dy * 0.005));
       }
     });
 

@@ -13,8 +13,8 @@ export async function fetchStatus() {
   try {
     const data = await api('/auth/status');
     STATE.tier = data.tier;
-    STATE.balance = data.balance;
-    STATE.usage = data.usage;
+    STATE.balance = data.balance ?? 0;
+    STATE.usage = data.usage || STATE.usage;
     STATE.models = data.models || STATE.models;
     if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
     saveSession();
@@ -25,7 +25,7 @@ export async function fetchStatus() {
       updateSidebarFooter();
     }
   } catch (err) {
-    if (err.status === 401) {
+    if (err.status === 401 || err.status === 403) {
       clearSession();
       import('./render.js').then(m => m.render());
     }
@@ -55,7 +55,7 @@ export function startStatusPolling() {
 
 export function updateSidebarFooter() {
   const el = document.getElementById('sidebarFooterInfo');
-  if (el) el.textContent = `${STATE.tier || '—'} Tier \u2014 ${STATE.balance.toLocaleString()} $INF`;
+  if (el) el.textContent = `${STATE.tier || '—'} Tier \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF`;
 
   // Update sidebar usage bar
   const usageEl = document.getElementById('sidebarUsage');

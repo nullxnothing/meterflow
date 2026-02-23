@@ -10,9 +10,9 @@ import { handleImageUpload } from './images.js';
 import { bindCodeCopyButtons } from './tools.js';
 import { render } from './render.js';
 
-export function bindEvents() {
-  // Navigation
-  document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+export function bindEvents(scope = document) {
+  // Navigation — only bind nav items within scope to avoid duplicates
+  scope.querySelectorAll('.nav-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => setTab(item.dataset.tab));
   });
 
@@ -114,7 +114,7 @@ export function bindEvents() {
   bindCodeCopyButtons();
 
   // Mouse-tracking glow on cards
-  document.querySelectorAll('.stat-card, .tool-card, .connection-card, .recipe-card, .agent-card, .api-card').forEach(card => {
+  scope.querySelectorAll('.stat-card, .tool-card, .connection-card, .recipe-card, .agent-card, .api-card').forEach(card => {
     card.addEventListener('mousemove', (e) => {
       const rect = card.getBoundingClientRect();
       card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
@@ -122,7 +122,8 @@ export function bindEvents() {
     });
   });
 
-  // Mobile hamburger menu
+  // Mobile hamburger menu — only bind on full render, not scoped tab switches
+  if (scope !== document) return;
   const menuBtn = document.getElementById('mobileMenuBtn');
   const overlay = document.getElementById('mobileNavOverlay');
   const drawer = document.getElementById('mobileNavDrawer');
@@ -141,6 +142,16 @@ export function bindEvents() {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) closeMobileNav();
     });
+
+    // Swipe-to-close on mobile drawer
+    let touchStartX = 0;
+    drawer.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    drawer.addEventListener('touchend', (e) => {
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      if (deltaX < -60) closeMobileNav();
+    }, { passive: true });
 
     // Bind nav items inside mobile drawer
     drawer.querySelectorAll('.nav-item[data-tab]').forEach(item => {

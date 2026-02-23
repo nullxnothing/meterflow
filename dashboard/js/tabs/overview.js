@@ -35,7 +35,7 @@ export function renderOverview() {
     </div>
     <div class="stats-row">
       ${isLoaded ? `
-        <div class="stat-card"><div class="label">Your Tier</div><div class="value accent">${STATE.tier || '—'}</div><div class="sub">${STATE.balance.toLocaleString()} $INFINITE</div></div>
+        <div class="stat-card"><div class="label">Your Tier</div><div class="value accent">${STATE.tier || '—'}</div><div class="sub">${(STATE.balance ?? 0).toLocaleString()} $INFINITE</div></div>
         <div class="stat-card"><div class="label">Calls Today</div><div class="value">${STATE.usage.today.toLocaleString()}</div><div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div></div>
         <div class="stat-card"><div class="label">Models Available</div><div class="value green">${STATE.models.length}</div><div class="sub">AI providers active</div></div>
         <div class="stat-card"><div class="label">Your Cost</div><div class="value accent">$0</div><div class="sub">funded by treasury</div></div>
