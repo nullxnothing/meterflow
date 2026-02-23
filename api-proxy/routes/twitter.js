@@ -77,7 +77,7 @@ router.post('/twitter/:action', authenticateApiKey, requireArchitectTier, async 
         if (!query) return res.status(400).json({ error: 'query is required' });
         const params = new URLSearchParams({
           query,
-          max_results: String(Math.min(max_results, 100)),
+          max_results: String(Math.max(10, Math.min(max_results, 100))),
           'tweet.fields': 'created_at,author_id,public_metrics,conversation_id',
           'user.fields': 'username,public_metrics',
           expansions: 'author_id',
@@ -90,7 +90,7 @@ router.post('/twitter/:action', authenticateApiKey, requireArchitectTier, async 
         const { user_id, max_results = 10 } = req.body;
         if (!user_id) return res.status(400).json({ error: 'user_id is required' });
         const params = new URLSearchParams({
-          max_results: String(Math.min(max_results, 100)),
+          max_results: String(Math.max(10, Math.min(max_results, 100))),
           'tweet.fields': 'created_at,public_metrics,referenced_tweets',
           exclude: 'retweets',
         });
