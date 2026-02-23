@@ -7,6 +7,21 @@
 /* ─── Reset ─── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ─── Scrollbar ─── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-light) transparent;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-corner { background: transparent; }
+
 /* ─── Tokens ─── */
 :root {
   --bg: #0a0a0a;
@@ -28,6 +43,10 @@
   --font-display: 'DM Serif Display', Georgia, serif;
   --font-body: 'Sora', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
 }
 
 /* ─── Base ─── */
@@ -47,6 +66,12 @@ body {
 }
 
 ::selection { background: var(--accent); color: var(--bg); }
+
+/* ─── Focus States ─── */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* ─── Typography ─── */
 .heading-xl {
@@ -128,10 +153,8 @@ body {
 }
 
 .nav-links a {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 12px;
   color: var(--text-dim);
   text-decoration: none;
   transition: color 0.3s;
@@ -148,6 +171,7 @@ body {
   background: var(--accent) !important;
   color: var(--bg) !important;
   border: none;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s;
@@ -162,12 +186,13 @@ body {
 .btn-primary {
   font-family: var(--font-mono);
   font-size: 13px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 18px 40px;
+  padding: 14px 32px;
   background: var(--accent);
   color: var(--bg);
   border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s;
@@ -185,12 +210,13 @@ body {
 .btn-secondary {
   font-family: var(--font-mono);
   font-size: 13px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 18px 40px;
+  padding: 14px 32px;
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 400;
   transition: all 0.3s;
@@ -217,6 +243,7 @@ body {
   text-transform: uppercase;
   padding: 14px 20px;
   border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
@@ -252,8 +279,9 @@ body {
   font-size: 13px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 16px 36px;
+  padding: 14px 32px;
   border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -285,6 +313,7 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 32px;
   transition: border-color 0.3s;
 }
@@ -316,12 +345,13 @@ body {
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
+  gap: 12px;
 }
 
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 24px;
   transition: border-color 0.3s;
 }
@@ -330,7 +360,7 @@ body {
 
 .stat-card .stat-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -358,7 +388,7 @@ body {
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
+  gap: 12px;
 }
 
 .tool-card {
@@ -461,6 +491,7 @@ body {
 .code-block {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 24px;
   overflow-x: auto;
   font-family: var(--font-mono);

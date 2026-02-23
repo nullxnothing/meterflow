@@ -47,28 +47,20 @@ function populateProtocolStats() {
 
   const callsToday = liveStats.totalCallsToday || 0;
   const tokensToday = liveStats.totalTokensToday || 0;
-  const allTime = liveStats.allTimeCalls || 0;
   const keys = liveStats.totalKeysIssued || 0;
-  const providers = liveStats.activeProviders || 0;
 
   const balSol = liveTreasury.treasuryBalanceSol || 0;
   const balUsd = liveTreasury.treasuryBalanceUsd || 0;
   const runway = liveTreasury.runwayDays || 0;
   const health = liveTreasury.healthStatus || 'unknown';
 
-  const allModels = new Set();
-  (liveStats.tiers || []).forEach(t => (t.models || []).forEach(m => allModels.add(m)));
-
   el('ps-calls-today').textContent = formatCompact(callsToday);
   el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' tokens' : 'tokens processed';
-  el('ps-all-time').textContent = formatCompact(allTime);
   el('ps-active-keys').textContent = formatCompact(keys);
   el('ps-treasury').textContent = balSol > 0 ? balSol.toFixed(2) + ' SOL' : '--';
   el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
   el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
   el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
-  el('ps-models').textContent = allModels.size || providers * 2;
-  el('ps-providers').textContent = providers + ' provider' + (providers !== 1 ? 's' : '') + ' active';
 }
 
 // ═══════════ FAQ ═══════════
