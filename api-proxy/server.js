@@ -16,7 +16,10 @@ import adminRouter from './routes/admin.js';
 import agentsRouter from './routes/agents.js';
 import tradesRouter from './routes/trades.js';
 import twitterRouter from './routes/twitter.js';
+import alphaRouter from './routes/alpha.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
+import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
+import { initSocket } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
 
 const app = express();
@@ -25,9 +28,10 @@ app.use(cors({
     'https://infinitekeys.fun',
     'https://www.infinitekeys.fun',
     /\.infinitekeys\.fun$/,
+    /^chrome-extension:\/\//,
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5500', 'http://localhost:3000', 'http://127.0.0.1:5500'] : []),
   ],
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -63,6 +67,7 @@ app.use('/', adminRouter);
 app.use('/v1', agentsRouter);
 app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
+app.use('/v1', alphaRouter);
 
 // Sentry error handler (must be after routes, before listen)
 initSentry(app);
@@ -73,6 +78,12 @@ const server = app.listen(PORT, () => {
 
   bootstrapScheduler().catch(err => {
     logger.error('Agent scheduler bootstrap failed', { err: err.message });
+  });
+
+  initSocket(server);
+
+  bootstrapAlphaPipeline().catch(err => {
+    logger.error('Alpha pipeline bootstrap failed', { err: err.message });
   });
 });
 

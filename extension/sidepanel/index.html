@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div class="panel">
+    <div class="panel-header">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span>Infinite Alpha <small style="opacity:0.5;font-size:10px;">(Beta)</small></span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="discover">Discover</button>
+        <button class="tab" data-tab="trending">Trending</button>
+        <button class="tab" data-tab="watchlist">Watchlist</button>
+        <button class="tab" data-tab="alerts">Alerts</button>
+      </div>
+    </div>
+
+    <div id="tab-discover" class="tab-content active">
+      <div class="feed" id="discover-feed"></div>
+    </div>
+
+    <div id="tab-trending" class="tab-content">
+      <div class="feed" id="trending-feed"></div>
+    </div>
+
+    <div id="tab-watchlist" class="tab-content">
+      <div class="watchlist-add">
+        <input type="text" id="watchlist-input" placeholder="@username" spellcheck="false">
+        <button id="watchlist-add-btn">Track</button>
+      </div>
+      <div class="feed" id="watchlist-feed"></div>
+    </div>
+
+    <div id="tab-alerts" class="tab-content">
+      <div class="feed" id="alerts-feed"></div>
+    </div>
+
+    <div id="not-connected" class="not-connected hidden">
+      <p>Connect your Infinite Keys API key in the extension popup to get started.</p>
+    </div>
+  </div>
+  <script src="panel.js"></script>
+</body>
+</html>

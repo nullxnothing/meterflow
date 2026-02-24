@@ -21,6 +21,7 @@ import { renderMyAgents } from './tabs/my-agents.js';
 import { renderFutureApis } from './tabs/future-apis.js';
 import { renderTreasury } from './tabs/treasury.js';
 import { renderLiveTrades } from './tabs/live-trades.js';
+import { renderXTools } from './tabs/x-tools.js';
 
 export function render() {
   const app = document.getElementById('app');
@@ -153,14 +154,18 @@ function renderNavItems() {
     <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
     <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Models</div>
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
-    <div class="nav-group-label">Tools</div>
+    <div class="nav-group-label">Solana Tools</div>
     <div class="nav-item ${t === 'live-trades' ? 'active' : ''}" data-tab="live-trades">Live Trades</div>
-    <div class="nav-item ${t === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
+    <div class="nav-item ${t === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
+    <div class="nav-group-label">Media Tools</div>
     <div class="nav-item ${t === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
     <div class="nav-item ${t === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
-    <div class="nav-item ${t === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
-    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agents</div>
+    <div class="nav-group-label">Agents</div>
+    <div class="nav-item ${t === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
+    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">My Agents</div>
     <div class="nav-item ${t === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
+    <div class="nav-group-label">X Tools</div>
+    <div class="nav-item ${t === 'x-tools' ? 'active' : ''}" data-tab="x-tools">Infinite Alpha <span style="font-size:9px;opacity:0.5;margin-left:4px;">(Beta)</span></div>
     <div class="nav-group-label">Protocol</div>
     <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
     <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Treasury</div>
@@ -190,6 +195,7 @@ export function renderTab() {
       case 'trading': return renderTrading();
       case 'my-agents': return renderMyAgents();
       case 'agents': return renderAgents();
+      case 'x-tools': return renderXTools();
       case 'future-apis': return renderFutureApis();
       case 'treasury': return renderTreasury();
       default: return renderOverview();

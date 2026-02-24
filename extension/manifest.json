@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Infinite Alpha (Beta)",
+  "version": "0.1.0",
+  "description": "Free crypto project intelligence on Twitter/X — powered by Infinite",
+  "permissions": ["storage", "sidePanel", "activeTab", "tabs"],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://*.infinitekeys.fun/*",
+    "https://api.infinite.sh/*",
+    "https://api.dexscreener.com/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["content/inject.js"],
+      "css": ["content/inject.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
