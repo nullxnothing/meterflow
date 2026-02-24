@@ -10,7 +10,7 @@ const WATCHLIST = [
   'DriftProtocol',
   'ai16zdao',
   'virtuals_io',
-  'FetchAI',
+  'Fetch_ai',
   'rendernetwork',
   'shawmakesmagic',
   'blknoiz06',
