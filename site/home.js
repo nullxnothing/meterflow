@@ -155,6 +155,14 @@ setInterval(async () => {
   populateProtocolStats();
 }, 30_000);
 
+// ═══════════ AGENT TABS ═══════════
+function showTab(tab) {
+  document.getElementById('tabHuman').classList.toggle('active', tab === 'human');
+  document.getElementById('tabAgent').classList.toggle('active', tab === 'agent');
+  document.getElementById('btnHuman').classList.toggle('active', tab === 'human');
+  document.getElementById('btnAgent').classList.toggle('active', tab === 'agent');
+}
+
 // ═══════════ PARALLAX ═══════════
 let rafScrollId = null;
 window.addEventListener('scroll', () => {
@@ -177,7 +185,7 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
 
-document.querySelectorAll('.protocol-stats, .how-section, .tools-section, .tiers-section, .funded-section, .faq-section, .cta-section, .demo-section').forEach(el => {
+document.querySelectorAll('.hooks-section, .protocol-stats, .how-section, .tools-section, .tiers-section, .funded-section, .agent-section, .faq-section, .cta-section, .demo-section').forEach(el => {
   el.classList.add('scroll-reveal');
   revealObserver.observe(el);
 });
@@ -200,7 +208,7 @@ const spyObserver = new IntersectionObserver((entries) => {
 spySections.forEach(s => spyObserver.observe(s));
 
 // ═══════════ CARD MOUSE GLOW ═══════════
-document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block').forEach(card => {
+document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block, .hook-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
     card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
