@@ -12,6 +12,7 @@ import {
   getKeyProfile, getKeyProfileCount,
   addWatchedProfile, getWatchedProfiles, removeWatchedProfile,
 } from '../lib/kv-alpha.js';
+import { isSocialDataEnabled, getUserProfile, normalizeUser } from '../lib/socialdata.js';
 
 const router = Router();
 const log = logger.child({ mod: 'alpha' });
@@ -40,53 +41,40 @@ router.get('/alpha/profile/:username', authenticateApiKey, async (req, res) => {
   const { apiKey } = req.infinite;
 
   try {
-    const token = await ensureValidTwitterToken(apiKey);
-    if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
+    let twitterId, profileData;
 
-    // Fetch from Twitter API
-    const fields = 'public_metrics,description,profile_image_url,created_at,url,entities';
-    const userData = await twitterGet(
-      `/2/users/by/username/${encodeURIComponent(username)}?user.fields=${fields}`,
-      token,
-    );
+    if (isSocialDataEnabled()) {
+      // SocialData: $0.0002 per lookup (vs opaque X API credit cost)
+      const sdUser = await getUserProfile(username);
+      if (!sdUser) return res.status(404).json({ error: 'user_not_found' });
+      const norm = normalizeUser(sdUser);
+      twitterId = norm.twitterId;
+      profileData = {
+        twitterId,
+        username: norm.username,
+        displayName: norm.displayName,
+        bio: norm.bio,
+        profileImage: norm.profileImage,
+        followers: Number(norm.followers),
+        following: Number(norm.following),
+        tweets: Number(norm.tweetCount),
+        createdAt: norm.createdAt,
+      };
+    } else {
+      // X API fallback
+      const token = await ensureValidTwitterToken(apiKey);
+      if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
 
-    if (!userData.data) return res.status(404).json({ error: 'user_not_found' });
+      const fields = 'public_metrics,description,profile_image_url,created_at';
+      const userData = await twitterGet(
+        `/2/users/by/username/${encodeURIComponent(username)}?user.fields=${fields}`,
+        token,
+      );
+      if (!userData.data) return res.status(404).json({ error: 'user_not_found' });
 
-    const user = userData.data;
-    const twitterId = user.id;
-
-    // Check for rename history
-    const history = await getProfileHistory(twitterId);
-
-    // Check cached profile for change detection
-    const cached = await getProfile(twitterId);
-    const isRenamed = cached && cached.username && cached.username !== user.username;
-
-    // Update cache
-    await setProfile(twitterId, {
-      username: user.username,
-      displayName: user.name,
-      bio: user.description || '',
-      profileImage: user.profile_image_url || '',
-      followers: String(user.public_metrics?.followers_count || 0),
-      following: String(user.public_metrics?.following_count || 0),
-      tweetCount: String(user.public_metrics?.tweet_count || 0),
-      createdAt: user.created_at || '',
-      lastScanned: String(Date.now()),
-    });
-
-    // Key followers of this profile
-    const keyFollowers = await getFollowersOf(twitterId, 20);
-    const keyFollowerCount = await getFollowerCount(twitterId);
-
-    // Contract addresses detected
-    const cas = await getCAs(twitterId);
-
-    // Check if this is a key profile itself
-    const isKeyProfile = !!(await getKeyProfile(twitterId));
-
-    res.json({
-      profile: {
+      const user = userData.data;
+      twitterId = user.id;
+      profileData = {
         twitterId,
         username: user.username,
         displayName: user.name,
@@ -96,7 +84,34 @@ router.get('/alpha/profile/:username', authenticateApiKey, async (req, res) => {
         following: user.public_metrics?.following_count,
         tweets: user.public_metrics?.tweet_count,
         createdAt: user.created_at,
-      },
+      };
+    }
+
+    // Check for rename history
+    const history = await getProfileHistory(twitterId);
+    const cached = await getProfile(twitterId);
+    const isRenamed = cached && cached.username && cached.username !== profileData.username;
+
+    // Update cache
+    await setProfile(twitterId, {
+      username: profileData.username,
+      displayName: profileData.displayName,
+      bio: profileData.bio || '',
+      profileImage: profileData.profileImage || '',
+      followers: String(profileData.followers || 0),
+      following: String(profileData.following || 0),
+      tweetCount: String(profileData.tweets || 0),
+      createdAt: profileData.createdAt || '',
+      lastScanned: String(Date.now()),
+    });
+
+    const keyFollowers = await getFollowersOf(twitterId, 20);
+    const keyFollowerCount = await getFollowerCount(twitterId);
+    const cas = await getCAs(twitterId);
+    const isKeyProfile = !!(await getKeyProfile(twitterId));
+
+    res.json({
+      profile: profileData,
       renameHistory: history,
       isRenamed,
       keyFollowers,
@@ -294,29 +309,41 @@ router.post('/alpha/watchlist', authenticateApiKey, async (req, res) => {
   const { username } = req.body;
   if (!username || typeof username !== 'string') return res.status(400).json({ error: 'username required' });
 
+  const cleanUsername = username.replace(/^@/, '').trim();
+
   try {
-    const token = await ensureValidTwitterToken(req.infinite.apiKey);
-    if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
+    let userId, userData;
 
-    const fields = 'public_metrics,description,profile_image_url';
-    const userData = await twitterGet(
-      `/2/users/by/username/${encodeURIComponent(username.replace('@', ''))}?user.fields=${fields}`,
-      token,
-    );
-    if (!userData.data) return res.status(404).json({ error: 'user_not_found' });
+    if (isSocialDataEnabled()) {
+      const sdUser = await getUserProfile(cleanUsername);
+      if (!sdUser) return res.status(404).json({ error: 'user_not_found' });
+      const norm = normalizeUser(sdUser);
+      userId = norm.twitterId;
+      userData = { username: norm.username, displayName: norm.displayName, profileImage: norm.profileImage, bio: norm.bio, followers: Number(norm.followers) };
+    } else {
+      const token = await ensureValidTwitterToken(req.infinite.apiKey);
+      if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
 
-    const user = userData.data;
-    await addWatchedProfile(req.infinite.apiKey, user.id, {
-      username: user.username,
-      displayName: user.name,
-      profileImage: user.profile_image_url || '',
-      bio: user.description || '',
-      followers: user.public_metrics?.followers_count || 0,
-    });
+      const data = await twitterGet(
+        `/2/users/by/username/${encodeURIComponent(cleanUsername)}?user.fields=public_metrics,description,profile_image_url`,
+        token,
+      );
+      if (!data.data) return res.status(404).json({ error: 'user_not_found' });
 
-    res.json({ ok: true, profile: { twitterId: user.id, username: user.username, displayName: user.name } });
+      userId = data.data.id;
+      userData = {
+        username: data.data.username,
+        displayName: data.data.name,
+        profileImage: data.data.profile_image_url || '',
+        bio: data.data.description || '',
+        followers: data.data.public_metrics?.followers_count || 0,
+      };
+    }
+
+    await addWatchedProfile(req.infinite.apiKey, userId, userData);
+    res.json({ ok: true, profile: { twitterId: userId, username: userData.username, displayName: userData.displayName } });
   } catch (err) {
-    log.error('Watchlist add failed', { username, err: err.message });
+    log.error('Watchlist add failed', { username: cleanUsername, err: err.message });
     res.status(502).json({ error: 'add_failed', message: err.message });
   }
 });
