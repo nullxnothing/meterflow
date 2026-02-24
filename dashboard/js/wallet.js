@@ -26,7 +26,7 @@ export function getWalletProviders() {
     providers.push({ name: 'Phantom', provider: p, icon: p.icon || WALLET_ICONS.phantom });
   }
   if (window.backpack?.isBackpack) {
-    const p = window.backpack;
+    const p = window.backpack.solana || window.backpack;
     providers.push({ name: 'Backpack', provider: p, icon: p.icon || WALLET_ICONS.backpack });
   }
   if (window.solflare?.isSolflare) {
@@ -53,8 +53,14 @@ export async function connectWallet(providerObj) {
     const publicKey = pk.toString();
     const message = `INFINITE Protocol: Verify wallet ownership\n\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
     const encoded = new TextEncoder().encode(message);
-    const signatureBytes = await provider.signMessage(encoded, 'utf8');
-    const sig = btoa(String.fromCharCode(...new Uint8Array(signatureBytes.signature || signatureBytes)));
+    let signatureBytes;
+    try {
+      signatureBytes = await provider.signMessage(encoded, 'utf8');
+    } catch {
+      signatureBytes = await provider.signMessage(encoded);
+    }
+    const rawSig = signatureBytes?.signature || signatureBytes;
+    const sig = btoa(String.fromCharCode(...new Uint8Array(rawSig)));
 
     // Mark wallet as connected regardless of token balance
     STATE.connected = true;
