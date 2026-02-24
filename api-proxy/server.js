@@ -17,6 +17,7 @@ import agentsRouter from './routes/agents.js';
 import tradesRouter from './routes/trades.js';
 import twitterRouter from './routes/twitter.js';
 import alphaRouter from './routes/alpha.js';
+import launchRouter from './routes/launch.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
 import { initSocket } from './lib/socket.js';
@@ -68,6 +69,7 @@ app.use('/v1', agentsRouter);
 app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
+app.use('/v1', launchRouter);
 
 // Sentry error handler (must be after routes, before listen)
 initSentry(app);

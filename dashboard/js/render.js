@@ -22,6 +22,7 @@ import { renderFutureApis } from './tabs/future-apis.js';
 import { renderTreasury } from './tabs/treasury.js';
 import { renderLiveTrades } from './tabs/live-trades.js';
 import { renderXTools } from './tabs/x-tools.js';
+import { renderLaunch } from './tabs/launch.js';
 
 export function render() {
   const app = document.getElementById('app');
@@ -155,6 +156,7 @@ function renderNavItems() {
     <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Models</div>
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
     <div class="nav-group-label">Solana Tools</div>
+    <div class="nav-item ${t === 'launch' ? 'active' : ''}" data-tab="launch">Launch Token <span style="font-size:9px;opacity:0.5;margin-left:4px;">NEW</span></div>
     <div class="nav-item ${t === 'live-trades' ? 'active' : ''}" data-tab="live-trades">Live Trades</div>
     <div class="nav-item ${t === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
     <div class="nav-group-label">Media Tools</div>
@@ -195,6 +197,7 @@ export function renderTab() {
       case 'trading': return renderTrading();
       case 'my-agents': return renderMyAgents();
       case 'agents': return renderAgents();
+      case 'launch': return renderLaunch();
       case 'x-tools': return renderXTools();
       case 'future-apis': return renderFutureApis();
       case 'treasury': return renderTreasury();
