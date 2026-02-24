@@ -48,7 +48,7 @@ export async function connectWallet(providerObj) {
     if (!provider) throw new Error('No Solana wallet found. Install Phantom, Backpack, or Solflare.');
 
     const resp = await provider.connect();
-    const pk = resp?.publicKey ?? resp;
+    const pk = resp?.publicKey ?? provider.publicKey ?? resp;
     if (!pk) throw new Error('Wallet did not return a public key. Try reconnecting.');
     const publicKey = pk.toString();
     const message = `INFINITE Protocol: Verify wallet ownership\n\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
