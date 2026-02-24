@@ -6,7 +6,7 @@ import { getTodayKey } from '../lib/helpers.js';
 import { getTreasuryBalance } from '../lib/balance.js';
 import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
 import { getKeyData, countKeys } from '../lib/kv-keys.js';
-import { getGlobalStats } from '../lib/kv-usage.js';
+import { getGlobalStats, getTopUsersToday } from '../lib/kv-usage.js';
 import { logger } from '../lib/logger.js';
 
 const router = Router();
@@ -80,6 +80,32 @@ router.post('/votes', authenticateApiKey, async (req, res) => {
   } catch (e) {
     logger.error('Failed to toggle vote', { err: e.message });
     res.status(500).json({ error: 'internal_error', message: 'Failed to save vote' });
+  }
+});
+
+// GET /admin/top-users — Top users by credit usage today
+router.get('/admin/top-users', authenticateAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+    const topUsers = await getTopUsersToday(limit);
+
+    const resolved = await Promise.all(
+      topUsers.map(async (entry) => {
+        const keyData = await getKeyData(entry.apiKey);
+        return {
+          wallet: keyData?.wallet || 'unknown',
+          tier: keyData?.tier || 'unknown',
+          calls: entry.count,
+          tokens: entry.tokens,
+          apiKeyPrefix: entry.apiKey.slice(0, 8) + '...',
+        };
+      })
+    );
+
+    res.json({ date: new Date().toISOString().split('T')[0], users: resolved });
+  } catch (e) {
+    logger.error('Failed to get top users', { err: e.message });
+    res.status(500).json({ error: 'internal_error', message: 'Failed to fetch top users' });
   }
 });
 

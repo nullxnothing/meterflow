@@ -261,6 +261,57 @@ export async function getGlobalStats() {
 }
 
 /**
+ * Get top users by usage for today
+ * @param {number} limit - max results to return
+ * @returns {Promise<Array<{ apiKey: string, count: number, tokens: number }>>}
+ */
+export async function getTopUsersToday(limit = 10) {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    const entries = [];
+    for (const [key, usage] of fallbackUsage.entries()) {
+      if (key.startsWith('trial:') || usage.date !== today) continue;
+      entries.push({ apiKey: key, count: usage.count, tokens: usage.tokens });
+    }
+    return entries.sort((a, b) => b.count - a.count).slice(0, limit);
+  }
+
+  try {
+    const pattern = `${USAGE_PREFIX}*:${today}`;
+    const keys = [];
+    let cursor = '0';
+    do {
+      const [next, batch] = await r.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+      cursor = next;
+      keys.push(...batch);
+    } while (cursor !== '0');
+
+    if (keys.length === 0) return [];
+
+    const pipeline = r.pipeline();
+    for (const key of keys) pipeline.hgetall(key);
+    const results = await pipeline.exec();
+
+    const entries = keys.map((key, i) => {
+      const data = results[i]?.[1] || {};
+      const apiKey = key.replace(USAGE_PREFIX, '').replace(`:${today}`, '');
+      return {
+        apiKey,
+        count: parseInt(data.count, 10) || 0,
+        tokens: parseInt(data.tokens, 10) || 0,
+      };
+    });
+
+    return entries.sort((a, b) => b.count - a.count).slice(0, limit);
+  } catch (e) {
+    logger.error('KV-Usage failed to get top users', { err: e.message });
+    return [];
+  }
+}
+
+/**
  * Reset usage for an API key (used when reconnecting wallet, etc)
  * @param {string} apiKey
  */
