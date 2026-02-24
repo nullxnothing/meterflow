@@ -9,6 +9,7 @@ function generateApiKey() {
 
 function getTierForBalance(balance) {
   if (!TOKEN_GATING_ENABLED) return 'operator';
+  if (balance >= CONFIG.TIERS.alpha.min) return 'alpha';
   if (balance >= CONFIG.TIERS.architect.min) return 'architect';
   if (balance >= CONFIG.TIERS.operator.min) return 'operator';
   if (balance >= CONFIG.TIERS.signal.min) return 'signal';

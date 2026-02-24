@@ -21,7 +21,7 @@ function hasAnyChatProvider() {
 
 function isVideoTierAllowed() {
   const t = (STATE.tier || '').toLowerCase();
-  return t === 'operator' || t === 'architect';
+  return t === 'operator' || t === 'architect' || t === 'alpha';
 }
 
 export function renderOverview() {

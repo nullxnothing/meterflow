@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'crypto';
-import { CONFIG, TRIAL_CONFIG, TRADING_TIERS } from './config.js';
+import { CONFIG, TRIAL_CONFIG, TRADING_TIERS, ALPHA_TIERS } from './config.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
@@ -82,4 +82,18 @@ function requireTradingTier(req, res, next) {
   next();
 }
 
-export { authenticateApiKey, authenticateAdmin, requireTradingTier };
+function requireAlphaTier(req, res, next) {
+  const { tier } = req.infinite;
+  if (!ALPHA_TIERS.includes(tier)) {
+    return res.status(403).json({
+      error: 'tier_restricted',
+      message: 'X Tools requires Alpha tier (10,000,000 $INF).',
+      requiredTier: 'Alpha',
+      requiredBalance: 10_000_000,
+      currentTier: CONFIG.TIERS[tier]?.label || tier,
+    });
+  }
+  next();
+}
+
+export { authenticateApiKey, authenticateAdmin, requireTradingTier, requireAlphaTier };

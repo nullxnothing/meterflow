@@ -13,6 +13,12 @@ const CONFIG = {
   TREASURY_WALLET: process.env.TREASURY_WALLET || '',
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {
+    alpha: {
+      min: parseInt(process.env.TIER_ALPHA_MIN || '10000000'),
+      dailyLimit: parseInt(process.env.TIER_ALPHA_DAILY_LIMIT || '999999'),
+      models: ['auto', 'claude-sonnet-4-6', 'claude-opus-4-6', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gpt-4o', 'gpt-4o-mini'],
+      label: 'Alpha'
+    },
     architect: {
       min: parseInt(process.env.TIER_ARCHITECT_MIN || '1000000'),
       dailyLimit: parseInt(process.env.TIER_ARCHITECT_DAILY_LIMIT || '999999'),
@@ -49,14 +55,15 @@ const TRIAL_CONFIG = {
   maxTokens: 2048,
 };
 
-const TRADING_TIERS = ['operator', 'architect'];
+const TRADING_TIERS = ['operator', 'architect', 'alpha'];
+const ALPHA_TIERS = ['alpha'];
 const TOKEN_GATING_ENABLED = CONFIG.TOKEN_MINT && CONFIG.TOKEN_MINT !== 'PASTE_YOUR_TOKEN_MINT_HERE';
 const PROVIDER_AVAILABLE = {
   claude: !!CONFIG.ANTHROPIC_API_KEY,
   gemini: !!CONFIG.GOOGLE_API_KEY,
   openai: !!CONFIG.OPENAI_API_KEY,
 };
-const VIDEO_ALLOWED_TIERS = ['operator', 'architect'];
+const VIDEO_ALLOWED_TIERS = ['operator', 'architect', 'alpha'];
 const VIDEO_CALL_COST = 10;
 
 const TRADING_SYSTEM_PROMPT = `You are an expert Solana blockchain trading analyst. You have deep knowledge of:
@@ -119,6 +126,7 @@ export {
   CONFIG,
   TRIAL_CONFIG,
   TRADING_TIERS,
+  ALPHA_TIERS,
   TOKEN_GATING_ENABLED,
   PROVIDER_AVAILABLE,
   VIDEO_ALLOWED_TIERS,

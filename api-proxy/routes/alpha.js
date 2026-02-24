@@ -1,6 +1,6 @@
 // Infinite Alpha — CT intelligence scanner API routes
 import { Router } from 'express';
-import { authenticateApiKey } from '../middleware.js';
+import { authenticateApiKey, requireAlphaTier } from '../middleware.js';
 import { ensureValidTwitterToken } from '../oauth/routes.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -36,7 +36,7 @@ async function twitterGet(path, token) {
 }
 
 // ── Scan a Twitter profile ──
-router.get('/alpha/profile/:username', authenticateApiKey, async (req, res) => {
+router.get('/alpha/profile/:username', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { username } = req.params;
   const { apiKey } = req.infinite;
 
@@ -126,7 +126,7 @@ router.get('/alpha/profile/:username', authenticateApiKey, async (req, res) => {
 });
 
 // ── Key followers of a project ──
-router.get('/alpha/profile/:twitterId/parents', authenticateApiKey, async (req, res) => {
+router.get('/alpha/profile/:twitterId/parents', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { twitterId } = req.params;
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
   const offset = parseInt(req.query.offset) || 0;
@@ -158,7 +158,7 @@ router.get('/alpha/profile/:twitterId/parents', authenticateApiKey, async (req, 
 });
 
 // ── What a key profile follows ──
-router.get('/alpha/profile/:twitterId/children', authenticateApiKey, async (req, res) => {
+router.get('/alpha/profile/:twitterId/children', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { twitterId } = req.params;
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
   const offset = parseInt(req.query.offset) || 0;
@@ -187,7 +187,7 @@ router.get('/alpha/profile/:twitterId/children', authenticateApiKey, async (req,
 });
 
 // ── Discover feed ──
-router.get('/alpha/discover', authenticateApiKey, async (req, res) => {
+router.get('/alpha/discover', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
   const offset = parseInt(req.query.offset) || 0;
 
@@ -201,7 +201,7 @@ router.get('/alpha/discover', authenticateApiKey, async (req, res) => {
 });
 
 // ── Trending feed ──
-router.get('/alpha/trending', authenticateApiKey, async (req, res) => {
+router.get('/alpha/trending', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
 
   try {
@@ -214,7 +214,7 @@ router.get('/alpha/trending', authenticateApiKey, async (req, res) => {
 });
 
 // ── Alerts for a profile ──
-router.get('/alpha/alerts/:twitterId', authenticateApiKey, async (req, res) => {
+router.get('/alpha/alerts/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { twitterId } = req.params;
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
 
@@ -228,7 +228,7 @@ router.get('/alpha/alerts/:twitterId', authenticateApiKey, async (req, res) => {
 });
 
 // ── Contract addresses for a profile ──
-router.get('/alpha/ca/:twitterId', authenticateApiKey, async (req, res) => {
+router.get('/alpha/ca/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { twitterId } = req.params;
 
   try {
@@ -241,7 +241,7 @@ router.get('/alpha/ca/:twitterId', authenticateApiKey, async (req, res) => {
 });
 
 // ── Scan a Solana token address ──
-router.get('/alpha/scan-token/:address', authenticateApiKey, async (req, res) => {
+router.get('/alpha/scan-token/:address', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { address } = req.params;
 
   if (!address.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
@@ -276,12 +276,12 @@ router.get('/alpha/scan-token/:address', authenticateApiKey, async (req, res) =>
 });
 
 // ── Notes CRUD ──
-router.get('/alpha/notes/:twitterId', authenticateApiKey, async (req, res) => {
+router.get('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const note = await getNote(req.infinite.apiKey, req.params.twitterId);
   res.json({ note });
 });
 
-router.put('/alpha/notes/:twitterId', authenticateApiKey, async (req, res) => {
+router.put('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { text } = req.body;
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text required' });
   if (text.length > 2000) return res.status(400).json({ error: 'text too long (max 2000)' });
@@ -289,13 +289,13 @@ router.put('/alpha/notes/:twitterId', authenticateApiKey, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.delete('/alpha/notes/:twitterId', authenticateApiKey, async (req, res) => {
+router.delete('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   await deleteNote(req.infinite.apiKey, req.params.twitterId);
   res.json({ ok: true });
 });
 
 // ── Watchlist ──
-router.get('/alpha/watchlist', authenticateApiKey, async (req, res) => {
+router.get('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req, res) => {
   try {
     const profiles = await getWatchedProfiles(req.infinite.apiKey);
     res.json({ profiles });
@@ -305,7 +305,7 @@ router.get('/alpha/watchlist', authenticateApiKey, async (req, res) => {
   }
 });
 
-router.post('/alpha/watchlist', authenticateApiKey, async (req, res) => {
+router.post('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { username } = req.body;
   if (!username || typeof username !== 'string') return res.status(400).json({ error: 'username required' });
 
@@ -348,7 +348,7 @@ router.post('/alpha/watchlist', authenticateApiKey, async (req, res) => {
   }
 });
 
-router.delete('/alpha/watchlist/:twitterId', authenticateApiKey, async (req, res) => {
+router.delete('/alpha/watchlist/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   try {
     await removeWatchedProfile(req.infinite.apiKey, req.params.twitterId);
     res.json({ ok: true });
@@ -359,7 +359,7 @@ router.delete('/alpha/watchlist/:twitterId', authenticateApiKey, async (req, res
 });
 
 // ── Stats ──
-router.get('/alpha/stats', authenticateApiKey, async (req, res) => {
+router.get('/alpha/stats', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const keyProfileCount = await getKeyProfileCount();
   res.json({ keyProfileCount });
 });

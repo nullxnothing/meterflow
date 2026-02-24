@@ -126,7 +126,7 @@ export function renderTrading() {
     `;
   }
 
-  const isTradingTier = STATE.tier === 'Operator' || STATE.tier === 'Architect';
+  const isTradingTier = STATE.tier === 'Operator' || STATE.tier === 'Architect' || STATE.tier === 'Alpha';
 
   if (!isTradingTier) {
     return `<div class="bot-empty"><div class="bot-empty-icon">/</div><div>Trade Bot requires <strong>Operator</strong> tier or above.</div><div style="margin-top:8px;font-size:10px;color:var(--text-muted);">Hold 100K+ $INFINITE tokens to unlock.</div></div>`;

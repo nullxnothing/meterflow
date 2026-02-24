@@ -3,16 +3,16 @@
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { isAlphaTier, renderAlphaGate } from '../gate.js';
 
 export function renderXTools() {
-  if (!isHolder()) {
+  if (!isAlphaTier()) {
     return `
       <div class="page-header">
         <h1 class="page-title">X Tools</h1>
-        <p class="page-sub">Free CT intelligence tools for Twitter/X — profile scanning, alpha discovery, and trending project detection.</p>
+        <p class="page-sub">CT intelligence tools for Twitter/X — profile scanning, alpha discovery, and trending project detection.</p>
       </div>
-      ${renderHolderGate('X Tools')}
+      ${renderAlphaGate()}
     `;
   }
 

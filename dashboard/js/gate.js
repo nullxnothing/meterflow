@@ -8,6 +8,10 @@ export function isHolder() {
   return STATE.connected && !!STATE.apiKeyFull && STATE.tier !== 'Trial';
 }
 
+export function isAlphaTier() {
+  return STATE.connected && !!STATE.apiKeyFull && STATE.tier === 'Alpha';
+}
+
 export function isTrial() {
   return STATE.connected && !!STATE.apiKeyFull && STATE.tier === 'Trial';
 }
@@ -52,10 +56,15 @@ export function renderTrialExhausted() {
           <div class="holder-gate-tier-req">100,000 $INF</div>
           <div class="holder-gate-tier-desc">10,000 calls/day</div>
         </div>
-        <div class="holder-gate-tier accent">
+        <div class="holder-gate-tier">
           <div class="holder-gate-tier-name">Architect</div>
           <div class="holder-gate-tier-req">1,000,000 $INF</div>
           <div class="holder-gate-tier-desc">Unlimited</div>
+        </div>
+        <div class="holder-gate-tier accent">
+          <div class="holder-gate-tier-name">Alpha</div>
+          <div class="holder-gate-tier-req">10,000,000 $INF</div>
+          <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
         </div>
       </div>
       <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
@@ -88,10 +97,40 @@ export function renderHolderGate(featureName = 'this feature') {
           <div class="holder-gate-tier-req">100,000 $INF</div>
           <div class="holder-gate-tier-desc">10,000 calls/day</div>
         </div>
-        <div class="holder-gate-tier accent">
+        <div class="holder-gate-tier">
           <div class="holder-gate-tier-name">Architect</div>
           <div class="holder-gate-tier-req">1,000,000 $INF</div>
           <div class="holder-gate-tier-desc">Unlimited</div>
+        </div>
+        <div class="holder-gate-tier accent">
+          <div class="holder-gate-tier-name">Alpha</div>
+          <div class="holder-gate-tier-req">10,000,000 $INF</div>
+          <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
+        </div>
+      </div>
+      ${needsWallet ? `<button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>` : `
+        <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
+      `}
+    </div>
+  `;
+}
+
+export function renderAlphaGate() {
+  const needsWallet = !STATE.connected;
+  return `
+    <div class="holder-gate">
+      <h2 class="holder-gate-title">Alpha Tier Required</h2>
+      <p class="holder-gate-desc">
+        ${needsWallet
+          ? `Connect your wallet and hold <strong>10,000,000 $INF</strong> to unlock X Tools.`
+          : `X Tools requires <strong>Alpha tier</strong>. Hold <strong>10,000,000 $INF</strong> to access CT intelligence tools.`
+        }
+      </p>
+      <div class="holder-gate-tiers">
+        <div class="holder-gate-tier accent">
+          <div class="holder-gate-tier-name">Alpha</div>
+          <div class="holder-gate-tier-req">10,000,000 $INF</div>
+          <div class="holder-gate-tier-desc">CT intelligence, profile scanning, discover feed, trending, alerts, watchlist</div>
         </div>
       </div>
       ${needsWallet ? `<button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>` : `

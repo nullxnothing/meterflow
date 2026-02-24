@@ -60,7 +60,7 @@ export function renderKeys() {
 }
 
 function renderXApiSection() {
-  const isArchitect = STATE.tier === 'Architect';
+  const isArchitect = STATE.tier === 'Architect' || STATE.tier === 'Alpha';
   const isConnected = STATE.connections.twitter;
 
   if (!isArchitect) {
