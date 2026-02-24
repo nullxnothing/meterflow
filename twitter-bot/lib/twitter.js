@@ -103,4 +103,38 @@ async function quoteTweet(tweetId, text) {
   }
 }
 
-export { getBotUserId, resolveUsername, getUserTweets, searchTweets, reply, quoteTweet };
+async function likeTweet(tweetId) {
+  if (CFG.DRY_RUN) {
+    console.log(`[DRY_RUN] Would like ${tweetId}`);
+    return true;
+  }
+
+  try {
+    const userId = await getBotUserId();
+    await rw.v2.like(userId, tweetId);
+    return true;
+  } catch (err) {
+    // 139 = already liked — not an error
+    if (err.code === 139 || err.message?.includes('already')) return true;
+    console.error(`[TWITTER] Like failed for ${tweetId}:`, err.message);
+    return false;
+  }
+}
+
+async function postTweet(text) {
+  if (CFG.DRY_RUN) {
+    console.log(`[DRY_RUN] Would tweet:\n${text}`);
+    return { data: { id: 'dry-run-id' } };
+  }
+
+  try {
+    const result = await rw.v2.tweet({ text });
+    console.log(`[TWITTER] Posted tweet -> ${result.data.id}`);
+    return result;
+  } catch (err) {
+    console.error(`[TWITTER] Post failed:`, err.message);
+    return null;
+  }
+}
+
+export { getBotUserId, resolveUsername, getUserTweets, searchTweets, reply, quoteTweet, likeTweet, postTweet };

@@ -265,4 +265,8 @@ async function searchEngagement() {
   console.log(`[SEARCH] Done — ${engagedCount} replies | Skipped: ${JSON.stringify(skipped)}`);
 }
 
-export { initWatchlist, pollWatchlist, searchEngagement };
+function getResolvedWatchlist() {
+  return resolvedWatchlist;
+}
+
+export { initWatchlist, pollWatchlist, searchEngagement, getResolvedWatchlist };
