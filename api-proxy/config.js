@@ -42,6 +42,13 @@ const CONFIG = {
   ),
 };
 
+const TRIAL_CONFIG = {
+  dailyLimit: parseInt(process.env.TRIAL_DAILY_LIMIT || '3'),
+  models: ['gpt-4o-mini'],
+  label: 'Trial',
+  maxTokens: 2048,
+};
+
 const TRADING_TIERS = ['operator', 'architect'];
 const TOKEN_GATING_ENABLED = CONFIG.TOKEN_MINT && CONFIG.TOKEN_MINT !== 'PASTE_YOUR_TOKEN_MINT_HERE';
 const PROVIDER_AVAILABLE = {
@@ -110,6 +117,7 @@ if (isProduction) {
 
 export {
   CONFIG,
+  TRIAL_CONFIG,
   TRADING_TIERS,
   TOKEN_GATING_ENABLED,
   PROVIDER_AVAILABLE,

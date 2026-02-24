@@ -1,8 +1,9 @@
 import { timingSafeEqual } from 'crypto';
-import { CONFIG, TRADING_TIERS } from './config.js';
+import { CONFIG, TRIAL_CONFIG, TRADING_TIERS } from './config.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
+import { getTrialUsage } from './lib/kv-usage.js';
 import { getTreasuryState } from './state.js';
 import { logger } from './lib/logger.js';
 
@@ -61,6 +62,50 @@ async function authenticateApiKey(req, res, next) {
   next();
 }
 
+function getClientIp(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.socket?.remoteAddress
+    || '0.0.0.0';
+}
+
+async function authenticateTrialOrKey(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  // If Bearer token present, use standard auth
+  if (authHeader?.startsWith('Bearer ')) {
+    return authenticateApiKey(req, res, next);
+  }
+
+  // Trial access — IP-based rate limiting
+  const ip = getClientIp(req);
+  const trialUsage = await getTrialUsage(ip);
+
+  if (trialUsage.count >= TRIAL_CONFIG.dailyLimit) {
+    return res.status(403).json({
+      error: 'trial_exhausted',
+      message: `You've used all ${TRIAL_CONFIG.dailyLimit} free calls for today. Connect a wallet with $INFINITE tokens for unlimited access.`,
+      trialUsed: trialUsage.count,
+      trialLimit: TRIAL_CONFIG.dailyLimit,
+    });
+  }
+
+  req.infinite = {
+    apiKey: `trial:${ip}`,
+    tier: 'trial',
+    isTrial: true,
+    tierConfig: {
+      dailyLimit: TRIAL_CONFIG.dailyLimit,
+      models: TRIAL_CONFIG.models,
+      label: TRIAL_CONFIG.label,
+    },
+    usage: trialUsage,
+    trialRemaining: TRIAL_CONFIG.dailyLimit - trialUsage.count,
+  };
+
+  next();
+}
+
 function authenticateAdmin(req, res, next) {
   const adminKey = process.env.ADMIN_KEY;
   if (!adminKey || adminKey === 'dev-admin-key') {
@@ -87,4 +132,4 @@ function requireTradingTier(req, res, next) {
   next();
 }
 
-export { authenticateApiKey, authenticateAdmin, requireTradingTier };
+export { authenticateApiKey, authenticateTrialOrKey, authenticateAdmin, requireTradingTier };

@@ -28,6 +28,7 @@ export const STATE = {
   activeTab: 'overview',
   keyVisible: false,
   error: null,
+  trial: { used: 0, limit: 3, remaining: 3, loaded: false },
 };
 
 export const CHAT = {

@@ -5,7 +5,7 @@
 import { STATE, CHAT, TRADING } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
-import { startStatusPolling, fetchOAuthStatus } from './polling.js';
+import { startStatusPolling, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchTrialStatus } from './polling.js';
 import { render } from './render.js';
 import { showToast } from './actions.js';
 import { loadVotes } from './votes.js';
@@ -17,10 +17,18 @@ loadVideoHistory();
 loadTradingHistory();
 loadVotes();
 
-if (loadSession()) {
+const hasSession = loadSession();
+
+if (hasSession) {
+  // Holder session — start full polling (status, treasury, providers, oauth)
   if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
   if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
   startStatusPolling();
+} else {
+  // Public/non-holder — fetch public data + trial status
+  fetchTreasury();
+  fetchProviders();
+  fetchTrialStatus().then(() => render());
 }
 
 // ─── Handle OAuth Redirects ───

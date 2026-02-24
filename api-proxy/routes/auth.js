@@ -2,14 +2,14 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { CONFIG } from '../config.js';
+import { CONFIG, TRIAL_CONFIG } from '../config.js';
 import { authenticateApiKey } from '../middleware.js';
 import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
 import { isModelAvailable } from '../lib/providers.js';
 import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } from '../lib/kv-keys.js';
 import { logger } from '../lib/logger.js';
-import { resetUsage } from '../lib/kv-usage.js';
+import { resetUsage, getTrialUsage } from '../lib/kv-usage.js';
 
 const router = Router();
 
@@ -150,6 +150,22 @@ router.get('/status', authenticateApiKey, (req, res) => {
     },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+  });
+});
+
+// GET /auth/trial — Check trial usage (no auth required)
+router.get('/trial', async (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.socket?.remoteAddress
+    || '0.0.0.0';
+
+  const usage = await getTrialUsage(ip);
+  res.json({
+    used: usage.count,
+    limit: TRIAL_CONFIG.dailyLimit,
+    remaining: Math.max(0, TRIAL_CONFIG.dailyLimit - usage.count),
+    models: TRIAL_CONFIG.models,
   });
 });
 

@@ -44,23 +44,28 @@ export async function sendChatMessage() {
   try {
     CHAT.abortController = new AbortController();
 
+    const headers = { 'Content-Type': 'application/json' };
+    if (STATE.apiKeyFull) headers['Authorization'] = `Bearer ${STATE.apiKeyFull}`;
+
     const response = await fetch(`${API_BASE}/v1/chat/stream`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${STATE.apiKeyFull}`,
-      },
+      headers,
       body: JSON.stringify({
         model,
         messages: conv.messages.map(m => ({ role: m.role, content: m.content })),
-        tools,
-        images,
+        ...(STATE.apiKeyFull ? { tools, images } : { images }),
       }),
       signal: CHAT.abortController.signal,
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      if (err.error === 'trial_exhausted') {
+        STATE.trial.remaining = 0;
+        STATE.trial.used = STATE.trial.limit;
+        import('./render.js').then(m => m.render());
+        throw new Error('Free trial exhausted. Connect a wallet for unlimited access.');
+      }
       if (response.status === 429) {
         throw new Error('Rate limit reached. Your daily quota has been exhausted — limits reset at midnight UTC.');
       }
@@ -109,6 +114,9 @@ export async function sendChatMessage() {
               collectedToolResults.push({ tool: data.tool, data: data.data });
               showToolResultCard(bodyEl, data.tool, data.data);
             }
+          } else if (data.type === 'trial') {
+            STATE.trial.used = data.used;
+            STATE.trial.remaining = data.limit - data.used;
           } else if (data.type === 'error') {
             throw new Error(data.message);
           }
@@ -128,6 +136,9 @@ export async function sendChatMessage() {
     bindCodeCopyButtons();
     bindCodeToggleButtons();
 
+    // Update trial banner if applicable
+    if (!STATE.apiKeyFull) updateTrialBanner();
+
   } catch (err) {
     removeTypingIndicator();
     if (err.name !== 'AbortError') {
@@ -138,6 +149,17 @@ export async function sendChatMessage() {
     CHAT.abortController = null;
     updateSendButton();
   }
+}
+
+function updateTrialBanner() {
+  const banner = document.querySelector('.trial-banner');
+  if (!banner) return;
+  if (STATE.trial.remaining <= 0) {
+    import('./render.js').then(m => m.render());
+    return;
+  }
+  const countEl = banner.querySelector('.trial-banner-count');
+  if (countEl) countEl.textContent = `${STATE.trial.remaining} of ${STATE.trial.limit} calls remaining today`;
 }
 
 // ─── Quick Prompt ───

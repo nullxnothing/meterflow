@@ -8,13 +8,27 @@ import { getActiveConversation, newConversation } from '../session.js';
 import { renderMarkdown } from '../markdown.js';
 import { renderToolResultCardHtml, bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
 import { scrollChat } from '../chat.js';
+import { isHolder, canAccessChat, hasTrialRemaining, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js';
 
 export function renderChat() {
+  if (!canAccessChat()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">AI Chat</h1>
+        <p class="page-sub">Chat with Claude, Gemini, and GPT. Streaming responses, tools, and code execution.</p>
+      </div>
+      ${STATE.trial.loaded && STATE.trial.remaining <= 0 ? renderTrialExhausted() : renderHolderGate('AI Chat')}
+    `;
+  }
+
   const conv = getActiveConversation();
   const messages = conv ? conv.messages : [];
 
-  // Set default model if needed
-  if (!CHAT.selectedModel && STATE.models.length) CHAT.selectedModel = STATE.models[0];
+  // Set default model — trial users get gpt-4o-mini only
+  const isTrial = !isHolder() && hasTrialRemaining();
+  const availableModels = isTrial ? ['gpt-4o-mini'] : (STATE.models || []);
+  if (isTrial) CHAT.selectedModel = 'gpt-4o-mini';
+  else if (!CHAT.selectedModel && STATE.models.length) CHAT.selectedModel = STATE.models[0];
 
   setTimeout(() => {
     scrollChat();
@@ -26,12 +40,13 @@ export function renderChat() {
   const sidebarClass = CHAT.sidebarOpen ? '' : ' sidebar-collapsed';
 
   return `
+    ${renderTrialBanner()}
     <div class="chat-with-sidebar${sidebarClass}">
       <div class="chat-container">
         <div class="chat-header">
           <div class="chat-header-left">
             <select class="chat-model-select" id="chatModelSelect">
-              ${(STATE.models || []).map(m =>
+              ${availableModels.map(m =>
                 `<option value="${m}" ${m === CHAT.selectedModel ? 'selected' : ''}>${m}</option>`
               ).join('')}
             </select>

@@ -126,6 +126,59 @@ export async function incrementUsage(apiKey, tokens = 0) {
   }
 }
 
+// ═══════════ TRIAL USAGE (IP-BASED) ═══════════
+
+const TRIAL_PREFIX = 'infinite:trial:';
+
+export async function getTrialUsage(ip) {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    const usage = fallbackUsage.get(`trial:${ip}`);
+    if (!usage || usage.date !== today) return { date: today, count: 0 };
+    return usage;
+  }
+
+  try {
+    const key = `${TRIAL_PREFIX}${ip}:${today}`;
+    const count = await r.get(key);
+    return { date: today, count: parseInt(count, 10) || 0 };
+  } catch (e) {
+    logger.error('KV-Usage failed to get trial usage', { err: e.message });
+    const usage = fallbackUsage.get(`trial:${ip}`);
+    if (!usage || usage.date !== today) return { date: today, count: 0 };
+    return usage;
+  }
+}
+
+export async function incrementTrialUsage(ip) {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    let usage = fallbackUsage.get(`trial:${ip}`);
+    if (!usage || usage.date !== today) usage = { date: today, count: 0 };
+    usage.count += 1;
+    fallbackUsage.set(`trial:${ip}`, usage);
+    return usage;
+  }
+
+  try {
+    const key = `${TRIAL_PREFIX}${ip}:${today}`;
+    const count = await r.incr(key);
+    if (count === 1) await r.expire(key, 48 * 60 * 60);
+    return { date: today, count };
+  } catch (e) {
+    logger.error('KV-Usage failed to increment trial usage', { err: e.message });
+    let usage = fallbackUsage.get(`trial:${ip}`);
+    if (!usage || usage.date !== today) usage = { date: today, count: 0 };
+    usage.count += 1;
+    fallbackUsage.set(`trial:${ip}`, usage);
+    return usage;
+  }
+}
+
 // ═══════════ GLOBAL STATS ═══════════
 
 const GLOBAL_DAILY_KEY = 'infinite:stats:daily:';
