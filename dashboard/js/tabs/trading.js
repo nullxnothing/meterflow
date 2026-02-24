@@ -14,6 +14,7 @@ import {
   renderBotHistory,
 } from './trading-panels.js';
 import './trading-actions.js';
+import { isHolder, renderHolderGate } from '../gate.js';
 
 // ─── Conversation Management ───
 
@@ -115,6 +116,16 @@ export function renderBotPanelContent() {
 }
 
 export function renderTrading() {
+  if (!isHolder()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Trade Bot</h1>
+        <p class="page-sub">Autonomous trading with Jupiter swaps, DCA, copy trading, and more</p>
+      </div>
+      ${renderHolderGate('Trade Bot')}
+    `;
+  }
+
   const isTradingTier = STATE.tier === 'Operator' || STATE.tier === 'Architect';
 
   if (!isTradingTier) {

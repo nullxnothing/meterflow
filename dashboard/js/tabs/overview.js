@@ -103,9 +103,8 @@ function renderPublicOverview() {
     </div>
     ${!STATE.connected ? `
       <div class="section" style="text-align:center;padding:32px 0;">
-        <button class="btn-primary" style="padding:14px 40px;font-size:15px;" onclick="setTab('chat')">Try AI Chat Free</button>
-        <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">${STATE.trial.remaining} free calls available today — no wallet needed</p>
-        <p style="color:var(--text-muted);font-size:11px;margin-top:6px;">or <a href="#" onclick="event.preventDefault();openWalletConnect()" style="color:var(--accent)">connect wallet</a> with $INFINITE for unlimited access</p>
+        <button class="btn-primary" style="padding:14px 40px;font-size:15px;" onclick="openWalletConnect()">Connect Wallet to Get Started</button>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">3 free AI chat calls included — no tokens required</p>
       </div>
     ` : `
       <div class="section" style="text-align:center;padding:24px 0;">

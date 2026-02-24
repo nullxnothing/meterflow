@@ -8,7 +8,7 @@ import { getActiveConversation, newConversation } from '../session.js';
 import { renderMarkdown } from '../markdown.js';
 import { renderToolResultCardHtml, bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
 import { scrollChat } from '../chat.js';
-import { isHolder, canAccessChat, hasTrialRemaining, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js';
+import { isHolder, isTrial, canAccessChat, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js';
 
 export function renderChat() {
   if (!canAccessChat()) {
@@ -17,17 +17,17 @@ export function renderChat() {
         <h1 class="page-title">AI Chat</h1>
         <p class="page-sub">Chat with Claude, Gemini, and GPT. Streaming responses, tools, and code execution.</p>
       </div>
-      ${STATE.trial.loaded && STATE.trial.remaining <= 0 ? renderTrialExhausted() : renderHolderGate('AI Chat')}
+      ${isTrial() && STATE.usage.remaining <= 0 ? renderTrialExhausted() : renderHolderGate('AI Chat')}
     `;
   }
 
   const conv = getActiveConversation();
   const messages = conv ? conv.messages : [];
 
-  // Set default model — trial users get gpt-4o-mini only
-  const isTrial = !isHolder() && hasTrialRemaining();
-  const availableModels = isTrial ? ['gpt-4o-mini'] : (STATE.models || []);
-  if (isTrial) CHAT.selectedModel = 'gpt-4o-mini';
+  // Set default model — trial users get limited models
+  const trialMode = isTrial();
+  const availableModels = trialMode ? ['gpt-4o-mini'] : (STATE.models || []);
+  if (trialMode) CHAT.selectedModel = 'gpt-4o-mini';
   else if (!CHAT.selectedModel && STATE.models.length) CHAT.selectedModel = STATE.models[0];
 
   setTimeout(() => {

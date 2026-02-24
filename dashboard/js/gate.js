@@ -5,11 +5,15 @@
 import { STATE } from './state.js';
 
 export function isHolder() {
-  return STATE.connected && !!STATE.apiKeyFull;
+  return STATE.connected && !!STATE.apiKeyFull && STATE.tier !== 'Trial';
+}
+
+export function isTrial() {
+  return STATE.connected && !!STATE.apiKeyFull && STATE.tier === 'Trial';
 }
 
 export function hasTrialRemaining() {
-  return STATE.trial.loaded && STATE.trial.remaining > 0;
+  return isTrial() && STATE.usage.remaining > 0;
 }
 
 export function canAccessChat() {
@@ -17,14 +21,14 @@ export function canAccessChat() {
 }
 
 export function renderTrialBanner() {
-  const { used, limit, remaining } = STATE.trial;
-  if (isHolder()) return '';
+  if (!isTrial()) return '';
+  const { remaining, limit } = STATE.usage;
   if (remaining <= 0) return '';
   return `
     <div class="trial-banner">
       <span class="trial-banner-label">Free Trial</span>
       <span class="trial-banner-count">${remaining} of ${limit} calls remaining today</span>
-      <button class="btn-sm" onclick="openWalletConnect()">Connect Wallet for Unlimited</button>
+      <span class="trial-banner-hint">Hold $INFINITE tokens for unlimited access</span>
     </div>
   `;
 }
@@ -34,8 +38,8 @@ export function renderTrialExhausted() {
     <div class="holder-gate">
       <h2 class="holder-gate-title">Free Trial Used</h2>
       <p class="holder-gate-desc">
-        You've used all <strong>${STATE.trial.limit} free calls</strong> for today.
-        Connect your wallet and hold <strong>$INFINITE</strong> tokens for unlimited access.
+        You've used all <strong>${STATE.usage.limit} free calls</strong> for today.
+        Hold <strong>$INFINITE</strong> tokens for unlimited access.
       </p>
       <div class="holder-gate-tiers">
         <div class="holder-gate-tier">
@@ -54,20 +58,23 @@ export function renderTrialExhausted() {
           <div class="holder-gate-tier-desc">Unlimited</div>
         </div>
       </div>
-      <button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>
+      <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
     </div>
   `;
 }
 
 export function renderHolderGate(featureName = 'this feature') {
   const needsWallet = !STATE.connected;
+  const trialUser = isTrial();
   return `
     <div class="holder-gate">
       <h2 class="holder-gate-title">Token-Gated Access</h2>
       <p class="holder-gate-desc">
         ${needsWallet
           ? `Connect your wallet and hold <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
-          : `Your wallet doesn't hold enough <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
+          : trialUser
+            ? `Hold <strong>$INFINITE</strong> tokens to unlock ${featureName}. Your free trial only includes AI Chat.`
+            : `Your wallet doesn't hold enough <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
         }
       </p>
       <div class="holder-gate-tiers">

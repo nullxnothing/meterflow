@@ -11,6 +11,7 @@ import {
   renderNotifPanel, renderRecipeGrid, renderRecipeSetup,
   renderAgentCard, renderAgentDetail,
 } from './my-agents-views.js';
+import { isHolder, renderHolderGate } from '../gate.js';
 
 // ─── Data Loading ───
 
@@ -218,6 +219,16 @@ function pushAgentNotification(agentId, type, message) {
 // ─── Main Render ───
 
 export function renderMyAgents() {
+  if (!isHolder()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Agents</h1>
+        <p class="page-sub">Deploy and manage AI agents with your API key</p>
+      </div>
+      ${renderHolderGate('Agents')}
+    `;
+  }
+
   if (!AGENTS.templates.length && !AGENTS.loading) {
     AGENTS.loading = true;
     loadAgentTemplates().then(() => loadMyAgents()).then(() => loadAgentActivity()).then(() => {

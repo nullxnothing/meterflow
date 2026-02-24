@@ -3,7 +3,6 @@ import { CONFIG, TRIAL_CONFIG, TRADING_TIERS } from './config.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
-import { getTrialUsage } from './lib/kv-usage.js';
 import { getTreasuryState } from './state.js';
 import { logger } from './lib/logger.js';
 
@@ -28,81 +27,32 @@ async function authenticateApiKey(req, res, next) {
 
   const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(keyData.wallet);
   const balance = isWhitelisted ? 0 : await getTokenBalance(keyData.wallet);
-  const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
-
-  if (!tier) {
-    return res.status(403).json({
-      error: 'insufficient_balance',
-      message: `Your wallet holds ${balance.toLocaleString()} $INFINITE. Minimum ${CONFIG.TIERS.signal.min.toLocaleString()} required.`,
-      balance,
-      required: CONFIG.TIERS.signal.min
-    });
-  }
+  const tier = isWhitelisted ? 'architect' : (getTierForBalance(balance) || 'trial');
 
   keyData.tier = tier;
   keyData.balance = balance;
 
+  const isTrial = tier === 'trial';
+  const tierConfig = isTrial ? TRIAL_CONFIG : CONFIG.TIERS[tier];
   const usage = await getUsage(apiKey);
-  const tierConfig = CONFIG.TIERS[tier];
-  const treasuryMultiplier = getTreasuryState().multiplier || 1.0;
+  const treasuryMultiplier = isTrial ? 1.0 : (getTreasuryState().multiplier || 1.0);
   const effectiveLimit = Math.floor(tierConfig.dailyLimit * treasuryMultiplier);
 
   if (usage.count >= effectiveLimit) {
     return res.status(429).json({
-      error: 'rate_limit_exceeded',
-      message: `Daily limit of ${effectiveLimit.toLocaleString()} calls reached for ${tierConfig.label} tier.`,
+      error: isTrial ? 'trial_exhausted' : 'rate_limit_exceeded',
+      message: isTrial
+        ? `You've used all ${effectiveLimit} free trial calls for today. Hold $INFINITE tokens for unlimited access.`
+        : `Daily limit of ${effectiveLimit.toLocaleString()} calls reached for ${tierConfig.label} tier.`,
       tier: tierConfig.label,
       limit: effectiveLimit,
       used: usage.count,
+      isTrial,
       resetsAt: getTodayKey() + 'T00:00:00Z'
     });
   }
 
-  req.infinite = { apiKey, ...keyData, tierConfig, usage };
-  next();
-}
-
-function getClientIp(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim()
-    || req.headers['x-real-ip']
-    || req.socket?.remoteAddress
-    || '0.0.0.0';
-}
-
-async function authenticateTrialOrKey(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  // If Bearer token present, use standard auth
-  if (authHeader?.startsWith('Bearer ')) {
-    return authenticateApiKey(req, res, next);
-  }
-
-  // Trial access — IP-based rate limiting
-  const ip = getClientIp(req);
-  const trialUsage = await getTrialUsage(ip);
-
-  if (trialUsage.count >= TRIAL_CONFIG.dailyLimit) {
-    return res.status(403).json({
-      error: 'trial_exhausted',
-      message: `You've used all ${TRIAL_CONFIG.dailyLimit} free calls for today. Connect a wallet with $INFINITE tokens for unlimited access.`,
-      trialUsed: trialUsage.count,
-      trialLimit: TRIAL_CONFIG.dailyLimit,
-    });
-  }
-
-  req.infinite = {
-    apiKey: `trial:${ip}`,
-    tier: 'trial',
-    isTrial: true,
-    tierConfig: {
-      dailyLimit: TRIAL_CONFIG.dailyLimit,
-      models: TRIAL_CONFIG.models,
-      label: TRIAL_CONFIG.label,
-    },
-    usage: trialUsage,
-    trialRemaining: TRIAL_CONFIG.dailyLimit - trialUsage.count,
-  };
-
+  req.infinite = { apiKey, ...keyData, isTrial, tierConfig, usage };
   next();
 }
 
@@ -132,4 +82,4 @@ function requireTradingTier(req, res, next) {
   next();
 }
 
-export { authenticateApiKey, authenticateTrialOrKey, authenticateAdmin, requireTradingTier };
+export { authenticateApiKey, authenticateAdmin, requireTradingTier };

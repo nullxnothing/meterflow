@@ -23,15 +23,20 @@ export function loadSession() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
     const saved = JSON.parse(raw);
-    if (!saved.wallet || !saved.apiKey) return false;
+    if (!saved.wallet) return false;
     STATE.wallet = saved.wallet;
-    STATE.apiKeyFull = saved.apiKey;
-    STATE.apiKey = maskKey(saved.apiKey);
-    STATE.tier = saved.tier;
-    STATE.balance = saved.balance ?? 0;
-    STATE.models = saved.models || [];
     STATE.connected = true;
-    return true;
+    STATE.balance = saved.balance ?? 0;
+    // Holder session (has API key)
+    if (saved.apiKey) {
+      STATE.apiKeyFull = saved.apiKey;
+      STATE.apiKey = maskKey(saved.apiKey);
+      STATE.tier = saved.tier;
+      STATE.models = saved.models || [];
+      return true;
+    }
+    // Connected but not a holder — no API key
+    return false;
   } catch { return false; }
 }
 

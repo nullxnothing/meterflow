@@ -6,6 +6,7 @@ import { STATE, VIDEOS } from '../state.js';
 import { api, API_BASE, escapeHtml } from '../api.js';
 import { saveVideoHistory } from '../session.js';
 import { showToast } from '../actions.js';
+import { isHolder, renderHolderGate } from '../gate.js';
 
 function isVideoTierAllowed() {
   const t = (STATE.tier || '').toLowerCase();
@@ -13,6 +14,16 @@ function isVideoTierAllowed() {
 }
 
 export function renderVideo() {
+  if (!isHolder()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Video Lab</h1>
+        <p class="page-sub">Generate AI videos with Google Veo 2</p>
+      </div>
+      ${renderHolderGate('Video Lab')}
+    `;
+  }
+
   if (!STATE.providers.gemini) {
     return `
       <div class="page-header">

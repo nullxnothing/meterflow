@@ -9,7 +9,7 @@ import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
 import { isModelAvailable } from '../lib/providers.js';
 import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } from '../lib/kv-keys.js';
 import { logger } from '../lib/logger.js';
-import { resetUsage, getTrialUsage } from '../lib/kv-usage.js';
+import { resetUsage } from '../lib/kv-usage.js';
 
 const router = Router();
 
@@ -77,54 +77,47 @@ router.post('/register', registerLimiter, async (req, res) => {
     const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
     const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
 
-    if (!tier) {
-      return res.status(403).json({
-        error: 'insufficient_balance',
-        message: `Wallet holds ${balance.toLocaleString()} $INFINITE. Minimum ${CONFIG.TIERS.signal.min.toLocaleString()} required.`,
-        balance,
-        tiers: Object.entries(CONFIG.TIERS).map(([key, t]) => ({
-          name: t.label,
-          min: t.min,
-          dailyLimit: t.dailyLimit
-        }))
-      });
-    }
+    // Determine effective tier — insufficient balance gets trial
+    const effectiveTier = tier || 'trial';
+    const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
 
     // Check for existing key
     let apiKey = await getKeyForWallet(wallet);
     if (apiKey) {
       const existing = await getKeyData(apiKey);
       if (existing) {
-        existing.tier = tier;
+        existing.tier = effectiveTier;
         existing.balance = balance;
         await setKeyData(apiKey, existing);
-        const allModels = CONFIG.TIERS[tier].models;
         return res.json({
           apiKey,
-          tier: CONFIG.TIERS[tier].label,
+          tier: tierConfig.label,
           balance,
-          dailyLimit: CONFIG.TIERS[tier].dailyLimit,
-          models: allModels.filter(isModelAvailable),
-          comingSoon: allModels.filter(m => !isModelAvailable(m)),
+          dailyLimit: tierConfig.dailyLimit,
+          models: tierConfig.models.filter(isModelAvailable),
+          comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+          isTrial: effectiveTier === 'trial',
           message: 'Existing key returned. Tier updated.'
         });
       }
     }
 
     apiKey = generateApiKey();
-    const keyData = { wallet, tier, balance, createdAt: Date.now() };
+    const keyData = { wallet, tier: effectiveTier, balance, createdAt: Date.now() };
     await setKeyData(apiKey, keyData);
     await setKeyForWallet(wallet, apiKey);
 
-    const allModels = CONFIG.TIERS[tier].models;
     res.json({
       apiKey,
-      tier: CONFIG.TIERS[tier].label,
+      tier: tierConfig.label,
       balance,
-      dailyLimit: CONFIG.TIERS[tier].dailyLimit,
-      models: allModels.filter(isModelAvailable),
-      comingSoon: allModels.filter(m => !isModelAvailable(m)),
-      message: 'API key generated. Keep it safe.'
+      dailyLimit: tierConfig.dailyLimit,
+      models: tierConfig.models.filter(isModelAvailable),
+      comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+      isTrial: effectiveTier === 'trial',
+      message: effectiveTier === 'trial'
+        ? 'Trial access granted. Hold $INFINITE tokens for full access.'
+        : 'API key generated. Keep it safe.'
     });
 
   } catch (err) {
@@ -150,22 +143,6 @@ router.get('/status', authenticateApiKey, (req, res) => {
     },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
-  });
-});
-
-// GET /auth/trial — Check trial usage (no auth required)
-router.get('/trial', async (req, res) => {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
-    || req.headers['x-real-ip']
-    || req.socket?.remoteAddress
-    || '0.0.0.0';
-
-  const usage = await getTrialUsage(ip);
-  res.json({
-    used: usage.count,
-    limit: TRIAL_CONFIG.dailyLimit,
-    remaining: Math.max(0, TRIAL_CONFIG.dailyLimit - usage.count),
-    models: TRIAL_CONFIG.models,
   });
 });
 

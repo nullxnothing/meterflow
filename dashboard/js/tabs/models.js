@@ -6,10 +6,12 @@ import { STATE } from '../state.js';
 
 export function renderModels() {
   const allModels = [
-    { name: 'claude-sonnet-4-5', provider: 'Anthropic', tier: 'Signal+', live: true },
+    { name: 'claude-sonnet-4-6', provider: 'Anthropic', tier: 'Signal+', live: true },
     { name: 'claude-opus-4-6', provider: 'Anthropic', tier: 'Architect', live: true },
     { name: 'gemini-2.5-pro', provider: 'Google', tier: 'Operator+', live: true },
     { name: 'gemini-2.5-flash', provider: 'Google', tier: 'Signal+', live: true },
+    { name: 'gpt-4o', provider: 'OpenAI', tier: 'Operator+', live: true },
+    { name: 'gpt-4o-mini', provider: 'OpenAI', tier: 'Signal+', live: true },
   ];
   const userModels = STATE.models || [];
   return `

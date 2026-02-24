@@ -40,14 +40,6 @@ export async function fetchOAuthStatus() {
   try { STATE.connections = await api('/oauth/status'); } catch {}
 }
 
-export async function fetchTrialStatus() {
-  try {
-    const data = await api('/auth/trial');
-    STATE.trial = { ...data, loaded: true };
-  } catch {
-    STATE.trial = { used: 0, limit: 3, remaining: 3, loaded: true };
-  }
-}
 
 export function startStatusPolling() {
   fetchStatus();

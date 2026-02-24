@@ -66,8 +66,8 @@ export function setTab(tab) {
     stopLiveTrades();
   }
   // Fast path: only re-render <main> + nav highlights, keep sidebar intact
-  if (STATE.connected && switchTabInPlace(tab)) return;
-  // Fallback: full re-render (e.g. connect screen)
+  if (switchTabInPlace(tab)) return;
+  // Fallback: full re-render
   STATE.activeTab = tab;
   render();
 }

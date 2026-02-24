@@ -7,6 +7,7 @@ import { api, maskKey } from './api.js';
 import { saveSession } from './session.js';
 import { startStatusPolling } from './polling.js';
 import { render } from './render.js';
+import { showToast } from './actions.js';
 
 // ─── Wallet Icons ───
 
@@ -55,20 +56,27 @@ export async function connectWallet(providerObj) {
     const signatureBytes = await provider.signMessage(encoded, 'utf8');
     const sig = btoa(String.fromCharCode(...new Uint8Array(signatureBytes.signature || signatureBytes)));
 
+    // Mark wallet as connected regardless of token balance
+    STATE.connected = true;
+    STATE.wallet = publicKey;
+    STATE.walletProvider = provider;
+
     const data = await api('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ wallet: publicKey, signature: sig, message }),
     });
 
-    STATE.connected = true;
-    STATE.wallet = publicKey;
-    STATE.walletProvider = provider;
     STATE.apiKeyFull = data.apiKey;
     STATE.apiKey = maskKey(data.apiKey);
     STATE.tier = data.tier;
     STATE.balance = data.balance ?? 0;
     STATE.models = data.models || [];
     STATE.usage = { today: 0, limit: data.dailyLimit || 0, remaining: data.dailyLimit || 0 };
+
+    if (data.isTrial) {
+      STATE.trial = { used: 0, limit: data.dailyLimit, remaining: data.dailyLimit, loaded: true };
+      showToast(`Welcome! You have ${data.dailyLimit} free AI chat calls today. Hold $INFINITE for unlimited access.`);
+    }
 
     if (STATE.models.length && !CHAT.selectedModel) {
       CHAT.selectedModel = STATE.models[0];
@@ -78,10 +86,71 @@ export async function connectWallet(providerObj) {
     startStatusPolling();
   } catch (err) {
     STATE.error = err.message || 'Connection failed';
+    // If wallet connect itself failed, reset connected state
+    if (!STATE.wallet) {
+      STATE.connected = false;
+    }
   } finally {
     STATE.connecting = false;
     render();
   }
 }
 
+// ─── Wallet Connect Modal ───
+
+export function openWalletConnect() {
+  const providers = getWalletProviders();
+  const hasWallet = providers.length > 0;
+
+  // Remove any existing modal
+  const existing = document.getElementById('walletConnectModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'walletConnectModal';
+  modal.className = 'wallet-modal-overlay';
+  modal.innerHTML = `
+    <div class="wallet-modal">
+      <button class="wallet-modal-close" id="walletModalClose">\u00d7</button>
+      <div class="logo" style="font-size:24px;margin-bottom:12px;">INF</div>
+      <h2 style="margin-bottom:8px;">Connect Wallet</h2>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Hold $INFINITE tokens to unlock API keys and tools</p>
+      ${STATE.error ? `<div class="connect-error" style="margin-bottom:16px;">${STATE.error}</div>` : ''}
+      <div class="connect-wallets">
+        ${STATE.connecting
+          ? `<button class="connect-btn btn-loading" disabled style="min-height:52px;">Connecting...</button>`
+          : hasWallet ? providers.map((p, i) => `
+            <button class="connect-btn${i > 0 ? ' connect-btn-secondary' : ''}" data-provider="${i}">
+              <img src="${p.icon}" alt="${p.name}" width="20" height="20" style="border-radius:4px;">
+              Connect ${p.name}
+            </button>
+          `).join('') : `
+            <button class="connect-btn" onclick="window.open('https://phantom.com/download','_blank')">Install Phantom Wallet</button>
+          `
+        }
+      </div>
+      <div class="connect-note" style="margin-top:12px;">${hasWallet ? providers.map(p => p.name).join(', ') + ' detected' : 'No wallet detected'}</div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Bind events
+  document.getElementById('walletModalClose').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+
+  modal.querySelectorAll('[data-provider]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.provider);
+      if (providers[idx]) {
+        modal.remove();
+        connectWallet(providers[idx].provider);
+      }
+    });
+  });
+}
+
 window.connectWallet = connectWallet;
+window.openWalletConnect = openWalletConnect;

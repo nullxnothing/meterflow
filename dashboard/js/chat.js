@@ -44,16 +44,17 @@ export async function sendChatMessage() {
   try {
     CHAT.abortController = new AbortController();
 
-    const headers = { 'Content-Type': 'application/json' };
-    if (STATE.apiKeyFull) headers['Authorization'] = `Bearer ${STATE.apiKeyFull}`;
-
     const response = await fetch(`${API_BASE}/v1/chat/stream`, {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.apiKeyFull}`,
+      },
       body: JSON.stringify({
         model,
         messages: conv.messages.map(m => ({ role: m.role, content: m.content })),
-        ...(STATE.apiKeyFull ? { tools, images } : { images }),
+        ...(STATE.tier !== 'Trial' ? { tools } : {}),
+        images,
       }),
       signal: CHAT.abortController.signal,
     });
@@ -61,10 +62,10 @@ export async function sendChatMessage() {
     if (!response.ok) {
       const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
       if (err.error === 'trial_exhausted') {
-        STATE.trial.remaining = 0;
-        STATE.trial.used = STATE.trial.limit;
+        STATE.usage.remaining = 0;
+        STATE.usage.today = STATE.usage.limit;
         import('./render.js').then(m => m.render());
-        throw new Error('Free trial exhausted. Connect a wallet for unlimited access.');
+        throw new Error('Free trial exhausted. Hold $INFINITE tokens for unlimited access.');
       }
       if (response.status === 429) {
         throw new Error('Rate limit reached. Your daily quota has been exhausted — limits reset at midnight UTC.');
@@ -115,8 +116,8 @@ export async function sendChatMessage() {
               showToolResultCard(bodyEl, data.tool, data.data);
             }
           } else if (data.type === 'trial') {
-            STATE.trial.used = data.used;
-            STATE.trial.remaining = data.limit - data.used;
+            STATE.usage.today = data.used;
+            STATE.usage.remaining = data.limit - data.used;
           } else if (data.type === 'error') {
             throw new Error(data.message);
           }
@@ -137,7 +138,7 @@ export async function sendChatMessage() {
     bindCodeToggleButtons();
 
     // Update trial banner if applicable
-    if (!STATE.apiKeyFull) updateTrialBanner();
+    if (STATE.tier === 'Trial') updateTrialBanner();
 
   } catch (err) {
     removeTypingIndicator();

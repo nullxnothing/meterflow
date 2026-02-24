@@ -24,11 +24,12 @@ import { renderLiveTrades } from './tabs/live-trades.js';
 
 export function render() {
   const app = document.getElementById('app');
-  app.className = STATE.connected ? 'app' : 'app connect-mode';
-  app.innerHTML = STATE.connected ? renderDashboard() : renderConnectScreen();
+  app.className = 'app';
+  app.innerHTML = renderDashboard();
   bindEvents();
 }
 
+// Kept for potential modal use but no longer gates the dashboard
 export function renderConnectScreen() {
   const providers = getWalletProviders();
   const hasWallet = providers.length > 0;
@@ -57,6 +58,7 @@ export function renderConnectScreen() {
 
 export function renderDashboard() {
   const isChat = STATE.activeTab === 'chat' || STATE.activeTab === 'trading';
+  const hasKey = !!STATE.apiKeyFull;
   const usagePct = STATE.usage.limit > 0 ? Math.min((STATE.usage.today / STATE.usage.limit) * 100, 100) : 0;
   const usageBarClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
   const resetTime = getResetCountdown();
@@ -64,7 +66,10 @@ export function renderDashboard() {
     <div class="mobile-header">
       <span class="mobile-logo">INFINITE</span>
       <div class="mobile-header-right">
-        <span class="mobile-tier">${STATE.tier || ''}</span>
+        ${STATE.connected
+          ? `<span class="mobile-tier">${STATE.tier || ''}</span>`
+          : `<button class="btn-sm primary mobile-connect-btn" onclick="openWalletConnect()">Connect</button>`
+        }
         <button class="mobile-hamburger" id="mobileMenuBtn">\u2630</button>
       </div>
     </div>
@@ -74,39 +79,59 @@ export function renderDashboard() {
         <div class="sidebar-logo" style="margin-bottom:32px;">INFINITE</div>
         ${renderNavItems()}
         <div class="mobile-nav-account">
-          <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
-          <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy" style="color:var(--accent);font-size:10px;">COPY</span></div>
-          <button class="btn-sm danger" style="width:100%;padding:10px;margin-top:4px;" onclick="disconnectWallet()">Disconnect</button>
+          ${STATE.connected ? `
+            <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Connected'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+            <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy" style="color:var(--accent);font-size:10px;">COPY</span></div>
+            <button class="btn-sm danger" style="width:100%;padding:10px;margin-top:4px;" onclick="disconnectWallet()">Disconnect</button>
+          ` : `
+            <button class="btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="openWalletConnect()">Connect Wallet</button>
+          `}
         </div>
       </div>
     </div>
     <aside class="sidebar">
       <div class="sidebar-logo">
         INFINITE
-        <span class="status-dot ${STATE.apiKeyFull ? 'online' : 'offline'}" id="connectionDot" title="${STATE.apiKeyFull ? 'Connected' : 'Disconnected'}"></span>
+        <span class="status-dot ${hasKey ? 'online' : 'offline'}" id="connectionDot" title="${hasKey ? 'Connected' : 'Not connected'}"></span>
       </div>
       <nav class="sidebar-nav">
         ${renderNavItems()}
       </nav>
       <div class="sidebar-footer">
-        <div class="sidebar-usage" id="sidebarUsage">
-          <div class="sidebar-usage-header">
-            <span class="sidebar-usage-label">API Usage</span>
-            <span class="sidebar-usage-count">${STATE.usage.limit === 0 ? '...' : STATE.usage.remaining.toLocaleString() + ' left'}</span>
+        ${hasKey ? `
+          <div class="sidebar-usage" id="sidebarUsage">
+            <div class="sidebar-usage-header">
+              <span class="sidebar-usage-label">API Usage</span>
+              <span class="sidebar-usage-count">${STATE.usage.limit === 0 ? '...' : STATE.usage.remaining.toLocaleString() + ' left'}</span>
+            </div>
+            <div class="sidebar-usage-track">
+              <div class="sidebar-usage-fill ${usageBarClass}" style="width: ${usagePct}%"></div>
+            </div>
+            <div class="sidebar-usage-reset">resets ${resetTime}</div>
           </div>
-          <div class="sidebar-usage-track">
-            <div class="sidebar-usage-fill ${usageBarClass}" style="width: ${usagePct}%"></div>
+          <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+          <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
+            ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}
+            <span class="copy">COPY</span>
           </div>
-          <div class="sidebar-usage-reset">resets ${resetTime}</div>
-        </div>
-        <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
-        <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
-          ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '—'}
-          <span class="copy">COPY</span>
-        </div>
-        <div style="margin-top:8px;">
-          <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
-        </div>
+          <div style="margin-top:8px;">
+            <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
+          </div>
+        ` : STATE.connected ? `
+          <div class="wallet-info" id="sidebarFooterInfo">Connected \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+          <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
+            ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}
+            <span class="copy">COPY</span>
+          </div>
+          <div style="margin-top:8px;">
+            <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
+          </div>
+        ` : `
+          <div class="sidebar-connect-cta">
+            <div class="sidebar-connect-text">Connect wallet & hold $INFINITE to unlock API keys</div>
+            <button class="btn-primary sidebar-connect-btn" onclick="openWalletConnect()">Connect Wallet</button>
+          </div>
+        `}
         <div class="sidebar-socials">
           <a href="https://x.com/infinitexkeys" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
           <a href="https://discord.gg/infinite" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>

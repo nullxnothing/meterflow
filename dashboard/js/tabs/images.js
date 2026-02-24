@@ -4,8 +4,19 @@
 
 import { STATE, IMAGES } from '../state.js';
 import { escapeHtml } from '../api.js';
+import { isHolder, renderHolderGate } from '../gate.js';
 
 export function renderImages() {
+  if (!isHolder()) {
+    return `
+      <div class="page-header">
+        <h1 class="page-title">Image Lab</h1>
+        <p class="page-sub">Generate images with Gemini. Describe anything — photorealistic, illustration, concept art.</p>
+      </div>
+      ${renderHolderGate('Image Lab')}
+    `;
+  }
+
   if (!STATE.providers.gemini) {
     return `
       <div class="page-header">
