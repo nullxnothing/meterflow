@@ -146,6 +146,138 @@ router.get('/status', authenticateApiKey, (req, res) => {
   });
 });
 
+// POST /auth/agent-register — Programmatic agent registration (same logic, aliased for discovery)
+// OpenClaw skills and autonomous agents use this endpoint to onboard.
+router.post('/agent-register', registerLimiter, async (req, res) => {
+  const { wallet, signature, message } = req.body;
+
+  if (!wallet || !signature || !message) {
+    return res.status(400).json({
+      error: 'missing_fields',
+      message: 'Required: wallet (base58 public key), signature (base58 Ed25519 sig), message (signed text with Timestamp)',
+      example: {
+        wallet: '<solana-public-key>',
+        signature: '<base58-signature>',
+        message: 'INFINITE Protocol Agent Registration\nWallet: <public-key>\nTimestamp: <unix-ms>',
+      },
+    });
+  }
+
+  try {
+    const SIG_MAX_AGE_MS = 5 * 60 * 1000;
+    const tsMatch = message.match(/Timestamp:\s*(\d+)/);
+    if (!tsMatch) {
+      return res.status(400).json({
+        error: 'invalid_message',
+        message: 'Signed message must include a Timestamp field.',
+      });
+    }
+    const sigTimestamp = parseInt(tsMatch[1], 10);
+    if (Math.abs(Date.now() - sigTimestamp) > SIG_MAX_AGE_MS) {
+      return res.status(401).json({
+        error: 'signature_expired',
+        message: 'Signature has expired. Please sign a new message.',
+      });
+    }
+
+    let sigBytes;
+    try {
+      sigBytes = bs58.decode(signature);
+    } catch {
+      sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+    }
+
+    const verified = nacl.sign.detached.verify(
+      new TextEncoder().encode(message),
+      sigBytes,
+      bs58.decode(wallet)
+    );
+
+    if (!verified) {
+      return res.status(401).json({
+        error: 'invalid_signature',
+        message: 'Wallet signature verification failed.',
+      });
+    }
+
+    const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(wallet);
+    const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
+    const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
+    const effectiveTier = tier || 'trial';
+    const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
+
+    let apiKey = await getKeyForWallet(wallet);
+    if (apiKey) {
+      const existing = await getKeyData(apiKey);
+      if (existing) {
+        existing.tier = effectiveTier;
+        existing.balance = balance;
+        await setKeyData(apiKey, existing);
+        return res.json({
+          apiKey,
+          tier: tierConfig.label,
+          balance,
+          dailyLimit: tierConfig.dailyLimit,
+          models: tierConfig.models.filter(isModelAvailable),
+          isTrial: effectiveTier === 'trial',
+          tokenMint: CONFIG.TOKEN_MINT,
+          dashboard: 'https://infinitekeys.fun',
+          message: 'Existing key returned. Tier updated.',
+        });
+      }
+    }
+
+    apiKey = generateApiKey();
+    const keyData = { wallet, tier: effectiveTier, balance, createdAt: Date.now(), source: 'agent' };
+    await setKeyData(apiKey, keyData);
+    await setKeyForWallet(wallet, apiKey);
+
+    logger.info('Agent registered', { wallet: wallet.slice(0, 8), tier: effectiveTier, source: 'agent' });
+
+    res.json({
+      apiKey,
+      tier: tierConfig.label,
+      balance,
+      dailyLimit: tierConfig.dailyLimit,
+      models: tierConfig.models.filter(isModelAvailable),
+      isTrial: effectiveTier === 'trial',
+      tokenMint: CONFIG.TOKEN_MINT,
+      dashboard: 'https://infinitekeys.fun',
+      message: effectiveTier === 'trial'
+        ? 'Trial access granted. Buy $INF tokens for full access.'
+        : 'API key generated. Store it securely.',
+    });
+  } catch (err) {
+    logger.error('Agent registration error', { err: err.message });
+    res.status(500).json({
+      error: 'registration_failed',
+      message: process.env.NODE_ENV === 'production' ? 'Registration failed. Try again.' : err.message,
+    });
+  }
+});
+
+// GET /auth/tiers — Public endpoint for agents to discover tier requirements
+router.get('/tiers', (_req, res) => {
+  const tiers = Object.entries(CONFIG.TIERS).map(([key, tier]) => ({
+    id: key,
+    label: tier.label,
+    minTokens: tier.min,
+    dailyLimit: tier.dailyLimit,
+    models: tier.models.filter(isModelAvailable),
+  }));
+
+  res.json({
+    tokenMint: CONFIG.TOKEN_MINT,
+    tokenSymbol: 'INF',
+    chain: 'solana',
+    dashboard: 'https://infinitekeys.fun',
+    tiers: [
+      { id: 'trial', label: 'Trial', minTokens: 0, dailyLimit: TRIAL_CONFIG.dailyLimit, models: TRIAL_CONFIG.models },
+      ...tiers,
+    ],
+  });
+});
+
 // POST /auth/revoke — Revoke your own key
 router.post('/revoke', authenticateApiKey, async (req, res) => {
   const { apiKey, wallet } = req.infinite;
