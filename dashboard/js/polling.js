@@ -18,12 +18,8 @@ export async function fetchStatus() {
     STATE.models = data.models || STATE.models;
     if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
     saveSession();
-    // Only full re-render if NOT in interactive tabs
-    if (!['chat', 'images', 'video', 'trading'].includes(STATE.activeTab)) {
-      import('./render.js').then(m => m.render());
-    } else {
-      updateSidebarFooter();
-    }
+    updateSidebarFooter();
+    if (STATE.activeTab === 'overview') updateOverviewStats();
   } catch (err) {
     if (err.status === 401 || err.status === 403) {
       clearSession();
@@ -74,4 +70,41 @@ export function updateSidebarFooter() {
     dot.className = `status-dot ${STATE.apiKeyFull ? 'online' : 'offline'}`;
     dot.title = STATE.apiKeyFull ? 'Connected' : 'Disconnected';
   }
+}
+
+function updateOverviewStats() {
+  const main = document.querySelector('.main');
+  if (!main) return;
+
+  const usagePct = STATE.usage.limit > 0 ? (STATE.usage.today / STATE.usage.limit) * 100 : 0;
+  const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
+
+  // Page subtitle
+  const sub = main.querySelector('.page-sub');
+  if (sub) sub.textContent = `${STATE.tier || '\u2014'} tier \u2014 ${STATE.usage.remaining.toLocaleString()} API calls remaining today`;
+
+  // Stat cards (tier, calls, models, cost)
+  const cards = main.querySelectorAll('.stat-card');
+  if (cards.length >= 3) {
+    const tierVal = cards[0].querySelector('.value');
+    const tierSub = cards[0].querySelector('.sub');
+    if (tierVal) tierVal.textContent = STATE.tier || '\u2014';
+    if (tierSub) tierSub.textContent = `${(STATE.balance ?? 0).toLocaleString()} $INFINITE`;
+
+    const callsVal = cards[1].querySelector('.value');
+    const callsSub = cards[1].querySelector('.sub');
+    if (callsVal) callsVal.textContent = STATE.usage.today.toLocaleString();
+    if (callsSub) callsSub.textContent = `of ${STATE.usage.limit.toLocaleString()} limit`;
+
+    const modelsVal = cards[2].querySelector('.value');
+    if (modelsVal) modelsVal.textContent = STATE.models.length;
+  }
+
+  // Usage bar
+  const fill = main.querySelector('.usage-bar-fill');
+  if (fill) { fill.style.width = `${usagePct}%`; fill.className = `usage-bar-fill ${barClass}`; }
+
+  const counts = main.querySelectorAll('.usage-count');
+  if (counts[0]) counts[0].innerHTML = `${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} calls</span>`;
+  if (counts[1]) counts[1].textContent = `${Math.round(usagePct)}%`;
 }
