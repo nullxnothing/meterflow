@@ -12,3 +12,9 @@ dist/
 CLAUDE.md
 LAUNCH-SETUP.md
 docs/
+.claude/
+.playwright-mcp/
+screenshots/
+eliza-agent/
+twitter-bot/test-ai.js
+*.png
