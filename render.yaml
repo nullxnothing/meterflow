@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: infinite-protocol
+    runtime: node
+    region: oregon
+    rootDir: api-proxy
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: HELIUS_API_KEY
+        sync: false
+      - key: HELIUS_RPC_URL
+        sync: false
+      - key: INFINITE_TOKEN_MINT
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: JUPITER_API_KEY
+        sync: false
+      - key: TREASURY_WALLET
+        sync: false
+      - key: API_KEY_SECRET
+        sync: false
+      - key: WALLET_ENCRYPTION_SECRET
+        sync: false
+      - key: ADMIN_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

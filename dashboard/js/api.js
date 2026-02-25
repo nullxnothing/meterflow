@@ -20,7 +20,12 @@ export async function api(path, opts = {}) {
   const text = await res.text();
   let data;
   try { data = JSON.parse(text); } catch { throw new Error(`Server error: ${res.status}`); }
-  if (!res.ok) throw { status: res.status, message: data.message || data.error, ...data };
+  if (!res.ok) {
+    const err = new Error(data.message || data.error || `HTTP ${res.status}`);
+    err.status = res.status;
+    Object.assign(err, data);
+    throw err;
+  }
   return data;
 }
 

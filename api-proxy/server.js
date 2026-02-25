@@ -21,7 +21,7 @@ import launchRouter from './routes/launch.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
-import { initSocket } from './lib/socket.js';
+import { initSocket, getIO } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
 
 const app = express();
@@ -96,10 +96,19 @@ const SHUTDOWN_TIMEOUT = 15_000;
 
 function shutdown(signal) {
   logger.info('Shutdown initiated', { signal });
+
+  // Close Socket.IO first — notify connected clients, stop accepting new WS connections
+  const io = getIO();
+  if (io) {
+    logger.info('Closing Socket.IO connections');
+    io.close();
+  }
+
   server.close(() => {
     logger.info('All connections closed');
     process.exit(0);
   });
+
   setTimeout(() => {
     logger.error('Forced shutdown after timeout');
     process.exit(1);

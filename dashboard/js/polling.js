@@ -29,15 +29,21 @@ export async function fetchStatus() {
 }
 
 export async function fetchTreasury() {
-  try { STATE.treasury = await api('/treasury'); } catch {}
+  try { STATE.treasury = await api('/treasury'); } catch (err) {
+    console.warn('fetchTreasury failed:', err.message || err);
+  }
 }
 
 export async function fetchProviders() {
-  try { STATE.providers = await api('/providers'); } catch {}
+  try { STATE.providers = await api('/providers'); } catch (err) {
+    console.warn('fetchProviders failed:', err.message || err);
+  }
 }
 
 export async function fetchOAuthStatus() {
-  try { STATE.connections = await api('/oauth/status'); } catch {}
+  try { STATE.connections = await api('/oauth/status'); } catch (err) {
+    console.warn('fetchOAuthStatus failed:', err.message || err);
+  }
 }
 
 // ─── Provider Status Pages ───
