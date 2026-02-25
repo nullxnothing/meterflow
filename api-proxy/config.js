@@ -58,6 +58,22 @@ const TRIAL_CONFIG = {
 const TRADING_TIERS = ['operator', 'architect', 'alpha'];
 const ALPHA_TIERS = ['alpha'];
 const TOKEN_GATING_ENABLED = CONFIG.TOKEN_MINT && CONFIG.TOKEN_MINT !== 'PASTE_YOUR_TOKEN_MINT_HERE';
+
+// Time-limited free access window — set FREE_ACCESS_UNTIL env var to an ISO date
+// e.g. FREE_ACCESS_UNTIL=2026-02-27T00:00:00Z gives 24h of free signal-tier access
+const FREE_ACCESS_UNTIL = process.env.FREE_ACCESS_UNTIL
+  ? new Date(process.env.FREE_ACCESS_UNTIL).getTime()
+  : 0;
+const FREE_ACCESS_TIER = process.env.FREE_ACCESS_TIER || 'signal';
+
+function isFreeAccessActive() {
+  return FREE_ACCESS_UNTIL > 0 && Date.now() < FREE_ACCESS_UNTIL;
+}
+
+function getFreeAccessEndsAt() {
+  return FREE_ACCESS_UNTIL > 0 ? new Date(FREE_ACCESS_UNTIL).toISOString() : null;
+}
+
 const PROVIDER_AVAILABLE = {
   claude: !!CONFIG.ANTHROPIC_API_KEY,
   gemini: !!CONFIG.GOOGLE_API_KEY,
@@ -128,6 +144,9 @@ export {
   TRADING_TIERS,
   ALPHA_TIERS,
   TOKEN_GATING_ENABLED,
+  FREE_ACCESS_TIER,
+  isFreeAccessActive,
+  getFreeAccessEndsAt,
   PROVIDER_AVAILABLE,
   VIDEO_ALLOWED_TIERS,
   VIDEO_CALL_COST,

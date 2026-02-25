@@ -16,6 +16,8 @@ export async function fetchStatus() {
     STATE.balance = data.balance ?? 0;
     STATE.usage = data.usage || STATE.usage;
     STATE.models = data.models || STATE.models;
+    STATE.freeAccess = data.freeAccess || false;
+    STATE.freeAccessEndsAt = data.freeAccessEndsAt || null;
     if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
     saveSession();
     updateSidebarFooter();

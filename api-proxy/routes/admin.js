@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { CONFIG, PROVIDER_AVAILABLE } from '../config.js';
+import { CONFIG, PROVIDER_AVAILABLE, isFreeAccessActive, getFreeAccessEndsAt } from '../config.js';
 import { VALID_API_IDS, getTreasuryState, setTreasuryState } from '../state.js';
 import { authenticateApiKey, authenticateAdmin } from '../middleware.js';
 import { getTodayKey } from '../lib/helpers.js';
@@ -211,7 +211,7 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
 
   const health = computeTreasuryHealth(balance, globalStats, treasuryState);
 
-  res.json({
+  const response = {
     treasury: {
       ...treasuryState,
       ...health,
@@ -223,7 +223,13 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
     },
     providers,
     health: { status: 'ok', version: '1.0.0', protocol: 'INFINITE', treasury: health.healthStatus },
-  });
+  };
+
+  if (isFreeAccessActive()) {
+    response.freeAccessEndsAt = getFreeAccessEndsAt();
+  }
+
+  res.json(response);
 });
 
 // GET /health

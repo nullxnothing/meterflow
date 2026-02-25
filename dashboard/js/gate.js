@@ -24,7 +24,36 @@ export function canAccessChat() {
   return isHolder() || hasTrialRemaining();
 }
 
+export function isFreeAccess() {
+  return STATE.freeAccess && STATE.freeAccessEndsAt;
+}
+
+function formatCountdown(endsAt) {
+  const remaining = new Date(endsAt).getTime() - Date.now();
+  if (remaining <= 0) return 'expired';
+  const hours = Math.floor(remaining / 3_600_000);
+  const minutes = Math.floor((remaining % 3_600_000) / 60_000);
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
+export function renderFreeAccessBanner() {
+  if (!isFreeAccess()) return '';
+  const countdown = formatCountdown(STATE.freeAccessEndsAt);
+  if (countdown === 'expired') return '';
+  return `
+    <div class="free-access-banner">
+      <span class="free-access-banner-icon">&#9889;</span>
+      <span class="free-access-banner-text">
+        <strong>Free access active</strong> — expires in <strong>${countdown}</strong>
+      </span>
+      <span class="free-access-banner-hint">Hold $INFINITE tokens to keep access after it ends</span>
+      <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="free-access-banner-btn">Buy $INFINITE</a>
+    </div>
+  `;
+}
+
 export function renderTrialBanner() {
+  if (isFreeAccess()) return renderFreeAccessBanner();
   if (!isTrial()) return '';
   const { remaining, limit } = STATE.usage;
   if (remaining <= 0) return '';

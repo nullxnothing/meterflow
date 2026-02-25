@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { CONFIG, TOKEN_GATING_ENABLED } from '../config.js';
+import { CONFIG, TOKEN_GATING_ENABLED, FREE_ACCESS_TIER, isFreeAccessActive } from '../config.js';
 import { getUsage as getUsageFromKV, incrementUsage as incrementUsageKV, incrementGlobalStats } from './kv-usage.js';
 
 function generateApiKey() {
@@ -13,6 +13,7 @@ function getTierForBalance(balance) {
   if (balance >= CONFIG.TIERS.architect.min) return 'architect';
   if (balance >= CONFIG.TIERS.operator.min) return 'operator';
   if (balance >= CONFIG.TIERS.signal.min) return 'signal';
+  if (isFreeAccessActive()) return FREE_ACCESS_TIER;
   return null;
 }
 

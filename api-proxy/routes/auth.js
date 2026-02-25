@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { CONFIG, TRIAL_CONFIG } from '../config.js';
+import { CONFIG, TRIAL_CONFIG, isFreeAccessActive, getFreeAccessEndsAt } from '../config.js';
 import { authenticateApiKey } from '../middleware.js';
 import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
@@ -62,6 +62,7 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
   const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
   const effectiveTier = tier || 'trial';
   const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
+  const freeAccess = !isWhitelisted && balance < (CONFIG.TIERS.signal?.min || 10000) && isFreeAccessActive();
 
   let apiKey = await getKeyForWallet(wallet);
   if (apiKey) {
@@ -80,7 +81,11 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
           models: tierConfig.models.filter(isModelAvailable),
           comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
           isTrial: effectiveTier === 'trial',
-          message: 'Existing key returned. Tier updated.',
+          freeAccess,
+          freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
+          message: freeAccess
+            ? 'Free access granted! Hold $INFINITE tokens before it expires to keep access.'
+            : 'Existing key returned. Tier updated.',
           ...opts.extraResponse,
         },
       };
@@ -107,9 +112,13 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
       models: tierConfig.models.filter(isModelAvailable),
       comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
       isTrial: effectiveTier === 'trial',
-      message: effectiveTier === 'trial'
-        ? 'Trial access granted. Hold $INFINITE tokens for full access.'
-        : 'API key generated. Keep it safe.',
+      freeAccess,
+      freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
+      message: freeAccess
+        ? 'Free access granted! Hold $INFINITE tokens before it expires to keep access.'
+        : effectiveTier === 'trial'
+          ? 'Trial access granted. Hold $INFINITE tokens for full access.'
+          : 'API key generated. Keep it safe.',
       ...opts.extraResponse,
     },
   };
@@ -136,6 +145,8 @@ router.post('/register', registerLimiter, async (req, res) => {
 // GET /auth/status
 router.get('/status', authenticateApiKey, (req, res) => {
   const { wallet, tier, balance, tierConfig, usage } = req.infinite;
+  const freeActive = isFreeAccessActive();
+  const isFreeUser = freeActive && balance < (CONFIG.TIERS.signal?.min || 10000) && tier !== 'trial';
   res.json({
     wallet,
     tier: tierConfig.label,
@@ -143,6 +154,8 @@ router.get('/status', authenticateApiKey, (req, res) => {
     usage: { today: usage.count, limit: tierConfig.dailyLimit, remaining: tierConfig.dailyLimit - usage.count },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+    freeAccess: isFreeUser,
+    freeAccessEndsAt: isFreeUser ? getFreeAccessEndsAt() : undefined,
   });
 });
 

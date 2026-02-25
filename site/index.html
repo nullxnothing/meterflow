@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="INFINITE Protocol — token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs funded by pump.fun creator fees.">
+<meta name="description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold $INFINITE, get Claude, GPT and Gemini APIs — forever.">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="mobile-web-app-capable" content="yes">
-<meta property="og:title" content="INFINITE — Own the token. Use the AI.">
-<meta property="og:description" content="Token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs funded by pump.fun creator fees.">
+<meta property="og:title" content="INFINITE — pump.fun creator fees power free AI tools">
+<meta property="og:description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold the token, use Claude, GPT and Gemini — forever.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://infinitekeys.fun/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="675">
 <meta property="og:url" content="https://infinitekeys.fun">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="INFINITE — Own the token. Use the AI.">
-<meta name="twitter:description" content="Token-gated AI API access on Solana. Hold $INFINITE, get Claude and Gemini APIs.">
+<meta name="twitter:title" content="INFINITE — pump.fun creator fees power free AI tools">
+<meta name="twitter:description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold the token, use the AI — forever.">
 <meta name="twitter:image" content="https://infinitekeys.fun/assets/og.png">
-<title>INFINITE — Own the token. Use the AI.</title>
+<title>INFINITE — pump.fun creator fees power free AI tools</title>
 <link rel="icon" type="image/png" href="/site/favicon.png">
 <link rel="apple-touch-icon" href="/site/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -26,6 +26,15 @@
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
+
+<!-- FREE ACCESS BANNER -->
+<div class="free-access-topbar" id="freeAccessBar" style="display:none;">
+  <span class="free-access-topbar-pulse"></span>
+  <span class="free-access-topbar-text">
+    <strong>FREE ACCESS</strong> — full AI tools, no tokens needed. Ends in <strong id="freeCountdown">--</strong>
+  </span>
+  <a href="/dashboard" class="free-access-topbar-btn">Try it now</a>
+</div>
 
 <!-- NAV -->
 <nav>
@@ -38,7 +47,7 @@
     <a href="#faq">FAQ</a>
     <a href="/site/roadmap.html">Roadmap</a>
     <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
-    <a class="nav-cta ghost" href="#buy">Buy $INFINITE</a>
+    <a class="nav-cta ghost" href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener">Buy $INFINITE</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span>
@@ -56,7 +65,7 @@
   <a href="#faq" onclick="closeMobile()">FAQ</a>
   <a href="/site/roadmap.html" onclick="closeMobile()">Roadmap</a>
   <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
-  <a href="#buy" onclick="closeMobile()" style="color: var(--accent);">Buy $INFINITE</a>
+  <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" onclick="closeMobile()" style="color: var(--accent);">Buy $INFINITE</a>
 </div>
 
 <!-- HERO -->
@@ -72,17 +81,17 @@
         <span class="thin">Just hold the token.</span>
       </h1>
       <p class="hero-sub">
-        $INFINITE holders get access to AI chat, trading bots, image generation, and more. No subscriptions. No bills. Trading volume pays for everything.
+        Pump.fun creator fees fund the treasury. The treasury pays for Claude, GPT, and Gemini. Hold $INFINITE and use them all — no subscriptions, no bills, forever.
       </p>
       <div class="hero-actions">
         <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-        <a href="#buy" class="btn-secondary">Buy $INFINITE</a>
+        <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="btn-secondary">Buy $INFINITE</a>
       </div>
       <div class="hero-ca">
         <span class="ca-label">CA</span>
         <span class="ca-address" id="caAddress">DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump</span>
         <button class="ca-copy" id="caCopy" onclick="copyCA()">Copy</button>
-        <a class="ca-buy" id="buyLink" href="#buy">Buy</a>
+        <a class="ca-buy" id="buyLink" href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener">Buy</a>
       </div>
     </div>
     <div class="globe-wrap">
@@ -122,6 +131,16 @@
       <h2>Protocol metrics</h2>
       <div class="live-badge"><span class="pulse"></span> Live</div>
     </div>
+    <div class="stats-hero-row">
+      <div class="stats-hero-block">
+        <div class="stats-hero-number" id="ps-alltime-calls">--</div>
+        <div class="stats-hero-label">Total API calls served</div>
+      </div>
+      <div class="stats-hero-block">
+        <div class="stats-hero-number" id="ps-alltime-tokens">--</div>
+        <div class="stats-hero-label">Tokens processed</div>
+      </div>
+    </div>
     <div class="stats-grid">
       <div class="stat-block">
         <span class="stat-icon">//</span>
@@ -132,7 +151,7 @@
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-active-keys">--</div>
-        <div class="stat-label">Active API Keys</div>
+        <div class="stat-label">API Keys Issued</div>
         <div class="stat-sub">registered holders</div>
       </div>
       <div class="stat-block">
@@ -146,6 +165,18 @@
         <div class="stat-number" id="ps-runway">--</div>
         <div class="stat-label">Runway</div>
         <div class="stat-sub" id="ps-health">&mdash;</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-models">--</div>
+        <div class="stat-label">AI Models Online</div>
+        <div class="stat-sub" id="ps-providers">&mdash;</div>
+      </div>
+      <div class="stat-block">
+        <span class="stat-icon">//</span>
+        <div class="stat-number" id="ps-uptime">--</div>
+        <div class="stat-label">Uptime</div>
+        <div class="stat-sub" id="ps-uptime-pct">&mdash;</div>
       </div>
     </div>
   </div>
@@ -336,7 +367,7 @@
   <div class="funded-inner">
     <div class="section-label">Transparency</div>
     <h2 class="funded-headline">Where the money comes from.</h2>
-    <p class="funded-sub">Every time someone buys or sells $INFINITE, a small creator fee is generated. That fee pays for everyone's AI access. More trading = more budget = better tools.</p>
+    <p class="funded-sub">Every time someone buys or sells $INFINITE on pump.fun, creator fees flow to the treasury. Those fees pay for Claude, GPT, and Gemini API access for every holder. More trading = more budget = better tools.</p>
 
     <div class="funded-flow">
       <div class="funded-step">
@@ -389,7 +420,7 @@
         </div>
         <div class="agent-actions">
           <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-          <a href="#buy" class="btn-secondary">Buy $INFINITE</a>
+          <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="btn-secondary">Buy $INFINITE</a>
         </div>
       </div>
     </div>

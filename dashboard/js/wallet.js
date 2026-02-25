@@ -78,8 +78,12 @@ export async function connectWallet(providerObj) {
     STATE.balance = data.balance ?? 0;
     STATE.models = data.models || [];
     STATE.usage = { today: 0, limit: data.dailyLimit || 0, remaining: data.dailyLimit || 0 };
+    STATE.freeAccess = data.freeAccess || false;
+    STATE.freeAccessEndsAt = data.freeAccessEndsAt || null;
 
-    if (data.isTrial) {
+    if (data.freeAccess) {
+      showToast('Free access activated! Hold $INFINITE tokens before it expires to keep access.');
+    } else if (data.isTrial) {
       STATE.trial = { used: 0, limit: data.dailyLimit, remaining: data.dailyLimit, loaded: true };
       showToast(`Welcome! You have ${data.dailyLimit} free AI chat calls today. Hold $INFINITE for unlimited access.`);
     }

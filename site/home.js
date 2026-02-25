@@ -17,6 +17,40 @@ const TOKEN_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
 
 // ═══════════ LIVE DATA ═══════════
 const PROXY_BASE = '/proxy';
+
+// ═══════════ FREE ACCESS BANNER ═══════════
+(async function initFreeAccessBar() {
+  try {
+    const res = await fetch(`${PROXY_BASE}/status/aggregate`);
+    const data = await res.json();
+    const endsAt = data.freeAccessEndsAt;
+    if (!endsAt) return;
+
+    const endTime = new Date(endsAt).getTime();
+    if (Date.now() >= endTime) return;
+
+    const bar = document.getElementById('freeAccessBar');
+    const countdown = document.getElementById('freeCountdown');
+    if (!bar || !countdown) return;
+
+    bar.style.display = 'flex';
+
+    function tick() {
+      const remaining = endTime - Date.now();
+      if (remaining <= 0) {
+        bar.style.display = 'none';
+        return;
+      }
+      const h = Math.floor(remaining / 3_600_000);
+      const m = Math.floor((remaining % 3_600_000) / 60_000);
+      const s = Math.floor((remaining % 60_000) / 1_000);
+      countdown.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+      requestAnimationFrame(tick);
+    }
+    tick();
+  } catch { /* silent */ }
+})();
+
 let liveStats = { totalCallsToday: 0, activeKeys: 0 };
 let liveTreasury = { runwayDays: 0, treasuryBalanceUsd: 0 };
 let fetchFailed = false;
@@ -42,17 +76,72 @@ function formatCompact(n) {
   return n.toLocaleString();
 }
 
+// Count-up animation for numbers
+const countUpTargets = new Map();
+let countUpRaf = null;
+
+function animateCountUp(elementId, target, suffix, duration) {
+  if (!suffix) suffix = '';
+  if (!duration) duration = 1800;
+  const el = document.getElementById(elementId);
+  if (!el || target <= 0) return;
+  countUpTargets.set(elementId, { el, target, suffix, duration, start: performance.now(), current: 0 });
+  if (!countUpRaf) tickCountUp();
+}
+
+function tickCountUp() {
+  const now = performance.now();
+  let hasActive = false;
+  countUpTargets.forEach((cfg, id) => {
+    const elapsed = now - cfg.start;
+    const progress = Math.min(elapsed / cfg.duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.floor(cfg.target * eased);
+    if (value !== cfg.current) {
+      cfg.current = value;
+      cfg.el.textContent = formatCompact(value) + cfg.suffix;
+    }
+    if (progress < 1) hasActive = true;
+    else countUpTargets.delete(id);
+  });
+  if (hasActive) countUpRaf = requestAnimationFrame(tickCountUp);
+  else countUpRaf = null;
+}
+
+function formatUptime(ms) {
+  const hours = Math.floor(ms / 3_600_000);
+  if (hours >= 24) return Math.floor(hours / 24) + 'd ' + (hours % 24) + 'h';
+  return hours + 'h ' + Math.floor((ms % 3_600_000) / 60_000) + 'm';
+}
+
+let statsAnimated = false;
+
 function populateProtocolStats() {
   const el = (id) => document.getElementById(id);
 
   const callsToday = liveStats.totalCallsToday || 0;
   const tokensToday = liveStats.totalTokensToday || 0;
+  const allTimeCalls = liveStats.allTimeCalls || 0;
+  const allTimeTokens = liveStats.allTimeTokens || 0;
   const keys = liveStats.totalKeysIssued || 0;
+  const activeProviders = liveStats.activeProviders || 0;
+  const providers = liveStats.providers || {};
+  const uptimeMs = liveStats.uptimeMs || 0;
 
   const balSol = liveTreasury.treasuryBalanceSol || 0;
   const balUsd = liveTreasury.treasuryBalanceUsd || 0;
   const runway = liveTreasury.runwayDays || 0;
   const health = liveTreasury.healthStatus || 'unknown';
+
+  // Hero stats with count-up on first load
+  if (!statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0)) {
+    animateCountUp('ps-alltime-calls', allTimeCalls, '', 2200);
+    animateCountUp('ps-alltime-tokens', allTimeTokens, '', 2200);
+    statsAnimated = true;
+  } else {
+    el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
+    el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
+  }
 
   el('ps-calls-today').textContent = formatCompact(callsToday);
   el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' tokens' : 'tokens processed';
@@ -61,6 +150,15 @@ function populateProtocolStats() {
   el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
   el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
   el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
+
+  // Models online
+  const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
+  el('ps-models').textContent = activeProviders > 0 ? activeProviders : '--';
+  el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(' / ') : (fetchFailed ? 'offline' : 'loading...');
+
+  // Uptime
+  el('ps-uptime').textContent = uptimeMs > 0 ? formatUptime(uptimeMs) : '--';
+  el('ps-uptime-pct').textContent = uptimeMs > 0 ? 'current session' : (fetchFailed ? 'offline' : 'loading...');
 }
 
 // ═══════════ FAQ ═══════════
@@ -208,7 +306,7 @@ const spyObserver = new IntersectionObserver((entries) => {
 spySections.forEach(s => spyObserver.observe(s));
 
 // ═══════════ CARD MOUSE GLOW ═══════════
-document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block, .hook-card').forEach(card => {
+document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block, .stats-hero-block, .hook-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
     card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
