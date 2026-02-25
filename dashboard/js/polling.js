@@ -70,11 +70,15 @@ export async function fetchProviderStatuses() {
       const res = await fetch(url);
       const data = await res.json();
       const apiComponent = data.components?.find(c => c.name.includes(apiName));
-      const incident = data.incidents?.[0];
+      const apiComponentId = apiComponent?.id;
+      // Only surface incidents that affect the API component, not unrelated products
+      const incident = data.incidents?.find(inc =>
+        inc.components?.some(c => c.id === apiComponentId)
+      );
       return {
         key,
-        indicator: data.status?.indicator || 'none',
-        description: data.status?.description || 'All Systems Operational',
+        indicator: apiComponent?.status === 'operational' ? 'none' : (data.status?.indicator || 'none'),
+        description: apiComponent?.status === 'operational' ? 'All Systems Operational' : (data.status?.description || 'All Systems Operational'),
         apiStatus: apiComponent?.status || 'operational',
         incident: incident ? { name: incident.name, status: incident.status, impact: incident.impact } : null,
       };
