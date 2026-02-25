@@ -515,7 +515,11 @@ async function streamAnthropicPassthrough(model, messages, maxTokens, temperatur
 
 // Gemini passthrough — text only (no tool_calls support for client tools)
 async function streamGeminiPassthrough(model, messages, maxTokens, temperature, res, requestId, signal) {
-  const geminiContents = messages.map(m => ({
+  // Extract system instruction and filter out system messages
+  const systemMsg = messages.find(m => m.role === 'system');
+  const chatMessages = messages.filter(m => m.role !== 'system');
+
+  const geminiContents = chatMessages.map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }],
   }));
@@ -530,6 +534,7 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
       temperature: temperature ?? 0.7,
     },
   };
+  if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
 
   const response = await fetchStreamWithRetry(url, {
     method: 'POST',
