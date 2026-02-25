@@ -23,24 +23,32 @@ const ALL_MODELS = [
   { id: 'gpt-4o-mini', owned_by: 'openai' },
 ];
 
-// GET /v1/models — model discovery (OpenAI-compatible)
-router.get('/models', authenticateApiKey, (req, res) => {
-  const { tierConfig } = req.infinite;
-  const available = tierConfig.models.filter(m => m !== 'auto');
-  const models = ALL_MODELS
-    .filter(m => available.includes(m.id))
-    .map(m => ({
-      id: m.id,
-      object: 'model',
-      created: 1700000000,
-      owned_by: m.owned_by,
-    }));
-
+// GET /v1/models — model discovery (no auth required for endpoint detection)
+router.get('/models', (req, res) => {
+  const models = ALL_MODELS.map(m => ({
+    id: m.id,
+    object: 'model',
+    created: 1700000000,
+    owned_by: m.owned_by,
+  }));
   res.json({ object: 'list', data: models });
 });
 
+// OpenAI-format auth wrapper — returns errors in { error: { message, type } } format
+function oaiAuth(req, res, next) {
+  const origJson = res.json.bind(res);
+  res.json = function(body) {
+    // Convert flat error strings from middleware to OpenAI nested format
+    if (body?.error && typeof body.error === 'string') {
+      return origJson({ error: { message: body.message || body.error, type: 'invalid_request_error', code: body.error } });
+    }
+    return origJson(body);
+  };
+  authenticateApiKey(req, res, next);
+}
+
 // POST /v1/chat/completions — OpenAI-compatible chat endpoint
-router.post('/chat/completions', authenticateApiKey, async (req, res) => {
+router.post('/chat/completions', oaiAuth, async (req, res) => {
   const { model, messages, max_tokens, temperature, stream } = req.body;
   const { tierConfig, apiKey, isTrial } = req.infinite;
 
@@ -65,18 +73,15 @@ router.post('/chat/completions', authenticateApiKey, async (req, res) => {
     });
   }
 
-  // Extract system message and convert to our format
   const systemMsg = messages.find(m => m.role === 'system');
   const chatMessages = messages.filter(m => m.role !== 'system');
   const effectiveMaxTokens = isTrial ? Math.min(max_tokens || 2048, 2048) : (max_tokens || 4096);
-
   const requestId = `chatcmpl-${crypto.randomBytes(12).toString('hex')}`;
 
   if (stream) {
     return handleStream(req, res, requestedModel, chatMessages, effectiveMaxTokens, temperature, apiKey, tierConfig, requestId, systemMsg);
   }
 
-  // Non-streaming
   try {
     let result;
     if (requestedModel.startsWith('claude')) {
@@ -132,7 +137,7 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
     abortController.abort();
   });
 
-  // Adapter: collect our custom SSE format and re-emit as OpenAI SSE format
+  // Adapter: convert internal SSE format to OpenAI SSE format
   const fakeRes = {
     write(chunk) {
       if (clientDisconnected) return;
@@ -174,7 +179,6 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
     await incrementUsage(apiKey);
 
     if (!clientDisconnected) {
-      // Final chunk with finish_reason
       const finalChunk = {
         id: requestId,
         object: 'chat.completion.chunk',
