@@ -1,27 +1,10 @@
 // Persistent agent storage using Redis
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const AGENT_PREFIX = 'infinite:agent:';
 const AGENT_LIST_PREFIX = 'infinite:agents:';
 const AGENT_LOG_PREFIX = 'infinite:agent-log:';
-
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) return null;
-    try {
-      redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => logger.error('KV-Agents Redis error', { err: err.message }));
-    } catch (e) {
-      logger.error('KV-Agents Redis connection failed', { err: e.message });
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback
 const fallbackAgents = new Map(); // agentId -> agentConfig

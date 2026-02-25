@@ -38,7 +38,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-app.use(express.json({ limit: '10mb' }));
+// Default body limit — overridden per-route where needed
+app.use(express.json({ limit: '1mb' }));
 
 // Request logging
 app.use((req, res, next) => {
@@ -58,7 +59,8 @@ app.use((req, res, next) => {
 
 app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
-app.use('/v1', chatRouter);
+// Chat routes accept base64 image uploads — higher body limit
+app.use('/v1', express.json({ limit: '10mb' }), chatRouter);
 app.use('/v1', multiRouter);
 app.use('/v1', imageRouter);
 app.use('/v1/video', videoRouter);

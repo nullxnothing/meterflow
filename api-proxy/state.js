@@ -1,4 +1,20 @@
-const balanceCache = new Map(); // wallet -> { balance, checkedAt }
+// LRU-style bounded cache — evicts oldest entries when full
+class BoundedMap extends Map {
+  constructor(maxSize = 10_000) {
+    super();
+    this._maxSize = maxSize;
+  }
+  set(key, value) {
+    if (this.size >= this._maxSize && !this.has(key)) {
+      const oldest = this.keys().next().value;
+      this.delete(oldest);
+    }
+    super.delete(key); // move to end
+    return super.set(key, value);
+  }
+}
+
+const balanceCache = new BoundedMap(10_000); // wallet -> { balance, checkedAt }
 
 // Trading bot state
 const tradingWallets = new Map();    // apiKey → { encryptedKeypair, publicKey, createdAt }

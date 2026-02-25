@@ -1,34 +1,10 @@
 // Persistent vote storage using Redis
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 // Keys
 const VOTE_COUNTS_KEY = 'infinite:vote_counts';
 const WALLET_VOTES_PREFIX = 'infinite:wallet_votes:';
-
-// Initialize Redis client
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) {
-      logger.warn('Redis not configured — votes will use in-memory fallback');
-      return null;
-    }
-    try {
-      redis = new Redis(redisUrl, {
-        maxRetriesPerRequest: 3,
-        lazyConnect: true,
-      });
-      redis.on('error', (err) => logger.error('KV-Votes Redis error', { err: err.message }));
-    } catch (e) {
-      logger.error('KV-Votes Redis connection failed', { err: e.message });
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback when Redis is not configured
 const fallbackVoteCounts = {};
@@ -148,7 +124,7 @@ export async function toggleVote(wallet, apiId) {
 export async function isRedisConnected() {
   const r = getRedis();
   if (!r) return false;
-  
+
   try {
     await r.ping();
     return true;
@@ -156,3 +132,4 @@ export async function isRedisConnected() {
     return false;
   }
 }
+

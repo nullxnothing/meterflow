@@ -353,10 +353,19 @@ function scheduleAgent(agent) {
     return;
   }
 
-  const job = cron.schedule(agent.schedule, () => {
-    executeAgentRun(agent).catch(err => {
-      logger.error(`Scheduled run failed for ${agent.id}`, { err: err.message });
-    });
+  const agentId = agent.id;
+  const job = cron.schedule(agent.schedule, async () => {
+    try {
+      // Re-fetch from Redis so config changes take effect without restart
+      const fresh = await getAgent(agentId);
+      if (!fresh || fresh.status !== 'active') {
+        unscheduleAgent(agentId);
+        return;
+      }
+      await executeAgentRun(fresh);
+    } catch (err) {
+      logger.error(`Scheduled run failed for ${agentId}`, { err: err.message });
+    }
   });
 
   activeJobs.set(agent.id, job);

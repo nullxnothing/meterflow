@@ -1,5 +1,7 @@
 import { createSafetyManager, TriggerManager } from '../trading/index.js';
 import { safetyManagers, activeTriggers, tradingPositions, tradeHistory } from '../state.js';
+import { persistPositions, loadPositions, persistTrade, loadHistory } from './kv-trading.js';
+import { logger } from './logger.js';
 
 function getSafetyManager(apiKey) {
   if (!safetyManagers.has(apiKey)) safetyManagers.set(apiKey, createSafetyManager());
@@ -11,20 +13,42 @@ function getTriggerManager(apiKey) {
   return activeTriggers.get(apiKey);
 }
 
-function getPositions(apiKey) {
-  if (!tradingPositions.has(apiKey)) tradingPositions.set(apiKey, new Map());
+async function getPositions(apiKey) {
+  if (!tradingPositions.has(apiKey)) {
+    const persisted = await loadPositions(apiKey);
+    tradingPositions.set(apiKey, persisted || new Map());
+  }
   return tradingPositions.get(apiKey);
 }
 
-function getHistory(apiKey) {
-  if (!tradeHistory.has(apiKey)) tradeHistory.set(apiKey, []);
+async function getHistory(apiKey) {
+  if (!tradeHistory.has(apiKey)) {
+    const persisted = await loadHistory(apiKey);
+    tradeHistory.set(apiKey, persisted || []);
+  }
   return tradeHistory.get(apiKey);
 }
 
-function recordTrade(apiKey, entry) {
-  const hist = getHistory(apiKey);
-  hist.push({ id: `t_${Date.now()}`, ...entry, ts: Date.now() });
+async function recordTrade(apiKey, entry) {
+  const hist = await getHistory(apiKey);
+  const record = { id: `t_${Date.now()}`, ...entry, ts: Date.now() };
+  hist.push(record);
   if (hist.length > 1000) hist.splice(0, hist.length - 1000);
+  await persistTrade(apiKey, record).catch(err => {
+    logger.error('Failed to persist trade', { err: err.message });
+  });
 }
 
-export { getSafetyManager, getTriggerManager, getPositions, getHistory, recordTrade };
+async function updatePosition(apiKey, mint, position) {
+  const positions = await getPositions(apiKey);
+  if (position) {
+    positions.set(mint, position);
+  } else {
+    positions.delete(mint);
+  }
+  await persistPositions(apiKey, positions).catch(err => {
+    logger.error('Failed to persist positions', { err: err.message });
+  });
+}
+
+export { getSafetyManager, getTriggerManager, getPositions, getHistory, recordTrade, updatePosition };

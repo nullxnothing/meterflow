@@ -63,8 +63,8 @@ router.post('/copy/follow', authenticateApiKey, requireTradingTier, (req, res) =
   if (!ct) {
     const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
     const keypair = loadKeypair(w.encryptedKeypair, encKey);
-    ct = new CopyTrader(solanaConnection, keypair, { onTrade: (data) => {
-      recordTrade(apiKey, { action: 'copy_' + data.trade?.action, mint: data.trade?.mint, sig: data.result?.signature });
+    ct = new CopyTrader(solanaConnection, keypair, { onTrade: async (data) => {
+      await recordTrade(apiKey, { action: 'copy_' + data.trade?.action, mint: data.trade?.mint, sig: data.result?.signature });
     }});
     activeCopyTraders.set(apiKey, ct);
   }
@@ -128,7 +128,7 @@ router.post('/trigger/create', authenticateApiKey, requireTradingTier, async (re
       const { action, inputMint, outputMint, amount, slippageBps } = trigger.order;
       const quote = await getQuote({ inputMint, outputMint, amount: String(amount), slippageBps: slippageBps || 300 });
       const result = await executeSwap(solanaConnection, keypair, quote);
-      recordTrade(apiKey, { action: `trigger_${action}`, mint: trigger.mint, sig: result.signature });
+      await recordTrade(apiKey, { action: `trigger_${action}`, mint: trigger.mint, sig: result.signature });
       return { signature: result.signature };
     });
   }

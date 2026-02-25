@@ -1,39 +1,10 @@
 // Persistent API key storage using Redis
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const KEY_PREFIX = 'infinite:apikey:';
 const WALLET_PREFIX = 'infinite:wallet:';
 const IS_PROD = process.env.NODE_ENV === 'production';
-
-let redis = null;
-let redisHealthy = false;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) {
-      if (IS_PROD) {
-        logger.error('REDIS_URL is required in production — API keys will not persist without Redis');
-        process.exit(1);
-      }
-      return null;
-    }
-    try {
-      redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => {
-        redisHealthy = false;
-        logger.error('KV-Keys Redis error', { err: err.message });
-      });
-      redis.on('ready', () => { redisHealthy = true; });
-    } catch (e) {
-      logger.error('KV-Keys Redis connection failed', { err: e.message });
-      if (IS_PROD) process.exit(1);
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback (dev only — production requires Redis)
 const fallbackApiKeys = new Map();

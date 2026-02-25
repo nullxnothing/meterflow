@@ -1,28 +1,9 @@
 // Persistent video operation storage using Redis
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const VIDEO_PREFIX = 'infinite:video:';
 const VIDEO_TTL = 7 * 24 * 60 * 60; // 7 days
-
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) return null;
-    try {
-      redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => {
-        logger.error('KV-Videos Redis error', { err: err.message });
-      });
-    } catch (e) {
-      logger.error('KV-Videos Redis connection failed', { err: e.message });
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback
 const fallback = new Map();

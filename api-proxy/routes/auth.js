@@ -8,10 +8,13 @@ import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
 import { isModelAvailable } from '../lib/providers.js';
 import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } from '../lib/kv-keys.js';
+import { deleteWallet } from '../lib/kv-wallets.js';
 import { logger } from '../lib/logger.js';
 import { resetUsage } from '../lib/kv-usage.js';
 
 const router = Router();
+
+const SIG_MAX_AGE_MS = 5 * 60 * 1000;
 
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -21,75 +24,55 @@ const registerLimiter = rateLimit({
   message: { error: 'rate_limited', message: 'Too many registration attempts. Try again in 15 minutes.' },
 });
 
-// POST /auth/register — Verify wallet ownership and issue API key
-router.post('/register', registerLimiter, async (req, res) => {
-  const { wallet, signature, message } = req.body;
-
-  if (!wallet || !signature || !message) {
-    return res.status(400).json({
-      error: 'missing_fields',
-      message: 'Required: wallet, signature, message'
-    });
+/**
+ * Shared wallet verification + key issuance logic.
+ * @param {{ wallet, signature, message }} params
+ * @param {{ source?: string, extraResponse?: object }} opts
+ * @returns {{ status: number, body: object }}
+ */
+async function registerWallet({ wallet, signature, message }, opts = {}) {
+  const tsMatch = message.match(/Timestamp:\s*(\d+)/);
+  if (!tsMatch) {
+    return { status: 400, body: { error: 'invalid_message', message: 'Signed message must include a Timestamp field.' } };
+  }
+  const sigTimestamp = parseInt(tsMatch[1], 10);
+  if (Math.abs(Date.now() - sigTimestamp) > SIG_MAX_AGE_MS) {
+    return { status: 401, body: { error: 'signature_expired', message: 'Signature has expired. Please sign a new message.' } };
   }
 
+  let sigBytes;
   try {
-    // Replay protection: require timestamp in signed message, reject if > 5 min old
-    const SIG_MAX_AGE_MS = 5 * 60 * 1000;
-    const tsMatch = message.match(/Timestamp:\s*(\d+)/);
-    if (!tsMatch) {
-      return res.status(400).json({
-        error: 'invalid_message',
-        message: 'Signed message must include a Timestamp field.',
-      });
-    }
-    const sigTimestamp = parseInt(tsMatch[1], 10);
-    if (Math.abs(Date.now() - sigTimestamp) > SIG_MAX_AGE_MS) {
-      return res.status(401).json({
-        error: 'signature_expired',
-        message: 'Signature has expired. Please sign a new message.',
-      });
-    }
+    sigBytes = bs58.decode(signature);
+  } catch {
+    sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+  }
 
-    // Dashboard sends base64, CLI clients may send base58
-    let sigBytes;
-    try {
-      sigBytes = bs58.decode(signature);
-    } catch {
-      sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
-    }
+  const verified = nacl.sign.detached.verify(
+    new TextEncoder().encode(message),
+    sigBytes,
+    bs58.decode(wallet)
+  );
 
-    const verified = nacl.sign.detached.verify(
-      new TextEncoder().encode(message),
-      sigBytes,
-      bs58.decode(wallet)
-    );
+  if (!verified) {
+    return { status: 401, body: { error: 'invalid_signature', message: 'Wallet signature verification failed.' } };
+  }
 
-    if (!verified) {
-      return res.status(401).json({
-        error: 'invalid_signature',
-        message: 'Wallet signature verification failed.'
-      });
-    }
+  const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(wallet);
+  const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
+  const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
+  const effectiveTier = tier || 'trial';
+  const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
 
-    // Whitelisted wallets bypass balance check (pre-launch testing)
-    const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(wallet);
-
-    const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
-    const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
-
-    // Determine effective tier — insufficient balance gets trial
-    const effectiveTier = tier || 'trial';
-    const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
-
-    // Check for existing key
-    let apiKey = await getKeyForWallet(wallet);
-    if (apiKey) {
-      const existing = await getKeyData(apiKey);
-      if (existing) {
-        existing.tier = effectiveTier;
-        existing.balance = balance;
-        await setKeyData(apiKey, existing);
-        return res.json({
+  let apiKey = await getKeyForWallet(wallet);
+  if (apiKey) {
+    const existing = await getKeyData(apiKey);
+    if (existing) {
+      existing.tier = effectiveTier;
+      existing.balance = balance;
+      await setKeyData(apiKey, existing);
+      return {
+        status: 200,
+        body: {
           apiKey,
           tier: tierConfig.label,
           balance,
@@ -97,17 +80,26 @@ router.post('/register', registerLimiter, async (req, res) => {
           models: tierConfig.models.filter(isModelAvailable),
           comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
           isTrial: effectiveTier === 'trial',
-          message: 'Existing key returned. Tier updated.'
-        });
-      }
+          message: 'Existing key returned. Tier updated.',
+          ...opts.extraResponse,
+        },
+      };
     }
+  }
 
-    apiKey = generateApiKey();
-    const keyData = { wallet, tier: effectiveTier, balance, createdAt: Date.now() };
-    await setKeyData(apiKey, keyData);
-    await setKeyForWallet(wallet, apiKey);
+  apiKey = generateApiKey();
+  const keyData = { wallet, tier: effectiveTier, balance, createdAt: Date.now() };
+  if (opts.source) keyData.source = opts.source;
+  await setKeyData(apiKey, keyData);
+  await setKeyForWallet(wallet, apiKey);
 
-    res.json({
+  if (opts.source) {
+    logger.info('Agent registered', { wallet: wallet.slice(0, 8), tier: effectiveTier, source: opts.source });
+  }
+
+  return {
+    status: 200,
+    body: {
       apiKey,
       tier: tierConfig.label,
       balance,
@@ -117,9 +109,21 @@ router.post('/register', registerLimiter, async (req, res) => {
       isTrial: effectiveTier === 'trial',
       message: effectiveTier === 'trial'
         ? 'Trial access granted. Hold $INFINITE tokens for full access.'
-        : 'API key generated. Keep it safe.'
-    });
+        : 'API key generated. Keep it safe.',
+      ...opts.extraResponse,
+    },
+  };
+}
 
+// POST /auth/register
+router.post('/register', registerLimiter, async (req, res) => {
+  const { wallet, signature, message } = req.body;
+  if (!wallet || !signature || !message) {
+    return res.status(400).json({ error: 'missing_fields', message: 'Required: wallet, signature, message' });
+  }
+  try {
+    const result = await registerWallet({ wallet, signature, message });
+    res.status(result.status).json(result.body);
   } catch (err) {
     logger.error('Registration error', { err: err.message });
     res.status(500).json({
@@ -129,28 +133,22 @@ router.post('/register', registerLimiter, async (req, res) => {
   }
 });
 
-// GET /auth/status — Check current key status
+// GET /auth/status
 router.get('/status', authenticateApiKey, (req, res) => {
   const { wallet, tier, balance, tierConfig, usage } = req.infinite;
   res.json({
     wallet,
     tier: tierConfig.label,
     balance,
-    usage: {
-      today: usage.count,
-      limit: tierConfig.dailyLimit,
-      remaining: tierConfig.dailyLimit - usage.count
-    },
+    usage: { today: usage.count, limit: tierConfig.dailyLimit, remaining: tierConfig.dailyLimit - usage.count },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
   });
 });
 
-// POST /auth/agent-register — Programmatic agent registration (same logic, aliased for discovery)
-// OpenClaw skills and autonomous agents use this endpoint to onboard.
+// POST /auth/agent-register
 router.post('/agent-register', registerLimiter, async (req, res) => {
   const { wallet, signature, message } = req.body;
-
   if (!wallet || !signature || !message) {
     return res.status(400).json({
       error: 'missing_fields',
@@ -162,91 +160,12 @@ router.post('/agent-register', registerLimiter, async (req, res) => {
       },
     });
   }
-
   try {
-    const SIG_MAX_AGE_MS = 5 * 60 * 1000;
-    const tsMatch = message.match(/Timestamp:\s*(\d+)/);
-    if (!tsMatch) {
-      return res.status(400).json({
-        error: 'invalid_message',
-        message: 'Signed message must include a Timestamp field.',
-      });
-    }
-    const sigTimestamp = parseInt(tsMatch[1], 10);
-    if (Math.abs(Date.now() - sigTimestamp) > SIG_MAX_AGE_MS) {
-      return res.status(401).json({
-        error: 'signature_expired',
-        message: 'Signature has expired. Please sign a new message.',
-      });
-    }
-
-    let sigBytes;
-    try {
-      sigBytes = bs58.decode(signature);
-    } catch {
-      sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
-    }
-
-    const verified = nacl.sign.detached.verify(
-      new TextEncoder().encode(message),
-      sigBytes,
-      bs58.decode(wallet)
+    const result = await registerWallet(
+      { wallet, signature, message },
+      { source: 'agent', extraResponse: { tokenMint: CONFIG.TOKEN_MINT, dashboard: 'https://infinitekeys.fun' } },
     );
-
-    if (!verified) {
-      return res.status(401).json({
-        error: 'invalid_signature',
-        message: 'Wallet signature verification failed.',
-      });
-    }
-
-    const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(wallet);
-    const balance = isWhitelisted ? 0 : await getTokenBalance(wallet);
-    const tier = isWhitelisted ? 'architect' : getTierForBalance(balance);
-    const effectiveTier = tier || 'trial';
-    const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
-
-    let apiKey = await getKeyForWallet(wallet);
-    if (apiKey) {
-      const existing = await getKeyData(apiKey);
-      if (existing) {
-        existing.tier = effectiveTier;
-        existing.balance = balance;
-        await setKeyData(apiKey, existing);
-        return res.json({
-          apiKey,
-          tier: tierConfig.label,
-          balance,
-          dailyLimit: tierConfig.dailyLimit,
-          models: tierConfig.models.filter(isModelAvailable),
-          isTrial: effectiveTier === 'trial',
-          tokenMint: CONFIG.TOKEN_MINT,
-          dashboard: 'https://infinitekeys.fun',
-          message: 'Existing key returned. Tier updated.',
-        });
-      }
-    }
-
-    apiKey = generateApiKey();
-    const keyData = { wallet, tier: effectiveTier, balance, createdAt: Date.now(), source: 'agent' };
-    await setKeyData(apiKey, keyData);
-    await setKeyForWallet(wallet, apiKey);
-
-    logger.info('Agent registered', { wallet: wallet.slice(0, 8), tier: effectiveTier, source: 'agent' });
-
-    res.json({
-      apiKey,
-      tier: tierConfig.label,
-      balance,
-      dailyLimit: tierConfig.dailyLimit,
-      models: tierConfig.models.filter(isModelAvailable),
-      isTrial: effectiveTier === 'trial',
-      tokenMint: CONFIG.TOKEN_MINT,
-      dashboard: 'https://infinitekeys.fun',
-      message: effectiveTier === 'trial'
-        ? 'Trial access granted. Buy $INF tokens for full access.'
-        : 'API key generated. Store it securely.',
-    });
+    res.status(result.status).json(result.body);
   } catch (err) {
     logger.error('Agent registration error', { err: err.message });
     res.status(500).json({
@@ -256,7 +175,7 @@ router.post('/agent-register', registerLimiter, async (req, res) => {
   }
 });
 
-// GET /auth/tiers — Public endpoint for agents to discover tier requirements
+// GET /auth/tiers
 router.get('/tiers', (_req, res) => {
   const tiers = Object.entries(CONFIG.TIERS).map(([key, tier]) => ({
     id: key,
@@ -278,20 +197,20 @@ router.get('/tiers', (_req, res) => {
   });
 });
 
-// POST /auth/revoke — Revoke your own key
+// POST /auth/revoke — also cleans up trading wallet
 router.post('/revoke', authenticateApiKey, async (req, res) => {
   const { apiKey, wallet } = req.infinite;
   await deleteKey(apiKey, wallet);
-  await resetUsage(apiKey);
+  await Promise.all([resetUsage(apiKey), deleteWallet(apiKey)]);
   res.json({ message: 'API key revoked. Generate a new one at any time.' });
 });
 
-// POST /auth/rotate — Get a new key (revokes old one)
+// POST /auth/rotate — also cleans up old trading wallet
 router.post('/rotate', authenticateApiKey, async (req, res) => {
   const { apiKey: oldKey, wallet, tier, balance } = req.infinite;
 
   await deleteKey(oldKey, wallet);
-  await resetUsage(oldKey);
+  await Promise.all([resetUsage(oldKey), deleteWallet(oldKey)]);
 
   const newKey = generateApiKey();
   await setKeyData(newKey, { wallet, tier, balance, createdAt: Date.now() });

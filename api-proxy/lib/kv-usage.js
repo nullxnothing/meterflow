@@ -1,36 +1,9 @@
 // Persistent usage tracking using Redis
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const USAGE_PREFIX = 'infinite:usage:';
 const IS_PROD = process.env.NODE_ENV === 'production';
-
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) {
-      if (IS_PROD) {
-        logger.error('REDIS_URL is required in production for usage tracking');
-        process.exit(1);
-      }
-      return null;
-    }
-    try {
-      redis = new Redis(redisUrl, {
-        maxRetriesPerRequest: 3,
-        lazyConnect: true,
-      });
-      redis.on('error', (err) => logger.error('KV-Usage Redis error', { err: err.message }));
-    } catch (e) {
-      logger.error('KV-Usage Redis connection failed', { err: e.message });
-      if (IS_PROD) process.exit(1);
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback (dev only)
 const fallbackUsage = new Map();

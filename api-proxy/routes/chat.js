@@ -152,8 +152,16 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const { signal } = abortController;
   let clientDisconnected = false;
 
+  // Keepalive heartbeat — prevents Render/Cloudflare from killing idle SSE connections
+  const heartbeat = setInterval(() => {
+    if (!clientDisconnected && !res.writableEnded) {
+      res.write(': heartbeat\n\n');
+    }
+  }, 15_000);
+
   res.on('close', () => {
     clientDisconnected = true;
+    clearInterval(heartbeat);
     abortController.abort();
   });
 
@@ -168,6 +176,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
       res.write(`data: ${JSON.stringify({ type: 'error', message: `Unknown model: ${requestedModel}` })}\n\n`);
     }
 
+    clearInterval(heartbeat);
     const newUsage = await incrementUsage(apiKey);
     if (isTrial && !clientDisconnected) {
       res.write(`data: ${JSON.stringify({ type: 'trial', used: newUsage.count, limit: tierConfig.dailyLimit })}\n\n`);
@@ -177,6 +186,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
       res.end();
     }
   } catch (err) {
+    clearInterval(heartbeat);
     if (clientDisconnected || err.name === 'AbortError') return;
     logger.error('Stream error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8), stream: true });

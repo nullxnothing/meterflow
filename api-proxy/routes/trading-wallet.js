@@ -78,7 +78,7 @@ router.get('/wallet/info', authenticateApiKey, requireTradingTier, async (req, r
   if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first via POST /v1/trading/wallet/create' });
   try {
     const solBalance = await getSolBalance(solanaConnection, w.publicKey);
-    const positions = [...getPositions(apiKey).entries()].map(([mint, p]) => ({ mint, ...p }));
+    const positions = [...(await getPositions(apiKey)).entries()].map(([mint, p]) => ({ mint, ...p }));
     res.json({ publicKey: w.publicKey, solBalance, positions, createdAt: w.createdAt });
   } catch (err) {
     res.status(502).json({ error: 'balance_check_failed', message: err.message });
@@ -139,7 +139,7 @@ router.post('/swap', authenticateApiKey, requireTradingTier, async (req, res) =>
     const keypair = loadKeypair(w.encryptedKeypair, encKey);
     const quote = await getQuote({ inputMint, outputMint, amount: String(amount), slippageBps });
     const result = await executeSwap(solanaConnection, keypair, quote, { priorityFeeLamports });
-    recordTrade(apiKey, { action: 'swap', inputMint, outputMint, amount, sig: result.signature });
+    await recordTrade(apiKey, { action: 'swap', inputMint, outputMint, amount, sig: result.signature });
     res.json({ signature: result.signature, inputAmount: result.inputAmount, outputAmount: result.outputAmount });
   } catch (err) {
     res.status(502).json({ error: 'swap_failed', message: err.message });
@@ -162,7 +162,7 @@ router.post('/pump/buy', authenticateApiKey, requireTradingTier, async (req, res
     const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
     const keypair = loadKeypair(w.encryptedKeypair, encKey);
     const result = await executePumpTrade(solanaConnection, keypair, { mint, action: 'buy', amount, denominatedInSol, slippage, priorityFee, pool });
-    recordTrade(apiKey, { action: 'pump_buy', mint, amount, sig: result.signature });
+    await recordTrade(apiKey, { action: 'pump_buy', mint, amount, sig: result.signature });
     res.json(result);
   } catch (err) {
     res.status(502).json({ error: 'pump_buy_failed', message: err.message });
@@ -185,7 +185,7 @@ router.post('/pump/sell', authenticateApiKey, requireTradingTier, async (req, re
     const encKey = getEncryptionKey(CONFIG.WALLET_ENCRYPTION_SECRET, apiKey);
     const keypair = loadKeypair(w.encryptedKeypair, encKey);
     const result = await executePumpTrade(solanaConnection, keypair, { mint, action: 'sell', amount, denominatedInSol, slippage, priorityFee, pool });
-    recordTrade(apiKey, { action: 'pump_sell', mint, amount, sig: result.signature });
+    await recordTrade(apiKey, { action: 'pump_sell', mint, amount, sig: result.signature });
     res.json(result);
   } catch (err) {
     res.status(502).json({ error: 'pump_sell_failed', message: err.message });

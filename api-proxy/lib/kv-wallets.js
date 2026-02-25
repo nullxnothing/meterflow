@@ -1,25 +1,7 @@
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const WALLET_PREFIX = 'infinite:trading_wallet:';
-const IS_PROD = process.env.NODE_ENV === 'production';
-
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!redisUrl) return null;
-    try {
-      redis = new Redis(redisUrl, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => logger.error('KV-Wallets Redis error', { err: err.message }));
-    } catch (e) {
-      logger.error('KV-Wallets Redis connect failed', { err: e.message });
-      return null;
-    }
-  }
-  return redis;
-}
 
 export async function persistWallet(apiKey, walletData) {
   const r = getRedis();

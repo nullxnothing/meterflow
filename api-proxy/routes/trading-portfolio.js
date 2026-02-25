@@ -83,17 +83,17 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
 });
 
 // GET /v1/trading/positions
-router.get('/positions', authenticateApiKey, requireTradingTier, (req, res) => {
+router.get('/positions', authenticateApiKey, requireTradingTier, async (req, res) => {
   const { apiKey } = req.infinite;
-  const positions = [...getPositions(apiKey).entries()].map(([mint, p]) => ({ mint, ...p }));
+  const positions = [...(await getPositions(apiKey)).entries()].map(([mint, p]) => ({ mint, ...p }));
   res.json(positions);
 });
 
 // GET /v1/trading/history
-router.get('/history', authenticateApiKey, requireTradingTier, (req, res) => {
+router.get('/history', authenticateApiKey, requireTradingTier, async (req, res) => {
   const { apiKey } = req.infinite;
   const limit = parseInt(req.query.limit) || 100;
-  const hist = getHistory(apiKey);
+  const hist = await getHistory(apiKey);
   res.json(hist.slice(-limit));
 });
 

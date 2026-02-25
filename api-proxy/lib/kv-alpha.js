@@ -1,26 +1,8 @@
 // Redis data layer for Infinite Alpha — CT intelligence scanner
-import Redis from 'ioredis';
+import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 const P = 'infinite:alpha:';
-const IS_PROD = process.env.NODE_ENV === 'production';
-
-let redis = null;
-
-function getRedis() {
-  if (!redis) {
-    const url = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
-    if (!url) return null;
-    try {
-      redis = new Redis(url, { maxRetriesPerRequest: 3, lazyConnect: true });
-      redis.on('error', (err) => logger.error('KV-Alpha Redis error', { err: err.message }));
-    } catch (e) {
-      logger.error('KV-Alpha Redis connect failed', { err: e.message });
-      return null;
-    }
-  }
-  return redis;
-}
 
 // In-memory fallback (dev only)
 const mem = {
