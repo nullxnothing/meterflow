@@ -3,6 +3,37 @@ import { isServerTool, executeTool } from '../tools/index.js';
 import { fetchWithRetry } from '../lib/retry.js';
 
 const API_TIMEOUT = 30_000;
+const STREAM_RETRYABLE = new Set([429, 500, 502, 503, 504]);
+const STREAM_MAX_RETRIES = 2;
+const STREAM_BASE_DELAY = 1000;
+
+async function fetchStreamWithRetry(url, options, label) {
+  let lastError;
+  for (let attempt = 0; attempt <= STREAM_MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || !STREAM_RETRYABLE.has(response.status)) return response;
+
+      const errBody = await response.text();
+      lastError = new Error(`${label} ${response.status}: ${errBody}`);
+
+      if (attempt < STREAM_MAX_RETRIES) {
+        const retryAfter = response.headers?.get?.('retry-after');
+        const delay = retryAfter && parseInt(retryAfter, 10) > 0
+          ? parseInt(retryAfter, 10) * 1000
+          : STREAM_BASE_DELAY * Math.pow(2, attempt);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    } catch (err) {
+      lastError = err;
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') throw err;
+      if (attempt < STREAM_MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, STREAM_BASE_DELAY * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
 
 async function proxyOpenAI(model, messages, maxTokens, temperature) {
   const response = await fetchWithRetry(() => fetch('https://api.openai.com/v1/chat/completions', {
@@ -13,7 +44,7 @@ async function proxyOpenAI(model, messages, maxTokens, temperature) {
     },
     body: JSON.stringify({
       model,
-      max_tokens: Math.min(maxTokens, 4096),
+      max_tokens: Math.min(maxTokens, 8192),
       temperature: temperature ?? 0.7,
       messages,
     }),
@@ -71,7 +102,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
     };
     if (functionTools.length > 0) body.tools = functionTools;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetchStreamWithRetry('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -79,7 +110,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
       },
       body: JSON.stringify(body),
       signal,
-    });
+    }, 'OpenAI');
 
     if (!response.ok) {
       const err = await response.text();
@@ -94,48 +125,48 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
     let collectedText = '';
 
     try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const jsonStr = line.slice(6).trim();
-        if (!jsonStr || jsonStr === '[DONE]') continue;
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr || jsonStr === '[DONE]') continue;
 
-        try {
-          const data = JSON.parse(jsonStr);
-          const choice = data.choices?.[0];
-          if (!choice) continue;
+          try {
+            const data = JSON.parse(jsonStr);
+            const choice = data.choices?.[0];
+            if (!choice) continue;
 
-          if (choice.delta?.content) {
-            collectedText += choice.delta.content;
-            res.write(`data: ${JSON.stringify({ type: 'text', content: choice.delta.content })}\n\n`);
-          }
-
-          if (choice.delta?.tool_calls) {
-            for (const tc of choice.delta.tool_calls) {
-              const idx = tc.index;
-              if (!toolCallAccumulator[idx]) {
-                toolCallAccumulator[idx] = { id: tc.id || '', name: tc.function?.name || '', arguments: '' };
-                if (tc.function?.name && isServerTool(tc.function.name)) {
-                  res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: tc.function.name, query: '' })}\n\n`);
-                }
-              }
-              if (tc.id) toolCallAccumulator[idx].id = tc.id;
-              if (tc.function?.name) toolCallAccumulator[idx].name = tc.function.name;
-              if (tc.function?.arguments) toolCallAccumulator[idx].arguments += tc.function.arguments;
+            if (choice.delta?.content) {
+              collectedText += choice.delta.content;
+              res.write(`data: ${JSON.stringify({ type: 'text', content: choice.delta.content })}\n\n`);
             }
-          }
 
-          if (choice.finish_reason) finishReason = choice.finish_reason;
-        } catch {}
+            if (choice.delta?.tool_calls) {
+              for (const tc of choice.delta.tool_calls) {
+                const idx = tc.index;
+                if (!toolCallAccumulator[idx]) {
+                  toolCallAccumulator[idx] = { id: tc.id || '', name: tc.function?.name || '', arguments: '' };
+                  if (tc.function?.name && isServerTool(tc.function.name)) {
+                    res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: tc.function.name, query: '' })}\n\n`);
+                  }
+                }
+                if (tc.id) toolCallAccumulator[idx].id = tc.id;
+                if (tc.function?.name) toolCallAccumulator[idx].name = tc.function.name;
+                if (tc.function?.arguments) toolCallAccumulator[idx].arguments += tc.function.arguments;
+              }
+            }
+
+            if (choice.finish_reason) finishReason = choice.finish_reason;
+          } catch {}
+        }
       }
-    }
     } finally {
       reader.releaseLock();
     }
@@ -162,7 +193,7 @@ async function streamOpenAIChatWithTools(model, messages, maxTokens, temperature
 }
 
 async function streamOpenAIChatCompletions(model, messages, maxTokens, temperature, res, signal) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchStreamWithRetry('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -176,7 +207,7 @@ async function streamOpenAIChatCompletions(model, messages, maxTokens, temperatu
       stream: true,
     }),
     signal,
-  });
+  }, 'OpenAI');
 
   if (!response.ok) {
     const err = await response.text();
@@ -187,34 +218,38 @@ async function streamOpenAIChatCompletions(model, messages, maxTokens, temperatu
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
 
-      try {
-        const data = JSON.parse(jsonStr);
-        const text = data.choices?.[0]?.delta?.content;
-        if (text) {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
-        }
-      } catch {}
+        try {
+          const data = JSON.parse(jsonStr);
+          const text = data.choices?.[0]?.delta?.content;
+          if (text) {
+            res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+          }
+        } catch {}
+      }
     }
+  } finally {
+    reader.releaseLock();
   }
 }
 
 async function streamOpenAIResponses(model, messages, maxTokens, temperature, res, tools, signal) {
   const input = messages.map(m => ({ role: m.role, content: m.content }));
 
-  const response = await fetch('https://api.openai.com/v1/responses', {
+  const response = await fetchStreamWithRetry('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -229,7 +264,7 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
       stream: true,
     }),
     signal,
-  });
+  }, 'OpenAI');
 
   if (!response.ok) {
     const err = await response.text();
@@ -241,45 +276,45 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
   let buffer = '';
 
   try {
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
 
-      try {
-        const event = JSON.parse(jsonStr);
+        try {
+          const event = JSON.parse(jsonStr);
 
-        if (event.type === 'response.web_search_call.searching') {
-          res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
-        }
-
-        if (event.type === 'response.output_text.delta') {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta || '' })}\n\n`);
-        }
-
-        if (event.type === 'response.output_text.done') {
-          const annotations = event.annotations || [];
-          const urlCites = annotations.filter(a => a.type === 'url_citation');
-          if (urlCites.length > 0) {
-            const sources = urlCites.slice(0, 6).map(a => ({
-              title: a.title || a.url || '',
-              url: a.url || '',
-              snippet: '',
-            }));
-            res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+          if (event.type === 'response.web_search_call.searching') {
+            res.write(`data: ${JSON.stringify({ type: 'tool_start', tool: 'web_search', query: '' })}\n\n`);
           }
-        }
-      } catch {}
+
+          if (event.type === 'response.output_text.delta') {
+            res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta || '' })}\n\n`);
+          }
+
+          if (event.type === 'response.output_text.done') {
+            const annotations = event.annotations || [];
+            const urlCites = annotations.filter(a => a.type === 'url_citation');
+            if (urlCites.length > 0) {
+              const sources = urlCites.slice(0, 6).map(a => ({
+                title: a.title || a.url || '',
+                url: a.url || '',
+                snippet: '',
+              }));
+              res.write(`data: ${JSON.stringify({ type: 'tool_result', tool: 'web_search', sources })}\n\n`);
+            }
+          }
+        } catch {}
+      }
     }
-  }
   } finally {
     reader.releaseLock();
   }
@@ -288,7 +323,7 @@ async function streamOpenAIResponses(model, messages, maxTokens, temperature, re
 async function streamOpenAIWithSystem(model, systemPrompt, messages, maxTokens, temperature, res) {
   const openaiMessages = [{ role: 'system', content: systemPrompt }, ...messages];
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchStreamWithRetry('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -300,8 +335,8 @@ async function streamOpenAIWithSystem(model, systemPrompt, messages, maxTokens, 
       temperature: temperature ?? 0.7,
       messages: openaiMessages,
       stream: true,
-    })
-  });
+    }),
+  }, 'OpenAI');
 
   if (!response.ok) {
     const err = await response.text();
@@ -312,24 +347,28 @@ async function streamOpenAIWithSystem(model, systemPrompt, messages, maxTokens, 
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
-      try {
-        const data = JSON.parse(jsonStr);
-        const text = data.choices?.[0]?.delta?.content;
-        if (text) {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
-        }
-      } catch {}
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+        try {
+          const data = JSON.parse(jsonStr);
+          const text = data.choices?.[0]?.delta?.content;
+          if (text) {
+            res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
+          }
+        } catch {}
+      }
     }
+  } finally {
+    reader.releaseLock();
   }
 }
 

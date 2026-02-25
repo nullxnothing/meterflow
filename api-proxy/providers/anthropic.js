@@ -41,11 +41,12 @@ async function proxyAnthropic(model, messages, maxTokens, temperature) {
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': CONFIG.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'web-search-2025-03-05',
     },
     body: JSON.stringify({
       model,
-      max_tokens: Math.min(maxTokens, 4096),
+      max_tokens: Math.min(maxTokens, 8192),
       temperature: temperature ?? 0.7,
       messages
     }),
@@ -88,7 +89,8 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': CONFIG.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'web-search-2025-03-05',
       },
       body: JSON.stringify(body),
       signal,
@@ -217,6 +219,7 @@ async function streamAnthropicWithSystem(model, systemPrompt, messages, maxToken
       'Content-Type': 'application/json',
       'x-api-key': CONFIG.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'web-search-2025-03-05',
     },
     body: JSON.stringify({
       model,
@@ -237,23 +240,27 @@ async function streamAnthropicWithSystem(model, systemPrompt, messages, maxToken
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const jsonStr = line.slice(6).trim();
-      if (!jsonStr || jsonStr === '[DONE]') continue;
-      try {
-        const event = JSON.parse(jsonStr);
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
-        }
-      } catch {}
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+        try {
+          const event = JSON.parse(jsonStr);
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+            res.write(`data: ${JSON.stringify({ type: 'text', content: event.delta.text })}\n\n`);
+          }
+        } catch {}
+      }
     }
+  } finally {
+    reader.releaseLock();
   }
 }
 
