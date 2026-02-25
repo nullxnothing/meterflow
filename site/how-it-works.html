@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Learn how INFINITE Protocol works — token-gated AI access, treasury funding, and tier-based rate limits on Solana.">
+<meta name="description" content="How INFINITE works — pump.fun creator fees fund a treasury that pays for Claude, GPT and Gemini API access for every holder.">
 <meta name="theme-color" content="#0a0a0a">
 <meta property="og:title" content="INFINITE — How It Works">
-<meta property="og:description" content="Token-gated AI access, treasury funding, and tier-based rate limits on Solana.">
+<meta property="og:description" content="Pump.fun creator fees fund a treasury that pays for Claude, GPT and Gemini API access for every holder.">
 <meta property="og:type" content="website">
 <title>INFINITE — How It Works</title>
 <link rel="icon" type="image/png" href="/site/favicon.png">
@@ -787,7 +787,7 @@ footer .links a:hover { color: var(--accent); }
     
     <div class="code-block reveal">
       <span class="comment"># Get your key</span><br>
-      curl -X POST https://api.infinite.sh/auth/register \<br>
+      curl -X POST https://infinitekeys.fun/proxy/auth/agent-register \<br>
       &nbsp;&nbsp;-d '{"wallet": "YOUR_SOLANA_WALLET", "signature": "..."}'<br>
       <br>
       <span class="comment"># Response</span><br>
@@ -799,7 +799,7 @@ footer .links a:hover { color: var(--accent); }
       }<br>
       <br>
       <span class="comment"># Use it like any API key</span><br>
-      curl -X POST https://api.infinite.sh/v1/chat \<br>
+      curl -X POST https://infinitekeys.fun/proxy/v1/chat \<br>
       &nbsp;&nbsp;-H <span class="string">"Authorization: Bearer inf_x7k9m2p4q8r1..."</span> \<br>
       &nbsp;&nbsp;-d '{"model": "claude-sonnet", "messages": [{"role": "user", "content": "Hello"}]}'<br>
       <br>

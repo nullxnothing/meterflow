@@ -1,5 +1,5 @@
 // Infinite Alpha — API client for Chrome extension
-const API_BASE = 'https://api.infinite.sh';
+const API_BASE = 'https://infinitekeys.fun/proxy';
 
 async function getApiKey() {
   const { apiKey } = await chrome.storage.local.get('apiKey');

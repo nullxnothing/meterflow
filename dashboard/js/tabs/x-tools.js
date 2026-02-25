@@ -155,7 +155,7 @@ export function renderXTools() {
           </div>
         `).join('')}
       </div>
-      <div class="tool-config-box" style="margin-top:12px;">curl -H "Authorization: Bearer ${key}" \\\n  https://api.infinite.sh/v1/alpha/discover</div>
+      <div class="tool-config-box" style="margin-top:12px;">curl -H "Authorization: Bearer ${key}" \\\n  https://infinitekeys.fun/proxy/v1/alpha/discover</div>
     </div>
   `;
 }
