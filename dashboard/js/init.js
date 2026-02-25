@@ -5,7 +5,7 @@
 import { STATE, CHAT, TRADING } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
-import { startStatusPolling, fetchTreasury, fetchProviders, fetchOAuthStatus } from './polling.js';
+import { startStatusPolling, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
 import { render } from './render.js';
 import { showToast } from './actions.js';
 import { loadVotes } from './votes.js';
@@ -28,6 +28,7 @@ if (hasSession) {
   // Public/non-holder — fetch public data only
   fetchTreasury();
   fetchProviders();
+  fetchProviderStatuses();
 }
 
 // ─── Handle OAuth Redirects ───

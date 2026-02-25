@@ -29,6 +29,8 @@ export const STATE = {
   keyVisible: false,
   error: null,
   trial: { used: 0, limit: 3, remaining: 3, loaded: false },
+  claudeStatus: null,
+  providerStatus: null, // { indicator, description, incident, details[] }
 };
 
 export const CHAT = {
@@ -102,8 +104,9 @@ export const VOTES = {
   voteCounts: {},
 };
 
-// Status polling interval reference
+// Status polling interval references
 export let statusPollInterval = null;
+export let providerStatusInterval = null;
 
 export function setStatusPollInterval(interval) {
   statusPollInterval = interval;
@@ -113,6 +116,17 @@ export function clearStatusPollInterval() {
   if (statusPollInterval) {
     clearInterval(statusPollInterval);
     statusPollInterval = null;
+  }
+}
+
+export function setProviderStatusInterval(interval) {
+  providerStatusInterval = interval;
+}
+
+export function clearProviderStatusInterval() {
+  if (providerStatusInterval) {
+    clearInterval(providerStatusInterval);
+    providerStatusInterval = null;
   }
 }
 

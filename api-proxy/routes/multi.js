@@ -2,7 +2,7 @@ import { Router } from 'express';
 import crypto from 'crypto';
 import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
-import { isModelAvailable } from '../lib/providers.js';
+import { isModelAvailable, getProviderForModel } from '../lib/providers.js';
 import { proxyAnthropic } from '../providers/anthropic.js';
 import { proxyGemini } from '../providers/gemini.js';
 import { proxyOpenAI } from '../providers/openai.js';
@@ -11,11 +11,11 @@ const router = Router();
 
 const DEFAULT_MULTI_MODELS = ['claude-sonnet-4-6', 'gemini-2.5-flash'];
 
+const PROXY_FNS = { claude: proxyAnthropic, gemini: proxyGemini, openai: proxyOpenAI };
+
 function getProxyFn(model) {
-  if (model.startsWith('claude')) return proxyAnthropic;
-  if (model.startsWith('gemini')) return proxyGemini;
-  if (model.startsWith('gpt-')) return proxyOpenAI;
-  return null;
+  const provider = getProviderForModel(model);
+  return provider ? PROXY_FNS[provider] : null;
 }
 
 // POST /v1/multi — Fan-out to multiple models in parallel, return all responses
@@ -160,10 +160,7 @@ router.post('/multi/stream', authenticateApiKey, async (req, res) => {
 
   // Stream each model in parallel, prefixing events with model name
   const streamPromises = requestedModels.map(async (model) => {
-    const provider = model.startsWith('claude') ? 'claude'
-      : model.startsWith('gemini') ? 'gemini'
-      : model.startsWith('gpt-') ? 'openai'
-      : null;
+    const provider = getProviderForModel(model);
 
     if (!provider) {
       write({ type: 'error', model, message: `Unknown model: ${model}` });

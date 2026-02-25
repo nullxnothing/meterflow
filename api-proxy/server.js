@@ -109,4 +109,13 @@ function shutdown(signal) {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled rejection', { reason: reason?.message || String(reason) });
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught exception — shutting down', { err: err.message, stack: err.stack });
+  shutdown('uncaughtException');
+});
+
 export default app;
