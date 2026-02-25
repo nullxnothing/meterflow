@@ -524,8 +524,7 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
     parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }],
   }));
 
-  const apiKey = CONFIG.GEMINI_API_KEY;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`;
 
   const body = {
     contents: geminiContents,
@@ -534,7 +533,7 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
       temperature: temperature ?? 0.7,
     },
   };
-  if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
+  if (systemMsg) body.system_instruction = { parts: [{ text: systemMsg.content }] };
 
   const response = await fetchStreamWithRetry(url, {
     method: 'POST',
