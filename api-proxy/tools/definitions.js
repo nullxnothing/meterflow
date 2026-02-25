@@ -143,12 +143,18 @@ export function getOpenAITools(toolNames) {
   }).filter(Boolean);
 }
 
+function toGeminiType(type) {
+  const map = { object: 'OBJECT', string: 'STRING', number: 'NUMBER', integer: 'INTEGER', boolean: 'BOOLEAN', array: 'ARRAY' };
+  return map[type?.toLowerCase()] || type?.toUpperCase() || 'STRING';
+}
+
 function convertToGeminiSchema(schema) {
-  // Gemini uses a slightly different schema format — no 'required' at top level for some versions
-  // but generally accepts JSON Schema subset
-  const result = { type: schema.type, properties: {} };
+  const result = { type: toGeminiType(schema.type), properties: {} };
   for (const [key, val] of Object.entries(schema.properties || {})) {
-    result.properties[key] = { ...val };
+    const prop = { ...val, type: toGeminiType(val.type) };
+    if (val.enum) prop.enum = val.enum;
+    if (val.items) prop.items = { type: toGeminiType(val.items.type) };
+    result.properties[key] = prop;
   }
   if (schema.required) result.required = schema.required;
   return result;

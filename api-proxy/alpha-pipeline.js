@@ -20,24 +20,36 @@ const SOLANA_CA_REGEX = /\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/g;
 const BATCH_DELAY_MS = 1500;
 
 let bearerToken = null;
-let creditsExhausted = false; // stop hammering when out of credits
+let creditsExhausted = false;
+let creditsExhaustedAt = 0;
+const CREDITS_COOLDOWN_MS = 6 * 60 * 60_000; // re-check after 6 hours
 
 function getBearerToken() {
   if (!bearerToken) bearerToken = process.env.TWITTER_BEARER_TOKEN || null;
   return bearerToken;
 }
 
+function isXApiAvailable() {
+  if (!getBearerToken()) return false;
+  if (!creditsExhausted) return true;
+  // Allow retry after cooldown in case credits were refilled
+  if (Date.now() - creditsExhaustedAt > CREDITS_COOLDOWN_MS) {
+    creditsExhausted = false;
+    log.info('Credits cooldown expired, re-enabling X API');
+    return true;
+  }
+  return false;
+}
+
 // X API fallback — only used if SocialData isn't configured
 async function twitterGet(path) {
-  const token = getBearerToken();
-  if (!token) throw new Error('No bearer token');
-  if (creditsExhausted) throw new Error('credits_depleted');
+  if (!isXApiAvailable()) throw new Error('credits_depleted');
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 10_000);
   const res = await fetch(`${TWITTER_API}${path}`, {
     signal: ctrl.signal,
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: { 'Authorization': `Bearer ${getBearerToken()}` },
   });
   clearTimeout(timer);
 
@@ -48,7 +60,8 @@ async function twitterGet(path) {
   }
   if (res.status === 402) {
     creditsExhausted = true;
-    log.error('X API credits depleted — switching to SocialData only');
+    creditsExhaustedAt = Date.now();
+    log.error('X API credits depleted — pausing for 6h');
     throw new Error('credits_depleted');
   }
   if (!res.ok) {
@@ -74,6 +87,7 @@ const useSD = () => isSocialDataEnabled();
 
 async function pollKeyProfileFollows() {
   if (Date.now() - lastPollTimes.follows < MIN_POLL_INTERVAL_MS) return;
+  if (!useSD() && !isXApiAvailable()) return;
 
   const keyProfiles = await getKeyProfiles();
   if (!keyProfiles.length) return;
@@ -180,6 +194,7 @@ async function pollKeyProfileFollows() {
 
 async function scanProfileChanges() {
   if (Date.now() - lastPollTimes.profiles < MIN_POLL_INTERVAL_MS * 3) return;
+  if (!useSD() && !isXApiAvailable()) return;
 
   const keyProfiles = await getKeyProfiles();
   if (!keyProfiles.length) return;
@@ -261,6 +276,7 @@ async function scanProfileChanges() {
 
 async function detectCATweets() {
   if (Date.now() - lastPollTimes.tweets < MIN_POLL_INTERVAL_MS) return;
+  if (!useSD() && !isXApiAvailable()) return;
 
   const keyProfiles = await getKeyProfiles();
   const alphaProfiles = keyProfiles.filter(kp =>

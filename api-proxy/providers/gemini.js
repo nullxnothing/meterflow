@@ -190,7 +190,7 @@ async function streamGeminiWithSystem(model, systemPrompt, messages, maxTokens, 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
+        system_instruction: { parts: [{ text: systemPrompt }] },
         contents: geminiContents,
         generationConfig: {
           maxOutputTokens: Math.min(maxTokens, 8192),

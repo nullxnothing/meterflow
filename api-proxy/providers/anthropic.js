@@ -3,6 +3,37 @@ import { isServerTool, executeTool } from '../tools/index.js';
 import { fetchWithRetry } from '../lib/retry.js';
 
 const API_TIMEOUT = 30_000;
+const STREAM_RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
+const STREAM_MAX_RETRIES = 2;
+const STREAM_BASE_DELAY = 1000;
+
+async function fetchStreamWithRetry(url, options, label) {
+  let lastError;
+  for (let attempt = 0; attempt <= STREAM_MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || !STREAM_RETRYABLE.has(response.status)) return response;
+
+      const errBody = await response.text();
+      lastError = new Error(`${label} ${response.status}: ${errBody}`);
+
+      if (attempt < STREAM_MAX_RETRIES) {
+        const retryAfter = response.headers?.get?.('retry-after');
+        const delay = retryAfter && parseInt(retryAfter, 10) > 0
+          ? parseInt(retryAfter, 10) * 1000
+          : STREAM_BASE_DELAY * Math.pow(2, attempt) * (response.status === 529 ? 1.5 : 1);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    } catch (err) {
+      lastError = err;
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') throw err;
+      if (attempt < STREAM_MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, STREAM_BASE_DELAY * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
 
 async function proxyAnthropic(model, messages, maxTokens, temperature) {
   const response = await fetchWithRetry(() => fetch('https://api.anthropic.com/v1/messages', {
@@ -52,7 +83,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
     if (systemPrompt) body.system = systemPrompt;
     if (tools) body.tools = tools;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetchStreamWithRetry('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +92,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
       },
       body: JSON.stringify(body),
       signal,
-    });
+    }, 'Anthropic');
 
     if (!response.ok) {
       const err = await response.text();
@@ -180,7 +211,7 @@ async function streamAnthropic(model, messages, maxTokens, temperature, res, too
 }
 
 async function streamAnthropicWithSystem(model, systemPrompt, messages, maxTokens, temperature, res) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetchStreamWithRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -195,7 +226,7 @@ async function streamAnthropicWithSystem(model, systemPrompt, messages, maxToken
       messages,
       stream: true,
     }),
-  });
+  }, 'Anthropic');
 
   if (!response.ok) {
     const err = await response.text();

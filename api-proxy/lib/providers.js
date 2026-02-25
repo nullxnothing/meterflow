@@ -28,12 +28,16 @@ function translateToolsForProvider(provider, tools) {
     return { native: out.length ? out : null, serverTools: serverToolNames };
   }
   if (provider === 'gemini') {
-    const nativeTools = [];
-    if (has('web_search')) nativeTools.push({ google_search: {} });
+    const hasSearch = has('web_search');
     const customFns = getGeminiTools(serverToolNames);
-    const combined = [...nativeTools];
-    if (customFns.length > 0) combined.push({ functionDeclarations: customFns });
-    return { native: combined.length ? combined : null, serverTools: serverToolNames };
+    // Gemini 2.5 rejects mixing google_search with functionDeclarations —
+    // if both are requested, prefer google_search and handle server tools without declaring them
+    if (hasSearch && customFns.length > 0) {
+      return { native: [{ google_search: {} }], serverTools: serverToolNames };
+    }
+    if (hasSearch) return { native: [{ google_search: {} }], serverTools: [] };
+    if (customFns.length > 0) return { native: [{ functionDeclarations: customFns }], serverTools: serverToolNames };
+    return { native: null, serverTools: [] };
   }
   if (provider === 'openai') {
     const out = [];
