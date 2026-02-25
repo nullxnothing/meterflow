@@ -28,6 +28,17 @@ export async function fetchStatus() {
   }
 }
 
+export async function fetchAggregate() {
+  try {
+    const data = await api('/status/aggregate');
+    if (data.treasury) STATE.treasury = { ...STATE.treasury, ...data.treasury };
+    if (data.providers) STATE.providers = data.providers;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchTreasury() {
   try { STATE.treasury = await api('/treasury'); } catch (err) {
     console.warn('fetchTreasury failed:', err.message || err);
@@ -115,15 +126,21 @@ function updateStatusBanner() {
 
 export function startStatusPolling() {
   fetchStatus();
-  fetchTreasury();
-  fetchProviders();
+  fetchAggregate().then(ok => {
+    if (!ok) { fetchTreasury(); fetchProviders(); }
+  });
   fetchOAuthStatus();
   fetchProviderStatuses();
 
   clearStatusPollInterval();
   clearProviderStatusInterval();
 
-  setStatusPollInterval(setInterval(() => { fetchStatus(); fetchTreasury(); }, 60_000));
+  setStatusPollInterval(setInterval(() => {
+    fetchStatus();
+    fetchAggregate().then(ok => {
+      if (!ok) fetchTreasury();
+    });
+  }, 60_000));
   setProviderStatusInterval(setInterval(fetchProviderStatuses, 300_000));
 }
 

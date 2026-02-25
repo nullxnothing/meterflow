@@ -182,6 +182,28 @@ router.get('/providers', (req, res) => {
   });
 });
 
+// GET /status/aggregate — Combined status for dashboard (reduces 4 calls → 1)
+router.get('/status/aggregate', async (req, res) => {
+  const balance = await getTreasuryBalance();
+  const treasuryState = getTreasuryState();
+  const providers = {
+    claude: PROVIDER_AVAILABLE.claude,
+    gemini: PROVIDER_AVAILABLE.gemini,
+    openai: PROVIDER_AVAILABLE.openai,
+  };
+
+  res.json({
+    treasury: {
+      ...treasuryState,
+      treasuryBalanceSol: balance.sol,
+      treasuryBalanceUsd: balance.usd,
+      solPrice: balance.solPrice,
+    },
+    providers,
+    health: { status: 'ok', version: '1.0.0', protocol: 'INFINITE', treasury: treasuryState.healthStatus },
+  });
+});
+
 // GET /health
 router.get('/health', (req, res) => {
   const treasuryState = getTreasuryState();

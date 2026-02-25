@@ -5,7 +5,7 @@
 import { STATE, CHAT, TRADING } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
-import { startStatusPolling, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
+import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
 import { render } from './render.js';
 import { showToast } from './actions.js';
 import { loadVotes } from './votes.js';
@@ -25,9 +25,10 @@ if (hasSession) {
   if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
   startStatusPolling();
 } else {
-  // Public/non-holder — fetch public data only
-  fetchTreasury();
-  fetchProviders();
+  // Public/non-holder — fetch public data only (prefer aggregate, fallback to individual)
+  fetchAggregate().then(ok => {
+    if (!ok) { fetchTreasury(); fetchProviders(); }
+  });
   fetchProviderStatuses();
 }
 
