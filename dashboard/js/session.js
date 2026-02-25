@@ -9,13 +9,17 @@ import { maskKey } from './api.js';
 
 export function saveSession() {
   if (!STATE.connected) return;
+  // Non-sensitive session data persists across tabs
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     wallet: STATE.wallet,
-    apiKey: STATE.apiKeyFull,
     tier: STATE.tier,
     balance: STATE.balance,
     models: STATE.models,
   }));
+  // API key in sessionStorage — cleared when tab closes
+  if (STATE.apiKeyFull) {
+    sessionStorage.setItem('infinite_apiKey', STATE.apiKeyFull);
+  }
 }
 
 export function loadSession() {
@@ -27,12 +31,20 @@ export function loadSession() {
     STATE.wallet = saved.wallet;
     STATE.connected = true;
     STATE.balance = saved.balance ?? 0;
-    // Holder session (has API key)
-    if (saved.apiKey) {
-      STATE.apiKeyFull = saved.apiKey;
-      STATE.apiKey = maskKey(saved.apiKey);
+    // Restore API key from sessionStorage (tab-scoped)
+    const apiKey = saved.apiKey || sessionStorage.getItem('infinite_apiKey');
+    if (apiKey) {
+      STATE.apiKeyFull = apiKey;
+      STATE.apiKey = maskKey(apiKey);
       STATE.tier = saved.tier;
       STATE.models = saved.models || [];
+      // Migrate: if key was in localStorage, move it to sessionStorage
+      if (saved.apiKey) {
+        sessionStorage.setItem('infinite_apiKey', apiKey);
+        const migrated = { ...saved };
+        delete migrated.apiKey;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      }
       return true;
     }
     // Connected but not a holder — no API key
@@ -42,6 +54,7 @@ export function loadSession() {
 
 export function clearSession() {
   localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem('infinite_apiKey');
   clearStatusPollInterval();
   Object.assign(STATE, {
     connected: false, connecting: false, wallet: null, walletProvider: null,
