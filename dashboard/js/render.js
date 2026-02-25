@@ -143,7 +143,20 @@ export function renderDashboard() {
         </div>
       </div>
     </aside>
-    <main class="main${isChat ? ' chat-mode' : ''}">${renderTab()}</main>
+    <main class="main${isChat ? ' chat-mode' : ''}">${renderStatusBanner()}${renderTab()}</main>
+  `;
+}
+
+function renderStatusBanner() {
+  const s = STATE.providerStatus;
+  if (!s || s.indicator === 'none') return '';
+  const text = s.incident ? s.incident.name : s.description;
+  return `
+    <div class="status-banner status-banner--${s.indicator}" id="claudeStatusBanner">
+      <span class="status-banner-dot"></span>
+      <span class="status-banner-text">${escapeHtml(text)}</span>
+      <button class="status-banner-close" onclick="this.parentElement.style.display='none'" aria-label="Dismiss">&times;</button>
+    </div>
   `;
 }
 
@@ -227,7 +240,7 @@ export function switchTabInPlace(tab) {
   // Update main content
   const isChat = tab === 'chat' || tab === 'trading';
   mainEl.className = 'main' + (isChat ? ' chat-mode' : '');
-  mainEl.innerHTML = renderTab();
+  mainEl.innerHTML = renderStatusBanner() + renderTab();
 
   // Update nav active states (sidebar + mobile drawer)
   document.querySelectorAll('.nav-item[data-tab]').forEach(item => {

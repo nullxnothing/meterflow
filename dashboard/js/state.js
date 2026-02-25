@@ -29,7 +29,6 @@ export const STATE = {
   keyVisible: false,
   error: null,
   trial: { used: 0, limit: 3, remaining: 3, loaded: false },
-  claudeStatus: null,
   providerStatus: null, // { indicator, description, incident, details[] }
 };
 
