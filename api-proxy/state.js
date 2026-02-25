@@ -1,5 +1,4 @@
 const balanceCache = new Map(); // wallet -> { balance, checkedAt }
-const videoOperations = new Map(); // operationName -> { apiKey, prompt, status, result }
 
 // Trading bot state
 const tradingWallets = new Map();    // apiKey → { encryptedKeypair, publicKey, createdAt }
@@ -35,7 +34,7 @@ const treasuryBalanceCache = { sol: 0, usd: 0, solPrice: 0, checkedAt: 0 };
 const TREASURY_CACHE_TTL = 5 * 60 * 1000;
 
 export {
-  balanceCache, videoOperations,
+  balanceCache,
   tradingWallets, tradingPositions, tradeHistory, activeDCA, activeCopyTraders, activeTriggers, safetyManagers,
   VALID_API_IDS,
   getTreasuryState, setTreasuryState,

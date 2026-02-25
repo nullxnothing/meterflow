@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CONFIG, PROVIDER_AVAILABLE, VIDEO_ALLOWED_TIERS, VIDEO_CALL_COST } from '../config.js';
-import { videoOperations } from '../state.js';
+import { getVideoOp, setVideoOp } from '../lib/kv-videos.js';
 import { authenticateApiKey, authenticateAdmin } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
@@ -82,9 +82,8 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
       throw new Error('No operation name returned from Veo API');
     }
 
-    videoOperations.set(operationName, { apiKey, prompt, status: 'pending', createdAt: Date.now() });
-
-    await incrementUsage(apiKey, VIDEO_CALL_COST - 1);  // incrementUsage adds 1, so add the rest
+    await setVideoOp(operationName, { apiKey, prompt, status: 'pending', createdAt: Date.now() });
+    await incrementUsage(apiKey, VIDEO_CALL_COST - 1);
 
     res.json({
       operationName,
@@ -105,7 +104,7 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
 // GET /v1/video/status/* — Poll video generation status
 router.get('/status/*', authenticateApiKey, async (req, res) => {
   const operationName = req.params[0];
-  const op = videoOperations.get(operationName);
+  const op = await getVideoOp(operationName);
   if (op && op.apiKey !== req.infinite.apiKey) {
     return res.status(403).json({ error: 'forbidden', message: 'This video belongs to another user.' });
   }
@@ -115,7 +114,7 @@ router.get('/status/*', authenticateApiKey, async (req, res) => {
 
     if (data.done) {
       if (data.error) {
-        videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'failed', error: data.error.message });
+        await setVideoOp(operationName, { ...op, status: 'failed', error: data.error.message });
         return res.json({ status: 'failed', error: data.error.message });
       }
 
@@ -123,17 +122,16 @@ router.get('/status/*', authenticateApiKey, async (req, res) => {
 
       const responseKeys = data.response ? Object.keys(data.response) : [];
       logger.info('Veo operation complete', { responseKeys });
-      logger.debug('Veo extracted video', { video: video ? JSON.stringify(video).slice(0, 300) : null });
       if (!video) {
         logger.error('Veo missing video in response', { response: JSON.stringify(data.response).slice(0, 1000) });
       }
 
       if (!video?.uri) {
-        videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'failed', error: 'No video in response' });
+        await setVideoOp(operationName, { ...op, status: 'failed', error: 'No video in response' });
         return res.json({ status: 'failed', error: 'Video generation completed but no video was returned.' });
       }
 
-      videoOperations.set(operationName, { ...videoOperations.get(operationName), status: 'complete', video });
+      await setVideoOp(operationName, { ...op, status: 'complete', video });
 
       return res.json({
         status: 'complete',
@@ -154,11 +152,12 @@ router.get('/debug/*', authenticateAdmin, async (req, res) => {
   try {
     const data = await fetchVeoOperation(operationName);
     const video = extractVideoFromResponse(data);
+    const stored = await getVideoOp(operationName);
     res.json({
       raw: data,
       extractedVideo: video,
       responseKeys: data.response ? Object.keys(data.response) : [],
-      inMemory: videoOperations.get(operationName) || null,
+      stored,
     });
   } catch (err) {
     res.status(502).json({ error: err.message });
@@ -169,13 +168,12 @@ router.get('/debug/*', authenticateAdmin, async (req, res) => {
 // Supports both Authorization header and ?token= query param (for <video src>)
 router.get('/download/*', async (req, res) => {
   const operationName = req.params[0];
-  const op = videoOperations.get(operationName);
+  const op = await getVideoOp(operationName);
 
   if (!op?.video?.uri) {
     return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
   }
 
-  // Accept auth from header or query param (browsers can't send headers on <video src>)
   const headerKey = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
   const queryKey = req.query.token;
   const apiKey = headerKey || queryKey;
