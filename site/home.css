@@ -570,6 +570,20 @@ nav {
   margin-bottom: 12px;
 }
 
+.stats-hero-row.triple {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.stats-hero-block.saved {
+  border-color: rgba(200, 255, 0, 0.2);
+  background: rgba(200, 255, 0, 0.03);
+}
+
+.stats-hero-block.saved .stats-hero-number {
+  color: #fff;
+  text-shadow: 0 0 30px rgba(200, 255, 0, 0.3);
+}
+
 .stats-hero-block {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1806,7 +1820,7 @@ footer {
 
 @media (max-width: 900px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .stats-hero-row { grid-template-columns: 1fr; }
+  .stats-hero-row, .stats-hero-row.triple { grid-template-columns: 1fr; }
   .stats-hero-number { font-size: 36px; }
   .stats-hero-block { padding: 28px 24px; }
 }

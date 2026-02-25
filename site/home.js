@@ -114,6 +114,15 @@ function formatUptime(ms) {
   return hours + 'h ' + Math.floor((ms % 3_600_000) / 60_000) + 'm';
 }
 
+// Blended cost per token across Claude Sonnet ($9/1M), GPT-4o ($7.50/1M), Gemini Flash ($0.30/1M)
+const BLENDED_COST_PER_TOKEN = 5.5 / 1_000_000;
+
+function formatUsd(amount) {
+  if (amount >= 1000) return '$' + (amount / 1000).toFixed(1) + 'K';
+  if (amount >= 1) return '$' + amount.toFixed(2);
+  return '$' + amount.toFixed(2);
+}
+
 let statsAnimated = false;
 
 function populateProtocolStats() {
@@ -133,14 +142,35 @@ function populateProtocolStats() {
   const runway = liveTreasury.runwayDays || 0;
   const health = liveTreasury.healthStatus || 'unknown';
 
+  // Money saved calculation
+  const moneySaved = allTimeTokens * BLENDED_COST_PER_TOKEN;
+
   // Hero stats with count-up on first load
-  if (!statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0)) {
+  const isFirstAnimation = !statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0);
+  if (isFirstAnimation) {
     animateCountUp('ps-alltime-calls', allTimeCalls, '', 2200);
     animateCountUp('ps-alltime-tokens', allTimeTokens, '', 2200);
     statsAnimated = true;
   } else {
     el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
     el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
+  }
+
+  // Money saved — animate alongside the hero stats
+  const savedEl = el('ps-money-saved');
+  if (savedEl) {
+    if (moneySaved > 0 && isFirstAnimation) {
+      const savedStart = performance.now();
+      function tickSaved(now) {
+        const progress = Math.min((now - savedStart) / 2200, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        savedEl.textContent = formatUsd(moneySaved * eased);
+        if (progress < 1) requestAnimationFrame(tickSaved);
+      }
+      requestAnimationFrame(tickSaved);
+    } else {
+      savedEl.textContent = moneySaved > 0 ? formatUsd(moneySaved) : '--';
+    }
   }
 
   el('ps-calls-today').textContent = formatCompact(callsToday);
