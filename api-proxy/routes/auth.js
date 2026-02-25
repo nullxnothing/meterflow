@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { CONFIG, TRIAL_CONFIG, isFreeAccessActive, getFreeAccessEndsAt } from '../config.js';
+import { CONFIG, TRIAL_CONFIG, FREE_ACCESS_TIER, isFreeAccessActive, getFreeAccessEndsAt } from '../config.js';
 import { authenticateApiKey } from '../middleware.js';
 import { getTokenBalance } from '../lib/balance.js';
 import { generateApiKey, getTierForBalance } from '../lib/helpers.js';
@@ -145,15 +145,17 @@ router.post('/register', registerLimiter, async (req, res) => {
 // GET /auth/status
 router.get('/status', authenticateApiKey, (req, res) => {
   const { wallet, tier, balance, tierConfig, usage } = req.infinite;
+  const isGuest = !!req.infinite.guest || wallet?.startsWith('guest_');
   const freeActive = isFreeAccessActive();
-  const isFreeUser = freeActive && balance < (CONFIG.TIERS.signal?.min || 10000) && tier !== 'trial';
+  const isFreeUser = isGuest || (freeActive && balance < (CONFIG.TIERS.signal?.min || 10000) && tier !== 'trial');
   res.json({
-    wallet,
+    wallet: isGuest ? null : wallet,
     tier: tierConfig.label,
     balance,
     usage: { today: usage.count, limit: tierConfig.dailyLimit, remaining: tierConfig.dailyLimit - usage.count },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+    isGuest,
     freeAccess: isFreeUser,
     freeAccessEndsAt: isFreeUser ? getFreeAccessEndsAt() : undefined,
   });
@@ -184,6 +186,60 @@ router.post('/agent-register', registerLimiter, async (req, res) => {
     res.status(500).json({
       error: 'registration_failed',
       message: process.env.NODE_ENV === 'production' ? 'Registration failed. Try again.' : err.message,
+    });
+  }
+});
+
+// POST /auth/guest — temporary key during free access, no wallet required
+const guestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'rate_limited', message: 'Too many guest requests. Try again later.' },
+});
+
+router.post('/guest', guestLimiter, async (req, res) => {
+  if (!isFreeAccessActive()) {
+    return res.status(403).json({
+      error: 'free_access_inactive',
+      message: 'Free access is not currently active. Connect a wallet and hold $INFINITE tokens for access.',
+    });
+  }
+
+  try {
+    const guestId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const tierConfig = CONFIG.TIERS[FREE_ACCESS_TIER];
+    const apiKey = generateApiKey();
+
+    await setKeyData(apiKey, {
+      wallet: guestId,
+      tier: FREE_ACCESS_TIER,
+      balance: 0,
+      guest: true,
+      createdAt: Date.now(),
+    });
+
+    logger.info('Guest key issued', { guestId: guestId.slice(0, 16) });
+
+    res.json({
+      apiKey,
+      tier: tierConfig.label,
+      balance: 0,
+      dailyLimit: tierConfig.dailyLimit,
+      models: tierConfig.models.filter(isModelAvailable),
+      comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+      isTrial: false,
+      isGuest: true,
+      freeAccess: true,
+      freeAccessEndsAt: getFreeAccessEndsAt(),
+      message: 'Free access granted! Connect a wallet and hold $INFINITE to keep access after it ends.',
+    });
+  } catch (err) {
+    logger.error('Guest registration error', { err: err.message });
+    res.status(500).json({
+      error: 'guest_failed',
+      message: 'Could not create guest access. Try again.',
     });
   }
 });

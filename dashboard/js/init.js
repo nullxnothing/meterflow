@@ -2,13 +2,15 @@
 // INFINITE Dashboard - Entry Point
 // ═══════════════════════════════════════════
 
-import { STATE, CHAT, TRADING } from './state.js';
+import { STATE, CHAT, TRADING, API_BASE } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
 import { render } from './render.js';
 import { showToast } from './actions.js';
 import { loadVotes } from './votes.js';
+import { maskKey } from './api.js';
+import { saveSession } from './session.js';
 
 // ─── Initialize ───
 
@@ -25,9 +27,38 @@ if (hasSession) {
   if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
   startStatusPolling();
 } else {
-  // Public/non-holder — fetch public data only (prefer aggregate, fallback to individual)
-  fetchAggregate().then(ok => {
-    if (!ok) { fetchTreasury(); fetchProviders(); }
+  // Check if free access is active — auto-provision guest key
+  fetchAggregate().then(async (data) => {
+    if (!data) { fetchTreasury(); fetchProviders(); }
+
+    // If free access is active and user has no session, get a guest key
+    const freeEndsAt = data?.freeAccessEndsAt;
+    if (!freeEndsAt) return;
+    if (Date.now() >= new Date(freeEndsAt).getTime()) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/guest`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      STATE.connected = true;
+      STATE.isGuest = true;
+      STATE.apiKeyFull = data.apiKey;
+      STATE.apiKey = maskKey(data.apiKey);
+      STATE.tier = data.tier;
+      STATE.balance = 0;
+      STATE.models = data.models || [];
+      STATE.usage = { today: 0, limit: data.dailyLimit || 0, remaining: data.dailyLimit || 0 };
+      STATE.freeAccess = true;
+      STATE.freeAccessEndsAt = data.freeAccessEndsAt;
+
+      if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
+
+      saveSession();
+      startStatusPolling();
+      render();
+      showToast('Free access activated! No wallet needed. Try the AI tools.');
+    } catch { /* silent — fall through to normal public view */ }
   });
   fetchProviderStatuses();
 }

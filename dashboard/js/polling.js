@@ -16,6 +16,7 @@ export async function fetchStatus() {
     STATE.balance = data.balance ?? 0;
     STATE.usage = data.usage || STATE.usage;
     STATE.models = data.models || STATE.models;
+    STATE.isGuest = data.isGuest || STATE.isGuest;
     STATE.freeAccess = data.freeAccess || false;
     STATE.freeAccessEndsAt = data.freeAccessEndsAt || null;
     if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
@@ -35,9 +36,10 @@ export async function fetchAggregate() {
     const data = await api('/status/aggregate');
     if (data.treasury) STATE.treasury = { ...STATE.treasury, ...data.treasury };
     if (data.providers) STATE.providers = data.providers;
-    return true;
+    if (data.freeAccessEndsAt) STATE.freeAccessEndsAt = data.freeAccessEndsAt;
+    return data;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -132,8 +134,8 @@ function updateStatusBanner() {
 
 export function startStatusPolling() {
   fetchStatus();
-  fetchAggregate().then(ok => {
-    if (!ok) { fetchTreasury(); fetchProviders(); }
+  fetchAggregate().then(data => {
+    if (!data) { fetchTreasury(); fetchProviders(); }
   });
   fetchOAuthStatus();
   fetchProviderStatuses();
@@ -143,8 +145,8 @@ export function startStatusPolling() {
 
   setStatusPollInterval(setInterval(() => {
     fetchStatus();
-    fetchAggregate().then(ok => {
-      if (!ok) fetchTreasury();
+    fetchAggregate().then(data => {
+      if (!data) fetchTreasury();
     });
   }, 60_000));
   setProviderStatusInterval(setInterval(fetchProviderStatuses, 300_000));

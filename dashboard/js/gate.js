@@ -5,7 +5,7 @@
 import { STATE } from './state.js';
 
 export function isHolder() {
-  return STATE.connected && !!STATE.apiKeyFull && STATE.tier !== 'Trial';
+  return STATE.connected && !!STATE.apiKeyFull && (STATE.tier !== 'Trial' || STATE.isGuest);
 }
 
 export function isAlphaTier() {

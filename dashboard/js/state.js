@@ -29,6 +29,7 @@ export const STATE = {
   keyVisible: false,
   error: null,
   trial: { used: 0, limit: 3, remaining: 3, loaded: false },
+  isGuest: false,
   freeAccess: false,
   freeAccessEndsAt: null,
   providerStatus: null, // { indicator, description, incident, details[] }

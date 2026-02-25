@@ -15,6 +15,7 @@ export function saveSession() {
     tier: STATE.tier,
     balance: STATE.balance,
     models: STATE.models,
+    isGuest: STATE.isGuest || false,
   }));
   // API key in sessionStorage — cleared when tab closes
   if (STATE.apiKeyFull) {
@@ -27,9 +28,11 @@ export function loadSession() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
     const saved = JSON.parse(raw);
-    if (!saved.wallet) return false;
+    // Guest sessions without a wallet are valid
+    if (!saved.wallet && !saved.isGuest) return false;
     STATE.wallet = saved.wallet;
     STATE.connected = true;
+    STATE.isGuest = saved.isGuest || false;
     STATE.balance = saved.balance ?? 0;
     // Restore API key from sessionStorage (tab-scoped)
     const apiKey = saved.apiKey || sessionStorage.getItem('infinite_apiKey');
@@ -60,6 +63,7 @@ export function clearSession() {
     connected: false, connecting: false, wallet: null, walletProvider: null,
     apiKey: null, apiKeyFull: null, tier: null, balance: 0,
     usage: { today: 0, limit: 0, remaining: 0 }, models: [], keyVisible: false, error: null,
+    isGuest: false, freeAccess: false, freeAccessEndsAt: null,
   });
 }
 

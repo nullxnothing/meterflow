@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'crypto';
-import { CONFIG, TRIAL_CONFIG, TRADING_TIERS, ALPHA_TIERS } from './config.js';
+import { CONFIG, TRIAL_CONFIG, TRADING_TIERS, ALPHA_TIERS, FREE_ACCESS_TIER, isFreeAccessActive } from './config.js';
 import { getTokenBalance } from './lib/balance.js';
 import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/helpers.js';
 import { getKeyData } from './lib/kv-keys.js';
@@ -25,9 +25,27 @@ async function authenticateApiKey(req, res, next) {
     });
   }
 
-  const isWhitelisted = CONFIG.WHITELISTED_WALLETS.has(keyData.wallet);
-  const balance = isWhitelisted ? 0 : await getTokenBalance(keyData.wallet);
-  const tier = isWhitelisted ? 'architect' : (getTierForBalance(balance) || 'trial');
+  const isGuest = !!keyData.guest || keyData.wallet?.startsWith('guest_');
+  const isWhitelisted = !isGuest && CONFIG.WHITELISTED_WALLETS.has(keyData.wallet);
+
+  let balance, tier;
+  if (isGuest) {
+    // Guest keys: no balance check, use free access tier while active, else reject
+    if (!isFreeAccessActive()) {
+      return res.status(403).json({
+        error: 'free_access_expired',
+        message: 'Free access has ended. Connect a wallet and hold $INFINITE tokens for access.',
+      });
+    }
+    balance = 0;
+    tier = FREE_ACCESS_TIER;
+  } else if (isWhitelisted) {
+    balance = 0;
+    tier = 'architect';
+  } else {
+    balance = await getTokenBalance(keyData.wallet);
+    tier = getTierForBalance(balance) || 'trial';
+  }
 
   keyData.tier = tier;
   keyData.balance = balance;

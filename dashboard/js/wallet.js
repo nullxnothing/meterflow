@@ -62,8 +62,9 @@ export async function connectWallet(providerObj) {
     const rawSig = signatureBytes?.signature || signatureBytes;
     const sig = btoa(String.fromCharCode(...new Uint8Array(rawSig)));
 
-    // Mark wallet as connected regardless of token balance
+    // Mark wallet as connected regardless of token balance (clears guest state)
     STATE.connected = true;
+    STATE.isGuest = false;
     STATE.wallet = publicKey;
     STATE.walletProvider = provider;
 
