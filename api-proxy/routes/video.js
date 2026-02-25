@@ -168,15 +168,32 @@ router.get('/debug/*', authenticateAdmin, async (req, res) => {
 // Supports both Authorization header and ?token= query param (for <video src>)
 router.get('/download/*', async (req, res) => {
   const operationName = req.params[0];
-  const op = await getVideoOp(operationName);
-
-  if (!op?.video?.uri) {
-    return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
-  }
+  let op = await getVideoOp(operationName);
 
   const headerKey = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
   const queryKey = req.query.token;
   const apiKey = headerKey || queryKey;
+
+  // If op is missing from Redis (e.g. generated before Redis migration), attempt live recovery from Google
+  if (!op?.video?.uri && apiKey) {
+    try {
+      const data = await fetchVeoOperation(operationName);
+      if (data.done && !data.error) {
+        const video = extractVideoFromResponse(data);
+        if (video?.uri) {
+          op = { apiKey, status: 'complete', video, recoveredAt: Date.now() };
+          await setVideoOp(operationName, op);
+          logger.info('Video op recovered from Google API', { operationName });
+        }
+      }
+    } catch (e) {
+      logger.warn('Video op recovery attempt failed', { operationName, err: e.message });
+    }
+  }
+
+  if (!op?.video?.uri) {
+    return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
+  }
 
   if (!apiKey || apiKey !== op.apiKey) {
     return res.status(403).json({ error: 'forbidden', message: 'Invalid or missing API key.' });
