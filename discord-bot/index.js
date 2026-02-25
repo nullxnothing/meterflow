@@ -27,6 +27,14 @@ client.once('ready', () => {
   console.log(`[BOT] Serving ${client.guilds.cache.size} guild(s)`);
 });
 
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === 'ca') {
+    await interaction.reply('`DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump`');
+  }
+});
+
 client.on('messageCreate', (message) => {
   handleMessage(message, client).catch(err => {
     console.error('[BOT] Unhandled message error:', err.message);
