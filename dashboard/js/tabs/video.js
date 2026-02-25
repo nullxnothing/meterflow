@@ -4,6 +4,12 @@
 
 import { STATE, VIDEOS } from '../state.js';
 import { api, API_BASE, escapeHtml } from '../api.js';
+
+function videoSrc(uri) {
+  if (!uri) return '';
+  const sep = uri.includes('?') ? '&' : '?';
+  return `${uri}${sep}token=${encodeURIComponent(STATE.apiKeyFull || '')}`;
+}
 import { saveVideoHistory } from '../session.js';
 import { showToast } from '../actions.js';
 import { isHolder, renderHolderGate } from '../gate.js';
@@ -119,7 +125,7 @@ export function renderVideoGallery() {
     }
     return `
       <div class="video-card">
-        <video controls preload="metadata" src="${v.uri}"></video>
+        <video controls preload="metadata" src="${videoSrc(v.uri)}"></video>
         <div class="video-card-footer">
           <div class="video-card-prompt">${escapeHtml(v.prompt)}</div>
           <button class="btn-sm" onclick="downloadVideo('${v.uri}')">Save</button>
@@ -218,7 +224,7 @@ export function renderVideoState() {
 
 export function downloadVideo(uri) {
   const link = document.createElement('a');
-  link.href = uri;
+  link.href = videoSrc(uri);
   link.download = `infinite-video-${Date.now()}.mp4`;
   link.click();
 }

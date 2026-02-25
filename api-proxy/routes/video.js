@@ -166,7 +166,8 @@ router.get('/debug/*', authenticateAdmin, async (req, res) => {
 });
 
 // GET /v1/video/download/* — Proxy video file download (hides API key)
-router.get('/download/*', authenticateApiKey, async (req, res) => {
+// Supports both Authorization header and ?token= query param (for <video src>)
+router.get('/download/*', async (req, res) => {
   const operationName = req.params[0];
   const op = videoOperations.get(operationName);
 
@@ -174,8 +175,13 @@ router.get('/download/*', authenticateApiKey, async (req, res) => {
     return res.status(404).json({ error: 'not_found', message: 'Video not found or still processing.' });
   }
 
-  if (op.apiKey !== req.infinite.apiKey) {
-    return res.status(403).json({ error: 'forbidden', message: 'This video belongs to another user.' });
+  // Accept auth from header or query param (browsers can't send headers on <video src>)
+  const headerKey = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
+  const queryKey = req.query.token;
+  const apiKey = headerKey || queryKey;
+
+  if (!apiKey || apiKey !== op.apiKey) {
+    return res.status(403).json({ error: 'forbidden', message: 'Invalid or missing API key.' });
   }
 
   try {
