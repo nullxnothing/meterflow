@@ -56,3 +56,38 @@ export async function fetchWithRetry(fetchFn, provider) {
 
   throw lastError;
 }
+
+const STREAM_MAX_RETRIES = 2;
+const STREAM_BASE_DELAY = 1000;
+
+/**
+ * Fetch with retry for streaming requests.
+ * @param {string} url
+ * @param {RequestInit} options
+ * @param {string} label - Provider name for error messages
+ * @returns {Promise<Response>}
+ */
+export async function fetchStreamWithRetry(url, options, label) {
+  let lastError;
+  for (let attempt = 0; attempt <= STREAM_MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || !RETRYABLE_CODES.has(response.status)) return response;
+
+      const errBody = await response.text();
+      lastError = new Error(`${label} ${response.status}: ${errBody}`);
+
+      if (attempt < STREAM_MAX_RETRIES) {
+        const delay = getRetryDelay(attempt, response) || STREAM_BASE_DELAY * Math.pow(2, attempt);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    } catch (err) {
+      lastError = err;
+      if (err.name === 'AbortError' || err.name === 'TimeoutError') throw err;
+      if (attempt < STREAM_MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, STREAM_BASE_DELAY * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
