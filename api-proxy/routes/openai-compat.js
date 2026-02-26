@@ -104,7 +104,9 @@ router.post('/chat/completions', oaiAuth, async (req, res) => {
   try {
     let result;
     if (requestedModel.startsWith('claude')) {
-      result = await proxyAnthropic(requestedModel, chatMessages, effectiveMaxTokens, temperature);
+      // Convert OpenAI message format (tool roles, array content) to Anthropic format
+      const anthropicMessages = convertMessagesForAnthropic(chatMessages);
+      result = await proxyAnthropic(requestedModel, anthropicMessages, effectiveMaxTokens, temperature);
     } else if (requestedModel.startsWith('gemini')) {
       result = await proxyGemini(requestedModel, chatMessages, effectiveMaxTokens, temperature);
     } else if (requestedModel.startsWith('gpt-')) {
@@ -138,7 +140,13 @@ router.post('/chat/completions', oaiAuth, async (req, res) => {
   } catch (err) {
     logger.error('OpenAI-compat error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8) });
-    res.status(502).json({ error: { message: 'Upstream provider error. Try again.', type: 'server_error' } });
+    const msg = err.message || '';
+    const safeMsg = msg.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
+      : msg.includes('overloaded') || msg.includes('529') ? 'Provider is overloaded. Try again in a moment.'
+      : msg.includes('API key not valid') ? 'AI provider API key is misconfigured. Contact support.'
+      : msg.includes('INVALID_ARGUMENT') || msg.includes('invalid_request') ? 'Request format error — try starting a new session.'
+      : 'Upstream provider error. Try again.';
+    res.status(502).json({ error: { message: safeMsg, type: 'server_error' } });
   }
 });
 
