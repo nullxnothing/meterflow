@@ -21,6 +21,7 @@ import launchRouter from './routes/launch.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
+import { agentRuntime } from './lib/agent-runtime.js';
 import { initSocket, getIO } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
 
@@ -92,6 +93,10 @@ const server = app.listen(PORT, () => {
   bootstrapAlphaPipeline().catch(err => {
     logger.error('Alpha pipeline bootstrap failed', { err: err.message });
   });
+
+  agentRuntime.start().catch(err => {
+    logger.error('Agent runtime bootstrap failed', { err: err.message });
+  });
 });
 
 // Graceful shutdown — let in-flight requests (especially streams) finish
@@ -99,6 +104,9 @@ const SHUTDOWN_TIMEOUT = 15_000;
 
 function shutdown(signal) {
   logger.info('Shutdown initiated', { signal });
+
+  // Stop agent runtime loops
+  agentRuntime.stop();
 
   // Close Socket.IO first — notify connected clients, stop accepting new WS connections
   const io = getIO();

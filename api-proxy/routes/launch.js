@@ -12,6 +12,7 @@ import {
   setFundedAgentToken,
   pauseFundedAgent,
   activateFundedAgent,
+  getAgentLogs,
 } from '../lib/kv-agents.js';
 
 const router = Router();
@@ -59,16 +60,52 @@ function extFromMime(mime) {
   return 'jpg';
 }
 
+// Fields that should be fully masked (show last 4 only)
+const FULL_MASK_FIELDS = new Set(['botToken', 'accessToken', 'accessTokenSecret', 'privateKey']);
+// Fields that should be partially masked (show first 3 + last 4)
+const PARTIAL_MASK_FIELDS = new Set(['apiKey', 'apiSecret']);
+
+/** Mask a single credential string */
+function maskValue(key, val) {
+  if (typeof val !== 'string' || val.length < 5) return '****';
+  if (FULL_MASK_FIELDS.has(key)) return `****...${val.slice(-4)}`;
+  if (PARTIAL_MASK_FIELDS.has(key)) return `${val.slice(0, 3)}...${val.slice(-4)}`;
+  return val;
+}
+
+/** Deep-clone an agent and mask all sensitive credential fields before returning */
+function maskCredentials(agent) {
+  if (!agent) return agent;
+  const clone = JSON.parse(JSON.stringify(agent));
+
+  // Mask the deployer's API key
+  if (clone.apiKey) clone.apiKey = `${clone.apiKey.slice(0, 6)}...${clone.apiKey.slice(-4)}`;
+
+  if (!clone.connections) return clone;
+
+  for (const [platform, config] of Object.entries(clone.connections)) {
+    if (!config || typeof config !== 'object') continue;
+    for (const [field, value] of Object.entries(config)) {
+      if (FULL_MASK_FIELDS.has(field) || PARTIAL_MASK_FIELDS.has(field)) {
+        config[field] = maskValue(field, value);
+      }
+    }
+  }
+  return clone;
+}
+
 /** Build the full agent config object */
-function buildAgentConfig({ id, wallet, name, symbol, description, imageUrl, capabilities, tweetConfig, tradeConfig, chatConfig, metadataUri, tokenMetadata }) {
+function buildAgentConfig({ id, wallet, apiKey, name, symbol, description, imageUrl, capabilities, tweetConfig, tradeConfig, chatConfig, connections, metadataUri, tokenMetadata }) {
   return {
     id,
     wallet,
+    apiKey: apiKey || null, // deployer's API key for runtime AI calls
     tokenMint: null, // set after on-chain confirmation
     name,
     symbol,
     description: description || `Funded agent launched via Infinite Protocol.`,
     imageUrl: imageUrl || null,
+    connections: connections || {},
     capabilities: {
       tweet: !!capabilities?.tweet,
       trade: !!capabilities?.trade,
@@ -181,9 +218,13 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
     const agentId = generateAgentId();
     const tokenMetadata = { name, symbol, uri: ipfsData.metadataUri };
 
+    // Store connections and deployer's API key for the runtime
+    const connections = parseJsonField(req.body.connections) || {};
+
     const agentConfig = buildAgentConfig({
       id: agentId,
       wallet,
+      apiKey: req.infinite?.apiKey,
       name,
       symbol,
       description,
@@ -192,6 +233,7 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
       tweetConfig,
       tradeConfig,
       chatConfig,
+      connections,
       metadataUri: ipfsData.metadataUri,
       tokenMetadata,
     });
@@ -262,7 +304,7 @@ router.get('/launch/agents', authenticateApiKey, async (req, res) => {
       if (agent) agents.push(agent);
     }
 
-    res.json({ ok: true, agents });
+    res.json({ ok: true, agents: agents.map(maskCredentials) });
   } catch (err) {
     log.error('Failed to list agents', { wallet, err: err.message });
     res.status(500).json({ error: 'internal', message: 'Failed to fetch agents' });
@@ -285,7 +327,7 @@ router.get('/launch/agent/:id', authenticateApiKey, async (req, res) => {
       return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
     }
 
-    res.json({ ok: true, agent });
+    res.json({ ok: true, agent: maskCredentials(agent) });
   } catch (err) {
     log.error('Failed to get agent', { agentId: id, err: err.message });
     res.status(500).json({ error: 'internal', message: 'Failed to fetch agent' });
@@ -354,6 +396,355 @@ router.post('/launch/agent/:id/resume', authenticateApiKey, async (req, res) => 
   } catch (err) {
     log.error('Failed to resume agent', { agentId: id, err: err.message });
     res.status(500).json({ error: 'internal', message: 'Failed to resume agent' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/connections — Update agent external connections
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/connections', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.infinite?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) {
+      return res.status(404).json({ error: 'agent_not_found' });
+    }
+    if (agent.wallet !== wallet) {
+      return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
+    }
+
+    const { twitter, discord, telegram } = req.body;
+    if (!twitter && !discord && !telegram) {
+      return res.status(400).json({ error: 'invalid_request', message: 'Provide at least one connection (twitter, discord, telegram)' });
+    }
+
+    const connections = agent.connections || {};
+
+    // Validate and merge twitter credentials
+    if (twitter) {
+      if (typeof twitter !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'twitter must be an object' });
+      }
+      const { apiKey: tk, apiSecret, accessToken, accessTokenSecret } = twitter;
+      if (tk && typeof tk !== 'string') return res.status(400).json({ error: 'invalid_field', message: 'twitter.apiKey must be a string' });
+      if (apiSecret && typeof apiSecret !== 'string') return res.status(400).json({ error: 'invalid_field', message: 'twitter.apiSecret must be a string' });
+      connections.twitter = { ...connections.twitter, ...twitter };
+    }
+
+    // Validate and merge discord credentials
+    if (discord) {
+      if (typeof discord !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'discord must be an object' });
+      }
+      if (discord.channelIds && !Array.isArray(discord.channelIds)) {
+        return res.status(400).json({ error: 'invalid_field', message: 'discord.channelIds must be an array' });
+      }
+      connections.discord = { ...connections.discord, ...discord };
+    }
+
+    // Validate and merge telegram credentials
+    if (telegram) {
+      if (typeof telegram !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'telegram must be an object' });
+      }
+      if (telegram.chatIds && !Array.isArray(telegram.chatIds)) {
+        return res.status(400).json({ error: 'invalid_field', message: 'telegram.chatIds must be an array' });
+      }
+      connections.telegram = { ...connections.telegram, ...telegram };
+    }
+
+    // TODO: encrypt credentials before storing
+    agent.connections = connections;
+    await setFundedAgent(id, agent);
+
+    log.info('Agent connections updated', { agentId: id, wallet, platforms: Object.keys(req.body).filter(k => ['twitter', 'discord', 'telegram'].includes(k)) });
+    res.json({ ok: true, agent: maskCredentials(agent) });
+  } catch (err) {
+    log.error('Failed to update agent connections', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to update connections' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// PUT /v1/launch/agent/:id/prompt — Update agent prompt & personality config
+// ---------------------------------------------------------------------------
+router.put('/launch/agent/:id/prompt', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.infinite?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) {
+      return res.status(404).json({ error: 'agent_not_found' });
+    }
+    if (agent.wallet !== wallet) {
+      return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
+    }
+
+    const { systemPrompt, tweetConfig, tradeConfig, chatConfig } = req.body;
+
+    if (systemPrompt !== undefined) {
+      if (typeof systemPrompt !== 'string') {
+        return res.status(400).json({ error: 'invalid_field', message: 'systemPrompt must be a string' });
+      }
+      agent.systemPrompt = systemPrompt;
+    }
+
+    // Merge tweetConfig updates
+    if (tweetConfig !== undefined) {
+      const parsed = parseJsonField(tweetConfig);
+      if (!parsed || typeof parsed !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'tweetConfig must be an object' });
+      }
+      if (parsed.personality) agent.tweetConfig = { ...agent.tweetConfig, personality: parsed.personality };
+      if (parsed.frequency && VALID_FREQUENCIES.includes(parsed.frequency)) {
+        agent.tweetConfig = { ...agent.tweetConfig, frequency: parsed.frequency };
+      }
+      if (parsed.systemPrompt !== undefined) {
+        agent.tweetConfig = { ...agent.tweetConfig, systemPrompt: parsed.systemPrompt };
+      }
+      if (parsed.topics) agent.tweetConfig = { ...agent.tweetConfig, topics: parsed.topics };
+    }
+
+    // Merge tradeConfig updates
+    if (tradeConfig !== undefined) {
+      const parsed = parseJsonField(tradeConfig);
+      if (!parsed || typeof parsed !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'tradeConfig must be an object' });
+      }
+      if (parsed.strategy && VALID_STRATEGIES.includes(parsed.strategy)) {
+        agent.tradeConfig = { ...agent.tradeConfig, strategy: parsed.strategy };
+      }
+      if (parsed.maxPositionSol !== undefined) {
+        agent.tradeConfig = { ...agent.tradeConfig, maxPositionSol: Number(parsed.maxPositionSol) || 1 };
+      }
+      if (parsed.systemPrompt !== undefined) {
+        agent.tradeConfig = { ...agent.tradeConfig, systemPrompt: parsed.systemPrompt };
+      }
+      if (parsed.pairs) agent.tradeConfig = { ...agent.tradeConfig, pairs: parsed.pairs };
+    }
+
+    // Merge chatConfig updates
+    if (chatConfig !== undefined) {
+      const parsed = parseJsonField(chatConfig);
+      if (!parsed || typeof parsed !== 'object') {
+        return res.status(400).json({ error: 'invalid_field', message: 'chatConfig must be an object' });
+      }
+      if (parsed.platform && VALID_PLATFORMS.includes(parsed.platform)) {
+        agent.chatConfig = { ...agent.chatConfig, platform: parsed.platform };
+      }
+      if (parsed.personality) agent.chatConfig = { ...agent.chatConfig, personality: parsed.personality };
+      if (parsed.respondTo && VALID_RESPOND_TO.includes(parsed.respondTo)) {
+        agent.chatConfig = { ...agent.chatConfig, respondTo: parsed.respondTo };
+      }
+      if (parsed.systemPrompt !== undefined) {
+        agent.chatConfig = { ...agent.chatConfig, systemPrompt: parsed.systemPrompt };
+      }
+    }
+
+    await setFundedAgent(id, agent);
+    log.info('Agent prompt updated', { agentId: id, wallet });
+    res.json({ ok: true, agent: maskCredentials(agent) });
+  } catch (err) {
+    log.error('Failed to update agent prompt', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to update prompt' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// GET /v1/launch/agent/:id/activity — Recent activity log
+// ---------------------------------------------------------------------------
+router.get('/launch/agent/:id/activity', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.infinite?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) {
+      return res.status(404).json({ error: 'agent_not_found' });
+    }
+    if (agent.wallet !== wallet) {
+      return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
+    }
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 100);
+    const typeFilter = req.query.type || null;
+    const validTypes = ['tweet', 'trade', 'chat', 'error'];
+
+    if (typeFilter && !validTypes.includes(typeFilter)) {
+      return res.status(400).json({ error: 'invalid_type', message: `type must be one of: ${validTypes.join(', ')}` });
+    }
+
+    let activities = await getAgentLogs(id, limit);
+    if (typeFilter) {
+      activities = activities.filter(a => a.type === typeFilter);
+    }
+
+    res.json({ ok: true, activities });
+  } catch (err) {
+    log.error('Failed to get agent activity', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to fetch activity' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/activate — Activate a pending agent
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/activate', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.infinite?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) {
+      return res.status(404).json({ error: 'agent_not_found' });
+    }
+    if (agent.wallet !== wallet) {
+      return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
+    }
+    if (agent.status === 'active') {
+      return res.json({ ok: true, agent: maskCredentials(agent), message: 'Agent is already active' });
+    }
+    if (agent.status !== 'pending' && agent.status !== 'paused') {
+      return res.status(409).json({ error: 'invalid_state', message: `Cannot activate agent with status "${agent.status}"` });
+    }
+
+    // Validate connections for enabled capabilities
+    const connections = agent.connections || {};
+    const missing = [];
+
+    if (agent.capabilities?.tweet && !connections.twitter?.apiKey) {
+      missing.push('Twitter credentials required for tweet capability');
+    }
+    if (agent.capabilities?.chat) {
+      const platform = agent.chatConfig?.platform || 'discord';
+      if ((platform === 'discord' || platform === 'both') && !connections.discord?.botToken) {
+        missing.push('Discord bot token required for chat capability');
+      }
+      if ((platform === 'telegram' || platform === 'both') && !connections.telegram?.botToken) {
+        missing.push('Telegram bot token required for chat capability');
+      }
+    }
+    // Trade capability can activate without wallet (paper trading mode)
+
+    if (missing.length > 0) {
+      return res.status(400).json({ error: 'missing_connections', message: 'Configure required connections before activating', missing });
+    }
+
+    const updated = await activateFundedAgent(id);
+    log.info('Agent activated', { agentId: id, wallet });
+    res.json({ ok: true, agent: maskCredentials(updated) });
+  } catch (err) {
+    log.error('Failed to activate agent', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to activate agent' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/test — Dry-run an agent capability
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/test', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.infinite?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) {
+      return res.status(404).json({ error: 'agent_not_found' });
+    }
+    if (agent.wallet !== wallet) {
+      return res.status(403).json({ error: 'not_owner', message: 'You do not own this agent' });
+    }
+
+    const { capability, context } = req.body;
+    const validCapabilities = ['tweet', 'trade', 'chat'];
+
+    if (!capability || !validCapabilities.includes(capability)) {
+      return res.status(400).json({ error: 'invalid_capability', message: `capability must be one of: ${validCapabilities.join(', ')}` });
+    }
+
+    if (!agent.capabilities?.[capability]) {
+      return res.status(400).json({ error: 'capability_disabled', message: `${capability} is not enabled on this agent` });
+    }
+
+    // Build the prompt the runtime would use
+    const basePrompt = agent.systemPrompt || `You are ${agent.name}, an autonomous AI agent on the Infinite Protocol.`;
+    let taskPrompt;
+
+    if (capability === 'tweet') {
+      const cfg = agent.tweetConfig || {};
+      const capabilityPrompt = cfg.systemPrompt || '';
+      taskPrompt = [
+        basePrompt,
+        capabilityPrompt,
+        `Personality: ${cfg.personality || 'community builder'}`,
+        cfg.topics?.length ? `Topics: ${cfg.topics.join(', ')}` : '',
+        'Generate a single tweet. Keep it under 280 characters. Do not include quotes or hashtags unless relevant.',
+      ].filter(Boolean).join('\n');
+    } else if (capability === 'trade') {
+      const cfg = agent.tradeConfig || {};
+      const capabilityPrompt = cfg.systemPrompt || '';
+      taskPrompt = [
+        basePrompt,
+        capabilityPrompt,
+        `Strategy: ${cfg.strategy || 'moderate'}`,
+        `Max position: ${cfg.maxPositionSol || 1} SOL`,
+        'Analyze the current market and suggest a single trade action. Return JSON with fields: action (buy/sell/hold), token, amount, reasoning.',
+      ].filter(Boolean).join('\n');
+    } else {
+      const cfg = agent.chatConfig || {};
+      const capabilityPrompt = cfg.systemPrompt || '';
+      taskPrompt = [
+        basePrompt,
+        capabilityPrompt,
+        `Personality: ${cfg.personality || 'helpful assistant'}`,
+        `Respond to: ${cfg.respondTo || 'mentions'}`,
+        context ? `User message: ${context}` : 'Generate a sample response to a community question about the project.',
+      ].filter(Boolean).join('\n');
+    }
+
+    // Call AI via the deployer's tier key (uses the cheapest available model)
+    const { tierConfig } = req.infinite;
+    const testModel = tierConfig.models.find(m => m !== 'auto' && m.includes('flash'))
+      || tierConfig.models.find(m => m !== 'auto' && m.includes('mini'))
+      || tierConfig.models.find(m => m !== 'auto')
+      || 'gemini-2.5-flash';
+
+    const messages = [{ role: 'user', content: taskPrompt }];
+
+    // Dynamic provider import based on model
+    let result;
+    if (testModel.startsWith('claude')) {
+      const { proxyAnthropic } = await import('../providers/anthropic.js');
+      result = await proxyAnthropic(testModel, messages, 512, 0.7);
+    } else if (testModel.startsWith('gemini')) {
+      const { proxyGemini } = await import('../providers/gemini.js');
+      result = await proxyGemini(testModel, messages, 512, 0.7);
+    } else if (testModel.startsWith('gpt-')) {
+      const { proxyOpenAI } = await import('../providers/openai.js');
+      result = await proxyOpenAI(testModel, messages, 512, 0.7);
+    } else {
+      return res.status(500).json({ error: 'no_model', message: 'No suitable model available for test' });
+    }
+
+    // Extract text from provider response (returns { content: [{ type: 'text', text }] })
+    const preview = Array.isArray(result.content)
+      ? result.content.map(b => b.text || '').join('')
+      : (typeof result.content === 'string' ? result.content : JSON.stringify(result.content));
+
+    // Return generated content without executing or spending credits
+    res.json({
+      ok: true,
+      capability,
+      model: testModel,
+      preview,
+      note: 'This is a dry run. Nothing was posted or executed. No credits were deducted.',
+    });
+  } catch (err) {
+    log.error('Failed to test agent capability', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to run test' });
   }
 });
 

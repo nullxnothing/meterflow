@@ -8,24 +8,37 @@ import { isHolder, renderHolderGate } from '../gate.js';
 
 // ─── Local State ───
 
-let launchState = {
-  step: 1,
-  loading: false,
-  result: null,
-  error: null,
-  name: '',
-  symbol: '',
-  description: '',
-  imageData: null,
-  imageFileName: '',
-  twitter: '',
-  website: '',
-  capabilities: { tweet: false, trade: false, chat: false },
-  tweetConfig: { personality: 'community', frequency: 'medium' },
-  tradeConfig: { strategy: 'moderate', maxPositionSol: 1 },
-  chatConfig: { platform: 'discord', personality: 'community', respondTo: 'mentions' },
-  devBuySol: 0,
-};
+let launchState = createFreshState();
+
+function createFreshState() {
+  return {
+    step: 1,
+    loading: false,
+    result: null,
+    error: null,
+    name: '',
+    symbol: '',
+    description: '',
+    imageData: null,
+    imageFileName: '',
+    twitter: '',
+    website: '',
+    capabilities: { tweet: false, trade: false, chat: false },
+    tweetConfig: { personality: 'community', frequency: 'medium', systemPrompt: '' },
+    tradeConfig: { strategy: 'moderate', maxPositionSol: 1, systemPrompt: '' },
+    chatConfig: { platform: 'discord', personality: 'community', respondTo: 'mentions', systemPrompt: '' },
+    connections: {
+      twitter: { apiKey: '', apiSecret: '', accessToken: '', accessTokenSecret: '' },
+      discord: { botToken: '', guildId: '', channelIds: '' },
+      telegram: { botToken: '', chatIds: '' },
+      tradeWallet: { mode: 'paper', privateKey: '' },
+    },
+    devBuySol: 0,
+    expandedCredentials: { twitter: false, discord: false, telegram: false, tradeWallet: false },
+  };
+}
+
+// ─── Constants ───
 
 const PERSONALITIES = [
   { value: 'alpha', label: 'Alpha Caller' },
@@ -46,6 +59,30 @@ const STRATEGIES = [
   { value: 'moderate', label: 'Moderate' },
   { value: 'aggressive', label: 'Aggressive' },
 ];
+
+// ─── System Prompt Templates ───
+
+const TWEET_PROMPTS = {
+  alpha: 'You are an aggressive alpha caller for ${name} ($${symbol}). You spot opportunities early, share bold takes, and build hype. Be confident, use trading lingo, and keep tweets punchy. Never financial advice.',
+  community: 'You are the community voice of ${name} ($${symbol}). You welcome new holders, share project updates, create engagement threads, and keep the vibe positive. Be warm, inclusive, and genuine.',
+  news: 'You are a news bot for ${name} ($${symbol}). You report on market moves, on-chain activity, holder growth, and project milestones. Be factual, data-driven, and neutral.',
+  meme: 'You are a meme account for ${name} ($${symbol}). You create funny, relatable crypto content. Use humor, trending formats, and self-aware irony. Never boring, always entertaining.',
+  analyst: 'You are a TA bot for ${name} ($${symbol}). You analyze charts, identify patterns, share support/resistance levels, and provide technical outlooks. Use proper TA terminology.',
+};
+
+const TRADE_PROMPTS = {
+  conservative: 'You are a conservative trader for ${name}. Only enter high-conviction positions with strong fundamentals. Take small positions, use tight stop losses, and prioritize capital preservation.',
+  moderate: 'You are a balanced trader for ${name}. Mix fundamental analysis with momentum plays. Take moderate positions, scale in/out, and maintain a diversified portfolio.',
+  aggressive: 'You are an aggressive degen trader for ${name}. Hunt for 10x plays on new launches, ape into momentum, and accept higher risk for higher reward. Fast in, fast out.',
+};
+
+const CHAT_PROMPTS = {
+  alpha: 'You are the alpha-focused assistant for ${name} ($${symbol}). Share insights, answer questions about opportunities, and keep the energy high. Be direct and confident.',
+  community: 'You are the official AI assistant for ${name} ($${symbol}). Answer questions about the project, help with technical issues, and engage casually. Be helpful but concise.',
+  news: 'You are the information bot for ${name} ($${symbol}). Provide factual answers, share relevant news, and report on project metrics. Stay neutral and data-driven.',
+  meme: 'You are the fun bot for ${name} ($${symbol}). Keep chat entertaining, respond with humor, and make the community laugh. Stay on brand and never boring.',
+  analyst: 'You are the technical assistant for ${name} ($${symbol}). Answer questions about charts, on-chain data, and market structure. Use proper terminology and stay analytical.',
+};
 
 // ─── Main Render ───
 
@@ -264,61 +301,16 @@ function renderStepIdentity() {
 // ─── Step 2: Capabilities ───
 
 function renderStepCapabilities() {
-  const { capabilities, tweetConfig, tradeConfig, chatConfig } = launchState;
+  const { capabilities } = launchState;
 
   return `
     <div class="launch-form" id="launchForm">
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Select at least one capability for your agent. Each module runs autonomously, funded by creator fees.</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Select at least one capability for your agent. Each module runs autonomously, funded by creator fees.</p>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:20px;opacity:0.7;">Credentials are optional — your agent will still be created, but capabilities requiring credentials won't execute until connected.</p>
 
-      ${renderCapabilityCard('tweet', 'Tweet', 'Your agent posts on X, engages with community', capabilities.tweet, `
-        <div class="launch-form-row" style="margin-top:12px;">
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Personality</label>
-            ${renderSelect('launchTweetPersonality', PERSONALITIES, tweetConfig.personality)}
-          </div>
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Frequency</label>
-            ${renderSelect('launchTweetFrequency', FREQUENCIES, tweetConfig.frequency)}
-          </div>
-        </div>
-      `)}
-
-      ${renderCapabilityCard('trade', 'Trade', 'Your agent monitors and executes trades on Solana', capabilities.trade, `
-        <div class="launch-form-row" style="margin-top:12px;">
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Strategy</label>
-            ${renderSelect('launchTradeStrategy', STRATEGIES, tradeConfig.strategy)}
-          </div>
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Max Position (SOL)</label>
-            <input class="launch-input" id="launchTradeMaxPos" type="number" step="0.1" min="0.1" max="10" value="${tradeConfig.maxPositionSol}" onchange="updateTradeMaxPos(this.value)">
-          </div>
-        </div>
-      `)}
-
-      ${renderCapabilityCard('chat', 'Chat', 'Your agent responds in Discord or Telegram', capabilities.chat, `
-        <div class="launch-form-row" style="margin-top:12px;">
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Platform</label>
-            ${renderSelect('launchChatPlatform', [
-              { value: 'discord', label: 'Discord' },
-              { value: 'telegram', label: 'Telegram' },
-              { value: 'both', label: 'Both' },
-            ], chatConfig.platform)}
-          </div>
-          <div class="launch-form-group" style="margin-bottom:0;">
-            <label class="launch-label">Personality</label>
-            ${renderSelect('launchChatPersonality', PERSONALITIES, chatConfig.personality)}
-          </div>
-        </div>
-        <div class="launch-form-group" style="margin-top:12px;margin-bottom:0;">
-          <label class="launch-label">Respond To</label>
-          ${renderSelect('launchChatRespondTo', [
-            { value: 'mentions', label: 'Mentions only' },
-            { value: 'all', label: 'All messages' },
-          ], chatConfig.respondTo)}
-        </div>
-      `)}
+      ${renderTweetCapability(capabilities.tweet)}
+      ${renderTradeCapability(capabilities.trade)}
+      ${renderChatCapability(capabilities.chat)}
 
       <div style="display:flex;justify-content:space-between;margin-top:20px;">
         <button class="launch-btn" style="width:auto;padding:14px 48px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="launchPrevStep()">Back</button>
@@ -327,6 +319,194 @@ function renderStepCapabilities() {
     </div>
   `;
 }
+
+// ─── Tweet Capability ───
+
+function renderTweetCapability(isEnabled) {
+  const { tweetConfig, connections } = launchState;
+  const isExpanded = launchState.expandedCredentials.twitter;
+
+  const configHtml = `
+    <div class="launch-form-group" style="margin-top:12px;margin-bottom:12px;">
+      <label class="launch-label">System Prompt</label>
+      <textarea
+        class="launch-input launch-textarea"
+        id="launchTweetSystemPrompt"
+        placeholder="Describe how your agent should tweet. E.g., 'You are an alpha caller for $TOKEN. Tweet market analysis, hype upcoming catalysts, and engage with community members. Keep it edgy but informative. Never use generic crypto slang.'"
+        rows="4"
+        style="resize:vertical;min-height:80px;"
+      >${escapeHtml(tweetConfig.systemPrompt)}</textarea>
+    </div>
+
+    <div class="launch-form-row">
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Personality Preset</label>
+        ${renderSelect('launchTweetPersonality', PERSONALITIES, tweetConfig.personality)}
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Selecting a preset auto-fills the system prompt if empty</div>
+      </div>
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Frequency</label>
+        ${renderSelect('launchTweetFrequency', FREQUENCIES, tweetConfig.frequency)}
+      </div>
+    </div>
+
+    ${renderCollapsibleSection('twitter', 'Connect Twitter', isExpanded, `
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">API Key</label>
+        ${renderPasswordInput('launchTwitterApiKey', connections.twitter.apiKey, 'Twitter API Key')}
+      </div>
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">API Secret</label>
+        ${renderPasswordInput('launchTwitterApiSecret', connections.twitter.apiSecret, 'Twitter API Secret')}
+      </div>
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">Access Token</label>
+        ${renderPasswordInput('launchTwitterAccessToken', connections.twitter.accessToken, 'Access Token')}
+      </div>
+      <div class="launch-form-group" style="margin-bottom:4px;">
+        <label class="launch-label">Access Token Secret</label>
+        ${renderPasswordInput('launchTwitterAccessSecret', connections.twitter.accessTokenSecret, 'Access Token Secret')}
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">Get these from developer.x.com &rarr; Your App &rarr; Keys and Tokens</div>
+    `)}
+  `;
+
+  return renderCapabilityCard('tweet', 'Tweet', 'Your agent posts on X, engages with community', isEnabled, configHtml);
+}
+
+// ─── Trade Capability ───
+
+function renderTradeCapability(isEnabled) {
+  const { tradeConfig, connections } = launchState;
+  const isExpanded = launchState.expandedCredentials.tradeWallet;
+  const isPaper = connections.tradeWallet.mode === 'paper';
+
+  const configHtml = `
+    <div class="launch-form-group" style="margin-top:12px;margin-bottom:12px;">
+      <label class="launch-label">System Prompt</label>
+      <textarea
+        class="launch-input launch-textarea"
+        id="launchTradeSystemPrompt"
+        placeholder="Describe your agent's trading approach. E.g., 'Focus on new pump.fun launches with >$10k liquidity. Buy early, take 2x profits, never hold bags. Avoid tokens with frozen mint authority.'"
+        rows="4"
+        style="resize:vertical;min-height:80px;"
+      >${escapeHtml(tradeConfig.systemPrompt)}</textarea>
+    </div>
+
+    <div class="launch-form-row">
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Strategy Preset</label>
+        ${renderSelect('launchTradeStrategy', STRATEGIES, tradeConfig.strategy)}
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Selecting a preset auto-fills the system prompt if empty</div>
+      </div>
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Max Position (SOL)</label>
+        <input class="launch-input" id="launchTradeMaxPos" type="number" step="0.1" min="0.1" max="10" value="${tradeConfig.maxPositionSol}" onchange="updateTradeMaxPos(this.value)">
+      </div>
+    </div>
+
+    ${renderCollapsibleSection('tradeWallet', 'Agent Wallet', isExpanded, `
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Your agent needs a wallet to execute trades. You can use paper trading mode or provide a private key for live trades.</div>
+      <div style="display:flex;gap:16px;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text);">
+          <input type="radio" name="tradeWalletMode" value="paper" ${isPaper ? 'checked' : ''} onchange="updateTradeWalletMode('paper')">
+          Paper Trading (no real trades)
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text);">
+          <input type="radio" name="tradeWalletMode" value="live" ${!isPaper ? 'checked' : ''} onchange="updateTradeWalletMode('live')">
+          Live Trading
+        </label>
+      </div>
+      ${!isPaper ? `
+        <div class="launch-form-group" style="margin-bottom:4px;">
+          <label class="launch-label">Private Key</label>
+          ${renderPasswordInput('launchTradePrivateKey', connections.tradeWallet.privateKey, 'Base58 private key')}
+        </div>
+        <div style="font-size:10px;color:#e6a23c;margin-top:8px;">Your private key is stored encrypted. Only fund this wallet with what you can afford to lose.</div>
+      ` : ''}
+    `)}
+  `;
+
+  return renderCapabilityCard('trade', 'Trade', 'Your agent monitors and executes trades on Solana', isEnabled, configHtml);
+}
+
+// ─── Chat Capability ───
+
+function renderChatCapability(isEnabled) {
+  const { chatConfig, connections } = launchState;
+  const platform = chatConfig.platform;
+  const showDiscord = platform === 'discord' || platform === 'both';
+  const showTelegram = platform === 'telegram' || platform === 'both';
+
+  const configHtml = `
+    <div class="launch-form-group" style="margin-top:12px;margin-bottom:12px;">
+      <label class="launch-label">System Prompt</label>
+      <textarea
+        class="launch-input launch-textarea"
+        id="launchChatSystemPrompt"
+        placeholder="Describe how your agent should respond in chat. E.g., 'You are the official AI assistant for this project. Answer questions about the token, help with technical issues, and engage casually. Be helpful but concise.'"
+        rows="4"
+        style="resize:vertical;min-height:80px;"
+      >${escapeHtml(chatConfig.systemPrompt)}</textarea>
+    </div>
+
+    <div class="launch-form-row">
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Personality Preset</label>
+        ${renderSelect('launchChatPersonality', PERSONALITIES, chatConfig.personality)}
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Selecting a preset auto-fills the system prompt if empty</div>
+      </div>
+      <div class="launch-form-group" style="margin-bottom:0;">
+        <label class="launch-label">Platform</label>
+        ${renderSelect('launchChatPlatform', [
+          { value: 'discord', label: 'Discord' },
+          { value: 'telegram', label: 'Telegram' },
+          { value: 'both', label: 'Both' },
+        ], chatConfig.platform)}
+      </div>
+    </div>
+
+    <div class="launch-form-group" style="margin-top:12px;margin-bottom:12px;">
+      <label class="launch-label">Respond To</label>
+      ${renderSelect('launchChatRespondTo', [
+        { value: 'mentions', label: 'Mentions only' },
+        { value: 'all', label: 'All messages' },
+      ], chatConfig.respondTo)}
+    </div>
+
+    ${showDiscord ? renderCollapsibleSection('discord', 'Connect Discord', launchState.expandedCredentials.discord, `
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">Bot Token</label>
+        ${renderPasswordInput('launchDiscordBotToken', connections.discord.botToken, 'Discord bot token')}
+      </div>
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">Server ID</label>
+        <input class="launch-input" id="launchDiscordGuildId" placeholder="Discord server (guild) ID" autocomplete="off" value="${escapeHtml(connections.discord.guildId)}">
+      </div>
+      <div class="launch-form-group" style="margin-bottom:4px;">
+        <label class="launch-label">Channel IDs</label>
+        <input class="launch-input" id="launchDiscordChannelIds" placeholder="Comma-separated channel IDs" autocomplete="off" value="${escapeHtml(connections.discord.channelIds)}">
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">Create a bot at discord.com/developers &rarr; New Application &rarr; Bot &rarr; Token</div>
+    `) : ''}
+
+    ${showTelegram ? renderCollapsibleSection('telegram', 'Connect Telegram', launchState.expandedCredentials.telegram, `
+      <div class="launch-form-group" style="margin-bottom:8px;">
+        <label class="launch-label">Bot Token</label>
+        ${renderPasswordInput('launchTelegramBotToken', connections.telegram.botToken, 'Telegram bot token')}
+      </div>
+      <div class="launch-form-group" style="margin-bottom:4px;">
+        <label class="launch-label">Chat IDs</label>
+        <input class="launch-input" id="launchTelegramChatIds" placeholder="Comma-separated chat IDs" autocomplete="off" value="${escapeHtml(connections.telegram.chatIds)}">
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">Create a bot via @BotFather on Telegram</div>
+    `) : ''}
+  `;
+
+  return renderCapabilityCard('chat', 'Chat', 'Your agent responds in Discord or Telegram', isEnabled, configHtml);
+}
+
+// ─── Shared UI Components ───
 
 function renderCapabilityCard(key, title, desc, isEnabled, configHtml) {
   const borderColor = isEnabled ? 'var(--accent)' : 'var(--border)';
@@ -358,10 +538,48 @@ function renderSelect(id, options, selected) {
   `;
 }
 
+function renderPasswordInput(id, value, placeholder) {
+  return `
+    <div style="position:relative;">
+      <input
+        class="launch-input"
+        id="${id}"
+        type="password"
+        placeholder="${placeholder}"
+        autocomplete="off"
+        value="${escapeHtml(value)}"
+        style="padding-right:36px;"
+      >
+      <button
+        type="button"
+        onclick="togglePasswordVisibility('${id}')"
+        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:10px;font-family:var(--font-mono);padding:2px 4px;"
+      >SHOW</button>
+    </div>
+  `;
+}
+
+function renderCollapsibleSection(key, title, isExpanded, innerHtml) {
+  const chevron = isExpanded ? '&#9660;' : '&#9654;';
+
+  return `
+    <div style="margin-top:16px;border:1px solid var(--border);background:var(--bg);">
+      <div
+        onclick="toggleCredentialSection('${key}')"
+        style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;"
+      >
+        <span style="font-size:12px;font-weight:600;color:var(--text);">${title}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${chevron}</span>
+      </div>
+      ${isExpanded ? `<div style="padding:0 14px 14px 14px;border-top:1px solid var(--border);">${innerHtml}</div>` : ''}
+    </div>
+  `;
+}
+
 // ─── Step 3: Review ───
 
 function renderStepReview() {
-  const { capabilities, tweetConfig, tradeConfig, chatConfig } = launchState;
+  const { capabilities, tweetConfig, tradeConfig, chatConfig, connections } = launchState;
   const enabledCaps = Object.entries(capabilities).filter(([, v]) => v).map(([k]) => k);
 
   const personalityLabel = (val) => PERSONALITIES.find(p => p.value === val)?.label || val;
@@ -394,28 +612,11 @@ function renderStepReview() {
 
         <div style="padding:16px 20px;">
           <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Agent Capabilities</div>
-          ${enabledCaps.map(cap => {
-            let details = '';
-            if (cap === 'tweet') {
-              details = `${personalityLabel(tweetConfig.personality)} &middot; ${frequencyLabel(tweetConfig.frequency)}`;
-            } else if (cap === 'trade') {
-              details = `${strategyLabel(tradeConfig.strategy)} &middot; Max ${tradeConfig.maxPositionSol} SOL`;
-            } else if (cap === 'chat') {
-              const platform = chatConfig.platform === 'both' ? 'Discord + Telegram' : chatConfig.platform.charAt(0).toUpperCase() + chatConfig.platform.slice(1);
-              const respond = chatConfig.respondTo === 'mentions' ? 'Mentions only' : 'All messages';
-              details = `${platform} &middot; ${personalityLabel(chatConfig.personality)} &middot; ${respond}`;
-            }
-            return `
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
-                <div>
-                  <span style="font-size:13px;font-weight:600;text-transform:capitalize;">${cap}</span>
-                </div>
-                <div style="font-size:11px;color:var(--text-muted);">${details}</div>
-              </div>
-            `;
-          }).join('')}
+          ${enabledCaps.map(cap => renderReviewCapability(cap, { tweetConfig, tradeConfig, chatConfig, connections, personalityLabel, frequencyLabel, strategyLabel })).join('')}
         </div>
       </div>
+
+      ${renderConnectionStatusSection(enabledCaps, connections)}
 
       <div class="launch-fee-notice">
         <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Fee Split</div>
@@ -435,12 +636,100 @@ function renderStepReview() {
         <div class="launch-hint">Optional initial buy in SOL. Set to 0 for a fair launch.</div>
       </div>
 
+      <div style="font-size:11px;color:var(--text-muted);margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);">
+        You can test your agent after launching in the My Agents tab.
+      </div>
+
       <div style="display:flex;justify-content:space-between;margin-top:20px;">
         <button class="launch-btn" style="width:auto;padding:14px 48px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="launchPrevStep()">Back</button>
         <button class="launch-btn" style="width:auto;padding:14px 64px;" id="launchBtn" onclick="submitLaunch()" ${launchState.loading ? 'disabled' : ''}>
           ${launchState.loading ? 'Launching...' : 'Launch Agent'}
         </button>
       </div>
+    </div>
+  `;
+}
+
+function renderReviewCapability(cap, ctx) {
+  let details = '';
+  if (cap === 'tweet') {
+    details = `${ctx.personalityLabel(ctx.tweetConfig.personality)} &middot; ${ctx.frequencyLabel(ctx.tweetConfig.frequency)}`;
+  } else if (cap === 'trade') {
+    details = `${ctx.strategyLabel(ctx.tradeConfig.strategy)} &middot; Max ${ctx.tradeConfig.maxPositionSol} SOL`;
+  } else if (cap === 'chat') {
+    const platform = ctx.chatConfig.platform === 'both' ? 'Discord + Telegram' : ctx.chatConfig.platform.charAt(0).toUpperCase() + ctx.chatConfig.platform.slice(1);
+    const respond = ctx.chatConfig.respondTo === 'mentions' ? 'Mentions only' : 'All messages';
+    details = `${platform} &middot; ${ctx.personalityLabel(ctx.chatConfig.personality)} &middot; ${respond}`;
+  }
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <span style="font-size:13px;font-weight:600;text-transform:capitalize;">${cap}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">${details}</div>
+    </div>
+  `;
+}
+
+function renderConnectionStatusSection(enabledCaps, connections) {
+  const items = [];
+
+  if (enabledCaps.includes('tweet')) {
+    const hasTwitterCreds = connections.twitter.apiKey && connections.twitter.apiSecret
+      && connections.twitter.accessToken && connections.twitter.accessTokenSecret;
+    items.push(renderStatusBadge('Twitter', hasTwitterCreds, 'Connected', 'No credentials — will skip posting'));
+  }
+
+  if (enabledCaps.includes('trade')) {
+    const isPaper = connections.tradeWallet.mode === 'paper';
+    if (isPaper) {
+      items.push(renderStatusBadge('Trade', null, '', 'Paper Trading', '#e6a23c'));
+    } else {
+      const hasKey = !!connections.tradeWallet.privateKey;
+      items.push(renderStatusBadge('Trade', hasKey, 'Live — wallet connected', 'No private key provided'));
+    }
+  }
+
+  if (enabledCaps.includes('chat')) {
+    const platform = launchState.chatConfig.platform;
+    if (platform === 'discord' || platform === 'both') {
+      const hasDiscord = !!connections.discord.botToken;
+      items.push(renderStatusBadge('Chat (Discord)', hasDiscord, 'Bot token provided', 'Not configured'));
+    }
+    if (platform === 'telegram' || platform === 'both') {
+      const hasTelegram = !!connections.telegram.botToken;
+      items.push(renderStatusBadge('Chat (Telegram)', hasTelegram, 'Bot token provided', 'Not configured'));
+    }
+  }
+
+  if (items.length === 0) return '';
+
+  return `
+    <div style="border:1px solid var(--border);background:var(--bg);margin-bottom:20px;padding:16px 20px;">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Connection Status</div>
+      ${items.join('')}
+    </div>
+  `;
+}
+
+function renderStatusBadge(label, isConnected, connectedText, disconnectedText, overrideColor) {
+  if (overrideColor) {
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+        <span style="font-size:12px;color:var(--text);">${label}</span>
+        <span style="font-size:11px;color:${overrideColor};font-weight:600;">${disconnectedText}</span>
+      </div>
+    `;
+  }
+
+  const color = isConnected ? '#67c23a' : 'var(--text-muted)';
+  const text = isConnected ? connectedText : disconnectedText;
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+      <span style="font-size:12px;color:var(--text);">${label}</span>
+      <span style="font-size:11px;color:${color};font-weight:${isConnected ? '600' : '400'};">${text}</span>
     </div>
   `;
 }
@@ -554,6 +843,25 @@ window.removeLaunchImage = function () {
   rerenderLaunchForm();
 };
 
+// ─── Password Toggle ───
+
+window.togglePasswordVisibility = function (inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  const btn = input.parentElement?.querySelector('button');
+  if (btn) btn.textContent = isHidden ? 'HIDE' : 'SHOW';
+};
+
+// ─── Collapsible Sections ───
+
+window.toggleCredentialSection = function (key) {
+  saveCurrentStepInputs();
+  launchState.expandedCredentials[key] = !launchState.expandedCredentials[key];
+  rerenderLaunchForm();
+};
+
 // ─── Capability Toggles ───
 
 window.toggleCapability = function (key) {
@@ -564,15 +872,30 @@ window.toggleCapability = function (key) {
 };
 
 window.updateLaunchSelect = function (id, value) {
+  saveCurrentStepInputs();
+
   const mapping = {
-    launchTweetPersonality: () => { launchState.tweetConfig.personality = value; },
+    launchTweetPersonality: () => {
+      launchState.tweetConfig.personality = value;
+      maybeAutoFillPrompt('tweet', value);
+    },
     launchTweetFrequency: () => { launchState.tweetConfig.frequency = value; },
-    launchTradeStrategy: () => { launchState.tradeConfig.strategy = value; },
+    launchTradeStrategy: () => {
+      launchState.tradeConfig.strategy = value;
+      maybeAutoFillPrompt('trade', value);
+    },
     launchChatPlatform: () => { launchState.chatConfig.platform = value; },
-    launchChatPersonality: () => { launchState.chatConfig.personality = value; },
+    launchChatPersonality: () => {
+      launchState.chatConfig.personality = value;
+      maybeAutoFillPrompt('chat', value);
+    },
     launchChatRespondTo: () => { launchState.chatConfig.respondTo = value; },
   };
-  if (mapping[id]) mapping[id]();
+
+  if (mapping[id]) {
+    mapping[id]();
+    rerenderLaunchForm();
+  }
 };
 
 window.updateTradeMaxPos = function (value) {
@@ -582,23 +905,89 @@ window.updateTradeMaxPos = function (value) {
   }
 };
 
+window.updateTradeWalletMode = function (mode) {
+  saveCurrentStepInputs();
+  launchState.connections.tradeWallet.mode = mode;
+  if (mode === 'paper') launchState.connections.tradeWallet.privateKey = '';
+  rerenderLaunchForm();
+};
+
+// ─── Preset Auto-fill Logic ───
+
+function maybeAutoFillPrompt(capability, presetValue) {
+  const templates = { tweet: TWEET_PROMPTS, trade: TRADE_PROMPTS, chat: CHAT_PROMPTS };
+  const configKey = { tweet: 'tweetConfig', trade: 'tradeConfig', chat: 'chatConfig' };
+
+  const template = templates[capability]?.[presetValue];
+  if (!template) return;
+
+  const config = launchState[configKey[capability]];
+  if (config.systemPrompt.trim()) return;
+
+  const name = launchState.name || 'MyAgent';
+  const symbol = launchState.symbol || 'TOKEN';
+  config.systemPrompt = template.replace(/\$\{name\}/g, name).replace(/\$\{symbol\}/g, symbol);
+}
+
 // ─── Navigation ───
 
 function saveCurrentStepInputs() {
   if (launchState.step === 1) {
-    launchState.name = document.getElementById('launchName')?.value.trim() || launchState.name;
-    launchState.symbol = document.getElementById('launchSymbol')?.value.trim().toUpperCase() || launchState.symbol;
-    launchState.description = document.getElementById('launchDesc')?.value.trim() || launchState.description;
-    launchState.twitter = document.getElementById('launchTwitter')?.value.trim() || launchState.twitter;
-    launchState.website = document.getElementById('launchWebsite')?.value.trim() || launchState.website;
+    saveStepOneInputs();
   }
   if (launchState.step === 2) {
-    const maxPos = document.getElementById('launchTradeMaxPos')?.value;
-    if (maxPos) launchState.tradeConfig.maxPositionSol = parseFloat(maxPos) || launchState.tradeConfig.maxPositionSol;
+    saveStepTwoInputs();
   }
   if (launchState.step === 3) {
     launchState.devBuySol = parseFloat(document.getElementById('launchDevBuy')?.value) || 0;
   }
+}
+
+function saveStepOneInputs() {
+  launchState.name = document.getElementById('launchName')?.value.trim() || launchState.name;
+  launchState.symbol = document.getElementById('launchSymbol')?.value.trim().toUpperCase() || launchState.symbol;
+  launchState.description = document.getElementById('launchDesc')?.value.trim() || launchState.description;
+  launchState.twitter = document.getElementById('launchTwitter')?.value.trim() || launchState.twitter;
+  launchState.website = document.getElementById('launchWebsite')?.value.trim() || launchState.website;
+}
+
+function saveStepTwoInputs() {
+  // Trade max position
+  const maxPos = document.getElementById('launchTradeMaxPos')?.value;
+  if (maxPos) launchState.tradeConfig.maxPositionSol = parseFloat(maxPos) || launchState.tradeConfig.maxPositionSol;
+
+  // System prompts
+  saveTextareaValue('launchTweetSystemPrompt', launchState.tweetConfig, 'systemPrompt');
+  saveTextareaValue('launchTradeSystemPrompt', launchState.tradeConfig, 'systemPrompt');
+  saveTextareaValue('launchChatSystemPrompt', launchState.chatConfig, 'systemPrompt');
+
+  // Twitter credentials
+  saveInputValue('launchTwitterApiKey', launchState.connections.twitter, 'apiKey');
+  saveInputValue('launchTwitterApiSecret', launchState.connections.twitter, 'apiSecret');
+  saveInputValue('launchTwitterAccessToken', launchState.connections.twitter, 'accessToken');
+  saveInputValue('launchTwitterAccessSecret', launchState.connections.twitter, 'accessTokenSecret');
+
+  // Discord credentials
+  saveInputValue('launchDiscordBotToken', launchState.connections.discord, 'botToken');
+  saveInputValue('launchDiscordGuildId', launchState.connections.discord, 'guildId');
+  saveInputValue('launchDiscordChannelIds', launchState.connections.discord, 'channelIds');
+
+  // Telegram credentials
+  saveInputValue('launchTelegramBotToken', launchState.connections.telegram, 'botToken');
+  saveInputValue('launchTelegramChatIds', launchState.connections.telegram, 'chatIds');
+
+  // Trade wallet
+  saveInputValue('launchTradePrivateKey', launchState.connections.tradeWallet, 'privateKey');
+}
+
+function saveInputValue(elementId, target, key) {
+  const el = document.getElementById(elementId);
+  if (el) target[key] = el.value.trim();
+}
+
+function saveTextareaValue(elementId, target, key) {
+  const el = document.getElementById(elementId);
+  if (el) target[key] = el.value;
 }
 
 function validateStep(step) {
@@ -656,6 +1045,7 @@ window.submitLaunch = async function () {
         website: launchState.website,
         devBuySol: launchState.devBuySol,
         capabilities: launchState.capabilities,
+        connections: launchState.connections,
         tweetConfig: launchState.tweetConfig,
         tradeConfig: launchState.tradeConfig,
         chatConfig: launchState.chatConfig,
@@ -675,24 +1065,7 @@ window.submitLaunch = async function () {
 // ─── Reset & Navigate ───
 
 window.resetLaunch = function () {
-  launchState = {
-    step: 1,
-    loading: false,
-    result: null,
-    error: null,
-    name: '',
-    symbol: '',
-    description: '',
-    imageData: null,
-    imageFileName: '',
-    twitter: '',
-    website: '',
-    capabilities: { tweet: false, trade: false, chat: false },
-    tweetConfig: { personality: 'community', frequency: 'medium' },
-    tradeConfig: { strategy: 'moderate', maxPositionSol: 1 },
-    chatConfig: { platform: 'discord', personality: 'community', respondTo: 'mentions' },
-    devBuySol: 0,
-  };
+  launchState = createFreshState();
   rerenderLaunchForm();
 };
 
