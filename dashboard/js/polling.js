@@ -71,7 +71,7 @@ const STATUS_PAGES = [
 export async function fetchProviderStatuses() {
   const results = await Promise.allSettled(
     STATUS_PAGES.map(async ({ key, url, apiName }) => {
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
       const data = await res.json();
       const apiComponent = data.components?.find(c => c.name.includes(apiName));
       const apiComponentId = apiComponent?.id;

@@ -5,11 +5,26 @@ import { logger } from './logger.js';
 const AGENT_PREFIX = 'infinite:agent:';
 const AGENT_LIST_PREFIX = 'infinite:agents:';
 const AGENT_LOG_PREFIX = 'infinite:agent-log:';
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+// Funded agent key prefixes
+const FUNDED_WALLET_PREFIX = 'infinite:agent:by-wallet:';
+const FUNDED_TOKEN_PREFIX = 'infinite:agent:by-token:';
+const FUNDED_ACTIVE_SET = 'infinite:funded-agents:active';
 
 // In-memory fallback
 const fallbackAgents = new Map(); // agentId -> agentConfig
 const fallbackLists = new Map();  // apiKey -> Set<agentId>
 const fallbackLogs = new Map();   // agentId -> [{ts, type, message}]
+
+// Funded agent fallback stores
+const fallbackWalletAgents = new Map(); // wallet -> agentId[]
+const fallbackTokenAgents = new Map();  // mintAddress -> agentId
+const fallbackFundedActive = new Set(); // agentId set
+
+// ---------------------------------------------------------------------------
+// Original agent CRUD (used by agent-scheduler, routes/agents)
+// ---------------------------------------------------------------------------
 
 /**
  * Save an agent config
@@ -164,6 +179,8 @@ export async function getAllActiveAgents() {
       const [next, keys] = await r.scan(cursor, 'MATCH', `${AGENT_PREFIX}*`, 'COUNT', 100);
       cursor = next;
       for (const key of keys) {
+        // Skip index keys (by-wallet:, by-token:)
+        if (key.includes(':by-wallet:') || key.includes(':by-token:')) continue;
         try {
           const data = await r.get(key);
           if (data) {
@@ -178,4 +195,169 @@ export async function getAllActiveAgents() {
     logger.error('KV-Agents failed to get all active', { err: e.message });
     return [...fallbackAgents.values()].filter(a => a.status === 'active');
   }
+}
+
+// ---------------------------------------------------------------------------
+// Funded agent functions (used by launch route)
+// ---------------------------------------------------------------------------
+
+/** Store or update a funded agent */
+export async function setFundedAgent(agentId, data) {
+  fallbackAgents.set(agentId, data);
+  const r = getRedis();
+  if (!r) return;
+
+  try {
+    await r.set(`${AGENT_PREFIX}${agentId}`, JSON.stringify(data));
+  } catch (e) {
+    logger.error('kv-agents: failed to set funded agent', { err: e.message, agentId });
+    if (IS_PROD) throw new Error('Agent store unavailable');
+  }
+}
+
+/** Get all funded agent IDs for a wallet */
+export async function getFundedAgentsByWallet(wallet) {
+  const r = getRedis();
+  if (!r) return fallbackWalletAgents.get(wallet) || [];
+
+  try {
+    const data = await r.get(`${FUNDED_WALLET_PREFIX}${wallet}`);
+    if (data) return JSON.parse(data);
+    return fallbackWalletAgents.get(wallet) || [];
+  } catch (e) {
+    logger.error('kv-agents: failed to get wallet agents', { err: e.message, wallet });
+    if (IS_PROD) throw new Error('Agent store unavailable');
+    return fallbackWalletAgents.get(wallet) || [];
+  }
+}
+
+/** Add a funded agent ID to a wallet's list */
+export async function addFundedAgentToWallet(wallet, agentId) {
+  const existing = fallbackWalletAgents.get(wallet) || [];
+  if (!existing.includes(agentId)) existing.push(agentId);
+  fallbackWalletAgents.set(wallet, existing);
+
+  const r = getRedis();
+  if (!r) return;
+
+  try {
+    const raw = await r.get(`${FUNDED_WALLET_PREFIX}${wallet}`);
+    const ids = raw ? JSON.parse(raw) : [];
+    if (!ids.includes(agentId)) ids.push(agentId);
+    await r.set(`${FUNDED_WALLET_PREFIX}${wallet}`, JSON.stringify(ids));
+  } catch (e) {
+    logger.error('kv-agents: failed to add agent to wallet', { err: e.message, wallet, agentId });
+    if (IS_PROD) throw new Error('Agent store unavailable');
+  }
+}
+
+/** Get funded agent ID linked to a token mint address */
+export async function getFundedAgentByToken(mintAddress) {
+  const r = getRedis();
+  if (!r) return fallbackTokenAgents.get(mintAddress) || null;
+
+  try {
+    const agentId = await r.get(`${FUNDED_TOKEN_PREFIX}${mintAddress}`);
+    if (agentId) return agentId;
+    return fallbackTokenAgents.get(mintAddress) || null;
+  } catch (e) {
+    logger.error('kv-agents: failed to get agent by token', { err: e.message, mintAddress });
+    if (IS_PROD) throw new Error('Agent store unavailable');
+    return fallbackTokenAgents.get(mintAddress) || null;
+  }
+}
+
+/** Link a token mint address to a funded agent ID */
+export async function setFundedAgentToken(mintAddress, agentId) {
+  fallbackTokenAgents.set(mintAddress, agentId);
+  const r = getRedis();
+  if (!r) return;
+
+  try {
+    await r.set(`${FUNDED_TOKEN_PREFIX}${mintAddress}`, agentId);
+  } catch (e) {
+    logger.error('kv-agents: failed to set agent token', { err: e.message, mintAddress, agentId });
+    if (IS_PROD) throw new Error('Agent store unavailable');
+  }
+}
+
+/** Atomically update a funded agent's credit balance. Returns the updated agent or null. */
+export async function updateAgentCredits(agentId, deltaUsdCents) {
+  const agent = await getAgent(agentId);
+  if (!agent) return null;
+
+  const credits = agent.credits || { balance: 0, totalEarned: 0, totalSpent: 0 };
+  credits.balance += deltaUsdCents;
+  if (deltaUsdCents > 0) credits.totalEarned += deltaUsdCents;
+  if (deltaUsdCents < 0) credits.totalSpent += Math.abs(deltaUsdCents);
+  agent.credits = credits;
+
+  // Auto-deplete if balance hits zero
+  if (credits.balance <= 0 && agent.status === 'active') {
+    agent.status = 'depleted';
+    fallbackFundedActive.delete(agentId);
+    const r = getRedis();
+    if (r) {
+      try { await r.srem(FUNDED_ACTIVE_SET, agentId); } catch {}
+    }
+  }
+
+  await setFundedAgent(agentId, agent);
+  return agent;
+}
+
+/** List all funded agents with status "active" */
+export async function listFundedActiveAgents() {
+  const r = getRedis();
+
+  let ids;
+  if (!r) {
+    ids = [...fallbackFundedActive];
+  } else {
+    try {
+      ids = await r.smembers(FUNDED_ACTIVE_SET);
+    } catch (e) {
+      logger.error('kv-agents: failed to list funded active agents', { err: e.message });
+      ids = [...fallbackFundedActive];
+    }
+  }
+
+  const agents = [];
+  for (const id of ids) {
+    const agent = await getAgent(id);
+    if (agent && agent.status === 'active') agents.push(agent);
+  }
+  return agents;
+}
+
+/** Mark a funded agent as active */
+export async function activateFundedAgent(agentId) {
+  const agent = await getAgent(agentId);
+  if (!agent) return null;
+
+  agent.status = 'active';
+  await setFundedAgent(agentId, agent);
+  fallbackFundedActive.add(agentId);
+
+  const r = getRedis();
+  if (r) {
+    try { await r.sadd(FUNDED_ACTIVE_SET, agentId); } catch {}
+  }
+  return agent;
+}
+
+/** Mark a funded agent as paused */
+export async function pauseFundedAgent(agentId) {
+  const agent = await getAgent(agentId);
+  if (!agent) return null;
+
+  agent.status = 'paused';
+  await setFundedAgent(agentId, agent);
+  fallbackFundedActive.delete(agentId);
+
+  const r = getRedis();
+  if (r) {
+    try { await r.srem(FUNDED_ACTIVE_SET, agentId); } catch {}
+  }
+  return agent;
 }

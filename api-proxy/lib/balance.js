@@ -1,40 +1,33 @@
 import { CONFIG, TOKEN_GATING_ENABLED } from '../config.js';
 import { balanceCache, treasuryBalanceCache, TREASURY_CACHE_TTL } from '../state.js';
 import { logger } from './logger.js';
-
-const MAX_RETRIES = 3;
-const BASE_DELAY_MS = 300;
+import { fetchWithRetry } from './retry.js';
 
 const FETCH_TIMEOUT = 10_000;
 
 async function fetchBalanceFromRPC(walletAddress) {
-  const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 'infinite-balance-check',
-      method: 'getTokenAccountsByOwner',
-      params: [
-        walletAddress,
-        { mint: CONFIG.TOKEN_MINT },
-        { encoding: 'jsonParsed' }
-      ]
+  const response = await fetchWithRetry(
+    () => fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'infinite-balance-check',
+        method: 'getTokenAccountsByOwner',
+        params: [walletAddress, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' }],
+      }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
     }),
-    signal: AbortSignal.timeout(FETCH_TIMEOUT),
-  });
+    'Helius RPC'
+  );
 
   const data = await response.json();
+  if (data.error) throw new Error(data.error.message || 'RPC error');
 
-  if (data.error) {
-    throw new Error(data.error.message || 'RPC error');
-  }
-
-  let balance = 0;
   if (data.result?.value?.length > 0) {
-    balance = data.result.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+    return data.result.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
   }
-  return balance;
+  return 0;
 }
 
 async function getTokenBalance(walletAddress) {
@@ -45,20 +38,15 @@ async function getTokenBalance(walletAddress) {
     return cached.balance;
   }
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const balance = await fetchBalanceFromRPC(walletAddress);
-      balanceCache.set(walletAddress, { balance, checkedAt: Date.now() });
-      return balance;
-    } catch (err) {
-      logger.error(`Balance check attempt ${attempt + 1}/${MAX_RETRIES} failed`, { wallet: walletAddress.slice(0, 8), err: err.message });
-      if (attempt < MAX_RETRIES - 1) {
-        await new Promise(r => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt)));
-      }
-    }
+  try {
+    const balance = await fetchBalanceFromRPC(walletAddress);
+    balanceCache.set(walletAddress, { balance, checkedAt: Date.now() });
+    return balance;
+  } catch (err) {
+    logger.error('Balance check failed after retries', { wallet: walletAddress.slice(0, 8), err: err.message });
   }
 
-  // All retries exhausted — use stale cache if available
+  // Retries exhausted — use stale cache if available
   if (cached) {
     logger.warn('Using stale balance cache', { wallet: walletAddress.slice(0, 8), ageSec: Math.round((Date.now() - cached.checkedAt) / 1000) });
     return cached.balance;

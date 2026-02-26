@@ -133,10 +133,8 @@ export function bindCodeCopyButtons() {
     btn.onclick = () => {
       const code = document.getElementById(btn.dataset.copyId);
       if (!code) return;
-      const lines = code.querySelectorAll('.line-number');
-      lines.forEach(ln => ln.style.display = 'none');
-      const raw = code.textContent;
-      lines.forEach(ln => ln.style.display = '');
+      // data-raw stores the unescaped source text set by the markdown renderer
+      const raw = code.dataset.raw ?? code.textContent;
       copyText(raw);
       btn.textContent = 'copied!';
       btn.classList.add('copied');

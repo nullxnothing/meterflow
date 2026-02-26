@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { CONFIG, TOKEN_GATING_ENABLED, FREE_ACCESS_TIER, isFreeAccessActive } from '../config.js';
-import { getUsage as getUsageFromKV, incrementUsage as incrementUsageKV, incrementGlobalStats } from './kv-usage.js';
+import { getUsage, incrementUsage as incrementUsageKV, incrementGlobalStats } from './kv-usage.js';
 
 function generateApiKey() {
   const random = crypto.randomBytes(24).toString('hex');
@@ -21,12 +21,6 @@ function getTodayKey() {
   return new Date().toISOString().split('T')[0];
 }
 
-// Get usage (now persisted to Redis)
-async function getUsage(apiKey) {
-  return getUsageFromKV(apiKey);
-}
-
-// Increment usage (now persisted to Redis) + global stats
 async function incrementUsage(apiKey, tokens = 0) {
   const [result] = await Promise.all([
     incrementUsageKV(apiKey, tokens),
@@ -75,3 +69,4 @@ async function fetchTokenInfo(address) {
 }
 
 export { generateApiKey, getTierForBalance, getTodayKey, getUsage, incrementUsage, fetchTokenInfo };
+

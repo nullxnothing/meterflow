@@ -267,16 +267,18 @@ function populateToken() {
 
 // ═══════════ INIT ═══════════
 fetchLiveData().then(() => {
+  clearTimeout(dataTimeout);
   populateToken();
   populateProtocolStats();
 });
 
-setTimeout(() => {
+// Show placeholder values if data doesn't arrive in time
+const dataTimeout = setTimeout(() => {
   if (!liveStats.totalCallsToday && !liveTreasury.treasuryBalanceSol) {
     fetchFailed = true;
     populateProtocolStats();
   }
-}, 10_000);
+}, 8_000);
 
 setInterval(async () => {
   await fetchLiveData();
@@ -355,6 +357,7 @@ if (bgCanvas && window.innerWidth > 768) {
   const particles = [];
   const isTablet = window.innerWidth <= 1024;
   const PARTICLE_COUNT = isTablet ? 20 : 50;
+  let particleRafId = null;
 
   function resizeBg() {
     bgCanvas.width = window.innerWidth;
@@ -406,13 +409,24 @@ if (bgCanvas && window.innerWidth > 768) {
         }
       }
     }
-    requestAnimationFrame(drawParticles);
+    particleRafId = requestAnimationFrame(drawParticles);
   }
 
   resizeBg();
   initParticles();
   drawParticles();
+
   window.addEventListener('resize', () => { resizeBg(); initParticles(); });
+
+  // Pause animation when tab is hidden to save CPU
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(particleRafId);
+      particleRafId = null;
+    } else if (!particleRafId) {
+      drawParticles();
+    }
+  });
 }
 
 // ═══════════ LIVE DEMO ═══════════
@@ -496,9 +510,11 @@ const demoSection = document.querySelector('.demo-section');
 if (demoSection) {
   demoSection.classList.add('scroll-reveal');
   revealObserver.observe(demoSection);
+  let demoStarted = false;
   const demoObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && !demoStarted) {
+        demoStarted = true;
         startDemo(0);
         demoObserver.disconnect();
       }

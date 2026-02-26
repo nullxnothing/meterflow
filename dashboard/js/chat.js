@@ -86,45 +86,49 @@ export async function sendChatMessage() {
     let collectedSources = [];
     let collectedToolResults = [];
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const jsonStr = line.slice(6).trim();
-        if (!jsonStr) continue;
-        try {
-          const data = JSON.parse(jsonStr);
-          if (data.type === 'text') {
-            fullText += data.content;
-            contentEl.innerHTML = renderMarkdown(fullText);
-            scrollChat();
-          } else if (data.type === 'tool_start') {
-            showToolIndicator(bodyEl, data.tool, data.query);
-          } else if (data.type === 'tool_result') {
-            removeToolIndicator(bodyEl);
-            if (data.tool === 'web_search' && data.sources?.length > 0) {
-              collectedSources = collectedSources.concat(data.sources);
-              showSearchSources(bodyEl, collectedSources);
-            } else if (data.tool && data.data) {
-              collectedToolResults.push({ tool: data.tool, data: data.data });
-              showToolResultCard(bodyEl, data.tool, data.data);
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+          try {
+            const data = JSON.parse(jsonStr);
+            if (data.type === 'text') {
+              fullText += data.content;
+              contentEl.innerHTML = renderMarkdown(fullText);
+              scrollChat();
+            } else if (data.type === 'tool_start') {
+              showToolIndicator(bodyEl, data.tool, data.query);
+            } else if (data.type === 'tool_result') {
+              removeToolIndicator(bodyEl);
+              if (data.tool === 'web_search' && data.sources?.length > 0) {
+                collectedSources = collectedSources.concat(data.sources);
+                showSearchSources(bodyEl, collectedSources);
+              } else if (data.tool && data.data) {
+                collectedToolResults.push({ tool: data.tool, data: data.data });
+                showToolResultCard(bodyEl, data.tool, data.data);
+              }
+            } else if (data.type === 'trial') {
+              STATE.usage.today = data.used;
+              STATE.usage.remaining = data.limit - data.used;
+            } else if (data.type === 'error') {
+              throw new Error(data.message);
             }
-          } else if (data.type === 'trial') {
-            STATE.usage.today = data.used;
-            STATE.usage.remaining = data.limit - data.used;
-          } else if (data.type === 'error') {
-            throw new Error(data.message);
+          } catch (e) {
+            if (e.message && !e.message.includes('JSON')) throw e;
           }
-        } catch (e) {
-          if (e.message && !e.message.includes('JSON')) throw e;
         }
       }
+    } finally {
+      reader.releaseLock();
     }
 
     removeToolIndicator(bodyEl);

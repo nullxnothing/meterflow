@@ -1,0 +1,689 @@
+/* ─── Agent Launchpad — Wizard UI ─── */
+
+/* ── Wizard Step Indicator ── */
+.launch-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 40px;
+  padding: 0 20px;
+}
+
+.launch-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  cursor: default;
+}
+
+.launch-step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.launch-step-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.launch-step.active .launch-step-circle {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.launch-step.active .launch-step-label {
+  color: var(--accent);
+}
+
+.launch-step.completed .launch-step-circle {
+  border-color: var(--accent);
+  background: rgba(200, 255, 0, 0.15);
+  color: var(--accent);
+}
+
+.launch-step.completed .launch-step-label {
+  color: var(--text-dim);
+}
+
+.launch-step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  min-width: 40px;
+  max-width: 80px;
+  margin: 0 8px;
+  margin-bottom: 22px;
+  transition: background 0.2s ease;
+}
+
+.launch-step-line.completed {
+  background: var(--accent);
+}
+
+/* ── Drag & Drop Image Zone ── */
+.launch-dropzone {
+  min-height: 200px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.launch-dropzone:hover,
+.launch-dropzone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.launch-dropzone.dragover {
+  animation: dropzonePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dropzonePulse {
+  0%, 100% { border-color: var(--accent); }
+  50% { border-color: rgba(200, 255, 0, 0.4); }
+}
+
+.launch-dropzone-icon {
+  font-size: 32px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.launch-dropzone:hover .launch-dropzone-icon,
+.launch-dropzone.dragover .launch-dropzone-icon {
+  color: var(--accent);
+}
+
+.launch-dropzone-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.launch-dropzone-text strong {
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.launch-dropzone-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.launch-dropzone-preview-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.launch-dropzone-preview {
+  max-height: 200px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+.launch-dropzone-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.launch-dropzone-remove:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255, 95, 87, 0.1);
+}
+
+/* ── Capability Toggle Cards ── */
+.launch-capabilities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.launch-cap-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  user-select: none;
+}
+
+.launch-cap-card:hover {
+  border-color: var(--border-light);
+}
+
+.launch-cap-card.enabled {
+  border-color: var(--accent);
+  background: rgba(200, 255, 0, 0.03);
+}
+
+.launch-cap-card.enabled:hover {
+  background: rgba(200, 255, 0, 0.05);
+}
+
+.launch-cap-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.launch-cap-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.launch-cap-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.launch-cap-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+  padding: 0;
+}
+
+.launch-cap-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.launch-cap-card.enabled .launch-cap-toggle {
+  background: var(--accent);
+}
+
+.launch-cap-card.enabled .launch-cap-toggle::after {
+  transform: translateX(18px);
+  background: var(--bg);
+}
+
+.launch-cap-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.launch-cap-config {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.launch-cap-card.enabled .launch-cap-config {
+  max-height: 400px;
+}
+
+.launch-cap-config-inner {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.launch-cap-config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.launch-cap-config-row label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.launch-cap-config-row input,
+.launch-cap-config-row select,
+.launch-cap-config-row textarea {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.launch-cap-config-row input:focus,
+.launch-cap-config-row select:focus,
+.launch-cap-config-row textarea:focus {
+  border-color: var(--accent);
+}
+
+/* ── Fee Split Visualization ── */
+.launch-fee-split {
+  margin: 24px 0;
+}
+
+.launch-fee-bar {
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.launch-fee-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: width 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.launch-fee-segment.treasury {
+  background: rgba(200, 255, 0, 0.25);
+  color: var(--accent);
+}
+
+.launch-fee-segment.agent {
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.launch-fee-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.launch-fee-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.launch-fee-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.launch-fee-dot.treasury {
+  background: var(--accent);
+}
+
+.launch-fee-dot.agent {
+  background: #10b981;
+}
+
+/* ── Review Summary Card ── */
+.launch-review {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+
+.launch-review-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.launch-review-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.launch-review-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.launch-review-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.launch-review-ticker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.launch-review-section {
+  margin-bottom: 20px;
+}
+
+.launch-review-section-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.launch-review-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.launch-review-caps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.launch-review-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+
+.launch-review-cap .cap-icon {
+  font-size: 14px;
+}
+
+.launch-review-cap.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(200, 255, 0, 0.04);
+}
+
+.launch-review-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.launch-review-row:last-child {
+  border-bottom: none;
+}
+
+.launch-review-row .label {
+  color: var(--text-muted);
+}
+
+.launch-review-row .value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Step Navigation ── */
+.launch-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  gap: 12px;
+}
+
+.launch-nav-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.launch-nav-btn.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.launch-nav-btn.primary:hover {
+  background: #fff;
+  border-color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(200, 255, 0, 0.2);
+}
+
+.launch-nav-btn.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.launch-nav-btn.secondary {
+  background: var(--surface);
+  color: var(--text-dim);
+  border-color: var(--border-light);
+}
+
+.launch-nav-btn.secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Agent Badge Variant ── */
+.launch-hero-badge.agent {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+/* ── Step Content Transitions ── */
+.launch-step-content {
+  animation: launchFadeIn 0.3s ease;
+}
+
+@keyframes launchFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Wizard Container ── */
+.launch-wizard {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .launch-capabilities {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .launch-steps {
+    gap: 0;
+    padding: 0;
+  }
+
+  .launch-step-line {
+    min-width: 24px;
+  }
+
+  .launch-step-label {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 600px) {
+  .launch-capabilities {
+    grid-template-columns: 1fr;
+  }
+
+  .launch-dropzone {
+    min-height: 160px;
+    padding: 24px 16px;
+  }
+
+  .launch-dropzone-icon {
+    font-size: 24px;
+  }
+
+  .launch-steps {
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .launch-step-line {
+    min-width: 16px;
+    max-width: 32px;
+  }
+
+  .launch-step-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .launch-step-label {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .launch-review-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .launch-review {
+    padding: 20px;
+  }
+
+  .launch-nav {
+    flex-direction: column-reverse;
+  }
+
+  .launch-nav-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .launch-cap-card {
+    padding: 16px;
+  }
+
+  .launch-fee-segment {
+    font-size: 10px;
+  }
+
+  .launch-wizard {
+    padding: 0 4px;
+  }
+}

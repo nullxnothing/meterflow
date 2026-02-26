@@ -92,7 +92,11 @@ export function loadChatHistory() {
     const data = JSON.parse(raw);
     CHAT.conversations = data.conversations || [];
     CHAT.activeId = data.activeId;
-  } catch {}
+  } catch (err) {
+    console.warn('[INFINITE] Failed to load chat history:', err.message);
+    CHAT.conversations = [];
+    CHAT.activeId = null;
+  }
 }
 
 export function getActiveConversation() {
@@ -135,5 +139,8 @@ export function loadVideoHistory() {
     if (!raw) return;
     const data = JSON.parse(raw);
     VIDEOS.gallery = (data || []).filter(v => v.uri);
-  } catch {}
+  } catch (err) {
+    console.warn('[INFINITE] Failed to load video history:', err.message);
+    VIDEOS.gallery = [];
+  }
 }

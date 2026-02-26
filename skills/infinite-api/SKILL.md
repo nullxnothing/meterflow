@@ -147,8 +147,10 @@ const status = await client.status();
 | POST | `/auth/agent-register` | Register wallet, get API key |
 | GET | `/auth/status` | Check tier, balance, usage |
 | POST | `/auth/rotate` | Rotate API key |
-| POST | `/v1/chat` | Chat completion |
-| POST | `/v1/chat/stream` | Streaming chat |
+| POST | `/v1/chat` | Chat completion (native format) |
+| POST | `/v1/chat/stream` | Streaming chat (native format) |
+| POST | `/v1/chat/completions` | Chat completion (OpenAI-compatible) |
+| GET | `/v1/models` | List available models (OpenAI-compatible) |
 | POST | `/v1/multi` | Multi-model inference |
 | POST | `/v1/multi/stream` | Streaming multi-model |
 | POST | `/v1/image` | Image generation |

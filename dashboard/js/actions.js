@@ -83,25 +83,9 @@ export function stopBotPolling() {
 
 // ─── Clipboard & Toast ───
 
-export function copyText(text) {
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(text)
-      .then(() => showToast('Copied'))
-      .catch(() => fallbackCopy(text));
-  } else {
-    fallbackCopy(text);
-  }
-}
-
-function fallbackCopy(text) {
+export async function copyText(text) {
   try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+    await navigator.clipboard.writeText(text);
     showToast('Copied');
   } catch {
     showToast('Copy failed — please copy manually', true);

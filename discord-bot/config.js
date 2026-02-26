@@ -16,6 +16,9 @@ const BOT_CONFIG = {
 
   MOD_LOG_CHANNEL: process.env.MOD_LOG_CHANNEL || '',
   WELCOME_CHANNEL: process.env.WELCOME_CHANNEL || '',
+  TICKET_CHANNEL: process.env.TICKET_CHANNEL || '',
+  DEV_REPORT_CHANNEL: process.env.DEV_REPORT_CHANNEL || '',
+  RENDER_API_KEY: process.env.RENDER_API_KEY || '',
   IMMUNE_ROLES: new Set(parseList(process.env.IMMUNE_ROLES)),
   AI_CHANNELS: new Set(parseList(process.env.AI_CHANNELS)),
 

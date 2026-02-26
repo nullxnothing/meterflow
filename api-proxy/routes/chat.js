@@ -13,16 +13,20 @@ import { proxyOpenAI, streamOpenAI } from '../providers/openai.js';
 
 const router = Router();
 
-// POST /v1/chat — Proxy to Claude, Gemini, or OpenAI
-router.post('/chat', authenticateApiKey, async (req, res) => {
-  const { model, messages, max_tokens, temperature } = req.body;
-  const { tierConfig, usage, apiKey } = req.infinite;
-
-  let requestedModel = model || tierConfig.models[0];
+/**
+ * Resolve and validate the requested model against tier + availability.
+ * Returns { model, routingReason } on success, or sends an error response and returns null.
+ */
+function resolveModel(req, res, requestedModel, messages) {
+  const { tierConfig } = req.infinite;
+  const availableModels = tierConfig.models.filter(m => m !== 'auto');
   let routingReason = null;
 
-  // Auto-routing: detect optimal model from prompt content
-  const availableModels = tierConfig.models.filter(m => m !== 'auto');
+  if (!messages || !Array.isArray(messages)) {
+    res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
+    return null;
+  }
+
   if (requestedModel === 'auto') {
     const routing = detectOptimalModel(messages, availableModels);
     requestedModel = routing.model;
@@ -30,27 +34,34 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
   }
 
   if (!availableModels.includes(requestedModel)) {
-    return res.status(403).json({
+    res.status(403).json({
       error: 'model_not_available',
       message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
-      availableModels
+      availableModels,
     });
+    return null;
   }
 
   if (!isModelAvailable(requestedModel)) {
-    return res.status(503).json({
+    res.status(503).json({
       error: 'model_coming_soon',
       message: `${requestedModel} is coming soon. Stay tuned.`,
       availableModels: availableModels.filter(isModelAvailable),
     });
+    return null;
   }
 
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({
-      error: 'invalid_request',
-      message: 'messages array is required'
-    });
-  }
+  return { model: requestedModel, routingReason };
+}
+
+// POST /v1/chat — Proxy to Claude, Gemini, or OpenAI
+router.post('/chat', authenticateApiKey, async (req, res) => {
+  const { model, messages, max_tokens, temperature } = req.body;
+  const { tierConfig, apiKey } = req.infinite;
+
+  const resolved = resolveModel(req, res, model || tierConfig.models[0], messages);
+  if (!resolved) return;
+  const { model: requestedModel, routingReason } = resolved;
 
   try {
     let result;
@@ -97,37 +108,11 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
 // POST /v1/chat/stream — SSE streaming proxy
 router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature, tools, images } = req.body;
-  const { tierConfig, usage, apiKey, isTrial } = req.infinite;
+  const { tierConfig, apiKey, isTrial } = req.infinite;
 
-  let requestedModel = model || tierConfig.models[0];
-  let routingReason = null;
-
-  const availableModels = tierConfig.models.filter(m => m !== 'auto');
-  if (requestedModel === 'auto') {
-    const routing = detectOptimalModel(messages, availableModels);
-    requestedModel = routing.model;
-    routingReason = routing.reason;
-  }
-
-  if (!availableModels.includes(requestedModel)) {
-    return res.status(403).json({
-      error: 'model_not_available',
-      message: `${requestedModel} is not available on your ${tierConfig.label} tier.`,
-      availableModels
-    });
-  }
-
-  if (!isModelAvailable(requestedModel)) {
-    return res.status(503).json({
-      error: 'model_coming_soon',
-      message: `${requestedModel} is coming soon. Stay tuned.`,
-      availableModels: availableModels.filter(isModelAvailable),
-    });
-  }
-
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
-  }
+  const resolved = resolveModel(req, res, model || tierConfig.models[0], messages);
+  if (!resolved) return;
+  const { model: requestedModel, routingReason } = resolved;
 
   // Trial users: no tools, capped tokens
   const effectiveTools = isTrial ? undefined : tools;

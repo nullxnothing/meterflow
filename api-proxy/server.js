@@ -73,7 +73,7 @@ app.use('/v1', agentsRouter);
 app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
-app.use('/v1', launchRouter);
+app.use('/v1', express.json({ limit: '10mb' }), launchRouter);
 app.use('/v1', openaiCompatRouter);
 
 // Sentry error handler (must be after routes, before listen)

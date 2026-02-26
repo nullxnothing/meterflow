@@ -1,6 +1,7 @@
 import { BOT_CONFIG } from '../config.js';
 import { detectSpam, escalate } from './spam.js';
 import { getAIResponse, classifySpam, splitMessage } from './ai.js';
+import { handleTicket } from './tickets.js';
 
 async function logModAction(client, message, reason) {
   if (!BOT_CONFIG.MOD_LOG_CHANNEL) return;
@@ -48,6 +49,15 @@ async function handleMessage(message, client) {
   if (message.author.bot) return;
   if (!message.guild) return;
 
+
+  // --- Ticket channel ---
+  if (BOT_CONFIG.TICKET_CHANNEL && message.channel.id === BOT_CONFIG.TICKET_CHANNEL) {
+    // Ignore messages inside ticket threads (only handle top-level posts)
+    if (!message.channel.isThread()) {
+      await handleTicket(message, client);
+    }
+    return;
+  }
 
   // --- Spam check ---
   const spamResult = detectSpam(message);
