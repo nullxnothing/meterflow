@@ -175,7 +175,7 @@ function showWhaleAlert(entry) {
   const alert = document.createElement('div');
   alert.className = 'whale-alert';
   const typeLabel = entry.type === 'buy' ? 'BUY' : 'SELL';
-  alert.innerHTML = `<span class="whale-alert-icon">~</span> WHALE ${typeLabel}: ${entry.sol.toFixed(2)} SOL`;
+  alert.textContent = `WHALE ${typeLabel}: ${entry.sol.toFixed(2)} SOL`;
   container.prepend(alert);
   setTimeout(() => alert.remove(), 4000);
 }

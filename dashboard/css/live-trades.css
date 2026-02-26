@@ -261,14 +261,16 @@
   padding: 12px 28px;
   font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-weight: 600;
+  letter-spacing: 1px;
   color: var(--accent);
   z-index: 10;
   animation: whaleFlash 4s ease-out forwards;
-  box-shadow: 0 0 16px rgba(200, 255, 0, 0.12);
   white-space: nowrap;
   backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: opacity;
 }
 
 .whale-alert-icon {
@@ -276,10 +278,10 @@
 }
 
 @keyframes whaleFlash {
-  0% { opacity: 0; transform: translateY(-10px); }
-  10% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; }
+  10% { opacity: 1; }
   80% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-5px); }
+  100% { opacity: 0; }
 }
 
 /* ─── Responsive ─── */
