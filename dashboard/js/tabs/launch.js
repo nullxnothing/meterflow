@@ -875,7 +875,10 @@ window.toggleCapability = function (key) {
 };
 
 window.updateLaunchSelect = function (id, value) {
-  saveCurrentStepInputs();
+  // Selects that trigger auto-fill need to save inputs first, then rerender to show the filled prompt
+  const needsRerender = new Set(['launchTweetPersonality', 'launchTradeStrategy', 'launchChatPersonality', 'launchChatPlatform']);
+
+  if (needsRerender.has(id)) saveCurrentStepInputs();
 
   const mapping = {
     launchTweetPersonality: () => {
@@ -897,7 +900,8 @@ window.updateLaunchSelect = function (id, value) {
 
   if (mapping[id]) {
     mapping[id]();
-    rerenderLaunchForm();
+    // Only rerender when DOM structure changes (preset fills prompt, platform toggles sections)
+    if (needsRerender.has(id)) rerenderLaunchForm();
   }
 };
 
@@ -947,11 +951,13 @@ function saveCurrentStepInputs() {
 }
 
 function saveStepOneInputs() {
-  launchState.name = document.getElementById('launchName')?.value.trim() || launchState.name;
-  launchState.symbol = document.getElementById('launchSymbol')?.value.trim().toUpperCase() || launchState.symbol;
-  launchState.description = document.getElementById('launchDesc')?.value.trim() || launchState.description;
-  launchState.twitter = document.getElementById('launchTwitter')?.value.trim() || launchState.twitter;
-  launchState.website = document.getElementById('launchWebsite')?.value.trim() || launchState.website;
+  const el = (id) => document.getElementById(id);
+  // Use nullish check — if element exists, take its value (even if empty)
+  if (el('launchName')) launchState.name = el('launchName').value.trim();
+  if (el('launchSymbol')) launchState.symbol = el('launchSymbol').value.trim().toUpperCase();
+  if (el('launchDesc')) launchState.description = el('launchDesc').value.trim();
+  if (el('launchTwitter')) launchState.twitter = el('launchTwitter').value.trim();
+  if (el('launchWebsite')) launchState.website = el('launchWebsite').value.trim();
 }
 
 function saveStepTwoInputs() {
@@ -1079,9 +1085,24 @@ window.navigateToAgents = function () {
 
 // ─── Rerender ───
 
+/** Targeted rerender — only update the form card, not the entire page */
 function rerenderLaunchForm() {
+  if (STATE.activeTab !== 'launch') return;
+
+  const formCard = document.querySelector('.launch-form-card');
+  if (formCard) {
+    // Only rebuild the form card contents (step indicator + error + step content)
+    formCard.innerHTML = `
+      ${renderStepIndicator()}
+      ${launchState.error ? `<div class="launch-error">${escapeHtml(launchState.error)}</div>` : ''}
+      ${renderCurrentStep()}
+    `;
+    return;
+  }
+
+  // Fallback: full page rerender if form card not found
   const main = document.querySelector('.main');
-  if (main && STATE.activeTab === 'launch') {
+  if (main) {
     main.innerHTML = renderLaunch();
   }
 }
