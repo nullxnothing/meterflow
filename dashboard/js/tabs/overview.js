@@ -66,6 +66,7 @@ export function renderOverview() {
           <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--border)"></div>Remaining</div>
           <div class="usage-legend-item" style="margin-left: auto">Resets in ${resetTime}</div>
         </div>
+        ${usagePct >= 90 ? `<div class="usage-warn-inline danger">${usagePct >= 100 ? 'Daily limit reached \u2014 calls will resume at midnight UTC.' : `${STATE.usage.remaining.toLocaleString()} calls remaining \u2014 approaching daily limit.`}</div>` : usagePct >= 70 ? `<div class="usage-warn-inline warning">${Math.round(100 - usagePct)}% of daily quota remaining. Resets in ${resetTime}.</div>` : ''}
       </div>
     </div>
     <div class="section">

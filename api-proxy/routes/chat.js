@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import crypto from 'crypto';
 import { authenticateApiKey } from '../middleware.js';
-import { incrementUsage } from '../lib/helpers.js';
+import { incrementUsage, incrementModelStats } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
 import { captureError } from '../lib/sentry.js';
 import { getProviderForModel, isModelAvailable, translateToolsForProvider, injectImagesIntoMessages } from '../lib/providers.js';
@@ -63,6 +63,7 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
   if (!resolved) return;
   const { model: requestedModel, routingReason } = resolved;
 
+  const chatStart = Date.now();
   try {
     let result;
 
@@ -76,7 +77,11 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
       return res.status(400).json({ error: 'unknown_model', message: `Unknown model: ${requestedModel}` });
     }
 
-    const newUsage = await incrementUsage(apiKey, result.usage?.totalTokens || 0);
+    const chatLatency = Date.now() - chatStart;
+    const [newUsage] = await Promise.all([
+      incrementUsage(apiKey, result.usage?.totalTokens || 0),
+      incrementModelStats(requestedModel, result.usage?.totalTokens || 0, chatLatency, false),
+    ]);
 
     res.json({
       id: `inf-${crypto.randomBytes(12).toString('hex')}`,
@@ -95,6 +100,7 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     });
 
   } catch (err) {
+    incrementModelStats(requestedModel, 0, Date.now() - chatStart, true).catch(() => {});
     logger.error('Proxy error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8) });
     res.status(502).json({
@@ -133,6 +139,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     res.write(`data: ${JSON.stringify({ type: 'routing', model: requestedModel, reason: routingReason })}\n\n`);
   }
 
+  const streamStart = Date.now();
   const abortController = new AbortController();
   const { signal } = abortController;
   let clientDisconnected = false;
@@ -162,7 +169,10 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     }
 
     clearInterval(heartbeat);
-    const newUsage = await incrementUsage(apiKey);
+    const [newUsage] = await Promise.all([
+      incrementUsage(apiKey),
+      incrementModelStats(requestedModel, 0, Date.now() - streamStart, false),
+    ]);
     if (isTrial && !clientDisconnected) {
       res.write(`data: ${JSON.stringify({ type: 'trial', used: newUsage.count, limit: tierConfig.dailyLimit })}\n\n`);
     }
@@ -173,6 +183,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   } catch (err) {
     clearInterval(heartbeat);
     if (clientDisconnected || err.name === 'AbortError') return;
+    incrementModelStats(requestedModel, 0, Date.now() - streamStart, true).catch(() => {});
     logger.error('Stream error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8), stream: true });
     if (!res.writableEnded) {

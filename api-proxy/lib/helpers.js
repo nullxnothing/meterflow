@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { CONFIG, TOKEN_GATING_ENABLED, FREE_ACCESS_TIER, isFreeAccessActive } from '../config.js';
-import { getUsage, incrementUsage as incrementUsageKV, incrementGlobalStats } from './kv-usage.js';
+import { getUsage, incrementUsage as incrementUsageKV, incrementGlobalStats, incrementModelStats, getModelAnalytics } from './kv-usage.js';
 
 function generateApiKey() {
   const random = crypto.randomBytes(24).toString('hex');
@@ -68,5 +68,5 @@ async function fetchTokenInfo(address) {
   return info;
 }
 
-export { generateApiKey, getTierForBalance, getTodayKey, getUsage, incrementUsage, fetchTokenInfo };
+export { generateApiKey, getTierForBalance, getTodayKey, getUsage, incrementUsage, incrementModelStats, getModelAnalytics, fetchTokenInfo };
 

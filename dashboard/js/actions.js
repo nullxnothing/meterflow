@@ -127,13 +127,14 @@ export function showToast(msg, isError = false) {
   el.append(iconSpan, msgSpan, dismissBtn);
   container.appendChild(el);
 
-  // Auto-dismiss after 3s
+  // Auto-dismiss: errors stay longer (6s), success/warning auto-dismiss (3s)
+  const dismissMs = variant === 'error' ? 6000 : 3000;
   setTimeout(() => {
     if (el.parentElement) {
       el.classList.add('exiting');
       setTimeout(() => el.remove(), 250);
     }
-  }, 3000);
+  }, dismissMs);
 
   // Cap at 4 visible toasts
   while (container.children.length > 4) {

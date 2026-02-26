@@ -505,7 +505,40 @@
 }
 
 .usage-bar-fill.warning { background: #febc2e; }
-.usage-bar-fill.danger { background: var(--red); }
+.usage-bar-fill.danger {
+  background: var(--red);
+  animation: overviewUsagePulse 1.5s ease-in-out infinite;
+}
+.usage-bar-fill.danger::after { display: none; }
+
+@keyframes overviewUsagePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.usage-warn-inline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usage-warn-inline.warning {
+  color: #febc2e;
+  border-color: rgba(254, 188, 46, 0.3);
+  background: rgba(254, 188, 46, 0.05);
+}
+
+.usage-warn-inline.danger {
+  color: var(--red);
+  border-color: rgba(255, 95, 87, 0.3);
+  background: rgba(255, 95, 87, 0.05);
+}
 
 .usage-legend { display: flex; gap: 24px; }
 
@@ -1377,14 +1410,58 @@
   box-shadow: 0 0 6px rgba(200, 255, 0, 0.4);
 }
 
-.sidebar-usage-fill.warning { background: #febc2e; }
-.sidebar-usage-fill.danger { background: var(--red); }
+.sidebar-usage-fill.warning {
+  background: #febc2e;
+  box-shadow: 0 0 6px rgba(254, 188, 46, 0.4);
+}
+.sidebar-usage-fill.danger {
+  background: var(--red);
+  box-shadow: 0 0 6px rgba(255, 95, 87, 0.4);
+  animation: usagePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes usagePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
 
 .sidebar-usage-reset {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--text-muted);
   text-align: right;
+}
+
+.sidebar-usage-warn {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-usage-warn.warning {
+  color: #febc2e;
+  border-color: rgba(254, 188, 46, 0.3);
+  background: rgba(254, 188, 46, 0.05);
+}
+
+.sidebar-usage-warn.danger {
+  color: var(--red);
+  border-color: rgba(255, 95, 87, 0.3);
+  background: rgba(255, 95, 87, 0.05);
+}
+
+.sidebar-usage-warn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
 }
 
 /* ─── Connection Status Dot ─── */

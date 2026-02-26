@@ -171,6 +171,31 @@ export function updateSidebarFooter() {
     const count = usageEl.querySelector('.sidebar-usage-count');
     if (fill) { fill.style.width = `${pct}%`; fill.className = `sidebar-usage-fill ${barClass}`; }
     if (count) count.textContent = `${STATE.usage.remaining.toLocaleString()} left`;
+
+    // Show/update rate limit warning
+    let warnEl = usageEl.querySelector('.sidebar-usage-warn');
+    if (pct >= 90) {
+      if (!warnEl) {
+        warnEl = document.createElement('div');
+        warnEl.className = 'sidebar-usage-warn danger';
+        warnEl.innerHTML = '<span class="sidebar-usage-warn-dot"></span><span></span>';
+        usageEl.appendChild(warnEl);
+      }
+      warnEl.className = 'sidebar-usage-warn danger';
+      warnEl.querySelector('span:last-child').textContent =
+        pct >= 100 ? 'Limit reached \u2014 resets at midnight UTC' : `${STATE.usage.remaining.toLocaleString()} calls left`;
+    } else if (pct >= 70) {
+      if (!warnEl) {
+        warnEl = document.createElement('div');
+        warnEl.className = 'sidebar-usage-warn warning';
+        warnEl.innerHTML = '<span class="sidebar-usage-warn-dot"></span><span></span>';
+        usageEl.appendChild(warnEl);
+      }
+      warnEl.className = 'sidebar-usage-warn warning';
+      warnEl.querySelector('span:last-child').textContent = `${Math.round(100 - pct)}% remaining today`;
+    } else if (warnEl) {
+      warnEl.remove();
+    }
   }
 
   const dot = document.getElementById('connectionDot');

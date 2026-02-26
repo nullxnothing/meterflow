@@ -284,6 +284,106 @@ export async function getTopUsersToday(limit = 10) {
   }
 }
 
+// ═══════════ MODEL ANALYTICS ═══════════
+
+const MODEL_PREFIX = 'infinite:model:';
+
+/**
+ * Track per-model stats: calls, tokens, errors, latency
+ * @param {string} model - model ID (e.g. 'gemini-2.5-flash')
+ * @param {number} tokens - total tokens used
+ * @param {number} latencyMs - response time in ms
+ * @param {boolean} isError - whether this request failed
+ */
+export async function incrementModelStats(model, tokens = 0, latencyMs = 0, isError = false) {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    // In-memory fallback for dev
+    const key = `model:${model}:${today}`;
+    let stats = fallbackUsage.get(key);
+    if (!stats || stats.date !== today) stats = { date: today, calls: 0, tokens: 0, errors: 0, totalMs: 0 };
+    stats.calls += 1;
+    stats.tokens += tokens;
+    if (isError) stats.errors += 1;
+    stats.totalMs += latencyMs;
+    fallbackUsage.set(key, stats);
+    return;
+  }
+
+  try {
+    const key = `${MODEL_PREFIX}${model}:${today}`;
+    const pipeline = r.pipeline();
+    pipeline.hincrby(key, 'calls', 1);
+    pipeline.hincrby(key, 'tokens', tokens);
+    if (isError) pipeline.hincrby(key, 'errors', 1);
+    pipeline.hincrby(key, 'totalMs', Math.round(latencyMs));
+    pipeline.expire(key, 48 * 60 * 60);
+    await pipeline.exec();
+  } catch (e) {
+    logger.error('KV-Usage failed to increment model stats', { err: e.message, model });
+  }
+}
+
+/**
+ * Get analytics for all models today
+ * @returns {Promise<Array<{ model: string, calls: number, tokens: number, errors: number, avgMs: number }>>}
+ */
+export async function getModelAnalytics() {
+  const today = getTodayKey();
+  const r = getRedis();
+
+  if (!r) {
+    const results = [];
+    for (const [key, stats] of fallbackUsage.entries()) {
+      if (!key.startsWith('model:') || stats.date !== today) continue;
+      const model = key.replace('model:', '').replace(`:${today}`, '');
+      results.push({
+        model,
+        calls: stats.calls,
+        tokens: stats.tokens,
+        errors: stats.errors,
+        avgMs: stats.calls > 0 ? Math.round(stats.totalMs / stats.calls) : 0,
+      });
+    }
+    return results.sort((a, b) => b.calls - a.calls);
+  }
+
+  try {
+    const pattern = `${MODEL_PREFIX}*:${today}`;
+    const keys = [];
+    let cursor = '0';
+    do {
+      const [next, batch] = await r.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+      cursor = next;
+      keys.push(...batch);
+    } while (cursor !== '0');
+
+    if (keys.length === 0) return [];
+
+    const pipeline = r.pipeline();
+    for (const key of keys) pipeline.hgetall(key);
+    const results = await pipeline.exec();
+
+    return keys.map((key, i) => {
+      const data = results[i]?.[1] || {};
+      const model = key.replace(MODEL_PREFIX, '').replace(`:${today}`, '');
+      const calls = parseInt(data.calls, 10) || 0;
+      return {
+        model,
+        calls,
+        tokens: parseInt(data.tokens, 10) || 0,
+        errors: parseInt(data.errors, 10) || 0,
+        avgMs: calls > 0 ? Math.round((parseInt(data.totalMs, 10) || 0) / calls) : 0,
+      };
+    }).sort((a, b) => b.calls - a.calls);
+  } catch (e) {
+    logger.error('KV-Usage failed to get model analytics', { err: e.message });
+    return [];
+  }
+}
+
 /**
  * Reset usage for an API key (used when reconnecting wallet, etc)
  * @param {string} apiKey

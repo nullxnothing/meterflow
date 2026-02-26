@@ -68,7 +68,11 @@ export async function sendChatMessage() {
         throw new Error('Free trial exhausted. Hold $INFINITE tokens for unlimited access.');
       }
       if (response.status === 429) {
-        throw new Error('Rate limit reached. Your daily quota has been exhausted — limits reset at midnight UTC.');
+        STATE.usage.remaining = 0;
+        STATE.usage.today = STATE.usage.limit;
+        import('./polling.js').then(m => m.updateSidebarFooter());
+        const resetInfo = err.resetsAt ? ` Resets at ${new Date(err.resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}.` : ' Resets at midnight UTC.';
+        throw new Error(`Daily limit of ${(err.limit || STATE.usage.limit).toLocaleString()} calls reached.${resetInfo}`);
       }
       throw new Error(err.message || 'Request failed');
     }

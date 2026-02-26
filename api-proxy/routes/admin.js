@@ -7,7 +7,7 @@ import { getTodayKey } from '../lib/helpers.js';
 import { getTreasuryBalance } from '../lib/balance.js';
 import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
 import { getKeyData, countKeys } from '../lib/kv-keys.js';
-import { getGlobalStats, getTopUsersToday } from '../lib/kv-usage.js';
+import { getGlobalStats, getTopUsersToday, getModelAnalytics } from '../lib/kv-usage.js';
 import { logger } from '../lib/logger.js';
 
 const router = Router();
@@ -145,6 +145,22 @@ router.get('/admin/top-users', authenticateAdmin, async (req, res) => {
   } catch (e) {
     logger.error('Failed to get top users', { err: e.message });
     res.status(500).json({ error: 'internal_error', message: 'Failed to fetch top users' });
+  }
+});
+
+// GET /admin/analytics — per-model stats (calls, tokens, errors, latency)
+router.get('/admin/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    const models = await getModelAnalytics();
+    const globalStats = await getGlobalStats();
+    res.json({
+      date: new Date().toISOString().split('T')[0],
+      global: globalStats,
+      models,
+    });
+  } catch (e) {
+    logger.error('Failed to get analytics', { err: e.message });
+    res.status(500).json({ error: 'internal_error', message: 'Failed to fetch analytics' });
   }
 });
 

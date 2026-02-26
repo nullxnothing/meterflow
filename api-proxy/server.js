@@ -24,6 +24,7 @@ import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
 import { agentRuntime } from './lib/agent-runtime.js';
 import { initSocket, getIO } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
+import { errorAlertMiddleware } from './lib/alerts.js';
 
 const app = express();
 app.use(cors({
@@ -41,6 +42,9 @@ app.use(cors({
 }));
 // Default body limit — overridden per-route where needed
 app.use(express.json({ limit: '1mb' }));
+
+// Error alerting — fires Discord webhook on 5xx responses
+app.use(errorAlertMiddleware);
 
 // Request logging
 app.use((req, res, next) => {

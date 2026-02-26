@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import crypto from 'crypto';
 import { authenticateApiKey } from '../middleware.js';
-import { incrementUsage } from '../lib/helpers.js';
+import { incrementUsage, incrementModelStats } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
 import { captureError } from '../lib/sentry.js';
 import { getProviderForModel, isModelAvailable, translateToolsForProvider } from '../lib/providers.js';
@@ -101,6 +101,7 @@ router.post('/chat/completions', oaiAuth, async (req, res) => {
     return handleStream(req, res, requestedModel, chatMessages, effectiveMaxTokens, temperature, apiKey, tierConfig, requestId, systemMsg, effectiveTools, tool_choice);
   }
 
+  const startTime = Date.now();
   try {
     let result;
     if (requestedModel.startsWith('claude')) {
@@ -119,7 +120,11 @@ router.post('/chat/completions', oaiAuth, async (req, res) => {
       ? result.content.map(c => c.text || '').join('')
       : (typeof result.content === 'string' ? result.content : '');
 
-    await incrementUsage(apiKey, result.usage?.totalTokens || 0);
+    const latencyMs = Date.now() - startTime;
+    await Promise.all([
+      incrementUsage(apiKey, result.usage?.totalTokens || 0),
+      incrementModelStats(requestedModel, result.usage?.totalTokens || 0, latencyMs, false),
+    ]);
 
     res.json({
       id: requestId,
@@ -138,8 +143,10 @@ router.post('/chat/completions', oaiAuth, async (req, res) => {
       },
     });
   } catch (err) {
+    const latencyMs = Date.now() - startTime;
     logger.error('OpenAI-compat error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8) });
+    incrementModelStats(requestedModel, 0, latencyMs, true).catch(() => {});
     const msg = err.message || '';
     const safeMsg = msg.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
       : msg.includes('overloaded') || msg.includes('529') ? 'Provider is overloaded. Try again in a moment.'
@@ -156,6 +163,7 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
 
+  const streamStart = Date.now();
   const abortController = new AbortController();
   let clientDisconnected = false;
 
@@ -200,7 +208,11 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
     }
 
     clearInterval(heartbeat);
-    await incrementUsage(apiKey);
+    const streamLatency = Date.now() - streamStart;
+    await Promise.all([
+      incrementUsage(apiKey),
+      incrementModelStats(model, 0, streamLatency, false),
+    ]);
 
     if (!clientDisconnected && !res.writableEnded) {
       // Passthrough streams already include [DONE] from upstream
@@ -220,8 +232,10 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
   } catch (err) {
     clearInterval(heartbeat);
     if (clientDisconnected || err.name === 'AbortError') return;
+    const streamLatency = Date.now() - streamStart;
     logger.error('OpenAI-compat stream error', { model, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model, apiKey: apiKey.slice(0, 8), stream: true, endpoint: 'openai-compat' });
+    incrementModelStats(model, 0, streamLatency, true).catch(() => {});
     if (!res.writableEnded) {
       const msg = err.message || '';
       const safeMsg = msg.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
@@ -848,3 +862,16 @@ function convertMessagesForGemini(messages) {
 }
 
 export default router;
+
+// Exported for testing
+export {
+  extractTextContent,
+  toAnthropicContent,
+  convertMessagesForAnthropic,
+  convertMessagesForGemini,
+  sanitizeSchemaForGemini,
+  sanitizeSchemaForAnthropic,
+  convertToolsForGemini,
+  hasClientTools,
+  extractServerToolNames,
+};
