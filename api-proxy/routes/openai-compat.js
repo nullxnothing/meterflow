@@ -215,8 +215,11 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
     logger.error('OpenAI-compat stream error', { model, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model, apiKey: apiKey.slice(0, 8), stream: true, endpoint: 'openai-compat' });
     if (!res.writableEnded) {
-      const safeMsg = err.message?.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
-        : err.message?.includes('overloaded') || err.message?.includes('529') ? 'Provider is overloaded. Try again in a moment.'
+      const msg = err.message || '';
+      const safeMsg = msg.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
+        : msg.includes('overloaded') || msg.includes('529') ? 'Provider is overloaded. Try again in a moment.'
+        : msg.includes('API key not valid') ? 'AI provider API key is misconfigured. Contact support.'
+        : msg.includes('INVALID_ARGUMENT') ? 'Request format error — try starting a new session.'
         : 'Upstream provider error. Try again.';
       res.write(`data: ${JSON.stringify({ error: { message: safeMsg, type: 'server_error' } })}\n\n`);
       res.end();
@@ -674,13 +677,22 @@ function convertToolsForGemini(tools) {
   return declarations.length > 0 ? [{ functionDeclarations: declarations }] : undefined;
 }
 
+// JSON Schema fields that Gemini's API does not support
+const UNSUPPORTED_SCHEMA_FIELDS = [
+  'additionalProperties', '$schema', 'default', 'patternProperties',
+  '$ref', 'oneOf', 'anyOf', 'allOf', 'not', 'if', 'then', 'else',
+  'const', 'examples', '$id', '$comment', 'definitions', '$defs',
+  'minItems', 'maxItems', 'uniqueItems', 'minLength', 'maxLength',
+  'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum',
+  'multipleOf', 'pattern', 'title',
+];
+
 // Strip unsupported JSON Schema properties that Gemini rejects
 function sanitizeSchemaForGemini(schema) {
   if (!schema || typeof schema !== 'object') return schema;
+  if (Array.isArray(schema)) return schema.map(sanitizeSchemaForGemini);
   const cleaned = { ...schema };
-  delete cleaned.additionalProperties;
-  delete cleaned.$schema;
-  delete cleaned.default;
+  for (const field of UNSUPPORTED_SCHEMA_FIELDS) delete cleaned[field];
 
   if (cleaned.properties) {
     const props = {};
@@ -695,6 +707,14 @@ function sanitizeSchemaForGemini(schema) {
   return cleaned;
 }
 
+// Safely extract text from OpenAI content (string, array, or object)
+function extractTextContent(content) {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) return content.map(c => c.text || '').join('');
+  return String(content);
+}
+
 // Convert OpenAI-format messages to Gemini contents with function call/response support
 function convertMessagesForGemini(messages) {
   const contents = [];
@@ -703,7 +723,12 @@ function convertMessagesForGemini(messages) {
     if (msg.role === 'assistant' && msg.tool_calls) {
       // Assistant with tool_calls → model role with functionCall parts
       const parts = [];
-      if (msg.content) parts.push({ text: msg.content });
+      if (msg.content) {
+        const text = typeof msg.content === 'string'
+          ? msg.content
+          : Array.isArray(msg.content) ? msg.content.map(c => c.text || '').join('') : String(msg.content);
+        if (text) parts.push({ text });
+      }
       for (const tc of msg.tool_calls) {
         let args = {};
         try { args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments; } catch {}
@@ -719,12 +744,12 @@ function convertMessagesForGemini(messages) {
         parts: [{ functionResponse: { name: msg.name || 'unknown', response: responseData } }],
       });
     } else if (msg.role === 'assistant') {
-      const text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-      contents.push({ role: 'model', parts: [{ text }] });
+      const text = extractTextContent(msg.content);
+      if (text) contents.push({ role: 'model', parts: [{ text }] });
     } else {
       // user messages
-      const text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
-      contents.push({ role: 'user', parts: [{ text }] });
+      const text = extractTextContent(msg.content);
+      if (text) contents.push({ role: 'user', parts: [{ text }] });
     }
   }
 
