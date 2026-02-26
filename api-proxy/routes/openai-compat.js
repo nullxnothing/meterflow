@@ -151,8 +151,16 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
   const abortController = new AbortController();
   let clientDisconnected = false;
 
+  // Keepalive heartbeat — prevents Render/Cloudflare from killing idle SSE connections
+  const heartbeat = setInterval(() => {
+    if (!clientDisconnected && !res.writableEnded) {
+      res.write(': heartbeat\n\n');
+    }
+  }, 15_000);
+
   res.on('close', () => {
     clientDisconnected = true;
+    clearInterval(heartbeat);
     abortController.abort();
   });
 
@@ -183,6 +191,7 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
       }
     }
 
+    clearInterval(heartbeat);
     await incrementUsage(apiKey);
 
     if (!clientDisconnected && !res.writableEnded) {
@@ -201,10 +210,15 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
       res.end();
     }
   } catch (err) {
+    clearInterval(heartbeat);
     if (clientDisconnected || err.name === 'AbortError') return;
     logger.error('OpenAI-compat stream error', { model, err: err.message, apiKey: apiKey.slice(0, 8) });
+    captureError(err, { model, apiKey: apiKey.slice(0, 8), stream: true, endpoint: 'openai-compat' });
     if (!res.writableEnded) {
-      res.write(`data: ${JSON.stringify({ error: { message: 'Stream error', type: 'server_error' } })}\n\n`);
+      const safeMsg = err.message?.includes('429') ? 'Rate limited by upstream provider. Try again shortly.'
+        : err.message?.includes('overloaded') || err.message?.includes('529') ? 'Provider is overloaded. Try again in a moment.'
+        : 'Upstream provider error. Try again.';
+      res.write(`data: ${JSON.stringify({ error: { message: safeMsg, type: 'server_error' } })}\n\n`);
       res.end();
     }
   }
