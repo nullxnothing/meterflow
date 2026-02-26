@@ -796,6 +796,7 @@ function renderStepResult() {
 // ─── Image Handling ───
 
 function processLaunchImage(file) {
+  saveCurrentStepInputs();
   if (!file.type.match(/^image\/(png|jpe?g|gif|webp)$/)) {
     launchState.error = 'Only PNG, JPG, GIF, or WebP images allowed.';
     rerenderLaunchForm();
@@ -808,6 +809,7 @@ function processLaunchImage(file) {
   }
   const reader = new FileReader();
   reader.onload = (e) => {
+    saveCurrentStepInputs();
     launchState.imageData = e.target.result;
     launchState.imageFileName = file.name;
     launchState.error = null;
@@ -838,6 +840,7 @@ window.handleLaunchFileSelect = function (e) {
 };
 
 window.removeLaunchImage = function () {
+  saveCurrentStepInputs();
   launchState.imageData = null;
   launchState.imageFileName = '';
   rerenderLaunchForm();
