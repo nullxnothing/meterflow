@@ -35,11 +35,21 @@ async function fetchStreamWithRetry(url, options, label) {
   throw lastError;
 }
 
+function safeText(content) {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) return content.map(c => c.text || '').join('');
+  return String(content);
+}
+
 async function proxyGemini(model, messages, maxTokens, temperature) {
-  const geminiContents = messages.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: typeof m.content === 'string' ? m.content : m.content.map(c => c.text).join('') }]
-  }));
+  const geminiContents = messages
+    .map(m => {
+      const text = safeText(m.content);
+      if (!text) return null;
+      return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text }] };
+    })
+    .filter(Boolean);
 
   const response = await fetchWithRetry(() => fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${CONFIG.GOOGLE_API_KEY}`,
@@ -98,10 +108,11 @@ async function streamGemini(model, messages, maxTokens, temperature, res, tools,
         }
         return { role: 'model', parts };
       }
-      const text = typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.map(c => c.text || '').join('') : '');
+      const text = safeText(m.content);
       if (text) parts.push({ text });
+      if (parts.length === 0) return null;
       return { role: m.role === 'assistant' ? 'model' : 'user', parts };
-    });
+    }).filter(Boolean);
   }
 
   let loopMessages = [...messages];

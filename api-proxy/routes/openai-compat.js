@@ -227,17 +227,19 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
   }
 }
 
-// Adapter: convert internal SSE events to OpenAI chunk format (text only)
+// Adapter: convert internal SSE events to OpenAI chunk format
 function createSSEAdapter(res, requestId, model) {
   return {
     write(chunk) {
       if (res.writableEnded) return;
-      if (!chunk.startsWith('data: ')) return;
+      if (typeof chunk !== 'string' || !chunk.startsWith('data: ')) return;
       const jsonStr = chunk.slice(6).trim();
       if (!jsonStr) return;
       try {
         const event = JSON.parse(jsonStr);
-        if (event.type === 'text' && event.content) {
+        // Accept both { type: 'text', content } and { type: 'text', text }
+        const text = event.type === 'text' ? (event.content || event.text) : null;
+        if (text) {
           const oaiChunk = {
             id: requestId,
             object: 'chat.completion.chunk',
@@ -245,15 +247,31 @@ function createSSEAdapter(res, requestId, model) {
             model,
             choices: [{
               index: 0,
-              delta: { content: event.content },
+              delta: { content: text },
               finish_reason: null,
             }],
           };
           res.write(`data: ${JSON.stringify(oaiChunk)}\n\n`);
         }
-      } catch {}
+      } catch {
+        // Malformed event — skip silently (non-critical: stream continues)
+      }
     },
   };
+}
+
+// Normalize content to Anthropic block format (always array of content blocks)
+function toAnthropicContent(content) {
+  if (!content) return [];
+  if (typeof content === 'string') return content ? [{ type: 'text', text: content }] : [];
+  if (Array.isArray(content)) {
+    return content.map(c => {
+      if (typeof c === 'string') return { type: 'text', text: c };
+      if (c.type === 'text') return { type: 'text', text: c.text || '' };
+      return c; // pass through image_url etc.
+    }).filter(c => c.type !== 'text' || c.text);
+  }
+  return [{ type: 'text', text: String(content) }];
 }
 
 // Convert OpenAI-format messages to Anthropic format for passthrough
@@ -262,35 +280,41 @@ function convertMessagesForAnthropic(messages) {
   const result = [];
   for (const msg of messages) {
     if (msg.role === 'assistant' && msg.tool_calls) {
-      const content = [];
-      if (msg.content) content.push({ type: 'text', text: msg.content });
+      const content = toAnthropicContent(msg.content);
       for (const tc of msg.tool_calls) {
         let input = {};
-        try { input = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments; } catch {}
+        try { input = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : (tc.function.arguments || {}); } catch {}
         content.push({ type: 'tool_use', id: tc.id, name: tc.function.name, input });
       }
-      result.push({ role: 'assistant', content });
+      if (content.length) result.push({ role: 'assistant', content });
     } else if (msg.role === 'tool') {
+      const text = typeof msg.content === 'string' ? msg.content
+        : msg.content != null ? JSON.stringify(msg.content) : '';
       result.push({
         role: 'user',
         content: [{
           type: 'tool_result',
           tool_use_id: msg.tool_call_id,
-          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+          content: text || 'No output',
         }],
       });
-    } else {
-      result.push(msg);
+    } else if (msg.role === 'assistant') {
+      const content = toAnthropicContent(msg.content);
+      if (content.length) result.push({ role: 'assistant', content });
+    } else if (msg.role === 'user') {
+      const content = toAnthropicContent(msg.content);
+      if (content.length) result.push({ role: 'user', content });
     }
+    // system messages are handled separately — skip here
   }
 
-  // Merge consecutive user messages (Anthropic requires alternating roles)
+  // Merge consecutive same-role messages (Anthropic requires alternating roles)
   const merged = [];
   for (const msg of result) {
     const prev = merged[merged.length - 1];
-    if (prev?.role === 'user' && msg.role === 'user') {
-      const prevContent = Array.isArray(prev.content) ? prev.content : [{ type: 'text', text: prev.content }];
-      const msgContent = Array.isArray(msg.content) ? msg.content : [{ type: 'text', text: msg.content }];
+    if (prev && prev.role === msg.role) {
+      const prevContent = Array.isArray(prev.content) ? prev.content : toAnthropicContent(prev.content);
+      const msgContent = Array.isArray(msg.content) ? msg.content : toAnthropicContent(msg.content);
       prev.content = [...prevContent, ...msgContent];
     } else {
       merged.push(msg);
@@ -369,13 +393,13 @@ async function streamOpenAIPassthrough(model, messages, maxTokens, temperature, 
 
 // Anthropic passthrough — convert Claude tool_use to OpenAI tool_calls format
 async function streamAnthropicPassthrough(model, messages, maxTokens, temperature, res, tools, toolChoice, systemPrompt, requestId, signal) {
-  // Convert OpenAI-format tools to Anthropic format
+  // Convert OpenAI-format tools to Anthropic format (strip unsupported schema fields)
   const anthropicTools = tools
     .filter(t => t?.function)
     .map(t => ({
       name: t.function.name,
       description: t.function.description || '',
-      input_schema: t.function.parameters || { type: 'object', properties: {} },
+      input_schema: sanitizeSchemaForAnthropic(t.function.parameters || { type: 'object', properties: {} }),
     }));
 
   // Convert OpenAI-format messages to Anthropic format
@@ -401,6 +425,7 @@ async function streamAnthropicPassthrough(model, messages, maxTokens, temperatur
       'Content-Type': 'application/json',
       'x-api-key': CONFIG.ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'web-search-2025-03-05',
     },
     body: JSON.stringify(body),
     signal,
@@ -707,6 +732,34 @@ function sanitizeSchemaForGemini(schema) {
   return cleaned;
 }
 
+// JSON Schema fields that Anthropic's API does not support
+const UNSUPPORTED_ANTHROPIC_FIELDS = [
+  '$schema', '$ref', '$id', '$comment', '$defs', 'definitions',
+  'patternProperties', 'oneOf', 'anyOf', 'allOf', 'not',
+  'if', 'then', 'else', 'examples', 'deprecated', 'readOnly', 'writeOnly',
+  'const', 'default',
+];
+
+// Strip unsupported JSON Schema properties for Anthropic
+function sanitizeSchemaForAnthropic(schema) {
+  if (!schema || typeof schema !== 'object') return schema;
+  if (Array.isArray(schema)) return schema.map(sanitizeSchemaForAnthropic);
+  const cleaned = { ...schema };
+  for (const field of UNSUPPORTED_ANTHROPIC_FIELDS) delete cleaned[field];
+
+  if (cleaned.properties) {
+    const props = {};
+    for (const [key, val] of Object.entries(cleaned.properties)) {
+      props[key] = sanitizeSchemaForAnthropic(val);
+    }
+    cleaned.properties = props;
+  }
+  if (cleaned.items) {
+    cleaned.items = sanitizeSchemaForAnthropic(cleaned.items);
+  }
+  return cleaned;
+}
+
 // Safely extract text from OpenAI content (string, array, or object)
 function extractTextContent(content) {
   if (!content) return '';
@@ -717,40 +770,54 @@ function extractTextContent(content) {
 
 // Convert OpenAI-format messages to Gemini contents with function call/response support
 function convertMessagesForGemini(messages) {
+  // Build a map of tool_call id → function name for correlating tool results
+  const toolCallNames = new Map();
+  for (const msg of messages) {
+    if (msg.tool_calls) {
+      for (const tc of msg.tool_calls) {
+        if (tc.id && tc.function?.name) toolCallNames.set(tc.id, tc.function.name);
+      }
+    }
+  }
+
   const contents = [];
 
   for (const msg of messages) {
     if (msg.role === 'assistant' && msg.tool_calls) {
       // Assistant with tool_calls → model role with functionCall parts
       const parts = [];
-      if (msg.content) {
-        const text = typeof msg.content === 'string'
-          ? msg.content
-          : Array.isArray(msg.content) ? msg.content.map(c => c.text || '').join('') : String(msg.content);
-        if (text) parts.push({ text });
-      }
+      const text = extractTextContent(msg.content);
+      if (text) parts.push({ text });
       for (const tc of msg.tool_calls) {
         let args = {};
-        try { args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments; } catch {}
+        try { args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : (tc.function.arguments || {}); } catch {}
+        if (typeof args !== 'object' || args === null) args = {};
         parts.push({ functionCall: { name: tc.function.name, args } });
       }
-      contents.push({ role: 'model', parts });
+      if (parts.length) contents.push({ role: 'model', parts });
     } else if (msg.role === 'tool') {
       // Tool result → user role with functionResponse part
+      // Resolve function name from tool_call_id since OpenAI format uses tool_call_id, not name
+      const fnName = msg.name || toolCallNames.get(msg.tool_call_id) || 'unknown';
       let responseData;
-      try { responseData = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content; } catch { responseData = { result: msg.content }; }
+      try {
+        responseData = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content;
+      } catch {
+        responseData = { result: msg.content || '' };
+      }
+      if (responseData == null) responseData = { result: '' };
       contents.push({
         role: 'user',
-        parts: [{ functionResponse: { name: msg.name || 'unknown', response: responseData } }],
+        parts: [{ functionResponse: { name: fnName, response: responseData } }],
       });
     } else if (msg.role === 'assistant') {
       const text = extractTextContent(msg.content);
       if (text) contents.push({ role: 'model', parts: [{ text }] });
-    } else {
-      // user messages
+    } else if (msg.role === 'user') {
       const text = extractTextContent(msg.content);
       if (text) contents.push({ role: 'user', parts: [{ text }] });
     }
+    // system messages handled separately — skip
   }
 
   // Merge consecutive same-role messages (Gemini requires alternating roles)
@@ -763,6 +830,12 @@ function convertMessagesForGemini(messages) {
       merged.push(entry);
     }
   }
+
+  // Guard: Gemini requires at least one content entry
+  if (merged.length === 0) {
+    merged.push({ role: 'user', parts: [{ text: 'Hello' }] });
+  }
+
   return merged;
 }
 
