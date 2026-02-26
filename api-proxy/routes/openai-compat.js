@@ -294,8 +294,7 @@ async function streamPassthrough(provider, model, messages, maxTokens, temperatu
   } else if (provider === 'claude') {
     await streamAnthropicPassthrough(model, messages, maxTokens, temperature, res, tools, toolChoice, systemPrompt, requestId, signal);
   } else if (provider === 'gemini') {
-    // Gemini doesn't natively support OpenAI-format tool_calls, fall back to text-only
-    await streamGeminiPassthrough(model, messagesWithSystem, maxTokens, temperature, res, requestId, signal);
+    await streamGeminiPassthrough(model, messagesWithSystem, maxTokens, temperature, res, tools, toolChoice, requestId, signal);
   }
 }
 
@@ -513,16 +512,16 @@ async function streamAnthropicPassthrough(model, messages, maxTokens, temperatur
   }
 }
 
-// Gemini passthrough — text only (no tool_calls support for client tools)
-async function streamGeminiPassthrough(model, messages, maxTokens, temperature, res, requestId, signal) {
-  // Extract system instruction and filter out system messages
+// Gemini passthrough — full function calling support for client tools (OpenClaw)
+async function streamGeminiPassthrough(model, messages, maxTokens, temperature, res, tools, toolChoice, requestId, signal) {
   const systemMsg = messages.find(m => m.role === 'system');
   const chatMessages = messages.filter(m => m.role !== 'system');
 
-  const geminiContents = chatMessages.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }],
-  }));
+  // Convert OpenAI-format messages to Gemini contents with function call/response support
+  const geminiContents = convertMessagesForGemini(chatMessages);
+
+  // Convert OpenAI-format tools to Gemini functionDeclarations
+  const geminiTools = convertToolsForGemini(tools);
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${CONFIG.GOOGLE_API_KEY}`;
 
@@ -534,6 +533,12 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
     },
   };
   if (systemMsg) body.system_instruction = { parts: [{ text: systemMsg.content }] };
+  if (geminiTools) body.tools = geminiTools;
+  if (toolChoice) {
+    if (toolChoice === 'none') body.tool_config = { function_calling_config: { mode: 'NONE' } };
+    else if (toolChoice === 'required') body.tool_config = { function_calling_config: { mode: 'ANY' } };
+    else body.tool_config = { function_calling_config: { mode: 'AUTO' } };
+  }
 
   const response = await fetchStreamWithRetry(url, {
     method: 'POST',
@@ -550,6 +555,8 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let toolCallIndex = -1;
+  let hasFunctionCalls = false;
 
   try {
     while (true) {
@@ -567,20 +574,51 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
 
         try {
           const data = JSON.parse(jsonStr);
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            const oaiChunk = {
-              id: requestId,
-              object: 'chat.completion.chunk',
-              created: Math.floor(Date.now() / 1000),
-              model,
-              choices: [{
-                index: 0,
-                delta: { content: text },
-                finish_reason: null,
-              }],
-            };
-            res.write(`data: ${JSON.stringify(oaiChunk)}\n\n`);
+          const parts = data?.candidates?.[0]?.content?.parts || [];
+
+          for (const part of parts) {
+            if (part.text) {
+              const oaiChunk = {
+                id: requestId,
+                object: 'chat.completion.chunk',
+                created: Math.floor(Date.now() / 1000),
+                model,
+                choices: [{
+                  index: 0,
+                  delta: { content: part.text },
+                  finish_reason: null,
+                }],
+              };
+              res.write(`data: ${JSON.stringify(oaiChunk)}\n\n`);
+            }
+
+            if (part.functionCall) {
+              hasFunctionCalls = true;
+              toolCallIndex++;
+              const callId = `call_${crypto.randomBytes(12).toString('hex')}`;
+              const args = JSON.stringify(part.functionCall.args || {});
+
+              // Emit tool_call start with full arguments (Gemini sends them in one shot)
+              const oaiChunk = {
+                id: requestId,
+                object: 'chat.completion.chunk',
+                created: Math.floor(Date.now() / 1000),
+                model,
+                choices: [{
+                  index: 0,
+                  delta: {
+                    tool_calls: [{
+                      index: toolCallIndex,
+                      id: callId,
+                      type: 'function',
+                      function: { name: part.functionCall.name, arguments: args },
+                    }],
+                  },
+                  finish_reason: null,
+                }],
+              };
+              res.write(`data: ${JSON.stringify(oaiChunk)}\n\n`);
+            }
           }
         } catch {}
       }
@@ -589,16 +627,104 @@ async function streamGeminiPassthrough(model, messages, maxTokens, temperature, 
     reader.releaseLock();
   }
 
-  // Emit proper termination
+  // Emit proper termination with correct finish_reason
+  const finishReason = hasFunctionCalls ? 'tool_calls' : 'stop';
   const finalChunk = {
     id: requestId,
     object: 'chat.completion.chunk',
     created: Math.floor(Date.now() / 1000),
     model,
-    choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+    choices: [{ index: 0, delta: {}, finish_reason: finishReason }],
   };
   res.write(`data: ${JSON.stringify(finalChunk)}\n\n`);
   res.write('data: [DONE]\n\n');
+}
+
+// Convert OpenAI-format tools to Gemini functionDeclarations
+function convertToolsForGemini(tools) {
+  if (!tools || !Array.isArray(tools) || tools.length === 0) return undefined;
+
+  const declarations = tools
+    .filter(t => t?.function)
+    .map(t => {
+      const decl = {
+        name: t.function.name,
+        description: t.function.description || '',
+      };
+      if (t.function.parameters) {
+        decl.parameters = sanitizeSchemaForGemini(t.function.parameters);
+      }
+      return decl;
+    });
+
+  return declarations.length > 0 ? [{ functionDeclarations: declarations }] : undefined;
+}
+
+// Strip unsupported JSON Schema properties that Gemini rejects
+function sanitizeSchemaForGemini(schema) {
+  if (!schema || typeof schema !== 'object') return schema;
+  const cleaned = { ...schema };
+  delete cleaned.additionalProperties;
+  delete cleaned.$schema;
+  delete cleaned.default;
+
+  if (cleaned.properties) {
+    const props = {};
+    for (const [key, val] of Object.entries(cleaned.properties)) {
+      props[key] = sanitizeSchemaForGemini(val);
+    }
+    cleaned.properties = props;
+  }
+  if (cleaned.items) {
+    cleaned.items = sanitizeSchemaForGemini(cleaned.items);
+  }
+  return cleaned;
+}
+
+// Convert OpenAI-format messages to Gemini contents with function call/response support
+function convertMessagesForGemini(messages) {
+  const contents = [];
+
+  for (const msg of messages) {
+    if (msg.role === 'assistant' && msg.tool_calls) {
+      // Assistant with tool_calls → model role with functionCall parts
+      const parts = [];
+      if (msg.content) parts.push({ text: msg.content });
+      for (const tc of msg.tool_calls) {
+        let args = {};
+        try { args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments) : tc.function.arguments; } catch {}
+        parts.push({ functionCall: { name: tc.function.name, args } });
+      }
+      contents.push({ role: 'model', parts });
+    } else if (msg.role === 'tool') {
+      // Tool result → user role with functionResponse part
+      let responseData;
+      try { responseData = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content; } catch { responseData = { result: msg.content }; }
+      contents.push({
+        role: 'user',
+        parts: [{ functionResponse: { name: msg.name || 'unknown', response: responseData } }],
+      });
+    } else if (msg.role === 'assistant') {
+      const text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+      contents.push({ role: 'model', parts: [{ text }] });
+    } else {
+      // user messages
+      const text = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+      contents.push({ role: 'user', parts: [{ text }] });
+    }
+  }
+
+  // Merge consecutive same-role messages (Gemini requires alternating roles)
+  const merged = [];
+  for (const entry of contents) {
+    const prev = merged[merged.length - 1];
+    if (prev?.role === entry.role) {
+      prev.parts = [...prev.parts, ...entry.parts];
+    } else {
+      merged.push(entry);
+    }
+  }
+  return merged;
 }
 
 export default router;
