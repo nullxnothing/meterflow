@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { TRADING } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { formatCompact, formatTokenPrice } from '../utils.js';
 
 export function renderBotPortfolio() {

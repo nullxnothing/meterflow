@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE, IMAGES } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { isHolder, renderHolderGate } from '../gate.js';
 
 export function renderImages() {

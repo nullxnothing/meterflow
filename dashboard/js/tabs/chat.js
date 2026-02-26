@@ -3,11 +3,10 @@
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml, scrollChat } from '../utils.js';
 import { getActiveConversation, newConversation } from '../session.js';
 import { renderMarkdown } from '../markdown.js';
 import { renderToolResultCardHtml, bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
-import { scrollChat } from '../chat.js';
 import { isHolder, isTrial, canAccessChat, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js';
 
 export function renderChat() {

@@ -2,8 +2,9 @@
 // INFINITE Dashboard - Tab: Trading Bot
 // ═══════════════════════════════════════════
 
-import { STATE, TRADING } from '../state.js';
-import { api, API_BASE, escapeHtml } from '../api.js';
+import { STATE, TRADING, API_BASE } from '../state.js';
+import { api } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { renderMarkdown } from '../markdown.js';
 import { bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
 import { showToast, setTab, copyText, stopBotPolling } from '../actions.js';

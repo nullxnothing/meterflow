@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE, VOTES } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { render } from '../render.js';
 
 const FUTURE_APIS = [

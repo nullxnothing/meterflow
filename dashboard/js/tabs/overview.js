@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { isHolder } from '../gate.js';
 
 function getResetCountdown() {
@@ -71,9 +71,9 @@ export function renderOverview() {
     <div class="section">
       <div class="section-title">Quick Access</div>
       <div class="tools-grid">
-        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-status${hasAnyChatProvider() ? '' : ' coming'}">${hasAnyChatProvider() ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">${hasAnyChatProvider() ? 'Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.' : 'AI chat will activate after token launch. Claude, Gemini, and OpenAI models included.'}</div><div class="tool-launch">${hasAnyChatProvider() ? 'Open' : 'Preview'}</div></div>
-        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate high-quality images with Gemini. Describe anything and get instant results.' : 'Image generation will activate after token launch. Powered by Gemini.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
-        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status${STATE.providers.gemini ? '' : ' coming'}">${STATE.providers.gemini ? 'LIVE' : 'SOON'}</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">${STATE.providers.gemini ? 'Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.' + (isVideoTierAllowed() ? '' : ' Operator+ only.') : 'Video generation will activate after token launch. Powered by Google Veo 2.'}</div><div class="tool-launch">${STATE.providers.gemini ? 'Open' : 'Preview'}</div></div>
+        <div class="tool-card" onclick="setTab('chat')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">AI Chat</div><div class="tool-desc">Chat with Claude and Gemini directly. Streaming responses, markdown rendering, code highlighting.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('images')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Image Lab</div><div class="tool-desc">Generate high-quality images with Gemini. Describe anything and get instant results.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('video')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Video Lab</div><div class="tool-desc">Generate AI videos with Google Veo 2. Text to video, multiple aspect ratios.${isVideoTierAllowed() ? '' : ' Operator+ only.'}</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('trading')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Trade Bot</div><div class="tool-desc">Autonomous trading bot. Jupiter swaps, DCA, copy trading, TP/SL triggers, and kill switch. Operator+ tier.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('agents')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Tools Hub</div><div class="tool-desc">Pre-configured AI tools, trading bots, and coding assistants. Auto-plugs your API key.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Raw API</div><div class="tool-desc">Your API key works with standard SDKs. Drop it into any project, agent, or script.</div><div class="tool-launch">View Key</div></div>

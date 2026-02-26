@@ -2,8 +2,9 @@
 // INFINITE Dashboard - Tab: Video Lab
 // ═══════════════════════════════════════════
 
-import { STATE, VIDEOS } from '../state.js';
-import { api, API_BASE, escapeHtml } from '../api.js';
+import { STATE, VIDEOS, API_BASE } from '../state.js';
+import { api } from '../api.js';
+import { escapeHtml } from '../utils.js';
 
 function videoSrc(uri) {
   if (!uri) return '';

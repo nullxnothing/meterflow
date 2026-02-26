@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { CHAT, IMAGES } from './state.js';
-import { api, escapeHtml } from './api.js';
+import { api } from './api.js';
+import { escapeHtml } from './utils.js';
 import { showToast } from './actions.js';
 
 // ─── Image Upload ───

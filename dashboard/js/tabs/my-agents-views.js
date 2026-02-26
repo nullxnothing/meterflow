@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════
 
 import { AGENTS } from '../state.js';
-import { api, escapeHtml } from '../api.js';
+import { api } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { timeAgo } from '../utils.js';
 
 

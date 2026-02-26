@@ -2,7 +2,7 @@
 // INFINITE Dashboard - Markdown Renderer
 // ═══════════════════════════════════════════
 
-import { escapeHtml } from './api.js';
+import { escapeHtml } from './utils.js';
 
 let _cbCounter = 0;
 function nextCbId() { return `cb_${++_cbCounter}`; }

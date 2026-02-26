@@ -2,7 +2,7 @@
 // INFINITE Dashboard - Tool Indicators & Results
 // ═══════════════════════════════════════════
 
-import { escapeHtml } from './api.js';
+import { escapeHtml, scrollChat } from './utils.js';
 import { copyText } from './actions.js';
 
 // ─── Tool Labels ───
@@ -159,9 +159,3 @@ export function bindCodeToggleButtons() {
   });
 }
 
-// ─── Helper ───
-
-function scrollChat() {
-  const el = document.getElementById('chatMessages');
-  if (el) el.scrollTop = el.scrollHeight;
-}

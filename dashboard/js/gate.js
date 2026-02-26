@@ -66,6 +66,33 @@ export function renderTrialBanner() {
   `;
 }
 
+function renderTierGrid() {
+  return `
+    <div class="holder-gate-tiers">
+      <div class="holder-gate-tier">
+        <div class="holder-gate-tier-name">Signal</div>
+        <div class="holder-gate-tier-req">10,000 $INF</div>
+        <div class="holder-gate-tier-desc">1,000 calls/day</div>
+      </div>
+      <div class="holder-gate-tier">
+        <div class="holder-gate-tier-name">Operator</div>
+        <div class="holder-gate-tier-req">100,000 $INF</div>
+        <div class="holder-gate-tier-desc">10,000 calls/day</div>
+      </div>
+      <div class="holder-gate-tier">
+        <div class="holder-gate-tier-name">Architect</div>
+        <div class="holder-gate-tier-req">1,000,000 $INF</div>
+        <div class="holder-gate-tier-desc">Unlimited</div>
+      </div>
+      <div class="holder-gate-tier accent">
+        <div class="holder-gate-tier-name">Alpha</div>
+        <div class="holder-gate-tier-req">10,000,000 $INF</div>
+        <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderTrialExhausted() {
   return `
     <div class="holder-gate">
@@ -74,28 +101,7 @@ export function renderTrialExhausted() {
         You've used all <strong>${STATE.usage.limit} free calls</strong> for today.
         Hold <strong>$INFINITE</strong> tokens for unlimited access.
       </p>
-      <div class="holder-gate-tiers">
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Signal</div>
-          <div class="holder-gate-tier-req">10,000 $INF</div>
-          <div class="holder-gate-tier-desc">1,000 calls/day</div>
-        </div>
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Operator</div>
-          <div class="holder-gate-tier-req">100,000 $INF</div>
-          <div class="holder-gate-tier-desc">10,000 calls/day</div>
-        </div>
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Architect</div>
-          <div class="holder-gate-tier-req">1,000,000 $INF</div>
-          <div class="holder-gate-tier-desc">Unlimited</div>
-        </div>
-        <div class="holder-gate-tier accent">
-          <div class="holder-gate-tier-name">Alpha</div>
-          <div class="holder-gate-tier-req">10,000,000 $INF</div>
-          <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
-        </div>
-      </div>
+      ${renderTierGrid()}
       <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
     </div>
   `;
@@ -115,28 +121,7 @@ export function renderHolderGate(featureName = 'this feature') {
             : `Your wallet doesn't hold enough <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
         }
       </p>
-      <div class="holder-gate-tiers">
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Signal</div>
-          <div class="holder-gate-tier-req">10,000 $INF</div>
-          <div class="holder-gate-tier-desc">1,000 calls/day</div>
-        </div>
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Operator</div>
-          <div class="holder-gate-tier-req">100,000 $INF</div>
-          <div class="holder-gate-tier-desc">10,000 calls/day</div>
-        </div>
-        <div class="holder-gate-tier">
-          <div class="holder-gate-tier-name">Architect</div>
-          <div class="holder-gate-tier-req">1,000,000 $INF</div>
-          <div class="holder-gate-tier-desc">Unlimited</div>
-        </div>
-        <div class="holder-gate-tier accent">
-          <div class="holder-gate-tier-name">Alpha</div>
-          <div class="holder-gate-tier-req">10,000,000 $INF</div>
-          <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
-        </div>
-      </div>
+      ${renderTierGrid()}
       ${needsWallet ? `<button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>` : `
         <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
       `}

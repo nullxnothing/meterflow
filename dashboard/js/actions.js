@@ -4,7 +4,8 @@
 
 import { STATE, TRADING } from './state.js';
 import { stopLiveTrades } from './tabs/live-trades.js';
-import { api, maskKey } from './api.js';
+import { api } from './api.js';
+import { maskKey } from './utils.js';
 import { saveSession, clearSession } from './session.js';
 import { render, switchTabInPlace } from './render.js';
 

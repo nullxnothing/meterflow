@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE } from './state.js';
-import { escapeHtml } from './api.js';
+import { escapeHtml } from './utils.js';
 import { getWalletProviders } from './wallet.js';
 import { bindEvents } from './events.js';
 

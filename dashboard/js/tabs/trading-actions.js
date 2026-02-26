@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { STATE, TRADING } from '../state.js';
-import { api, escapeHtml } from '../api.js';
+import { api } from '../api.js';
+import { escapeHtml } from '../utils.js';
 import { formatCompact, formatTokenPrice } from '../utils.js';
 import { setTab } from '../actions.js';
 import { render } from '../render.js';

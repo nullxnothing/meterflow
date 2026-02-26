@@ -4,8 +4,6 @@
 
 import { STATE, API_BASE } from './state.js';
 
-export { API_BASE };
-
 // ─── API Request Helper ───
 
 export async function api(path, opts = {}) {
@@ -27,15 +25,4 @@ export async function api(path, opts = {}) {
     throw err;
   }
   return data;
-}
-
-// ─── Formatting Helpers ───
-
-export function escapeHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-export function maskKey(key) {
-  if (!key) return 'No key';
-  return key.slice(0, 18) + '...' + key.slice(-4);
 }

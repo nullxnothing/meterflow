@@ -252,8 +252,10 @@
 .whale-alert {
   position: absolute;
   top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   background: rgba(200, 255, 0, 0.1);
   border: 1px solid var(--accent);
   padding: 12px 28px;
@@ -264,9 +266,9 @@
   color: var(--accent);
   z-index: 10;
   animation: whaleFlash 4s ease-out forwards;
-  text-shadow: 0 0 20px rgba(200, 255, 0, 0.4);
-  box-shadow: 0 0 40px rgba(200, 255, 0, 0.15);
+  box-shadow: 0 0 16px rgba(200, 255, 0, 0.12);
   white-space: nowrap;
+  backface-visibility: hidden;
 }
 
 .whale-alert-icon {
@@ -274,10 +276,10 @@
 }
 
 @keyframes whaleFlash {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.95); }
-  10% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
   80% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+  100% { opacity: 0; transform: translateY(-5px); }
 }
 
 /* ─── Responsive ─── */

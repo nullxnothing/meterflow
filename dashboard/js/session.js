@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, VIDEOS, TRADING, STORAGE_KEY, CHAT_STORAGE_KEY, clearStatusPollInterval } from './state.js';
-import { maskKey } from './api.js';
+import { maskKey } from './utils.js';
 
 // ─── Session Persistence ───
 

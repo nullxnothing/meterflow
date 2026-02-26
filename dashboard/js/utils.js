@@ -2,6 +2,19 @@
 // INFINITE Dashboard — Utility Functions
 // ═══════════════════════════════════════════
 
+// ─── String Helpers ───
+
+export function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+export function maskKey(key) {
+  if (!key) return 'No key';
+  return key.slice(0, 18) + '...' + key.slice(-4);
+}
+
+// ─── Number Formatting ───
+
 export function formatCompact(num) {
   if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
   if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
@@ -23,4 +36,11 @@ export function timeAgo(ts) {
   if (s < 3600) return Math.floor(s / 60) + 'm ago';
   if (s < 86400) return Math.floor(s / 3600) + 'h ago';
   return Math.floor(s / 86400) + 'd ago';
+}
+
+// ─── DOM Helpers ───
+
+export function scrollChat() {
+  const el = document.getElementById('chatMessages');
+  if (el) el.scrollTop = el.scrollHeight;
 }

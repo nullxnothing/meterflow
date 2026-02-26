@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
-import { escapeHtml } from '../api.js';
+import { escapeHtml } from '../utils.js';
 
 export function renderAgents() {
   const key = STATE.apiKeyFull || 'inf_your_key_here';

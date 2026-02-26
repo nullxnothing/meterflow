@@ -2,8 +2,8 @@
 // INFINITE Dashboard — Chat Logic
 // ═══════════════════════════════════════════
 
-import { STATE, CHAT } from './state.js';
-import { API_BASE, escapeHtml } from './api.js';
+import { STATE, CHAT, API_BASE } from './state.js';
+import { escapeHtml, scrollChat } from './utils.js';
 import { showToast } from './actions.js';
 import { getActiveConversation, saveChatHistory } from './session.js';
 import { renderMarkdown } from './markdown.js';
@@ -233,11 +233,6 @@ function showTypingIndicator() {
 
 function removeTypingIndicator() {
   document.getElementById('typingIndicator')?.remove();
-}
-
-export function scrollChat() {
-  const el = document.getElementById('chatMessages');
-  if (el) el.scrollTop = el.scrollHeight;
 }
 
 function updateSendButton() {

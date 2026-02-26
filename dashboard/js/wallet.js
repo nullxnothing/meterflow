@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT } from './state.js';
-import { api, maskKey } from './api.js';
+import { api } from './api.js';
+import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
 import { startStatusPolling } from './polling.js';
 import { render } from './render.js';

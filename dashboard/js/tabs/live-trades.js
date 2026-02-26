@@ -2,8 +2,7 @@
 // INFINITE Dashboard - Tab: Live Trades
 // ═══════════════════════════════════════════
 
-import { LIVE_TRADES } from '../state.js';
-import { API_BASE } from '../state.js';
+import { LIVE_TRADES, API_BASE } from '../state.js';
 
 const MAX_TRADES = 100;
 const WHALE_THRESHOLD_SOL = 1;

@@ -9,7 +9,7 @@ import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetc
 import { render } from './render.js';
 import { showToast } from './actions.js';
 import { loadVotes } from './votes.js';
-import { maskKey } from './api.js';
+import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
 
 // ─── Initialize ───
