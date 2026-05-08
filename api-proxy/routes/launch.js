@@ -1,9 +1,11 @@
 // Funded Agent Launch — token creation + agent provisioning
 import crypto from 'crypto';
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticateApiKey } from '../middleware.js';
-import { CONFIG } from '../config.js';
+import { CONFIG, solanaConnection } from '../config.js';
 import { logger } from '../lib/logger.js';
+import { encryptConnections, decryptConnections } from '../lib/credential-crypto.js';
 import {
   getAgent,
   setFundedAgent,
@@ -13,6 +15,7 @@ import {
   pauseFundedAgent,
   activateFundedAgent,
   getAgentLogs,
+  updateAgentCredits,
 } from '../lib/kv-agents.js';
 
 const router = Router();
@@ -20,6 +23,16 @@ const log = logger.child({ mod: 'launch' });
 const PUMPPORTAL_API = 'https://pumpportal.fun/api/trade-local';
 const PUMP_IPFS = 'https://pump.fun/api/ipfs';
 const TREASURY_WALLET = CONFIG.TREASURY_WALLET;
+
+// Rate limiter: 3 agent creations per hour per wallet
+const launchLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => req.meterflow?.wallet || req.ip,
+  message: { error: 'rate_limited', message: 'Max 3 agent launches per hour. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const VALID_POOLS = ['pump', 'raydium', 'pump-amm', 'launchlab', 'raydium-cpmm', 'bonk', 'auto'];
 const VALID_FREQUENCIES = ['high', 'medium', 'low'];
@@ -103,7 +116,7 @@ function buildAgentConfig({ id, wallet, apiKey, name, symbol, description, image
     tokenMint: null, // set after on-chain confirmation
     name,
     symbol,
-    description: description || `Funded agent launched via Infinite Protocol.`,
+    description: description || `Funded agent launched via Meterflow.`,
     imageUrl: imageUrl || null,
     connections: connections || {},
     capabilities: {
@@ -138,7 +151,7 @@ function buildAgentConfig({ id, wallet, apiKey, name, symbol, description, image
 // ---------------------------------------------------------------------------
 // POST /v1/launch/create — Create a funded agent + upload metadata
 // ---------------------------------------------------------------------------
-router.post('/launch/create', authenticateApiKey, async (req, res) => {
+router.post('/launch/create', authenticateApiKey, launchLimiter, async (req, res) => {
   const {
     name, symbol, description,
     twitter, telegram, website,
@@ -165,7 +178,7 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
     return res.status(400).json({ error: `invalid pool, must be one of: ${VALID_POOLS.join(', ')}` });
   }
 
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
   if (!wallet) {
     return res.status(400).json({ error: 'wallet not found on API key — reconnect your wallet' });
   }
@@ -175,7 +188,7 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('symbol', symbol);
-    formData.append('description', description || `Funded agent launched via Infinite Protocol. Creator fees fund AI operations.`);
+    formData.append('description', description || `Funded agent launched via Meterflow. Agent revenue can fund AI operations.`);
     if (twitter) formData.append('twitter', twitter);
     if (telegram) formData.append('telegram', telegram);
     if (website) formData.append('website', website);
@@ -224,7 +237,7 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
     const agentConfig = buildAgentConfig({
       id: agentId,
       wallet,
-      apiKey: req.infinite?.apiKey,
+      apiKey: req.meterflow?.apiKey,
       name,
       symbol,
       description,
@@ -238,18 +251,49 @@ router.post('/launch/create', authenticateApiKey, async (req, res) => {
       tokenMetadata,
     });
 
-    // Step 5: Persist agent
+    // Step 5: Encrypt credentials and persist agent
+    agentConfig.connections = encryptConnections(agentConfig.connections, agentId);
     await setFundedAgent(agentId, agentConfig);
     await addFundedAgentToWallet(wallet, agentId);
 
     log.info('Funded agent created', { agentId, wallet, name, symbol });
 
+    // Step 6: Build PumpPortal transaction for client-side signing
+    let launchTx = null;
+    try {
+      const pumpRes = await fetch(PUMPPORTAL_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          publicKey: wallet,
+          action: 'create',
+          tokenMetadata,
+          mint: req.body.mintPublicKey || undefined,
+          denominatedInSol: 'true',
+          amount: devBuySol || 0,
+          slippage: 10,
+          priorityFee: 0.0005,
+          pool,
+        }),
+      });
+      if (pumpRes.ok) {
+        const txBytes = new Uint8Array(await pumpRes.arrayBuffer());
+        launchTx = Buffer.from(txBytes).toString('base64');
+      } else {
+        log.warn('PumpPortal tx build failed', { status: pumpRes.status, body: await pumpRes.text() });
+      }
+    } catch (e) {
+      log.warn('PumpPortal tx build error', { err: e.message });
+    }
+
     res.json({
       ok: true,
-      agent: agentConfig,
+      agent: maskCredentials(agentConfig),
+      agentId,
       metadataUri: ipfsData.metadataUri,
       tokenMetadata,
       treasury: TREASURY_WALLET,
+      launchTx,
       launchConfig: {
         action: 'create',
         tokenMetadata,
@@ -279,7 +323,7 @@ router.get('/launch/info', async (_req, res) => {
     howItWorks: [
       'Configure your AI agent capabilities (tweet, trade, chat)',
       'Launch a token via pump.fun with the agent linked',
-      'Creator fees are split: 70% to Infinite treasury, 30% funds your agent',
+      'Creator fees are split: 70% to Meterflow treasury, 30% funds your agent',
       'Your agent uses its credit balance to operate autonomously',
       'More trading volume = more agent credits = more powerful agent',
     ],
@@ -290,7 +334,7 @@ router.get('/launch/info', async (_req, res) => {
 // GET /v1/launch/agents — List all agents for the authenticated wallet
 // ---------------------------------------------------------------------------
 router.get('/launch/agents', authenticateApiKey, async (req, res) => {
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
   if (!wallet) {
     return res.status(400).json({ error: 'wallet not found on API key' });
   }
@@ -316,7 +360,7 @@ router.get('/launch/agents', authenticateApiKey, async (req, res) => {
 // ---------------------------------------------------------------------------
 router.get('/launch/agent/:id', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -339,7 +383,7 @@ router.get('/launch/agent/:id', authenticateApiKey, async (req, res) => {
 // ---------------------------------------------------------------------------
 router.post('/launch/agent/:id/pause', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -370,7 +414,7 @@ router.post('/launch/agent/:id/pause', authenticateApiKey, async (req, res) => {
 // ---------------------------------------------------------------------------
 router.post('/launch/agent/:id/resume', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -404,7 +448,7 @@ router.post('/launch/agent/:id/resume', authenticateApiKey, async (req, res) => 
 // ---------------------------------------------------------------------------
 router.post('/launch/agent/:id/connections', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -455,8 +499,7 @@ router.post('/launch/agent/:id/connections', authenticateApiKey, async (req, res
       connections.telegram = { ...connections.telegram, ...telegram };
     }
 
-    // TODO: encrypt credentials before storing
-    agent.connections = connections;
+    agent.connections = encryptConnections(connections, id);
     await setFundedAgent(id, agent);
 
     log.info('Agent connections updated', { agentId: id, wallet, platforms: Object.keys(req.body).filter(k => ['twitter', 'discord', 'telegram'].includes(k)) });
@@ -472,7 +515,7 @@ router.post('/launch/agent/:id/connections', authenticateApiKey, async (req, res
 // ---------------------------------------------------------------------------
 router.put('/launch/agent/:id/prompt', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -558,7 +601,7 @@ router.put('/launch/agent/:id/prompt', authenticateApiKey, async (req, res) => {
 // ---------------------------------------------------------------------------
 router.get('/launch/agent/:id/activity', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -594,7 +637,7 @@ router.get('/launch/agent/:id/activity', authenticateApiKey, async (req, res) =>
 // ---------------------------------------------------------------------------
 router.post('/launch/agent/:id/activate', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -612,25 +655,67 @@ router.post('/launch/agent/:id/activate', authenticateApiKey, async (req, res) =
     }
 
     // Validate connections for enabled capabilities
-    const connections = agent.connections || {};
+    const connections = decryptConnections(agent.connections || {}, id);
     const missing = [];
+    const validationErrors = [];
 
-    if (agent.capabilities?.tweet && !connections.twitter?.apiKey) {
-      missing.push('Twitter credentials required for tweet capability');
+    if (agent.capabilities?.tweet) {
+      if (!connections.twitter?.accessToken && !connections.twitter?.bearerToken) {
+        missing.push('Twitter credentials required for tweet capability');
+      } else {
+        try {
+          const token = connections.twitter.accessToken || connections.twitter.bearerToken;
+          const tRes = await fetch('https://api.twitter.com/2/users/me', {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!tRes.ok) validationErrors.push(`Twitter token invalid (${tRes.status})`);
+        } catch (e) {
+          validationErrors.push(`Twitter validation failed: ${e.message}`);
+        }
+      }
     }
+
     if (agent.capabilities?.chat) {
       const platform = agent.chatConfig?.platform || 'discord';
-      if ((platform === 'discord' || platform === 'both') && !connections.discord?.botToken) {
-        missing.push('Discord bot token required for chat capability');
+      if ((platform === 'discord' || platform === 'both')) {
+        if (!connections.discord?.botToken) {
+          missing.push('Discord bot token required for chat capability');
+        } else {
+          try {
+            const dRes = await fetch('https://discord.com/api/v10/users/@me', {
+              headers: { Authorization: `Bot ${connections.discord.botToken}` },
+              signal: AbortSignal.timeout(8000),
+            });
+            if (!dRes.ok) validationErrors.push(`Discord bot token invalid (${dRes.status})`);
+          } catch (e) {
+            validationErrors.push(`Discord validation failed: ${e.message}`);
+          }
+        }
       }
-      if ((platform === 'telegram' || platform === 'both') && !connections.telegram?.botToken) {
-        missing.push('Telegram bot token required for chat capability');
+      if ((platform === 'telegram' || platform === 'both')) {
+        if (!connections.telegram?.botToken) {
+          missing.push('Telegram bot token required for chat capability');
+        } else {
+          try {
+            const tgRes = await fetch(`https://api.telegram.org/bot${connections.telegram.botToken}/getMe`, {
+              signal: AbortSignal.timeout(8000),
+            });
+            const tgData = await tgRes.json();
+            if (!tgData.ok) validationErrors.push(`Telegram bot token invalid`);
+          } catch (e) {
+            validationErrors.push(`Telegram validation failed: ${e.message}`);
+          }
+        }
       }
     }
     // Trade capability can activate without wallet (paper trading mode)
 
     if (missing.length > 0) {
       return res.status(400).json({ error: 'missing_connections', message: 'Configure required connections before activating', missing });
+    }
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ error: 'invalid_connections', message: 'Some credentials failed validation', errors: validationErrors });
     }
 
     const updated = await activateFundedAgent(id);
@@ -647,7 +732,7 @@ router.post('/launch/agent/:id/activate', authenticateApiKey, async (req, res) =
 // ---------------------------------------------------------------------------
 router.post('/launch/agent/:id/test', authenticateApiKey, async (req, res) => {
   const { id } = req.params;
-  const wallet = req.infinite?.wallet;
+  const wallet = req.meterflow?.wallet;
 
   try {
     const agent = await getAgent(id);
@@ -670,7 +755,7 @@ router.post('/launch/agent/:id/test', authenticateApiKey, async (req, res) => {
     }
 
     // Build the prompt the runtime would use
-    const basePrompt = agent.systemPrompt || `You are ${agent.name}, an autonomous AI agent on the Infinite Protocol.`;
+    const basePrompt = agent.systemPrompt || `You are ${agent.name}, an autonomous AI agent on Meterflow.`;
     let taskPrompt;
 
     if (capability === 'tweet') {
@@ -706,7 +791,7 @@ router.post('/launch/agent/:id/test', authenticateApiKey, async (req, res) => {
     }
 
     // Call AI via the deployer's tier key (uses the cheapest available model)
-    const { tierConfig } = req.infinite;
+    const { tierConfig } = req.meterflow;
     const testModel = tierConfig.models.find(m => m !== 'auto' && m.includes('flash'))
       || tierConfig.models.find(m => m !== 'auto' && m.includes('mini'))
       || tierConfig.models.find(m => m !== 'auto')
@@ -745,6 +830,215 @@ router.post('/launch/agent/:id/test', authenticateApiKey, async (req, res) => {
   } catch (err) {
     log.error('Failed to test agent capability', { agentId: id, err: err.message });
     res.status(500).json({ error: 'internal', message: 'Failed to run test' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/confirm-mint — Link token mint after on-chain confirm
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/confirm-mint', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.meterflow?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) return res.status(404).json({ error: 'agent_not_found' });
+    if (agent.wallet !== wallet) return res.status(403).json({ error: 'not_owner' });
+    if (agent.tokenMint) return res.json({ ok: true, agent: maskCredentials(agent), message: 'Token mint already linked' });
+
+    const { mintAddress, signature } = req.body;
+    if (!mintAddress || typeof mintAddress !== 'string') {
+      return res.status(400).json({ error: 'mintAddress required' });
+    }
+
+    // Verify the transaction exists on-chain
+    if (signature) {
+      try {
+        const txInfo = await solanaConnection.getTransaction(signature, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 });
+        if (!txInfo) {
+          return res.status(400).json({ error: 'tx_not_found', message: 'Transaction not confirmed on-chain yet. Try again in a few seconds.' });
+        }
+      } catch (e) {
+        log.warn('Failed to verify mint tx', { signature, err: e.message });
+      }
+    }
+
+    agent.tokenMint = mintAddress;
+    agent.mintConfirmedAt = new Date().toISOString();
+    if (signature) agent.mintSignature = signature;
+    await setFundedAgent(id, agent);
+    await setFundedAgentToken(mintAddress, id);
+
+    // Seed initial credits so the agent can start operating
+    const INITIAL_CREDITS = 50;
+    await updateAgentCredits(id, INITIAL_CREDITS);
+
+    log.info('Token mint confirmed', { agentId: id, mintAddress, signature });
+    res.json({ ok: true, agent: maskCredentials(agent), creditsAdded: INITIAL_CREDITS });
+  } catch (err) {
+    log.error('Failed to confirm mint', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to confirm mint' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/webhook/fees — Credit agents from trading fee revenue
+// ---------------------------------------------------------------------------
+router.post('/launch/webhook/fees', async (req, res) => {
+  const { mintAddress, feeSol, signature, source } = req.body;
+
+  if (!mintAddress || !feeSol) {
+    return res.status(400).json({ error: 'mintAddress and feeSol required' });
+  }
+
+  try {
+    const { getFundedAgentByToken } = await import('../lib/kv-agents.js');
+    const agentId = await getFundedAgentByToken(mintAddress);
+    if (!agentId) {
+      return res.json({ ok: true, credited: false, message: 'No agent linked to this token' });
+    }
+
+    const agent = await getAgent(agentId);
+    if (!agent) {
+      return res.json({ ok: true, credited: false, message: 'Agent not found' });
+    }
+
+    // Apply 70/30 split: 30% goes to agent credits
+    const agentShareSol = feeSol * (agent.feeSplit?.agent || 30) / 100;
+    // Convert SOL to credits (1 credit = 0.001 SOL)
+    const creditsToAdd = Math.floor(agentShareSol / 0.001);
+
+    if (creditsToAdd > 0) {
+      await updateAgentCredits(agentId, creditsToAdd);
+      const { appendAgentLog } = await import('../lib/kv-agents.js');
+      await appendAgentLog(agentId, {
+        type: 'credit_topup',
+        content: `+${creditsToAdd} credits from ${agentShareSol.toFixed(6)} SOL fee (${source || 'unknown'})`,
+        credits: creditsToAdd,
+        feeSol,
+        signature,
+      });
+    }
+
+    log.info('Agent fee credited', { agentId, mintAddress, feeSol, creditsToAdd });
+    res.json({ ok: true, credited: true, agentId, creditsAdded: creditsToAdd });
+  } catch (err) {
+    log.error('Fee webhook failed', { mintAddress, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to process fee' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/validate — Validate agent credentials are live
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/validate', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.meterflow?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) return res.status(404).json({ error: 'agent_not_found' });
+    if (agent.wallet !== wallet) return res.status(403).json({ error: 'not_owner' });
+
+    const connections = decryptConnections(agent.connections || {}, id);
+    const results = {};
+
+    // Validate Twitter
+    if (agent.capabilities?.tweet && connections.twitter) {
+      try {
+        const token = connections.twitter.accessToken || connections.twitter.bearerToken;
+        if (!token) {
+          results.twitter = { ok: false, error: 'No access token configured' };
+        } else {
+          const tRes = await fetch('https://api.twitter.com/2/users/me', {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(8000),
+          });
+          results.twitter = tRes.ok
+            ? { ok: true, user: (await tRes.json()).data?.username }
+            : { ok: false, error: `API returned ${tRes.status}` };
+        }
+      } catch (e) {
+        results.twitter = { ok: false, error: e.message };
+      }
+    }
+
+    // Validate Discord bot
+    if (agent.capabilities?.chat && connections.discord?.botToken) {
+      try {
+        const dRes = await fetch('https://discord.com/api/v10/users/@me', {
+          headers: { Authorization: `Bot ${connections.discord.botToken}` },
+          signal: AbortSignal.timeout(8000),
+        });
+        results.discord = dRes.ok
+          ? { ok: true, bot: (await dRes.json()).username }
+          : { ok: false, error: `API returned ${dRes.status}` };
+      } catch (e) {
+        results.discord = { ok: false, error: e.message };
+      }
+    }
+
+    // Validate Telegram bot
+    if (agent.capabilities?.chat && connections.telegram?.botToken) {
+      try {
+        const tgRes = await fetch(`https://api.telegram.org/bot${connections.telegram.botToken}/getMe`, {
+          signal: AbortSignal.timeout(8000),
+        });
+        const tgData = await tgRes.json();
+        results.telegram = tgData.ok
+          ? { ok: true, bot: tgData.result?.username }
+          : { ok: false, error: tgData.description || 'Invalid token' };
+      } catch (e) {
+        results.telegram = { ok: false, error: e.message };
+      }
+    }
+
+    const allValid = Object.values(results).every(r => r.ok);
+    res.json({ ok: true, allValid, results });
+  } catch (err) {
+    log.error('Failed to validate credentials', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to validate credentials' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /v1/launch/agent/:id/fund — Manually add credits to an agent
+// ---------------------------------------------------------------------------
+router.post('/launch/agent/:id/fund', authenticateApiKey, async (req, res) => {
+  const { id } = req.params;
+  const wallet = req.meterflow?.wallet;
+
+  try {
+    const agent = await getAgent(id);
+    if (!agent) return res.status(404).json({ error: 'agent_not_found' });
+    if (agent.wallet !== wallet) return res.status(403).json({ error: 'not_owner' });
+
+    const { credits, signature } = req.body;
+    if (!credits || typeof credits !== 'number' || credits <= 0 || credits > 10000) {
+      return res.status(400).json({ error: 'credits must be a positive number (max 10000)' });
+    }
+
+    const updated = await updateAgentCredits(id, credits);
+
+    // If agent was depleted, restore to paused so user can reactivate
+    if (updated.status === 'depleted' && updated.credits.balance > 0) {
+      updated.status = 'paused';
+      await setFundedAgent(id, updated);
+    }
+
+    const { appendAgentLog } = await import('../lib/kv-agents.js');
+    await appendAgentLog(id, {
+      type: 'credit_topup',
+      content: `+${credits} credits manually funded`,
+      credits,
+      signature: signature || null,
+    });
+
+    log.info('Agent manually funded', { agentId: id, credits });
+    res.json({ ok: true, agent: maskCredentials(updated) });
+  } catch (err) {
+    log.error('Failed to fund agent', { agentId: id, err: err.message });
+    res.status(500).json({ error: 'internal', message: 'Failed to fund agent' });
   }
 });
 

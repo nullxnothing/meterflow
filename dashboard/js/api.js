@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — API Helpers
+// Meterflow Dashboard — API Helpers
 // ═══════════════════════════════════════════
 
 import { STATE, API_BASE } from './state.js';

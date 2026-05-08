@@ -9,7 +9,7 @@ const router = Router();
 
 // GET /v1/trading/portfolio — all SPL token holdings + SOL balance with live prices
 router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const w = tradingWallets.get(apiKey);
   if (!w) return res.status(404).json({ error: 'no_wallet' });
   try {
@@ -84,14 +84,14 @@ router.get('/portfolio', authenticateApiKey, requireTradingTier, async (req, res
 
 // GET /v1/trading/positions
 router.get('/positions', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const positions = [...(await getPositions(apiKey)).entries()].map(([mint, p]) => ({ mint, ...p }));
   res.json(positions);
 });
 
 // GET /v1/trading/history
 router.get('/history', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const limit = parseInt(req.query.limit) || 100;
   const hist = await getHistory(apiKey);
   res.json(hist.slice(-limit));

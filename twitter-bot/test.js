@@ -4,10 +4,10 @@ import { formatReply } from './lib/formatter.js';
 import { SYSTEM_PROMPT } from './knowledge.js';
 
 const BEARER_TOKEN = process.env.TWITTER_BEARER_TOKEN || '';
-const API_URL = process.env.API_PROXY_URL || 'https://infinite-protocol.onrender.com';
+const API_URL = process.env.API_PROXY_URL || 'https://meterflow-api.onrender.com';
 const API_KEY = process.env.BOT_API_KEY || '';
 
-console.log('=== INFINITE Twitter Bot — Integration Test ===\n');
+console.log('=== Meterflow Twitter Bot - Integration Test ===\n');
 
 // 1. Safety filter tests
 console.log('--- Safety Filter Tests ---');
@@ -77,7 +77,7 @@ if (!BEARER_TOKEN) {
           { role: 'assistant', content: 'Understood. Following these guidelines for all responses.' },
           {
             role: 'user',
-            content: `You found this tweet while browsing. Reply with a valuable take that naturally references INFINITE.\n\nTweet from @${username}:\n"${tw.text}"\n\nReply (max 240 chars to leave room for branding, or say SKIP if you should not engage):`,
+            content: `You found this tweet while browsing. Reply with a valuable take that naturally references Meterflow.\n\nTweet from @${username}:\n"${tw.text}"\n\nReply (max 240 chars to leave room for branding, or say SKIP if you should not engage):`,
           },
         ];
 
@@ -122,7 +122,7 @@ if (!BEARER_TOKEN && API_KEY) {
     { role: 'assistant', content: 'Understood. Following these guidelines for all responses.' },
     {
       role: 'user',
-      content: `You found this tweet while browsing. Reply with a valuable take that naturally references INFINITE.\n\nTweet from @testuser:\n"${testTweet}"\n\nReply (max 240 chars to leave room for branding, or say SKIP if you should not engage):`,
+      content: `You found this tweet while browsing. Reply with a valuable take that naturally references Meterflow.\n\nTweet from @testuser:\n"${testTweet}"\n\nReply (max 240 chars to leave room for branding, or say SKIP if you should not engage):`,
     },
   ];
 

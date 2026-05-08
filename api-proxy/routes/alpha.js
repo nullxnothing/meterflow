@@ -1,4 +1,4 @@
-// Infinite Alpha — CT intelligence scanner API routes
+// Meterflow Signal — CT intelligence scanner API routes
 import { Router } from 'express';
 import { authenticateApiKey, requireAlphaTier } from '../middleware.js';
 import { ensureValidTwitterToken } from '../oauth/routes.js';
@@ -38,7 +38,7 @@ async function twitterGet(path, token) {
 // ── Scan a Twitter profile ──
 router.get('/alpha/profile/:username', authenticateApiKey, requireAlphaTier, async (req, res) => {
   const { username } = req.params;
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
 
   try {
     let twitterId, profileData;
@@ -277,7 +277,7 @@ router.get('/alpha/scan-token/:address', authenticateApiKey, requireAlphaTier, a
 
 // ── Notes CRUD ──
 router.get('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
-  const note = await getNote(req.infinite.apiKey, req.params.twitterId);
+  const note = await getNote(req.meterflow.apiKey, req.params.twitterId);
   res.json({ note });
 });
 
@@ -285,19 +285,19 @@ router.put('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, asyn
   const { text } = req.body;
   if (!text || typeof text !== 'string') return res.status(400).json({ error: 'text required' });
   if (text.length > 2000) return res.status(400).json({ error: 'text too long (max 2000)' });
-  await setNote(req.infinite.apiKey, req.params.twitterId, text);
+  await setNote(req.meterflow.apiKey, req.params.twitterId, text);
   res.json({ ok: true });
 });
 
 router.delete('/alpha/notes/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
-  await deleteNote(req.infinite.apiKey, req.params.twitterId);
+  await deleteNote(req.meterflow.apiKey, req.params.twitterId);
   res.json({ ok: true });
 });
 
 // ── Watchlist ──
 router.get('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req, res) => {
   try {
-    const profiles = await getWatchedProfiles(req.infinite.apiKey);
+    const profiles = await getWatchedProfiles(req.meterflow.apiKey);
     res.json({ profiles });
   } catch (err) {
     log.error('Watchlist fetch failed', { err: err.message });
@@ -321,7 +321,7 @@ router.post('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req
       userId = norm.twitterId;
       userData = { username: norm.username, displayName: norm.displayName, profileImage: norm.profileImage, bio: norm.bio, followers: Number(norm.followers) };
     } else {
-      const token = await ensureValidTwitterToken(req.infinite.apiKey);
+      const token = await ensureValidTwitterToken(req.meterflow.apiKey);
       if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
 
       const data = await twitterGet(
@@ -340,7 +340,7 @@ router.post('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req
       };
     }
 
-    await addWatchedProfile(req.infinite.apiKey, userId, userData);
+    await addWatchedProfile(req.meterflow.apiKey, userId, userData);
     res.json({ ok: true, profile: { twitterId: userId, username: userData.username, displayName: userData.displayName } });
   } catch (err) {
     log.error('Watchlist add failed', { username: cleanUsername, err: err.message });
@@ -350,7 +350,7 @@ router.post('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req
 
 router.delete('/alpha/watchlist/:twitterId', authenticateApiKey, requireAlphaTier, async (req, res) => {
   try {
-    await removeWatchedProfile(req.infinite.apiKey, req.params.twitterId);
+    await removeWatchedProfile(req.meterflow.apiKey, req.params.twitterId);
     res.json({ ok: true });
   } catch (err) {
     log.error('Watchlist remove failed', { err: err.message });

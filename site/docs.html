@@ -3,30 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="INFINITE Protocol API documentation — authentication, endpoints, tier system, and SDK integration.">
-<meta name="theme-color" content="#0a0a0a">
-<meta property="og:title" content="INFINITE — Documentation">
-<meta property="og:description" content="API docs for INFINITE Protocol — authentication, endpoints, and SDK integration.">
+<meta name="description" content="Meterflow documentation - meters, receipts, agent budgets, service routes, wallet settlement, and API keys for x402-style payments on Solana.">
+<meta name="theme-color" content="#05080f">
+<meta property="og:title" content="Meterflow Documentation">
+<meta property="og:description" content="Build and operate metered API routes, receipts, and agent budgets on Solana.">
 <meta property="og:type" content="website">
-<title>INFINITE — Documentation</title>
-<link rel="icon" type="image/png" href="/site/favicon.png">
-<link rel="apple-touch-icon" href="/site/favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
-body::after {
-  content: '';
-  position: fixed;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: repeating-conic-gradient(rgba(255,255,255,0.008) 0%, transparent 0.5%, transparent 1%);
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.6;
-}
-
 [id] { scroll-margin-top: 100px; }
-
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -35,13 +23,11 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(10, 10, 10, 0.8);
+  background: rgba(5, 8, 15, 0.86);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
-
-/* ═══════════ DOCS LAYOUT ═══════════ */
 .docs-container {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -50,7 +36,6 @@ nav {
   max-width: 1400px;
   margin: 0 auto;
 }
-
 .docs-sidebar {
   padding: 40px;
   border-right: 1px solid var(--border);
@@ -60,9 +45,7 @@ nav {
   overflow-y: auto;
   background: var(--bg);
 }
-
 .sidebar-group { margin-bottom: 32px; }
-
 .sidebar-title {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -72,172 +55,150 @@ nav {
   margin-bottom: 16px;
   display: block;
 }
-
 .sidebar-link {
   display: block;
   font-size: 14px;
   color: var(--text-dim);
   text-decoration: none;
   padding: 8px 0;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
-
-.sidebar-link:hover { color: var(--accent); }
-.sidebar-link.active { color: var(--accent); font-weight: 500; }
-
+.sidebar-link:hover,
+.sidebar-link.active { color: var(--accent); }
 .docs-content {
   padding: 80px 60px;
-  max-width: 900px;
+  max-width: 940px;
   margin: 0 auto;
 }
-
 .docs-header { margin-bottom: 60px; }
-
 .docs-title {
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: 52px;
   margin-bottom: 16px;
-  line-height: 1.1;
+  line-height: 1.05;
 }
-
 .docs-intro {
   font-size: 18px;
   color: var(--text-dim);
-  font-weight: 300;
   line-height: 1.7;
 }
-
 .doc-section {
   margin-bottom: 60px;
   padding-bottom: 60px;
   border-bottom: 1px solid var(--border);
 }
-
 .doc-section:last-child { border-bottom: none; }
-
 .section-title {
   font-family: var(--font-display);
   font-size: 32px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   color: var(--text);
 }
-
 .section-text {
   font-size: 16px;
   color: var(--text-dim);
   line-height: 1.8;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
-
-.code-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 24px;
-  border-radius: 4px;
-  margin: 24px 0;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text);
-  overflow-x: auto;
-  white-space: pre;
-  line-height: 1.6;
-}
-
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin-top: 32px;
+  gap: 18px;
+  margin-top: 28px;
 }
-
 .feature-card {
-  padding: 24px;
+  padding: 22px;
   border: 1px solid var(--border);
   background: var(--surface);
-  transition: all 0.3s;
+  border-radius: 6px;
 }
-
-.feature-card:hover { border-color: var(--accent); }
-
 .feature-title {
   font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 700;
-  margin-bottom: 8px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
   color: var(--accent);
 }
-
 .feature-desc {
   font-size: 14px;
   color: var(--text-dim);
   line-height: 1.6;
 }
-
+.code-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 22px;
+  border-radius: 6px;
+  margin: 22px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.65;
+}
 .doc-list {
   list-style: none;
   padding: 0;
 }
-
 .doc-list li {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border-light);
 }
-
 .doc-list li:last-child { border-bottom: none; }
-
 .doc-list strong {
   color: var(--accent);
   font-family: var(--font-mono);
 }
-
 .doc-list span {
   color: var(--text-dim);
   font-size: 14px;
+  line-height: 1.6;
+  display: block;
+  margin-top: 6px;
 }
-
 .doc-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--font-mono);
   font-size: 13px;
-  text-align: left;
 }
-
 .doc-table th {
   padding: 12px 12px 12px 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
+  text-align: left;
 }
-
 .doc-table td {
   padding: 16px 12px 16px 0;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-dim);
 }
-
-.doc-table tr { border-bottom: 1px solid var(--border-light); }
-.doc-table tr:last-child { border-bottom: none; }
-
-.doc-table .tier-name { color: var(--accent); }
-
+.doc-table .accent { color: var(--accent); }
 @media (max-width: 900px) {
   .docs-container { grid-template-columns: 1fr; }
   .docs-sidebar { display: none; }
   .docs-content { padding: 40px 20px; }
   .feature-grid { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 480px) {
   nav { padding: 12px 16px; }
+  .docs-title { font-size: 40px; }
 }
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">INFINITE</a>
+  <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/#tools">Tools</a>
-    <a href="/#tiers">Tiers</a>
+    <a href="/#tools">Platform</a>
+    <a href="/#tiers">Dashboard</a>
+    <a href="/#agents">Budgets</a>
     <a href="/site/roadmap.html">Roadmap</a>
     <a href="/docs" style="color: var(--accent);">Docs</a>
   </div>
@@ -246,306 +207,215 @@ nav {
 <div class="docs-container">
   <aside class="docs-sidebar">
     <div class="sidebar-group">
-      <span class="sidebar-title">Getting Started</span>
+      <span class="sidebar-title">Concepts</span>
       <a href="#intro" class="sidebar-link active">Introduction</a>
-      <a href="#quickstart" class="sidebar-link">Quickstart</a>
+      <a href="#flow" class="sidebar-link">Payment Flow</a>
+      <a href="#dashboard" class="sidebar-link">Dashboard</a>
+    </div>
+    <div class="sidebar-group">
+      <span class="sidebar-title">Control Plane</span>
+      <a href="#meters" class="sidebar-link">Meters</a>
+      <a href="#receipts" class="sidebar-link">Receipts</a>
+      <a href="#budgets" class="sidebar-link">Agent Budgets</a>
+      <a href="#mcp" class="sidebar-link">MCP Tools</a>
+      <a href="#mflow" class="sidebar-link">MFLOW Utility</a>
+      <a href="#routes" class="sidebar-link">Service Routes</a>
+    </div>
+    <div class="sidebar-group">
+      <span class="sidebar-title">Developers</span>
       <a href="#auth" class="sidebar-link">Authentication</a>
-    </div>
-    <div class="sidebar-group">
-      <span class="sidebar-title">Endpoints</span>
-      <a href="#chat" class="sidebar-link">Chat</a>
-      <a href="#streaming" class="sidebar-link">Streaming</a>
-      <a href="#multi" class="sidebar-link">Multi-Model</a>
-    </div>
-    <div class="sidebar-group">
-      <span class="sidebar-title">Features</span>
-      <a href="#tools" class="sidebar-link">Trading & Research</a>
+      <a href="#api" class="sidebar-link">Gateway API</a>
       <a href="#sdk" class="sidebar-link">SDK</a>
-    </div>
-    <div class="sidebar-group">
-      <span class="sidebar-title">Reference</span>
-      <a href="#tiers" class="sidebar-link">Tier System</a>
-      <a href="#treasury" class="sidebar-link">Treasury</a>
+      <a href="#settlement" class="sidebar-link">Settlement</a>
     </div>
   </aside>
 
   <main class="docs-content">
     <div class="docs-header" id="intro">
-      <h1 class="docs-title">Documentation</h1>
-      <p class="docs-intro">INFINITE Protocol gives token holders direct access to Claude and Gemini APIs. No subscriptions, no credit cards &mdash; just hold $INFINITE and use the tools.</p>
+      <h1 class="docs-title">Meterflow Documentation</h1>
+      <p class="docs-intro">Meterflow is a control plane for x402-style paid API usage on Solana. Providers define metered routes. Operators connect wallets and issue agent-scoped client keys. The dashboard records quote, payment, receipt, failure, revenue, and budget data.</p>
     </div>
 
-    <!-- QUICKSTART -->
-    <div class="doc-section" id="quickstart">
-      <h2 class="section-title">Quickstart</h2>
-      <p class="section-text">Get up and running in under a minute.</p>
-
+    <section class="doc-section" id="flow">
+      <h2 class="section-title">Payment Flow</h2>
+      <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, and whether the agent stayed inside policy.</p>
       <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-title">1. Buy $INFINITE</div>
-          <p class="feature-desc">Get tokens on PumpSwap. Access starts at 10K $INFINITE.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">2. Connect Wallet</div>
-          <p class="feature-desc">Open the dashboard and connect Phantom, Solflare, or Backpack.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">3. Get API Key</div>
-          <p class="feature-desc">Sign a message to verify holdings. Your API key (inf_xxxxx) is issued instantly.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-title">4. Start Building</div>
-          <p class="feature-desc">Use the dashboard chat or plug your key into any app.</p>
-        </div>
+        <div class="feature-card"><div class="feature-title">1. Meter</div><p class="feature-desc">A provider registers a route, unit, price, accepted asset, recipient wallet, and customer policy.</p></div>
+        <div class="feature-card"><div class="feature-title">2. Quote</div><p class="feature-desc">A caller receives machine-readable payment terms for the requested capability.</p></div>
+        <div class="feature-card"><div class="feature-title">3. Pay</div><p class="feature-desc">The agent or operator submits a Solana payment and retries with proof.</p></div>
+        <div class="feature-card"><div class="feature-title">4. Receipt</div><p class="feature-desc">Meterflow verifies policy, records request state, attributes revenue, and exposes an audit trail.</p></div>
       </div>
-    </div>
+    </section>
 
-    <!-- AUTHENTICATION -->
-    <div class="doc-section" id="auth">
+    <section class="doc-section" id="dashboard">
+      <h2 class="section-title">Dashboard</h2>
+      <p class="section-text">The dashboard is the product surface. It is where providers manage metered products and where agent operators control spend before autonomous workflows run.</p>
+      <ul class="doc-list">
+        <li><strong>Meters</strong><span>Define the route, billing unit, price, asset, owner wallet, and route status.</span></li>
+        <li><strong>Receipts</strong><span>Visualize successful and failed paid requests with payer wallet, proof, amount, route, and response status.</span></li>
+        <li><strong>Agent Budgets</strong><span>Attach limits to a wallet, client key, task, route allowlist, and expiration window.</span></li>
+        <li><strong>MCP Tools</strong><span>Package, price, meter, and monitor MCP tools through hosted gateway paths.</span></li>
+        <li><strong>Settlement Wallet</strong><span>Inspect wallet context for provider funding, settlement operations, and gateway costs.</span></li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="meters">
+      <h2 class="section-title">Meters</h2>
+      <p class="section-text">A meter describes what is billable. Meterflow treats model calls, data feeds, MCP tools, media generation, social intelligence, and trading workflows as service routes that can share one accounting model.</p>
+      <div class="code-block">{
+  "route": "/v1/risk-score",
+  "unit": "request",
+  "price": "0.006",
+  "asset": "USDC",
+  "network": "solana-mainnet",
+  "recipientWallet": "provider_wallet",
+  "status": "active"
+}</div>
+    </section>
+
+    <section class="doc-section" id="receipts">
+      <h2 class="section-title">Receipts</h2>
+      <p class="section-text">Receipts connect payment proof to usage. They are the difference between “money moved” and “this route was served to this agent under this policy.”</p>
+      <div class="code-block">{
+  "id": "mf_rcpt_41bd",
+  "route": "/v1/risk-score",
+  "payerWallet": "7Kp...91a",
+  "clientKey": "mf_agent_***",
+  "baseAmountUsd": "0.006",
+  "protocolFeeUsd": "0.00006",
+  "protocolFeeBps": 100,
+  "amount": "0.00606",
+  "asset": "USDC",
+  "status": "verified",
+  "responseStatus": 200
+}</div>
+    </section>
+
+    <section class="doc-section" id="budgets">
+      <h2 class="section-title">Agent Budgets</h2>
+      <p class="section-text">Agent budgets let operators approve bounded spend without handing automation unlimited wallet access.</p>
+      <div class="code-block">wallet: 7Kp...91a
+agent: market-research-bot
+client_key: mf_agent_***
+daily_cap: 12.00 USDC
+per_call_cap: 0.02 USDC
+allowed_routes:
+  - /v1/risk-score
+  - /v1/social-scan
+  - /mcp/token-liquidity
+on_exhausted: stop_workflow
+on_new_route: require_operator_approval</div>
+    </section>
+
+    <section class="doc-section" id="mcp">
+      <h2 class="section-title">MCP Tools</h2>
+      <p class="section-text">MCP tools are treated as meters, so budgets, receipts, revenue views, and exports work the same way as API routes.</p>
+      <div class="code-block">POST /v1/mcp-tools
+Authorization: Bearer mf_xxxxx
+Content-Type: application/json
+
+{
+  "name": "Token Risk Score",
+  "manifestUrl": "https://example.com/mcp/manifest.json",
+  "priceUsd": 0.006,
+  "status": "test"
+}</div>
+    </section>
+
+    <section class="doc-section" id="mflow">
+      <h2 class="section-title">MFLOW Utility</h2>
+      <p class="section-text">USDC is the payment asset for request settlement. MFLOW is the utility layer for provider verification, fee relief, registry ranking, higher policy limits, longer receipt retention, and future provider bonding. Non-holders can still use paid Meterflow routes, but their quotes include a protocol fee. Holders can receive reduced or zero protocol fees depending on the configured utility tier.</p>
+      <ul class="doc-list">
+        <li><strong>Provider Reputation</strong><span>MFLOW-backed providers can receive dashboard badges and registry preference.</span></li>
+        <li><strong>Non-Holder Fee</strong><span>Metered quotes and receipts track base price, protocol fee, and total USDC amount.</span></li>
+        <li><strong>Control Limits</strong><span>Utility tiers can increase meter counts, budget counts, webhook volume, and receipt retention.</span></li>
+        <li><strong>Future Bonding</strong><span>Provider bonding is represented in the product model but does not require staking contracts in the current MVP.</span></li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="routes">
+      <h2 class="section-title">Service Routes</h2>
+      <p class="section-text">The current gateway already exposes routes that can be operated through Meterflow as metered services.</p>
+      <div style="overflow-x:auto;">
+        <table class="doc-table">
+          <thead><tr><th>Route</th><th>Category</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td class="accent">/v1/chat</td><td>Model</td><td>Single model call with usage accounting</td></tr>
+            <tr><td class="accent">/v1/multi</td><td>Model</td><td>Parallel model comparison behind one metered request</td></tr>
+            <tr><td class="accent">/v1/image</td><td>Media</td><td>High-cost generation route with explicit spend controls</td></tr>
+            <tr><td class="accent">/v1/alpha/*</td><td>Data</td><td>Social and token intelligence routes</td></tr>
+            <tr><td class="accent">/v1/agents/*</td><td>Agent</td><td>Reusable workflows and scheduled agent tasks</td></tr>
+            <tr><td class="accent">/v1/trading/*</td><td>Workflow</td><td>Example routes that require strict budgets and revocation</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="doc-section" id="auth">
       <h2 class="section-title">Authentication</h2>
-      <p class="section-text">Authentication uses Solana wallet signatures. Your wallet signs a timestamped message, the proxy verifies your Ed25519 signature and checks your $INFINITE balance via Helius RPC.</p>
-
+      <p class="section-text">Operators connect a Solana wallet to create and manage client keys. Agents use issued keys and budget policies for server-to-server calls.</p>
       <div class="code-block">POST /auth/register
 Content-Type: application/json
 
 {
   "walletAddress": "YOUR_SOLANA_ADDRESS",
   "signature": "BASE58_SIGNATURE",
-  "message": "INFINITE_AUTH_1708000000000"
+  "message": "Meterflow Authentication\nWallet: YOUR_SOLANA_ADDRESS\nTimestamp: 1708000000000"
 }</div>
+      <p class="section-text">Use the returned key as a bearer token.</p>
+      <div class="code-block">Authorization: Bearer mf_xxxxx</div>
+    </section>
 
-      <p class="section-text">On success, you receive an API key prefixed with <code style="color: var(--accent);">inf_</code>. Include it as a Bearer token in all subsequent requests.</p>
-
-      <div class="code-block">Authorization: Bearer inf_xxxxx</div>
-
-      <p class="section-text">Balance is re-checked on each request (cached for 5 minutes). If your holdings drop below a tier threshold, your limits adjust automatically.</p>
-    </div>
-
-    <!-- CHAT -->
-    <div class="doc-section" id="chat">
-      <h2 class="section-title">Chat</h2>
-      <p class="section-text">Send messages to Claude or Gemini models. The API follows Anthropic's message format.</p>
-
+    <section class="doc-section" id="api">
+      <h2 class="section-title">Gateway API</h2>
+      <p class="section-text">The gateway is OpenAI-compatible where practical and also exposes Meterflow-native routes.</p>
       <div class="code-block">POST /v1/chat
-Authorization: Bearer inf_xxxxx
+Authorization: Bearer mf_xxxxx
 Content-Type: application/json
 
 {
   "model": "claude-sonnet-4-6",
   "messages": [
-    {"role": "user", "content": "Analyze this token's on-chain metrics"}
+    { "role": "user", "content": "Analyze this Solana wallet" }
   ],
   "max_tokens": 1024
 }</div>
-
-      <p class="section-text">Available models depend on your tier:</p>
-      <ul class="doc-list">
-        <li>
-          <strong>Claude Sonnet</strong><br>
-          <span>Best for coding, analysis, and complex reasoning. Available to all tiers.</span>
-        </li>
-        <li>
-          <strong>Gemini Flash</strong><br>
-          <span>Fast responses, great for quick queries. Available to all tiers.</span>
-        </li>
-        <li>
-          <strong>Gemini Pro</strong><br>
-          <span>Extended context and deeper reasoning. Operator tier and above.</span>
-        </li>
-        <li>
-          <strong>Claude Opus</strong><br>
-          <span>Most capable model for complex tasks. Architect tier only.</span>
-        </li>
-      </ul>
-    </div>
-
-    <!-- STREAMING -->
-    <div class="doc-section" id="streaming">
-      <h2 class="section-title">Streaming</h2>
-      <p class="section-text">Stream responses via Server-Sent Events. Supports agentic tool-use loops (up to 3 rounds), web search with source extraction, and proper SSE termination.</p>
-
-      <div class="code-block">POST /v1/chat/stream
-Authorization: Bearer inf_xxxxx
-Content-Type: application/json
-
-{
-  "model": "claude-sonnet-4-6",
-  "messages": [
-    {"role": "user", "content": "Write a Solana swap function"}
-  ],
-  "max_tokens": 2048
-}</div>
-
-      <p class="section-text">The response is an SSE stream. Each event contains a chunk of the response. The stream ends with a <code style="color: var(--accent);">[DONE]</code> event.</p>
-    </div>
-
-    <!-- MULTI-MODEL -->
-    <div class="doc-section" id="multi">
-      <h2 class="section-title">Multi-Model</h2>
-      <p class="section-text">Send the same prompt to up to 4 models simultaneously and get all responses back. Unique to INFINITE &mdash; no other token-gated proxy offers parallel multi-model inference.</p>
-
       <div class="code-block">POST /v1/multi
-Authorization: Bearer inf_xxxxx
+Authorization: Bearer mf_xxxxx
 Content-Type: application/json
 
 {
   "models": ["claude-sonnet-4-6", "gemini-2.5-flash"],
   "messages": [
-    {"role": "user", "content": "Explain yield farming"}
-  ],
-  "max_tokens": 1024
-}</div>
-
-      <p class="section-text">Response returns all model outputs in parallel:</p>
-
-      <div class="code-block">{
-  "id": "inf-multi-xxx",
-  "type": "multi",
-  "responses": [
-    {
-      "model": "claude-sonnet-4-6",
-      "content": [...],
-      "usage": { "input_tokens": 12, "output_tokens": 340 }
-    },
-    {
-      "model": "gemini-2.5-flash",
-      "content": [...],
-      "usage": { "input_tokens": 12, "output_tokens": 295 }
-    }
+    { "role": "user", "content": "Compare these token risks" }
   ]
 }</div>
+    </section>
 
-      <p class="section-text">The streaming variant <code style="color: var(--accent);">POST /v1/multi/stream</code> emits SSE events prefixed with <code style="color: var(--accent);">model_start</code>, <code style="color: var(--accent);">model_result</code>, and <code style="color: var(--accent);">model_error</code> per model. Defaults to Claude Sonnet + Gemini Flash if no models array is provided. Max 4 models per request.</p>
-    </div>
-
-    <!-- TOOLS -->
-    <div class="doc-section" id="tools">
-      <h2 class="section-title">Trading & Research Tools</h2>
-      <p class="section-text">The dashboard includes built-in tools powered by the same API. These are available to all holders through the web interface.</p>
-
-      <ul class="doc-list">
-        <li>
-          <strong>AI Chat</strong><br>
-          <span>Full-featured chat with Claude and Gemini. Supports model switching, conversation history, and web search.</span>
-        </li>
-        <li>
-          <strong>AI Trading Agents</strong><br>
-          <span>Signals, wallet tracking, and sentiment analysis. AI-powered market intelligence for Solana tokens.</span>
-        </li>
-        <li>
-          <strong>Token Intelligence</strong><br>
-          <span>Audit smart contracts, track whale wallets, and scan social sentiment &mdash; all powered by AI.</span>
-        </li>
-        <li>
-          <strong>Image Generation</strong><br>
-          <span>Generate PFPs, memes, and marketing visuals. No per-image fees.</span>
-        </li>
-      </ul>
-    </div>
-
-    <!-- SDK -->
-    <div class="doc-section" id="sdk">
+    <section class="doc-section" id="sdk">
       <h2 class="section-title">SDK</h2>
-      <p class="section-text">Zero-dependency JavaScript SDK. ESM-only, works in Node 18+ and browsers.</p>
+      <p class="section-text">The JavaScript SDK wraps the current gateway and streaming routes.</p>
+      <div class="code-block">npm install @meterflow/sdk</div>
+      <div class="code-block">import { MeterflowClient } from '@meterflow/sdk';
 
-      <div class="code-block">npm install @infinite-protocol/sdk</div>
+const client = new MeterflowClient({ apiKey: 'mf_xxxxx' });
 
-      <div class="code-block">import { InfiniteClient } from '@infinite-protocol/sdk';
-
-const client = new InfiniteClient({ apiKey: 'inf_xxxxx' });
-
-// Chat
 const response = await client.chat({
   model: 'claude-sonnet-4-6',
-  messages: [{ role: 'user', content: 'Hello' }]
-});
+  messages: [{ role: 'user', content: 'Explain agent spend controls' }]
+});</div>
+    </section>
 
-// Streaming
-for await (const chunk of client.chatStream({ ... })) {
-  process.stdout.write(chunk);
-}
-
-// Multi-model
-const multi = await client.multi({
-  models: ['claude-sonnet-4-6', 'gemini-2.5-flash'],
-  messages: [{ role: 'user', content: 'Compare yield farming strategies' }]
-});
-
-// Treasury status
-const treasury = await client.treasury();</div>
-
-      <p class="section-text">The SDK handles authentication, streaming SSE parsing, and error handling. See the full API in <code style="color: var(--accent);">sdk/src/client.js</code>.</p>
-    </div>
-
-    <!-- TIER SYSTEM -->
-    <div class="doc-section" id="tiers">
-      <h2 class="section-title">Tier System</h2>
-      <p class="section-text">Your access level is determined by your $INFINITE token balance. Balance is checked via Helius RPC and cached for 5 minutes.</p>
-
-      <div style="overflow-x: auto;">
-        <table class="doc-table">
-          <thead>
-            <tr>
-              <th>Tier</th>
-              <th>Holdings</th>
-              <th>Daily Limit</th>
-              <th>Models</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="tier-name">Signal</td>
-              <td>10K $INFINITE</td>
-              <td>~1,000 calls</td>
-              <td>Claude Sonnet, Gemini Flash</td>
-            </tr>
-            <tr>
-              <td class="tier-name">Operator</td>
-              <td>100K $INFINITE</td>
-              <td>~10,000 calls</td>
-              <td>+ Gemini Pro</td>
-            </tr>
-            <tr>
-              <td class="tier-name">Architect</td>
-              <td>1M $INFINITE</td>
-              <td>Unlimited</td>
-              <td>+ Claude Opus</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p class="section-text" style="margin-top: 24px;">Rate limits scale dynamically with the treasury health. When the treasury is flush, a multiplier increases effective limits. The treasury agent monitors this 24/7.</p>
-    </div>
-
-    <!-- TREASURY -->
-    <div class="doc-section" id="treasury">
-      <h2 class="section-title">Treasury</h2>
-      <p class="section-text">The protocol is funded by pump.fun creator fees. Every trade generates a fee that splits 50% to the API treasury, 40% to development, and 10% to community.</p>
-      <p class="section-text">An autonomous treasury agent monitors the SOL balance, calculates API budget runway, and dynamically adjusts rate limit multipliers:</p>
-
+    <section class="doc-section" id="settlement">
+      <h2 class="section-title">Settlement</h2>
+      <p class="section-text">Meterflow is designed around USDC-denominated request accounting on Solana. The dashboard treats the wallet as the source of identity, funding, budget approval, and settlement context.</p>
       <ul class="doc-list">
-        <li>
-          <strong>Surplus (1.5x)</strong><br>
-          <span>Treasury well above target. All rate limits boosted 50%.</span>
-        </li>
-        <li>
-          <strong>Healthy (1.0x)</strong><br>
-          <span>Normal operating range. Base rate limits apply.</span>
-        </li>
-        <li>
-          <strong>Cautious (0.7x)</strong><br>
-          <span>Below target. Limits reduced to extend runway.</span>
-        </li>
-        <li>
-          <strong>Critical (0.3x)</strong><br>
-          <span>Low balance. Aggressive throttling to prevent outage.</span>
-        </li>
+        <li><strong>Provider wallet</strong><span>Receives revenue for the metered route.</span></li>
+        <li><strong>Operator wallet</strong><span>Controls keys, budgets, and revocation for agents.</span></li>
+        <li><strong>Agent client key</strong><span>Identifies the automated caller and applies policy before spend.</span></li>
+        <li><strong>Receipt ledger</strong><span>Links quote, proof, response, amount, route, and payer into one searchable record.</span></li>
       </ul>
-
-      <p class="section-text">The treasury wallet is public and verifiable on-chain. Check <code style="color: var(--accent);">GET /treasury</code> for live balance, runway, and health status.</p>
-    </div>
-
+    </section>
   </main>
 </div>
 

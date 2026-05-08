@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: Live Trades
+// Meterflow Dashboard - Tab: Live Trades
 // ═══════════════════════════════════════════
 
 import { LIVE_TRADES, API_BASE } from '../state.js';
@@ -194,7 +194,7 @@ export function renderLiveTrades() {
         <div class="page-header-row">
           <div>
             <h1 class="page-title">Live Trades</h1>
-            <p class="page-sub">Real-time $INFINITE token activity</p>
+            <p class="page-sub">Legacy token activity stream. Payment receipt streaming is the next Meterflow target.</p>
           </div>
           <div class="feed-status">
             <span class="feed-status-dot disconnected" id="feedStatusDot"></span>

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { CFG } from '../config.js';
 
-const PREFIX = 'infinite:twitter:';
+const PREFIX = 'meterflow:twitter:';
 const REPLIED_KEY = `${PREFIX}replied`;
 const DAILY_PROACTIVE_KEY = `${PREFIX}daily_proactive`;
 const USER_COOLDOWN_PREFIX = `${PREFIX}cooldown:`;

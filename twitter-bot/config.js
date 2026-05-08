@@ -7,9 +7,9 @@ const CFG = {
   TWITTER_ACCESS_TOKEN: process.env.TWITTER_ACCESS_TOKEN || '',
   TWITTER_ACCESS_SECRET: process.env.TWITTER_ACCESS_SECRET || '',
   TWITTER_BEARER_TOKEN: process.env.TWITTER_BEARER_TOKEN || '',
-  TWITTER_BOT_USERNAME: process.env.TWITTER_BOT_USERNAME || 'InfiniteKeysBot',
+  TWITTER_BOT_USERNAME: process.env.TWITTER_BOT_USERNAME || 'MeterflowBot',
 
-  API_PROXY_URL: process.env.API_PROXY_URL || 'https://infinite-protocol.onrender.com',
+  API_PROXY_URL: process.env.API_PROXY_URL || 'https://meterflow-api.onrender.com',
   BOT_API_KEY: process.env.BOT_API_KEY || '',
   AI_MODEL: process.env.AI_MODEL || 'claude-sonnet-4-6',
 

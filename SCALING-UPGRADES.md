@@ -1,4 +1,4 @@
-# INFINITE Protocol — Scaling & Infrastructure Upgrades
+# Meterflow — Scaling & Infrastructure Upgrades
 
 ## Current Architecture
 
@@ -173,7 +173,7 @@ Skip Datadog ($23/host/mo minimum, escalates fast). Overkill for this stage.
 
 **LLM support:** Claude, GPT, DeepSeek, Gemini, Llama
 
-### Current Usage in INFINITE
+### Current Usage in Meterflow
 
 The treasury agent already uses **OpenClaw 2026.2.0** (`agent/openclaw.json`) with skills:
 - `wallet-monitor` — track SOL balance via Helius
@@ -199,7 +199,7 @@ OpenClaw's Discord has **banned all crypto discussion** after scammers launched 
 
 ### The Problem
 
-INFINITE needs to pay for: Anthropic API, OpenAI API, Google Gemini API, Helius RPC, hosting (Railway/Cloudflare), and potentially more services. Revenue comes in as SOL from pump.fun creator fees. Need a system to convert revenue → pay for operational APIs.
+Meterflow needs to pay for: Anthropic API, OpenAI API, Google Gemini API, Helius RPC, hosting (Railway/Cloudflare), and potentially more services. Revenue comes in as SOL from pump.fun creator fees. Need a system to convert revenue → pay for operational APIs.
 
 ### Best Solutions (Ranked by Practicality)
 
@@ -249,7 +249,7 @@ Launched Feb 11, 2026 — wallet infrastructure built for AI agents.
 
 #### Option D: Stripe Billing (Traditional Fallback)
 
-Standard subscription management. Handles creation, renewal, cancellation, webhooks. Overkill if you're just paying for APIs, but useful if INFINITE ever sells API access via traditional billing.
+Standard subscription management. Handles creation, renewal, cancellation, webhooks. Overkill if you're just paying for APIs, but useful if Meterflow ever sells API access via traditional billing.
 
 ### Recommended Architecture
 

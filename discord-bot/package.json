@@ -1,8 +1,8 @@
 {
-  "name": "infinite-discord-bot",
+  "name": "meterflow-discord-bot",
   "version": "1.0.0",
   "type": "module",
-  "description": "INFINITE Protocol — Discord AI bot and auto-moderator",
+  "description": "Meterflow Discord AI bot and auto-moderator",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

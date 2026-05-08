@@ -9,7 +9,7 @@ const TWITTER_API = 'https://api.twitter.com';
 const FETCH_TIMEOUT_MS = 10_000;
 
 function requireArchitectTier(req, res, next) {
-  const { tier } = req.infinite;
+  const { tier } = req.meterflow;
   if (tier !== 'architect') {
     return res.status(403).json({
       error: 'tier_restricted',
@@ -46,7 +46,7 @@ async function twitterFetch(path, token, options = {}) {
 
 router.post('/twitter/:action', authenticateApiKey, requireArchitectTier, async (req, res) => {
   const { action } = req.params;
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
 
   const token = await ensureValidTwitterToken(apiKey);
   if (!token) {

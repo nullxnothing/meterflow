@@ -4,18 +4,20 @@ import { CONFIG, PROVIDER_AVAILABLE } from '../config.js';
 import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
+import { completeMeteredRequest } from '../lib/control-plane.js';
 
 const router = Router();
 
 // POST /v1/image — Generate image via Gemini
 router.post('/image', authenticateApiKey, async (req, res) => {
+  const startedAt = Date.now();
   const { prompt } = req.body;
-  const { tierConfig, usage, apiKey } = req.infinite;
+  const { tierConfig, usage, apiKey } = req.meterflow;
 
   if (!PROVIDER_AVAILABLE.gemini) {
     return res.status(503).json({
       error: 'provider_not_configured',
-      message: 'Image generation is coming soon. Gemini API will be activated after token launch.',
+      message: 'Image generation requires a configured Gemini provider key.',
     });
   }
 
@@ -74,16 +76,29 @@ router.post('/image', authenticateApiKey, async (req, res) => {
       });
     }
 
-    await incrementUsage(apiKey);
+    await Promise.all([
+      incrementUsage(apiKey),
+      completeMeteredRequest(req, {
+        status: 'metered_key',
+        responseStatus: 200,
+        latencyMs: Date.now() - startedAt,
+      }),
+    ]);
 
     res.json({
-      id: `inf-img-${crypto.randomBytes(8).toString('hex')}`,
+      id: `mf-img-${crypto.randomBytes(8).toString('hex')}`,
       images,
       text,
-      usage: { cost: '$0.00 — funded by $INFINITE treasury' }
+      usage: { cost: 'metered by Meterflow' }
     });
 
   } catch (err) {
+    completeMeteredRequest(req, {
+      status: 'upstream_error',
+      responseStatus: 502,
+      latencyMs: Date.now() - startedAt,
+      error: err.message,
+    }).catch(() => {});
     logger.error('Image generation error', { err: err.message });
     res.status(502).json({
       error: 'upstream_error',

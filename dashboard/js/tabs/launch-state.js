@@ -10,6 +10,12 @@ function createFreshState() {
     loading: false,
     result: null,
     error: null,
+    // Token launch signing flow
+    signingPhase: null, // null | 'signing' | 'confirming' | 'confirmed' | 'failed'
+    signingError: null,
+    mintAddress: null,
+    txSignature: null,
+    // Form fields
     name: '',
     symbol: '',
     description: '',
@@ -29,6 +35,10 @@ function createFreshState() {
     },
     devBuySol: 0,
     expandedCredentials: { twitter: false, discord: false, telegram: false, tradeWallet: false },
+    // Post-launch
+    validationResults: null,
+    validating: false,
+    funding: false,
   };
 }
 

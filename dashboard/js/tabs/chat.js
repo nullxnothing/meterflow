@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: AI Chat
+// Meterflow Dashboard - Tab: AI Chat
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT } from '../state.js';
@@ -68,7 +68,7 @@ export function renderChat() {
             <div class="chat-empty">
               <div class="chat-empty-icon">/</div>
               <div class="chat-empty-title">Start a conversation</div>
-              <div class="chat-empty-sub">Chat with Claude and Gemini. Free, no billing, powered by $INFINITE treasury.</div>
+              <div class="chat-empty-sub">Chat with Claude and Gemini through the Meterflow gateway.</div>
             </div>
           ` : messages.map(m => `
             <div class="chat-message ${m.role}">
@@ -102,7 +102,7 @@ export function renderChat() {
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v4M10 10v4M4 6h4a2 2 0 012 2v0M8 8h4"/><circle cx="6" cy="2" r="1"/><circle cx="10" cy="14" r="1"/></svg>
             ${Object.values(STATE.connections).some(Boolean) ? '<span class="connectors-dot"></span>' : ''}
           </button>
-          <textarea class="chat-input" id="chatInput" placeholder="Message INFINITE..." rows="1"></textarea>
+          <textarea class="chat-input" id="chatInput" placeholder="Message Meterflow..." rows="1"></textarea>
           <button class="chat-send-btn" id="chatSendBtn" ${CHAT.isGenerating ? 'disabled' : ''}>${CHAT.isGenerating ? '...' : '\u2192'}</button>
         </div>
       </div>
@@ -111,7 +111,7 @@ export function renderChat() {
         <div class="bot-card">
           <div class="bot-card-title">Quick Actions</div>
           <div class="trading-quick-btns">
-            <button class="trading-quick-btn" onclick="sendQuickPrompt('What is INFINITE Protocol? How does the token-gated AI access work?')">About INFINITE</button>
+            <button class="trading-quick-btn" onclick="sendQuickPrompt('What is Meterflow? Explain the Solana agent payment and API metering model.')">About Meterflow</button>
             <button class="trading-quick-btn" onclick="sendQuickPrompt('Help me write clean, efficient code. Ask me what language and what I need.')">Code Help</button>
             <button class="trading-quick-btn" onclick="sendQuickPrompt('I need help researching a topic. Ask me what to research and provide a thorough analysis.')">Research</button>
             <button class="trading-quick-btn" onclick="sendQuickPrompt('Help me brainstorm ideas. Ask me what the topic or problem is.')">Brainstorm</button>

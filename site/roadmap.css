@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   INFINITE Protocol — Roadmap Styles
+   Meterflow — Roadmap Styles
    Page-specific CSS for site/roadmap.html
    Requires: shared.css loaded first
    ═══════════════════════════════════════════ */
@@ -122,8 +122,8 @@ nav {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-image:
-    linear-gradient(rgba(200, 255, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200, 255, 0, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(79, 156, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 156, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 70%);
   mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 70%);
@@ -134,7 +134,7 @@ nav {
   width: 800px;
   height: 800px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 255, 0, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(79, 156, 255, 0.04) 0%, transparent 70%);
   top: -200px;
   left: 50%;
   transform: translateX(-50%);
@@ -188,16 +188,16 @@ nav {
 
 .roadmap-headline {
   font-family: var(--font-display);
-  font-size: clamp(48px, 7vw, 88px);
-  line-height: 0.95;
-  letter-spacing: -2px;
+  font-size: clamp(52px, 9vw, 124px);
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 800;
   margin-bottom: 28px;
 }
 
 .roadmap-headline .accent {
   color: var(--accent);
-  font-style: italic;
-  text-shadow: 0 0 60px rgba(200, 255, 0, 0.25), 0 0 120px rgba(200, 255, 0, 0.1);
+  text-shadow: 0 0 60px rgba(79, 156, 255, 0.25), 0 0 120px rgba(79, 156, 255, 0.1);
 }
 
 .roadmap-sub {
@@ -227,7 +227,7 @@ nav {
 .progress-fill {
   height: 100%;
   width: 35%;
-  background: linear-gradient(90deg, var(--accent), rgba(200, 255, 0, 0.4));
+  background: linear-gradient(90deg, var(--accent), rgba(79, 156, 255, 0.4));
   border-radius: 2px;
   position: relative;
   transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -242,7 +242,7 @@ nav {
   height: 8px;
   background: var(--accent);
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba(200, 255, 0, 0.6), 0 0 24px rgba(200, 255, 0, 0.3);
+  box-shadow: 0 0 12px rgba(79, 156, 255, 0.6), 0 0 24px rgba(79, 156, 255, 0.3);
 }
 
 .progress-labels {
@@ -275,7 +275,7 @@ nav {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.12) 20%, rgba(200, 255, 0, 0.3) 50%, rgba(200, 255, 0, 0.12) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.12) 20%, rgba(79, 156, 255, 0.3) 50%, rgba(79, 156, 255, 0.12) 80%, transparent);
 }
 
 .timeline-inner {
@@ -298,7 +298,7 @@ nav {
 .timeline-line-fill {
   width: 100%;
   height: 0%;
-  background: linear-gradient(180deg, var(--accent), rgba(200, 255, 0, 0.2));
+  background: linear-gradient(180deg, var(--accent), rgba(79, 156, 255, 0.2));
   transition: height 0.1s linear;
 }
 
@@ -345,7 +345,7 @@ nav {
 .phase-dot.active {
   background: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(200, 255, 0, 0.5);
+  box-shadow: 0 0 16px rgba(79, 156, 255, 0.5);
 }
 
 .timeline-phase.completed .phase-dot {
@@ -362,7 +362,7 @@ nav {
 }
 
 .phase-pulse.active {
-  border-color: rgba(200, 255, 0, 0.3);
+  border-color: rgba(79, 156, 255, 0.3);
   animation: phase-ring 2.5s ease-out infinite;
 }
 
@@ -390,21 +390,21 @@ nav {
 }
 
 .phase-badge.completed {
-  background: rgba(40, 200, 64, 0.1);
+  background: rgba(79, 156, 255, 0.1);
   color: var(--green);
-  border: 1px solid rgba(40, 200, 64, 0.2);
+  border: 1px solid rgba(79, 156, 255, 0.2);
 }
 
 .phase-badge.active {
-  background: rgba(200, 255, 0, 0.08);
+  background: rgba(79, 156, 255, 0.08);
   color: var(--accent);
-  border: 1px solid rgba(200, 255, 0, 0.2);
+  border: 1px solid rgba(79, 156, 255, 0.2);
   animation: badge-glow 3s ease-in-out infinite;
 }
 
 @keyframes badge-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 255, 0, 0); }
-  50% { box-shadow: 0 0 12px rgba(200, 255, 0, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 156, 255, 0); }
+  50% { box-shadow: 0 0 12px rgba(79, 156, 255, 0.15); }
 }
 
 .phase-badge.upcoming {
@@ -422,8 +422,10 @@ nav {
 
 .phase-title {
   font-family: var(--font-display);
-  font-size: clamp(32px, 4vw, 48px);
-  line-height: 1.1;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.08;
+  letter-spacing: 0;
+  font-weight: 760;
   margin-bottom: 12px;
 }
 
@@ -461,16 +463,16 @@ nav {
 }
 
 .phase-item.done {
-  border-color: rgba(40, 200, 64, 0.15);
+  border-color: rgba(79, 156, 255, 0.15);
 }
 
 .phase-item.done:hover {
-  border-color: rgba(40, 200, 64, 0.3);
+  border-color: rgba(79, 156, 255, 0.3);
 }
 
 .phase-item.active {
-  border-color: rgba(200, 255, 0, 0.2);
-  background: rgba(200, 255, 0, 0.03);
+  border-color: rgba(79, 156, 255, 0.2);
+  background: rgba(79, 156, 255, 0.03);
 }
 
 .item-check {
@@ -532,7 +534,7 @@ nav {
   border-radius: inherit;
   background: radial-gradient(
     400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(200, 255, 0, 0.04),
+    rgba(79, 156, 255, 0.04),
     transparent 40%
   );
   opacity: 0;
@@ -618,7 +620,7 @@ nav {
   border-radius: inherit;
   background: radial-gradient(
     600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(200, 255, 0, 0.06),
+    rgba(79, 156, 255, 0.06),
     transparent 40%
   );
   opacity: 0;
@@ -684,7 +686,7 @@ nav {
 }
 
 .phone-chat-line.short { width: 50%; }
-.phone-chat-line.accent { background: rgba(200, 255, 0, 0.2); width: 70%; }
+.phone-chat-line.accent { background: rgba(79, 156, 255, 0.2); width: 70%; }
 .phone-chat-line.short.accent { width: 40%; }
 
 .phone-chat-line:nth-child(2) { animation-delay: 0s; }
@@ -727,7 +729,7 @@ nav {
   animation: bar-grow 2s ease-in-out infinite alternate;
 }
 
-.phone-chart-bars .bar.accent { background: rgba(200, 255, 0, 0.4); }
+.phone-chart-bars .bar.accent { background: rgba(79, 156, 255, 0.4); }
 
 .phone-chart-bars .bar:nth-child(1) { animation-delay: 0s; }
 .phone-chart-bars .bar:nth-child(2) { animation-delay: 0.2s; }
@@ -790,7 +792,7 @@ nav {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.12) 20%, rgba(200, 255, 0, 0.3) 50%, rgba(200, 255, 0, 0.12) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.12) 20%, rgba(79, 156, 255, 0.3) 50%, rgba(79, 156, 255, 0.12) 80%, transparent);
 }
 
 .vision-inner {
@@ -800,16 +802,16 @@ nav {
 
 .vision-headline {
   font-family: var(--font-display);
-  font-size: clamp(40px, 6vw, 80px);
-  line-height: 0.95;
-  letter-spacing: -2px;
+  font-size: clamp(50px, 8vw, 108px);
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 800;
   margin-bottom: 28px;
 }
 
 .vision-headline .accent {
   color: var(--accent);
-  font-style: italic;
-  text-shadow: 0 0 60px rgba(200, 255, 0, 0.25);
+  text-shadow: 0 0 60px rgba(79, 156, 255, 0.25);
 }
 
 .vision-sub {
@@ -848,7 +850,7 @@ nav {
   border-radius: inherit;
   background: radial-gradient(
     400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(200, 255, 0, 0.06),
+    rgba(79, 156, 255, 0.06),
     transparent 40%
   );
   opacity: 0;
@@ -889,7 +891,7 @@ nav {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200, 255, 0, 0.12) 20%, rgba(200, 255, 0, 0.3) 50%, rgba(200, 255, 0, 0.12) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.12) 20%, rgba(79, 156, 255, 0.3) 50%, rgba(79, 156, 255, 0.12) 80%, transparent);
 }
 
 .cta-glow {
@@ -897,7 +899,7 @@ nav {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 255, 0, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(79, 156, 255, 0.06) 0%, transparent 70%);
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
 }
@@ -913,13 +915,14 @@ nav {
 .cta-section h2 {
   font-family: var(--font-display);
   font-size: clamp(48px, 7vw, 100px);
-  line-height: 0.95;
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 800;
   margin-bottom: 24px;
 }
 
 .cta-section h2 .accent {
   color: var(--accent);
-  font-style: italic;
 }
 
 .cta-section .cta-sub {
@@ -1026,7 +1029,7 @@ footer {
 @media (max-width: 480px) {
   nav { padding: 12px 16px; }
   .roadmap-hero { padding: 80px 16px 40px; }
-  .roadmap-headline { letter-spacing: -1px; }
+  .roadmap-headline { letter-spacing: 0; }
   .timeline-section { padding: 40px 16px 80px; }
   .timeline-inner { padding-left: 32px; }
   .timeline-line { left: 5px; }

@@ -3,8 +3,8 @@ import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
 // Keys
-const VOTE_COUNTS_KEY = 'infinite:vote_counts';
-const WALLET_VOTES_PREFIX = 'infinite:wallet_votes:';
+const VOTE_COUNTS_KEY = 'meterflow:vote_counts';
+const WALLET_VOTES_PREFIX = 'meterflow:wallet_votes:';
 
 // In-memory fallback when Redis is not configured
 const fallbackVoteCounts = {};

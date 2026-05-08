@@ -59,7 +59,7 @@
 
 .launch-step.completed .launch-step-circle {
   border-color: var(--accent);
-  background: rgba(200, 255, 0, 0.15);
+  background: rgba(79, 156, 255, 0.15);
   color: var(--accent);
 }
 
@@ -111,7 +111,7 @@
 
 @keyframes dropzonePulse {
   0%, 100% { border-color: var(--accent); }
-  50% { border-color: rgba(200, 255, 0, 0.4); }
+  50% { border-color: rgba(79, 156, 255, 0.4); }
 }
 
 .launch-dropzone-icon {
@@ -207,11 +207,11 @@
 
 .launch-cap-card.enabled {
   border-color: var(--accent);
-  background: rgba(200, 255, 0, 0.03);
+  background: rgba(79, 156, 255, 0.03);
 }
 
 .launch-cap-card.enabled:hover {
-  background: rgba(200, 255, 0, 0.05);
+  background: rgba(79, 156, 255, 0.05);
 }
 
 .launch-cap-header {
@@ -360,7 +360,7 @@
 }
 
 .launch-fee-segment.treasury {
-  background: rgba(200, 255, 0, 0.25);
+  background: rgba(79, 156, 255, 0.25);
   color: var(--accent);
 }
 
@@ -490,7 +490,7 @@
 .launch-review-cap.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(200, 255, 0, 0.04);
+  background: rgba(79, 156, 255, 0.04);
 }
 
 .launch-review-row {
@@ -551,7 +551,7 @@
   background: #fff;
   border-color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 8px 30px rgba(200, 255, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(79, 156, 255, 0.2);
 }
 
 .launch-nav-btn.primary:disabled {

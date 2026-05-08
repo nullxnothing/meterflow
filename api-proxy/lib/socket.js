@@ -1,4 +1,4 @@
-// Socket.IO real-time layer for Infinite Alpha
+// Socket.IO real-time layer for Meterflow Signal
 import { Server } from 'socket.io';
 import { getKeyData } from './kv-keys.js';
 import { logger } from './logger.js';
@@ -10,9 +10,9 @@ export function initSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
       origin: [
-        'https://infinitekeys.fun',
-        'https://www.infinitekeys.fun',
-        /\.infinitekeys\.fun$/,
+        'https://meterflow.fun',
+        'https://www.meterflow.fun',
+        /\.meterflow\.fun$/,
         /^chrome-extension:\/\//,
         ...(process.env.NODE_ENV !== 'production'
           ? ['http://localhost:5500', 'http://localhost:3000']

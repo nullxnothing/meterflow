@@ -66,7 +66,7 @@ export async function executeUrlReader({ url }) {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; InfiniteBot/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; MeterflowBot/1.0)',
         'Accept': 'text/html,application/xhtml+xml,text/plain,application/json',
       },
       redirect: 'follow',

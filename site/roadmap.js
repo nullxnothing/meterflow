@@ -145,7 +145,7 @@ if (bgCanvas && window.innerWidth > 768) {
       if (p.x > bgCanvas.width) p.x -= bgCanvas.width;
       if (p.y < 0) p.y += bgCanvas.height;
       if (p.y > bgCanvas.height) p.y -= bgCanvas.height;
-      ctx.fillStyle = `rgba(200, 255, 0, ${p.a})`;
+      ctx.fillStyle = `rgba(79, 156, 255, ${p.a})`;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
@@ -157,7 +157,7 @@ if (bgCanvas && window.innerWidth > 768) {
           const dy = particles[i].y - particles[j].y;
           const dist = dx * dx + dy * dy;
           if (dist < 22500) {
-            ctx.strokeStyle = `rgba(200, 255, 0, ${0.02 * (1 - dist / 22500)})`;
+            ctx.strokeStyle = `rgba(79, 156, 255, ${0.02 * (1 - dist / 22500)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);

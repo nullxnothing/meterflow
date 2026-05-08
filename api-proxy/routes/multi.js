@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
 import { isModelAvailable, getProviderForModel } from '../lib/providers.js';
+import { completeMeteredRequest } from '../lib/control-plane.js';
 import { proxyAnthropic } from '../providers/anthropic.js';
 import { proxyGemini } from '../providers/gemini.js';
 import { proxyOpenAI } from '../providers/openai.js';
@@ -20,8 +21,9 @@ function getProxyFn(model) {
 
 // POST /v1/multi — Fan-out to multiple models in parallel, return all responses
 router.post('/multi', authenticateApiKey, async (req, res) => {
+  const startedAt = Date.now();
   const { models, messages, max_tokens, temperature } = req.body;
-  const { tierConfig, apiKey } = req.infinite;
+  const { tierConfig, apiKey } = req.meterflow;
 
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
@@ -91,23 +93,32 @@ router.post('/multi', authenticateApiKey, async (req, res) => {
     }
   }
 
-  await incrementUsage(apiKey, totalTokens);
+  await Promise.all([
+    incrementUsage(apiKey, totalTokens),
+    completeMeteredRequest(req, {
+      status: 'metered_key',
+      responseStatus: 200,
+      latencyMs: Date.now() - startedAt,
+      tokens: totalTokens,
+    }),
+  ]);
 
   res.json({
-    id: `inf-multi-${crypto.randomBytes(8).toString('hex')}`,
+    id: `mf-multi-${crypto.randomBytes(8).toString('hex')}`,
     type: 'multi',
     responses,
     usage: {
       totalTokens,
-      cost: '$0.00 — funded by $INFINITE treasury',
+      cost: 'metered by Meterflow',
     },
   });
 });
 
 // POST /v1/multi/stream — SSE streaming from multiple models in parallel
 router.post('/multi/stream', authenticateApiKey, async (req, res) => {
+  const startedAt = Date.now();
   const { models, messages, max_tokens, temperature } = req.body;
-  const { tierConfig, apiKey } = req.infinite;
+  const { tierConfig, apiKey } = req.meterflow;
 
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'invalid_request', message: 'messages array is required' });
@@ -195,7 +206,14 @@ router.post('/multi/stream', authenticateApiKey, async (req, res) => {
   });
 
   await Promise.allSettled(streamPromises);
-  await incrementUsage(apiKey);
+  await Promise.all([
+    incrementUsage(apiKey),
+    completeMeteredRequest(req, {
+      status: 'metered_key',
+      responseStatus: 200,
+      latencyMs: Date.now() - startedAt,
+    }),
+  ]);
 
   if (!clientDisconnected) {
     write({ type: 'done' });

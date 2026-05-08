@@ -5,13 +5,14 @@ import { getTierForBalance, getUsage, incrementUsage, getTodayKey } from './lib/
 import { getKeyData } from './lib/kv-keys.js';
 import { getTreasuryState } from './state.js';
 import { logger } from './lib/logger.js';
+import { authorizeMeteredRequest, recordReceipt } from './lib/control-plane.js';
 
 async function authenticateApiKey(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({
       error: 'missing_api_key',
-      message: 'Include your INFINITE API key as: Authorization: Bearer inf_xxxxx'
+      message: 'Include your Meterflow API key as: Authorization: Bearer mf_xxxxx'
     });
   }
 
@@ -21,7 +22,7 @@ async function authenticateApiKey(req, res, next) {
   if (!keyData) {
     return res.status(401).json({
       error: 'invalid_api_key',
-      message: 'API key not found. Generate one at app.infinite.sh'
+      message: 'API key not found. Generate one from the Meterflow dashboard.'
     });
   }
 
@@ -34,7 +35,7 @@ async function authenticateApiKey(req, res, next) {
     if (!isFreeAccessActive()) {
       return res.status(403).json({
         error: 'free_access_expired',
-        message: 'Free access has ended. Connect a wallet and hold $INFINITE tokens for access.',
+        message: 'Free access has ended. Connect a wallet or use a paid Meterflow request flow for access.',
       });
     }
     balance = 0;
@@ -60,7 +61,7 @@ async function authenticateApiKey(req, res, next) {
     return res.status(429).json({
       error: isTrial ? 'trial_exhausted' : 'rate_limit_exceeded',
       message: isTrial
-        ? `You've used all ${effectiveLimit} free trial calls for today. Hold $INFINITE tokens for unlimited access.`
+        ? `You've used all ${effectiveLimit} free trial calls for today. Use a Meterflow key or paid request flow for more access.`
         : `Daily limit of ${effectiveLimit.toLocaleString()} calls reached for ${tierConfig.label} tier.`,
       tier: tierConfig.label,
       limit: effectiveLimit,
@@ -70,7 +71,33 @@ async function authenticateApiKey(req, res, next) {
     });
   }
 
-  req.infinite = { apiKey, ...keyData, isTrial, tierConfig, usage };
+  req.meterflow = { apiKey, ...keyData, isTrial, tierConfig, usage };
+
+  const control = await authorizeMeteredRequest(req);
+  req.meterflowControl = control;
+  if (!control.allowed) {
+    await recordReceipt({
+      meterId: control.meter?.id,
+      route: control.meter?.route,
+      method: control.meter?.method,
+      status: control.error || 'policy_denied',
+      amountUsd: 0,
+      asset: control.meter?.asset || 'USDC',
+      wallet: keyData.wallet,
+      apiKey,
+      agent: control.budget?.agentId || keyData.wallet,
+      paymentState: 'not_required',
+      policyResult: control.error || 'policy_denied',
+      responseStatus: control.status || 403,
+      error: control.message,
+    });
+    return res.status(control.status || 403).json({
+      error: control.error || 'policy_denied',
+      message: control.message || 'This request is blocked by the active Meterflow budget policy.',
+      meter: control.meter ? { id: control.meter.id, route: control.meter.route, priceUsd: control.meter.priceUsd } : undefined,
+      budget: control.budget ? { id: control.budget.id, dailyCapUsd: control.budget.dailyCapUsd, perCallCapUsd: control.budget.perCallCapUsd } : undefined,
+    });
+  }
   next();
 }
 
@@ -88,7 +115,7 @@ function authenticateAdmin(req, res, next) {
 }
 
 function requireTradingTier(req, res, next) {
-  const { tier } = req.infinite;
+  const { tier } = req.meterflow;
   if (!TRADING_TIERS.includes(tier)) {
     return res.status(403).json({
       error: 'tier_restricted',
@@ -101,11 +128,11 @@ function requireTradingTier(req, res, next) {
 }
 
 function requireAlphaTier(req, res, next) {
-  const { tier } = req.infinite;
+  const { tier } = req.meterflow;
   if (!ALPHA_TIERS.includes(tier)) {
     return res.status(403).json({
       error: 'tier_restricted',
-      message: 'X Tools requires Alpha tier (10,000,000 $INF).',
+      message: 'X Tools requires Alpha tier (10,000,000 MFLOW).',
       requiredTier: 'Alpha',
       requiredBalance: 10_000_000,
       currentTier: CONFIG.TIERS[tier]?.label || tier,

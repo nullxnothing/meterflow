@@ -7,7 +7,7 @@ async function githubFetch(path, token) {
 
   const headers = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'InfiniteBot/1.0',
+    'User-Agent': 'MeterflowBot/1.0',
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 

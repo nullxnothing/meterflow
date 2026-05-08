@@ -3,51 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold $INFINITE, get Claude, GPT and Gemini APIs — forever.">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="Meterflow is usage-based billing, receipts, and spend control for agent-accessible APIs on Solana. Meter endpoints, track revenue, and set budgets.">
+<meta name="theme-color" content="#05080f">
 <meta name="mobile-web-app-capable" content="yes">
-<meta property="og:title" content="INFINITE — pump.fun creator fees power free AI tools">
-<meta property="og:description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold the token, use Claude, GPT and Gemini — forever.">
+<meta property="og:title" content="Meterflow — Metering and spend control for agent APIs">
+<meta property="og:description" content="Usage-based billing, receipts, and agent budgets for APIs, MCP tools, models, and data feeds on Solana.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://infinitekeys.fun/assets/og.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="675">
-<meta property="og:url" content="https://infinitekeys.fun">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta property="og:url" content="https://meterflow.fun">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="INFINITE — pump.fun creator fees power free AI tools">
-<meta name="twitter:description" content="INFINITE turns pump.fun creator fees into free AI infrastructure. Hold the token, use the AI — forever.">
-<meta name="twitter:image" content="https://infinitekeys.fun/assets/og.png">
-<title>INFINITE — pump.fun creator fees power free AI tools</title>
-<link rel="icon" type="image/png" href="/site/favicon.png">
-<link rel="apple-touch-icon" href="/site/favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="twitter:title" content="Meterflow — Metering and spend control for agent APIs">
+<meta name="twitter:description" content="Meter endpoints, track receipts, and control agent spend on Solana.">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/home.css">
 </head>
 <body>
-<canvas id="bgCanvas"></canvas>
-
 <!-- FREE ACCESS BANNER -->
 <div class="free-access-topbar" id="freeAccessBar" style="display:none;">
   <span class="free-access-topbar-pulse"></span>
   <span class="free-access-topbar-text">
-    <strong>FREE ACCESS</strong> — full AI tools, no tokens needed. Ends in <strong id="freeCountdown">--</strong>
+    <strong>FREE ACCESS</strong> — try Meterflow gateway routes. Ends in <strong id="freeCountdown">--</strong>
   </span>
   <a href="/dashboard" class="free-access-topbar-btn">Try it now</a>
 </div>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">INFINITE</div>
+  <div class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</div>
   <div class="nav-links">
-    <a href="#stats">Stats</a>
-    <a href="#tools">What you get</a>
-    <a href="#tiers">Tiers</a>
-    <a href="#agents">Agents</a>
+    <a href="#stats">Meters</a>
+    <a href="#tools">Platform</a>
+    <a href="#tiers">Dashboard</a>
+    <a href="#agents">Budgets</a>
     <a href="#faq">FAQ</a>
     <a href="/site/roadmap.html">Roadmap</a>
     <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
-    <a class="nav-cta ghost" href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener">Buy $INFINITE</a>
+    <a class="nav-cta ghost" href="/docs">Read Docs</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span>
@@ -58,44 +56,92 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#stats" onclick="closeMobile()">Stats</a>
-  <a href="#tools" onclick="closeMobile()">What you get</a>
-  <a href="#tiers" onclick="closeMobile()">Tiers</a>
-  <a href="#agents" onclick="closeMobile()">Agents</a>
+  <a href="#stats" onclick="closeMobile()">Meters</a>
+  <a href="#tools" onclick="closeMobile()">Platform</a>
+  <a href="#tiers" onclick="closeMobile()">Dashboard</a>
+  <a href="#agents" onclick="closeMobile()">Budgets</a>
   <a href="#faq" onclick="closeMobile()">FAQ</a>
   <a href="/site/roadmap.html" onclick="closeMobile()">Roadmap</a>
   <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
-  <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" onclick="closeMobile()" style="color: var(--accent);">Buy $INFINITE</a>
+  <a href="/docs" onclick="closeMobile()" style="color: var(--accent);">Read Docs</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-grid-bg"></div>
-  <div class="hero-glow"></div>
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-bg-grid"></div>
+  </div>
+
   <div class="hero-content">
     <div class="hero-text">
-      <div class="hero-label">Built on Solana</div>
+      <a href="/site/roadmap.html" class="hero-label">
+        <span class="dot"></span>
+        <span>Control plane for paid API usage</span>
+        <span class="arrow">&rarr;</span>
+      </a>
       <h1 class="hero-headline">
-        Free AI tools.<br>
-        <span class="accent">Forever.</span><br>
-        <span class="thin">Just hold the token.</span>
+        Usage billing for <span class="accent">agent APIs.</span>
+        <span class="thin">Receipts on Solana.</span>
       </h1>
       <p class="hero-sub">
-        Pump.fun creator fees fund the treasury. The treasury pays for Claude, GPT, and Gemini. Hold $INFINITE and use them all — no subscriptions, no bills, forever.
+        Meter endpoints, track x402-style paid requests, export receipts, and cap what autonomous agents can spend. Wallets handle identity and settlement — keys and policies keep automation safe.
       </p>
       <div class="hero-actions">
         <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-        <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="btn-secondary">Buy $INFINITE</a>
+        <a href="/docs" class="btn-secondary">Read Docs &rarr;</a>
       </div>
-      <div class="hero-ca">
-        <span class="ca-label">CA</span>
-        <span class="ca-address" id="caAddress">DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump</span>
-        <button class="ca-copy" id="caCopy" onclick="copyCA()">Copy</button>
-        <a class="ca-buy" id="buyLink" href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener">Buy</a>
+      <div class="hero-trust">
+        <span class="trust-label">Built on</span>
+        <span class="trust-item">Solana</span>
+        <span class="trust-sep"></span>
+        <span class="trust-item">USDC</span>
+        <span class="trust-sep"></span>
+        <span class="trust-item">x402</span>
+        <span class="trust-sep"></span>
+        <span class="trust-item">MCP</span>
       </div>
     </div>
-    <div class="globe-wrap">
-      <canvas id="cobeGlobe"></canvas>
+
+    <div class="hero-panel" aria-hidden="true">
+      <div class="hero-panel-chrome">
+        <div class="chrome-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="chrome-title">meterflow / endpoint /v1/risk-score</div>
+        <div class="chrome-status"><span class="dot"></span>live</div>
+      </div>
+      <div class="hero-panel-body">
+        <div class="panel-flow">
+          <div class="panel-node active">
+            <div class="node-head"><span>01</span><em>meter</em></div>
+            <div class="node-detail">/v1/risk-score</div>
+          </div>
+          <div class="panel-rail"></div>
+          <div class="panel-node">
+            <div class="node-head"><span>02</span><em>budget</em></div>
+            <div class="node-detail">cap $12/day</div>
+          </div>
+          <div class="panel-rail"></div>
+          <div class="panel-node">
+            <div class="node-head"><span>03</span><em>receipt</em></div>
+            <div class="node-detail">mf_rcpt_92a</div>
+          </div>
+        </div>
+
+        <div class="panel-stats">
+          <div class="panel-stat"><span>price</span><strong>$0.006 <em>USDC</em></strong></div>
+          <div class="panel-stat"><span>policy</span><strong>allowlist + cap</strong></div>
+          <div class="panel-stat"><span>revenue 24h</span><strong>$184.20</strong></div>
+          <div class="panel-stat"><span>calls 24h</span><strong>30,704</strong></div>
+        </div>
+
+        <div class="panel-log">
+          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">meter.hit</span><span class="log-path">endpoint=/v1/risk-score</span><span class="log-time">12ms</span></div>
+          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">quote.issued</span><span class="log-path">price=0.006 USDC</span><span class="log-time">8ms</span></div>
+          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">receipt.verified</span><span class="log-path">id=rcpt_41bd</span><span class="log-time">22ms</span></div>
+          <div class="log-line"><span class="log-tag warn">402</span><span class="log-method">budget.cap</span><span class="log-path">agent=ag_7c2 daily limit reached</span><span class="log-time">3ms</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -104,22 +150,22 @@
 <section class="hooks-section">
   <div class="hooks-inner">
     <div class="hook-card">
-      <div class="hook-pill">FREE</div>
-      <h3 class="hook-title">Use Claude &amp; GPT-4o<br><span>for free. Forever.</span></h3>
-      <p class="hook-desc">No $20/month subscription. No API bills. Just hold the token and chat with the best AI models on the planet.</p>
-      <a href="/dashboard" class="hook-link">Start chatting &rarr;</a>
+      <div class="hook-pill">METER</div>
+      <h3 class="hook-title">Price every<br><span>endpoint call.</span></h3>
+      <p class="hook-desc">Define route-level prices, accepted assets, customer rules, and usage limits for APIs, MCP tools, models, and data feeds.</p>
+      <a href="/docs" class="hook-link">Read the meter API &rarr;</a>
     </div>
     <div class="hook-card">
-      <div class="hook-pill">AGENTS</div>
-      <h3 class="hook-title">Give your agent<br><span>AI access.</span></h3>
-      <p class="hook-desc">Your agent buys $INF, registers a wallet, and gets API keys for Claude, GPT, and Gemini. Fully autonomous. No human needed.</p>
-      <a href="#agents" class="hook-link">Give your agent access &rarr;</a>
+      <div class="hook-pill">CONTROL</div>
+      <h3 class="hook-title">Limit what<br><span>agents can spend.</span></h3>
+      <p class="hook-desc">Give each agent a budget, endpoint allowlist, daily cap, and revocation path so automation does not mean unlimited wallet risk.</p>
+      <a href="#agents" class="hook-link">Configure budgets &rarr;</a>
     </div>
     <div class="hook-card">
-      <div class="hook-pill">X API</div>
-      <h3 class="hook-title">Full X/Twitter API<br><span>included free.</span></h3>
-      <p class="hook-desc">Scan profiles, track CT alpha, monitor trending tokens, detect CAs in tweets. Tools that cost $200+/mo elsewhere.</p>
-      <a href="/dashboard" class="hook-link">Open X Tools &rarr;</a>
+      <div class="hook-pill">RECEIPTS</div>
+      <h3 class="hook-title">Make usage<br><span>accountable.</span></h3>
+      <p class="hook-desc">Connect payments to request logs, revenue views, failed-payment reasons, and exportable receipts for builders and agent operators.</p>
+      <a href="#tiers" class="hook-link">Open the dashboard &rarr;</a>
     </div>
   </div>
 </section>
@@ -128,52 +174,52 @@
 <section class="protocol-stats" id="stats">
   <div class="protocol-stats-inner">
     <div class="protocol-stats-header">
-      <h2>Protocol metrics</h2>
+      <h2>Metering dashboard</h2>
       <div class="live-badge"><span class="pulse"></span> Live</div>
     </div>
     <div class="stats-hero-row triple">
       <div class="stats-hero-block">
         <div class="stats-hero-number" id="ps-alltime-calls">--</div>
-        <div class="stats-hero-label">Total API calls served</div>
+        <div class="stats-hero-label">Metered calls tracked</div>
       </div>
       <div class="stats-hero-block">
         <div class="stats-hero-number" id="ps-alltime-tokens">--</div>
-        <div class="stats-hero-label">Tokens processed</div>
+        <div class="stats-hero-label">Billable units processed</div>
       </div>
       <div class="stats-hero-block saved">
         <div class="stats-hero-number" id="ps-money-saved">--</div>
-        <div class="stats-hero-label">Saved by holders</div>
+        <div class="stats-hero-label">Estimated value routed</div>
       </div>
     </div>
     <div class="stats-grid">
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-calls-today">--</div>
-        <div class="stat-label">Requests Today</div>
+        <div class="stat-label">Meter Hits Today</div>
         <div class="stat-sub" id="ps-tokens-today">&mdash;</div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-active-keys">--</div>
-        <div class="stat-label">API Keys Issued</div>
-        <div class="stat-sub">registered holders</div>
+        <div class="stat-label">Developer Keys</div>
+        <div class="stat-sub">meter clients</div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-treasury">--</div>
-        <div class="stat-label">Treasury</div>
+        <div class="stat-label">Settlement Wallet</div>
         <div class="stat-sub" id="ps-treasury-usd">&mdash;</div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-runway">--</div>
-        <div class="stat-label">Runway</div>
+        <div class="stat-label">Budget Window</div>
         <div class="stat-sub" id="ps-health">&mdash;</div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-models">--</div>
-        <div class="stat-label">AI Models Online</div>
+        <div class="stat-label">Services Online</div>
         <div class="stat-sub" id="ps-providers">&mdash;</div>
       </div>
       <div class="stat-block">
@@ -188,23 +234,23 @@
 
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
-  <div class="section-label">How It Works</div>
-  <h2 class="how-headline">Three steps. That's it.</h2>
+    <div class="section-label">How It Works</div>
+  <h2 class="how-headline">Meter. Control. Account.</h2>
   <div class="how-steps">
     <div class="how-step">
       <div class="step-number">01</div>
-      <h3 class="step-title">Buy the token</h3>
-      <p class="step-desc">Get $INFINITE on any Solana swap. The more you hold, the more tools you unlock. Think of it like a lifetime membership pass.</p>
+      <h3 class="step-title">Create a meter</h3>
+      <p class="step-desc">Choose a route, MCP tool, model call, data feed, or workflow. Set price, unit, customer rules, and allowed payment assets.</p>
     </div>
     <div class="how-step">
       <div class="step-number">02</div>
-      <h3 class="step-title">Connect your wallet</h3>
-      <p class="step-desc">Head to the dashboard, connect Phantom or any Solana wallet. We verify your holdings and instantly unlock your tier. Takes about 10 seconds.</p>
+      <h3 class="step-title">Attach policies</h3>
+      <p class="step-desc">Agent operators connect a wallet, issue a metered client key, and define spend caps, allowlists, expiration windows, and revocation rules before automation can pay.</p>
     </div>
     <div class="how-step">
       <div class="step-number">03</div>
-      <h3 class="step-title">Use everything</h3>
-      <p class="step-desc">Chat with Claude and Gemini, run trading bots, generate images, analyze tokens &mdash; all included. No usage bills, no credit card needed.</p>
+      <h3 class="step-title">Record every receipt</h3>
+      <p class="step-desc">Meterflow connects payment proof to the request, updates usage analytics, attributes revenue, and exports receipts.</p>
     </div>
   </div>
 </section>
@@ -212,63 +258,63 @@
 <!-- TOOLS -->
 <section class="tools-section" id="tools">
   <div class="tools-inner">
-    <div class="section-label">What You Get</div>
-    <h2 class="tools-headline">Real tools. Not promises.</h2>
-    <p class="tools-sub">Everything here works today. Connect your wallet and start using them.</p>
+    <div class="section-label">Platform</div>
+    <h2 class="tools-headline">The layer around agent payments.</h2>
+    <p class="tools-sub">Plenty of teams are building payment rails. Meterflow focuses on the product surface builders need after the payment exists.</p>
     <div class="tools-grid">
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">Multi-model AI chat</div>
+          <div class="tool-preview-icon">Active</div>
+        <div class="tool-preview-label">Route-level pricing</div>
         </div>
-        <div class="tool-tag">AI Chat</div>
-        <h3 class="tool-name">Claude, GPT-4o &amp; Gemini</h3>
-        <p class="tool-desc">All the best AI models. Auto-routing picks the right one. Like ChatGPT Pro &mdash; but free.</p>
+        <div class="tool-tag">Meters</div>
+        <h3 class="tool-name">Endpoint Catalog</h3>
+        <p class="tool-desc">Create meters for routes, tools, models, and datasets. Track price, owner, policy, and current state in one place.</p>
       </div>
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">Autonomous AI agents</div>
+          <div class="tool-preview-icon">Active</div>
+          <div class="tool-preview-label">Spend policy engine</div>
         </div>
-        <div class="tool-tag">OpenClaw Agents</div>
-        <h3 class="tool-name">Build &amp; Deploy AI Agents</h3>
-        <p class="tool-desc">Create agents that trade, analyze, and post autonomously. No code needed. Your agent, your rules.</p>
+        <div class="tool-tag">Budgets</div>
+        <h3 class="tool-name">Agent Controls</h3>
+        <p class="tool-desc">Set per-agent spend limits, route allowlists, emergency stops, and budget windows before an agent starts calling tools.</p>
       </div>
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">Full X/Twitter intelligence</div>
+          <div class="tool-preview-icon">Active</div>
+        <div class="tool-preview-label">Auditable usage</div>
         </div>
-        <div class="tool-tag">X API Tools</div>
-        <h3 class="tool-name">CT Alpha Scanner</h3>
-        <p class="tool-desc">Scan any profile, track smart money, detect CAs in tweets, monitor trending. $200+/mo tools, free.</p>
+        <div class="tool-tag">Receipts</div>
+        <h3 class="tool-name">Request Ledger</h3>
+        <p class="tool-desc">Tie every successful or failed paid request to a quote, payment proof, response status, and exportable receipt.</p>
       </div>
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">AI-powered trading signals</div>
+          <div class="tool-preview-icon">Active</div>
+        <div class="tool-preview-label">Revenue attribution</div>
         </div>
-        <div class="tool-tag">Trading Bots</div>
-        <h3 class="tool-name">AI Trading Suite</h3>
-        <p class="tool-desc">Signals, wallet trackers, sentiment, and snipe bots. The full toolkit that usually costs a fortune.</p>
+        <div class="tool-tag">Analytics</div>
+        <h3 class="tool-name">Provider Revenue</h3>
+        <p class="tool-desc">See which endpoints earn, which agents consume, where payments fail, and what each customer costs to serve.</p>
       </div>
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">Image &amp; video generation</div>
+          <div class="tool-preview-icon">Active</div>
+          <div class="tool-preview-label">Monetized capabilities</div>
         </div>
-        <div class="tool-tag">Creative</div>
-        <h3 class="tool-name">Image &amp; Video Lab</h3>
-        <p class="tool-desc">PFPs, memes, token art, video clips. Top-tier models included. No per-image fees.</p>
+        <div class="tool-tag">MCP</div>
+        <h3 class="tool-name">Tool Packaging</h3>
+        <p class="tool-desc">Package MCP tools as paid capabilities with clear prices, usage rules, and receipts an agent can reason about.</p>
       </div>
       <div class="tool-card">
         <div class="tool-preview">
-          <div class="tool-preview-icon">//</div>
-          <div class="tool-preview-label">Launch tokens that fund tools</div>
+          <div class="tool-preview-icon">Active</div>
+        <div class="tool-preview-label">First metered service</div>
         </div>
-        <div class="tool-tag">Token Launcher</div>
-        <h3 class="tool-name">Utility-Backed Launches</h3>
-        <p class="tool-desc">Launch tokens where creator fees fund AI tools instead of dev wallets. Real utility from block one.</p>
+        <div class="tool-tag">Gateway</div>
+        <h3 class="tool-name">AI API Gateway</h3>
+        <p class="tool-desc">Claude, GPT, Gemini, image, video, and trading routes stay as live examples of services running through the meter.</p>
       </div>
     </div>
   </div>
@@ -277,32 +323,32 @@
 <!-- LIVE DEMO -->
 <section class="demo-section" id="demo">
   <div class="demo-inner">
-    <div class="section-label">See It In Action</div>
-    <h2 class="demo-headline">Multi-model AI. <span class="accent">One prompt.</span></h2>
-    <p class="demo-sub">Watch Claude and Gemini respond to the same prompt simultaneously. This is what $INFINITE holders get.</p>
+    <div class="section-label">Dashboard Preview</div>
+    <h2 class="demo-headline">One control plane. <span class="accent">Two sides.</span></h2>
+    <p class="demo-sub">Providers see endpoint revenue and receipts. Agent operators see wallet-linked payment activity, budget usage, and failures before automation gets expensive.</p>
     <div class="demo-prompts">
-      <button class="demo-chip active" onclick="startDemo(0)">Explain DeFi yield farming</button>
-      <button class="demo-chip" onclick="startDemo(1)">Write a Solana swap function</button>
-      <button class="demo-chip" onclick="startDemo(2)">Analyze BTC market sentiment</button>
+      <button class="demo-chip active" onclick="startDemo(0)">Endpoint revenue</button>
+      <button class="demo-chip" onclick="startDemo(1)">Agent budget</button>
+      <button class="demo-chip" onclick="startDemo(2)">Failed payment</button>
     </div>
     <div class="demo-grid">
       <div class="demo-pane">
         <div class="demo-pane-header">
-          <div class="demo-model"><span class="demo-dot claude"></span>Claude Sonnet</div>
+          <div class="demo-model"><span class="demo-dot claude"></span>Provider View</div>
           <span class="demo-timer" id="demoTimerClaude">0.0s</span>
         </div>
         <div class="demo-response" id="demoResponseClaude"></div>
       </div>
       <div class="demo-pane">
         <div class="demo-pane-header">
-          <div class="demo-model"><span class="demo-dot gemini"></span>Gemini Flash</div>
+          <div class="demo-model"><span class="demo-dot gemini"></span>Agent View</div>
           <span class="demo-timer" id="demoTimerGemini">0.0s</span>
         </div>
         <div class="demo-response" id="demoResponseGemini"></div>
       </div>
     </div>
     <div style="text-align: center; margin-top: 48px;">
-      <a href="/dashboard" class="btn-primary">Try it yourself &rarr;</a>
+      <a href="/dashboard" class="btn-primary">Open the dashboard &rarr;</a>
     </div>
   </div>
 </section>
@@ -310,57 +356,57 @@
 <!-- TIERS -->
 <section class="tiers-section" id="tiers">
   <div class="tiers-inner">
-    <div class="section-label">Access Tiers</div>
-    <h2 class="tiers-headline">Hold more. Unlock more.</h2>
-    <p class="tiers-sub">Your access level depends on how many tokens you hold. No subscriptions, no renewals &mdash; just hold.</p>
+    <div class="section-label">Dashboard</div>
+    <h2 class="tiers-headline">The dashboard is where Meterflow becomes useful.</h2>
+    <p class="tiers-sub">The payment rail answers how money moves. The dashboard answers what was metered, who paid, what failed, and whether an agent is still inside policy.</p>
     <div class="tiers-grid">
       <div class="tier-card">
-        <div class="tier-name">Signal</div>
-        <div class="tier-amount">10K+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Everything you need to get started with AI-powered trading and chat.</p>
+        <div class="tier-name">Meters</div>
+        <div class="tier-amount">Price <span>routes</span></div>
+        <p class="tier-desc">Create products out of APIs, MCP tools, model calls, media routes, data feeds, and compute jobs.</p>
         <ul class="tier-features">
-          <li>AI chat (Claude Sonnet + Gemini Flash)</li>
-          <li>Basic trading signals</li>
-          <li>Image generation</li>
-          <li>~1,000 messages per day</li>
+          <li>Route-level pricing</li>
+          <li>Accepted asset and network</li>
+          <li>Owner and recipient settings</li>
+          <li>Active, paused, and test modes</li>
         </ul>
-        <button class="tier-btn">Buy on PumpSwap</button>
+        <button class="tier-btn">Open Dashboard</button>
       </div>
       <div class="tier-card featured">
-        <div class="tier-name">Operator</div>
-        <div class="tier-amount">100K+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Full access to every tool in the ecosystem. The sweet spot for active traders.</p>
+        <div class="tier-name">Receipts</div>
+        <div class="tier-amount">Audit <span>usage</span></div>
+        <p class="tier-desc">Follow the full path from request to quote to payment proof to response status and receipt export.</p>
         <ul class="tier-features">
-          <li>All AI models (Claude + Gemini Pro)</li>
-          <li>Full trading bot suite</li>
-          <li>Token intelligence &amp; whale tracking</li>
-          <li>~10,000 messages per day</li>
+          <li>Payment verification state</li>
+          <li>Request and response metadata</li>
+          <li>CSV and webhook exports</li>
+          <li>Failure reasons and retries</li>
         </ul>
-        <button class="tier-btn">Buy on PumpSwap</button>
+        <button class="tier-btn">Read Docs</button>
       </div>
       <div class="tier-card">
-        <div class="tier-name">Architect</div>
-        <div class="tier-amount">1M+ <span>$INFINITE</span></div>
-        <p class="tier-desc">Unlimited everything. For power users and builders who want zero limits.</p>
+        <div class="tier-name">Budgets</div>
+        <div class="tier-amount">Limit <span>agents</span></div>
+        <p class="tier-desc">Give agents controlled payment ability without handing them unlimited access to a wallet.</p>
         <ul class="tier-features">
-          <li>All models including Claude Opus</li>
-          <li>Unlimited messages</li>
-          <li>Early access to new tools</li>
-          <li>Direct team access</li>
+          <li>Daily, weekly, and task caps</li>
+          <li>Endpoint allowlists</li>
+          <li>Revocation and kill switches</li>
+          <li>Operator alerts</li>
         </ul>
-        <button class="tier-btn">Buy on PumpSwap</button>
+        <button class="tier-btn">Configure Budgets</button>
       </div>
       <div class="tier-card">
-        <div class="tier-name">Alpha</div>
-        <div class="tier-amount">10M+ <span>$INFINITE</span></div>
-        <p class="tier-desc">CT intelligence suite. Scan Twitter profiles, track key followers, and discover alpha before everyone else.</p>
+        <div class="tier-name">Integrations</div>
+        <div class="tier-amount">Attach <span>providers</span></div>
+        <p class="tier-desc">Connect Solana infrastructure, wallet, data, social, and notification providers to Meterflow routes.</p>
         <ul class="tier-features">
-          <li>Everything in Architect</li>
-          <li>X Tools &mdash; profile scanner</li>
-          <li>Discover &amp; trending feeds</li>
-          <li>Watchlist, alerts &amp; CA detection</li>
+          <li>Provider route catalog</li>
+          <li>Wallet and settlement context</li>
+          <li>Data and social APIs</li>
+          <li>Operator alerts</li>
         </ul>
-        <button class="tier-btn">Buy on PumpSwap</button>
+        <button class="tier-btn">Open Integrations</button>
       </div>
     </div>
   </div>
@@ -369,34 +415,40 @@
 <!-- HOW IT'S FUNDED -->
 <section class="funded-section" id="funded">
   <div class="funded-inner">
-    <div class="section-label">Transparency</div>
-    <h2 class="funded-headline">Where the money comes from.</h2>
-    <p class="funded-sub">Every time someone buys or sells $INFINITE on pump.fun, creator fees flow to the treasury. Those fees pay for Claude, GPT, and Gemini API access for every holder. More trading = more budget = better tools.</p>
+    <div class="section-label">Settlement</div>
+    <h2 class="funded-headline">Payments alone are not the product.</h2>
+    <p class="funded-sub">Solana and x402-style flows can move money. Meterflow focuses on the control layer around that movement: quote integrity, usage records, revenue attribution, wallet-linked receipts, and agent-safe limits.</p>
 
     <div class="funded-flow">
       <div class="funded-step">
         <span class="funded-step-icon">01</span>
-        <div class="funded-step-label">Trading Fees</div>
-        <h3>People trade $INFINITE</h3>
-        <p>Every buy and sell generates a creator fee through PumpSwap. This happens automatically on every trade.</p>
+        <div class="funded-step-label">Meter</div>
+        <h3>The provider defines the product</h3>
+        <p>Every protected route gets a unit, price, recipient, customer policy, and operational state.</p>
       </div>
       <div class="funded-step">
         <span class="funded-step-icon">02</span>
-        <div class="funded-step-label">Treasury</div>
-        <h3>Fees fund the treasury</h3>
-        <p>50% of fees go to the API treasury. An autonomous agent manages the budget, converting SOL to pay for AI services.</p>
+        <div class="funded-step-label">Policy</div>
+        <h3>The agent stays inside limits</h3>
+        <p>Budgets, allowlists, and revocation rules decide whether an autonomous caller is allowed to spend.</p>
       </div>
       <div class="funded-step">
         <span class="funded-step-icon">03</span>
-        <div class="funded-step-label">Your Tools</div>
-        <h3>Treasury pays for your access</h3>
-        <p>The treasury funds Claude, Gemini, and every tool in the suite. When the budget is healthy, rate limits go up for everyone.</p>
+        <div class="funded-step-label">Accounting</div>
+        <h3>The dashboard records the truth</h3>
+        <p>Successful and failed requests become searchable receipts, revenue analytics, and exportable logs.</p>
+      </div>
+      <div class="funded-step">
+        <span class="funded-step-icon">04</span>
+        <div class="funded-step-label">Utility</div>
+        <h3>MFLOW powers the control layer</h3>
+        <p>USDC settles usage. MFLOW supports provider reputation, fee discounts, registry ranking, higher policy limits, longer retention, and future bonding.</p>
       </div>
     </div>
 
     <p class="funded-note">
-      The treasury wallet is public. Every transaction is verifiable on-chain.<br>
-      <a href="https://solscan.io" target="_blank" rel="noopener" id="treasurySolscan">View treasury on Solscan</a>
+      The dashboard records wallet context, metered usage, budgets, and receipts for paid API routes.<br>
+      <a href="https://solscan.io" target="_blank" rel="noopener" id="treasurySolscan">View wallet on Solscan</a>
     </p>
   </div>
 </section>
@@ -405,26 +457,26 @@
 <section class="agent-section" id="agents">
   <div class="agent-inner">
     <div class="section-label">Get Started</div>
-    <h2 class="agent-headline">Join <span class="accent">INFINITE</span></h2>
-    <p class="agent-sub">Choose how you want to get started with token-gated AI access.</p>
+    <h2 class="agent-headline">Start with a meter or a budget.</h2>
+    <p class="agent-sub">Providers monetize endpoints. Operators give agents controlled spending power.</p>
 
     <div class="agent-toggle">
-      <button class="agent-toggle-btn active" id="btnHuman" onclick="showTab('human')">I'm a Human</button>
-      <button class="agent-toggle-btn" id="btnAgent" onclick="showTab('agent')">I'm an Agent</button>
+      <button class="agent-toggle-btn active" id="btnHuman" onclick="showTab('human')">I'm a Builder</button>
+      <button class="agent-toggle-btn" id="btnAgent" onclick="showTab('agent')">I'm an Operator</button>
     </div>
 
     <!-- Human tab -->
     <div class="agent-tab active" id="tabHuman">
       <div class="agent-card">
-        <h3>Get started in 3 steps</h3>
+        <h3>Provider setup</h3>
         <div class="agent-step-list">
-          <div class="agent-step-item"><span class="agent-step-num">1</span> Buy $INFINITE on any Solana swap</div>
-          <div class="agent-step-item"><span class="agent-step-num">2</span> Connect your wallet at the dashboard</div>
-          <div class="agent-step-item"><span class="agent-step-num">3</span> Start using Claude, GPT, Gemini &mdash; free forever</div>
+          <div class="agent-step-item"><span class="agent-step-num">1</span> Choose the endpoint, MCP tool, model route, or data feed to meter</div>
+          <div class="agent-step-item"><span class="agent-step-num">2</span> Set price, asset, recipient wallet, customer rules, and test mode</div>
+          <div class="agent-step-item"><span class="agent-step-num">3</span> Watch calls, revenue, failures, and receipts in the dashboard</div>
         </div>
         <div class="agent-actions">
           <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-          <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="btn-secondary">Buy $INFINITE</a>
+          <a href="/docs" class="btn-secondary">Read Docs</a>
         </div>
       </div>
     </div>
@@ -432,16 +484,16 @@
     <!-- Agent tab -->
     <div class="agent-tab" id="tabAgent">
       <div class="agent-card">
-        <h3>Give your agent AI access</h3>
+        <h3>Agent operator setup</h3>
         <div class="agent-skill-url">
           <span class="agent-skill-label">Read</span>
-          <code id="skillUrl">https://infinitekeys.fun/skill.md</code>
-          <span class="agent-skill-label">and follow the instructions to join INFINITE</span>
+          <code id="skillUrl">https://meterflow.fun/skill.md</code>
+          <span class="agent-skill-label">for wallet registration, metered keys, and budgeted agent calls</span>
         </div>
         <div class="agent-step-list">
-          <div class="agent-step-item"><span class="agent-step-num">1</span> Read the skill file above to get started</div>
-          <div class="agent-step-item"><span class="agent-step-num">2</span> Register your wallet &amp; receive an API key</div>
-          <div class="agent-step-item"><span class="agent-step-num">3</span> Start calling Claude, GPT &amp; Gemini</div>
+          <div class="agent-step-item"><span class="agent-step-num">1</span> Connect the wallet that controls settlement, identity, and budget approval</div>
+          <div class="agent-step-item"><span class="agent-step-num">2</span> Issue a metered client key for the agent, task, max spend, and approved endpoints</div>
+          <div class="agent-step-item"><span class="agent-step-num">3</span> Review receipts and revoke access when the job is done</div>
         </div>
         <p class="agent-note">Don't have an AI agent? <a href="/dashboard">Use the dashboard instead &rarr;</a></p>
       </div>
@@ -457,61 +509,61 @@
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Do I need to know how to code?</span>
+        <span>How does the dashboard tie into the idea?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>No. Everything works through simple interfaces &mdash; a chat window for AI, a dashboard for trading tools, and buttons for everything else. If you can use a website, you can use INFINITE.</p>
+        <p>The dashboard is the main product surface. Providers create meters and inspect revenue. Operators connect a wallet, issue agent keys, visualize x402-style payments, export receipts, and set budgets before agents spend.</p>
       </div>
     </div>
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>What happens if I sell my tokens?</span>
+        <span>Is this just another x402 payment app?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>Your access level adjusts to match your current holdings. If you sell below a tier threshold, you drop to the lower tier. If you sell everything, access is paused until you buy back in. Your data and settings are saved.</p>
+        <p>No. x402-style payments are one rail Meterflow can support. The differentiation is the metering, accounting, observability, and spend-control layer around paid API usage.</p>
       </div>
     </div>
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Which wallets work?</span>
+        <span>What happens to the existing AI tools?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>Phantom, Solflare, and Backpack are all supported. Any Solana wallet that supports signature verification will work. We're adding more wallet support regularly.</p>
+        <p>They become the first live examples running through Meterflow. Chat, image, video, and trading routes are useful test services, but the larger product is metering any endpoint.</p>
       </div>
     </div>
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Is my data private?</span>
+        <span>Who is Meterflow for?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>Yes. We don't store your conversations or trading data. Your AI messages are proxied directly to the providers and not logged. The only thing on-chain is your wallet address and token balance for access verification.</p>
+        <p>API providers, MCP tool builders, data vendors, AI service operators, and teams running agents that need controlled access to paid tools.</p>
       </div>
     </div>
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>What if trading volume drops and the treasury runs low?</span>
+        <span>Why pay per request instead of subscriptions?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>The system automatically adjusts. When the treasury is flush, rate limits go up. When it's lower, they scale back proportionally. The tools never go offline &mdash; they just throttle. An autonomous agent manages the budget 24/7 to maximize runway.</p>
+        <p>Agents need to buy small units of data, compute, and model output without creating accounts or managing monthly plans. Per-request payment makes paid APIs composable, but it still needs metering and receipts.</p>
       </div>
     </div>
 
     <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
-        <span>How is this different from other "utility tokens"?</span>
+        <span>How is this different from another AI wrapper?</span>
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>Most utility tokens promise future features. INFINITE works today. Connect your wallet right now and start chatting with Claude. The tools are live, the treasury is funded, and everything is verifiable on-chain.</p>
+        <p>Most wrappers resell model access. Meterflow is building the usage-based billing and spend-control layer around APIs, with AI as the first live category.</p>
       </div>
     </div>
   </div>
@@ -521,26 +573,26 @@
 <section class="cta-section" id="buy">
   <div class="cta-glow"></div>
   <div class="cta-inner">
-    <h2>Stop paying<br>for <span class="accent">AI.</span></h2>
-    <p class="cta-sub">Buy once. Hold forever. Your token funds your tools.</p>
+    <h2>Meter usage.<br><span class="accent">Control spend.</span></h2>
+    <p class="cta-sub">Meterflow turns agent-accessible APIs into priced products with receipts, revenue views, and budget controls.</p>
     <div class="cta-links">
       <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-      <a class="btn-secondary disabled" id="ctaBuyLink" href="#">Buy on PumpSwap</a>
+      <a class="btn-secondary" id="ctaBuyLink" href="/docs">Read Docs</a>
     </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-left">&copy; 2026 INFINITE PROTOCOL</div>
+  <div class="footer-left">&copy; 2026 Meterflow</div>
   <div class="footer-links">
-    <a href="https://x.com/infinitexkeys">X / Twitter</a>
-    <a href="https://discord.gg/UGPwBKXV">Discord</a>
+    <a href="https://x.com/meterflowsol">X / Twitter</a>
+    <a href="https://discord.gg/tned74z4eN">Discord</a>
     <a href="docs.html">Docs</a>
-    <a id="footerDex" href="https://dexscreener.com/solana" target="_blank" rel="noopener">DexScreener</a>
-    <a href="https://github.com/kaelxsol/infinite-protocol" target="_blank" rel="noopener">GitHub</a>
+    <a href="/site/roadmap.html">Roadmap</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
   </div>
-  <div class="footer-compliance">All API access compliant with Anthropic, Google &amp; OpenAI usage policies.</div>
+  <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>
 </footer>
 
 <script src="/site/home.js"></script>
@@ -553,76 +605,25 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     e.preventDefault();
     const target = document.querySelector(this.getAttribute('href'));
-    if (target) lenis.scrollTo(target, { offset: -80 });
+    if (target) {
+      const contentTarget = target.querySelector([
+        ':scope > .protocol-stats-inner',
+        ':scope > .how-inner',
+        ':scope > .tools-inner',
+        ':scope > .tiers-inner',
+        ':scope > .funded-inner',
+        ':scope > .demo-inner',
+        ':scope > .agent-inner',
+        ':scope > .faq-inner',
+        ':scope > .cta-inner',
+      ].join(', ')) || target;
+      const navHeight = document.querySelector('nav')?.offsetHeight || 72;
+      lenis.scrollTo(contentTarget, { offset: -(navHeight + 24) });
+      history.replaceState(null, '', this.getAttribute('href'));
+    }
     closeMobile();
   });
 });
-</script>
-
-<!-- COBE 3D Globe -->
-<script type="module">
-import createGlobe from 'https://cdn.jsdelivr.net/npm/cobe/+esm';
-
-if (window.innerWidth > 768) {
-  const globeCanvas = document.getElementById('cobeGlobe');
-  if (globeCanvas) {
-    let globePhi = 0;
-    let globeTheta = 0.25;
-
-    const cobeGlobe = createGlobe(globeCanvas, {
-      devicePixelRatio: 1,
-      width: 580,
-      height: 580,
-      phi: 0,
-      theta: 0.25,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples: 16000,
-      mapBrightness: 4,
-      baseColor: [0.15, 0.15, 0.15],
-      markerColor: [0.78, 1, 0],
-      glowColor: [0.08, 0.08, 0.08],
-      markers: [
-        { location: [37.7749, -122.4194], size: 0.06 },
-        { location: [51.5074, -0.1278], size: 0.06 },
-        { location: [1.3521, 103.8198], size: 0.05 },
-        { location: [35.6762, 139.6503], size: 0.05 },
-        { location: [40.7128, -74.006], size: 0.05 },
-        { location: [-33.8688, 151.2093], size: 0.04 },
-        { location: [55.7558, 37.6173], size: 0.04 },
-        { location: [19.076, 72.8777], size: 0.04 },
-      ],
-      onRender: (state) => {
-        state.phi = globePhi;
-        state.theta = globeTheta;
-        globePhi += 0.003;
-      }
-    });
-
-    // Drag: horizontal + vertical
-    let pointerDown = false;
-    let pointerX = 0;
-    let pointerY = 0;
-    globeCanvas.addEventListener('pointerdown', (e) => {
-      pointerDown = true;
-      pointerX = e.clientX;
-      pointerY = e.clientY;
-    });
-    window.addEventListener('pointerup', () => { pointerDown = false; });
-    globeCanvas.addEventListener('pointermove', (e) => {
-      if (pointerDown) {
-        const dx = e.clientX - pointerX;
-        const dy = e.clientY - pointerY;
-        pointerX = e.clientX;
-        pointerY = e.clientY;
-        globePhi += dx * 0.005;
-        globeTheta = Math.max(-1.2, Math.min(1.2, globeTheta - dy * 0.005));
-      }
-    });
-
-    window.addEventListener('beforeunload', () => { cobeGlobe.destroy(); });
-  }
-}
 </script>
 
 </body>

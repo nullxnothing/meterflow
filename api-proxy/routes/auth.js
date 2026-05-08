@@ -15,6 +15,8 @@ import { resetUsage } from '../lib/kv-usage.js';
 const router = Router();
 
 const SIG_MAX_AGE_MS = 5 * 60 * 1000;
+const WRAPPED_SOL_MINT = 'So11111111111111111111111111111111111111112';
+const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -23,6 +25,40 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'rate_limited', message: 'Too many registration attempts. Try again in 15 minutes.' },
 });
+
+function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
+  const isHolder = tier && tier !== 'trial';
+  const minSignal = CONFIG.TIERS.signal?.min || 0;
+  const purchaseUrl = CONFIG.TOKEN_SWAP_URL || (CONFIG.TOKEN_MINT ? `https://jup.ag/swap/SOL-${CONFIG.TOKEN_MINT}` : null);
+  const usdcPurchaseUrl = CONFIG.TOKEN_MINT ? `https://jup.ag/swap/${USDC_MINT}-${CONFIG.TOKEN_MINT}` : null;
+  const protocolFeeBps = isHolder ? CONFIG.HOLDER_PROTOCOL_FEE_BPS : CONFIG.PROTOCOL_FEE_BPS;
+
+  return {
+    symbol: CONFIG.TOKEN_SYMBOL,
+    mint: CONFIG.TOKEN_MINT || null,
+    chain: 'solana',
+    isHolder,
+    balance,
+    minSignal,
+    protocolFeeBps,
+    holderProtocolFeeBps: CONFIG.HOLDER_PROTOCOL_FEE_BPS,
+    nonHolderProtocolFeeBps: CONFIG.PROTOCOL_FEE_BPS,
+    purchaseUrl,
+    usdcPurchaseUrl,
+    jupiterQuoteTemplate: CONFIG.TOKEN_MINT
+      ? `https://api.jup.ag/ultra/v1/order?inputMint=${WRAPPED_SOL_MINT}&outputMint=${CONFIG.TOKEN_MINT}&amount={lamports}&taker={wallet}`
+      : null,
+    agentInstructions: CONFIG.TOKEN_MINT
+      ? {
+          action: 'open_purchase_url_or_quote_jupiter',
+          outputMint: CONFIG.TOKEN_MINT,
+          defaultInputMint: WRAPPED_SOL_MINT,
+          usdcInputMint: USDC_MINT,
+          verifyWith: '/auth/status',
+        }
+      : { action: 'wait_for_token_launch', verifyWith: '/auth/tiers' },
+  };
+}
 
 /**
  * Shared wallet verification + key issuance logic.
@@ -81,10 +117,11 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
           models: tierConfig.models.filter(isModelAvailable),
           comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
           isTrial: effectiveTier === 'trial',
+          token: buildTokenAccess({ tier: effectiveTier, balance }),
           freeAccess,
           freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
           message: freeAccess
-            ? 'Free access granted! Hold $INFINITE tokens before it expires to keep access.'
+            ? 'Free access granted for Meterflow gateway routes.'
             : 'Existing key returned. Tier updated.',
           ...opts.extraResponse,
         },
@@ -112,12 +149,13 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
       models: tierConfig.models.filter(isModelAvailable),
       comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
       isTrial: effectiveTier === 'trial',
+      token: buildTokenAccess({ tier: effectiveTier, balance }),
       freeAccess,
       freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
       message: freeAccess
-        ? 'Free access granted! Hold $INFINITE tokens before it expires to keep access.'
+        ? 'Free access granted for Meterflow gateway routes.'
         : effectiveTier === 'trial'
-          ? 'Trial access granted. Hold $INFINITE tokens for full access.'
+          ? 'Trial access granted. Use a Meterflow key or paid request flow for full access.'
           : 'API key generated. Keep it safe.',
       ...opts.extraResponse,
     },
@@ -144,8 +182,8 @@ router.post('/register', registerLimiter, async (req, res) => {
 
 // GET /auth/status
 router.get('/status', authenticateApiKey, (req, res) => {
-  const { wallet, tier, balance, tierConfig, usage } = req.infinite;
-  const isGuest = !!req.infinite.guest || wallet?.startsWith('guest_');
+  const { wallet, tier, balance, tierConfig, usage } = req.meterflow;
+  const isGuest = !!req.meterflow.guest || wallet?.startsWith('guest_');
   const freeActive = isFreeAccessActive();
   const isFreeUser = isGuest || (freeActive && balance < (CONFIG.TIERS.signal?.min || 10000) && tier !== 'trial');
   res.json({
@@ -155,6 +193,7 @@ router.get('/status', authenticateApiKey, (req, res) => {
     usage: { today: usage.count, limit: tierConfig.dailyLimit, remaining: tierConfig.dailyLimit - usage.count },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
+    token: buildTokenAccess({ tier, balance }),
     isGuest,
     freeAccess: isFreeUser,
     freeAccessEndsAt: isFreeUser ? getFreeAccessEndsAt() : undefined,
@@ -171,14 +210,14 @@ router.post('/agent-register', registerLimiter, async (req, res) => {
       example: {
         wallet: '<solana-public-key>',
         signature: '<base58-signature>',
-        message: 'INFINITE Protocol Agent Registration\nWallet: <public-key>\nTimestamp: <unix-ms>',
+        message: 'Meterflow Agent Registration\nWallet: <public-key>\nTimestamp: <unix-ms>',
       },
     });
   }
   try {
     const result = await registerWallet(
       { wallet, signature, message },
-      { source: 'agent', extraResponse: { tokenMint: CONFIG.TOKEN_MINT, dashboard: 'https://infinitekeys.fun' } },
+      { source: 'agent', extraResponse: { tokenMint: CONFIG.TOKEN_MINT, dashboard: 'https://meterflow.fun', product: 'Meterflow' } },
     );
     res.status(result.status).json(result.body);
   } catch (err) {
@@ -203,7 +242,7 @@ router.post('/guest', guestLimiter, async (req, res) => {
   if (!isFreeAccessActive()) {
     return res.status(403).json({
       error: 'free_access_inactive',
-      message: 'Free access is not currently active. Connect a wallet and hold $INFINITE tokens for access.',
+      message: 'Free access is not currently active. Use a Meterflow key or paid request flow for access.',
     });
   }
 
@@ -231,9 +270,10 @@ router.post('/guest', guestLimiter, async (req, res) => {
       comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
       isTrial: false,
       isGuest: true,
+      token: buildTokenAccess({ tier: 'trial', balance: 0 }),
       freeAccess: true,
       freeAccessEndsAt: getFreeAccessEndsAt(),
-      message: 'Free access granted! Connect a wallet and hold $INFINITE to keep access after it ends.',
+      message: 'Free access granted for Meterflow gateway routes.',
     });
   } catch (err) {
     logger.error('Guest registration error', { err: err.message });
@@ -256,9 +296,10 @@ router.get('/tiers', (_req, res) => {
 
   res.json({
     tokenMint: CONFIG.TOKEN_MINT,
-    tokenSymbol: 'INF',
+    tokenSymbol: CONFIG.TOKEN_SYMBOL,
+    token: buildTokenAccess(),
     chain: 'solana',
-    dashboard: 'https://infinitekeys.fun',
+    dashboard: 'https://meterflow.fun',
     tiers: [
       { id: 'trial', label: 'Trial', minTokens: 0, dailyLimit: TRIAL_CONFIG.dailyLimit, models: TRIAL_CONFIG.models },
       ...tiers,
@@ -268,7 +309,7 @@ router.get('/tiers', (_req, res) => {
 
 // POST /auth/revoke — also cleans up trading wallet
 router.post('/revoke', authenticateApiKey, async (req, res) => {
-  const { apiKey, wallet } = req.infinite;
+  const { apiKey, wallet } = req.meterflow;
   await deleteKey(apiKey, wallet);
   await Promise.all([resetUsage(apiKey), deleteWallet(apiKey)]);
   res.json({ message: 'API key revoked. Generate a new one at any time.' });
@@ -276,7 +317,7 @@ router.post('/revoke', authenticateApiKey, async (req, res) => {
 
 // POST /auth/rotate — also cleans up old trading wallet
 router.post('/rotate', authenticateApiKey, async (req, res) => {
-  const { apiKey: oldKey, wallet, tier, balance } = req.infinite;
+  const { apiKey: oldKey, wallet, tier, balance } = req.meterflow;
 
   await deleteKey(oldKey, wallet);
   await Promise.all([resetUsage(oldKey), deleteWallet(oldKey)]);

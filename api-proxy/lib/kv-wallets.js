@@ -1,7 +1,7 @@
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const WALLET_PREFIX = 'infinite:trading_wallet:';
+const WALLET_PREFIX = 'meterflow:trading_wallet:';
 
 export async function persistWallet(apiKey, walletData) {
   const r = getRedis();

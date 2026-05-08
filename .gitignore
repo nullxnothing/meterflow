@@ -18,3 +18,5 @@ screenshots/
 eliza-agent/
 twitter-bot/test-ai.js
 *.png
+!assets/brand/meterflow-mark-transparent.png
+!assets/brand/og-meterflow.png

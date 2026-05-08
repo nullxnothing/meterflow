@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Render Module
+// Meterflow Dashboard - Render Module
 // ═══════════════════════════════════════════
 
 import { STATE } from './state.js';
@@ -8,9 +8,10 @@ import { getWalletProviders } from './wallet.js';
 import { bindEvents } from './events.js';
 
 // Tab renderers
-import { renderOverview } from './tabs/overview.js';
-import { renderKeys } from './tabs/keys.js';
-import { renderModels } from './tabs/models.js';
+import { renderOverview } from './tabs/overview.js?v=meterflow-control-plane';
+import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=meterflow-control-plane';
+import { renderKeys } from './tabs/keys.js?v=meterflow-control-plane';
+import { renderModels } from './tabs/models.js?v=meterflow-control-plane';
 import { renderConnections } from './tabs/connections.js';
 import { renderChat } from './tabs/chat.js';
 import { renderImages } from './tabs/images.js';
@@ -19,7 +20,7 @@ import { renderTrading } from './tabs/trading.js';
 import { renderAgents } from './tabs/agents.js';
 import { renderMyAgents } from './tabs/my-agents.js';
 import { renderFutureApis } from './tabs/future-apis.js';
-import { renderTreasury } from './tabs/treasury.js';
+import { renderTreasury } from './tabs/treasury.js?v=meterflow-control-plane';
 import { renderLiveTrades } from './tabs/live-trades.js';
 import { renderXTools } from './tabs/x-tools.js';
 import { renderLaunch } from './tabs/launch.js';
@@ -38,9 +39,9 @@ export function renderConnectScreen() {
   return `
     <div class="connect-screen">
       <div class="connect-box">
-        <div class="logo">INF</div>
-        <h1>INFINITE Dashboard</h1>
-        <p>Connect your wallet to access AI chat, image generation, trading tools, and raw API keys.</p>
+        <div class="logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt=""></div>
+        <h1>Meterflow Dashboard</h1>
+        <p>Connect your wallet to manage meters, receipts, agent budgets, service routes, and API keys.</p>
         ${STATE.error ? `<div class="connect-error">${escapeHtml(STATE.error)}</div>` : ''}
         <div class="connect-wallets">
           ${STATE.connecting ? `<button class="connect-btn btn-loading" disabled style="min-height:52px;">Connecting...</button>` : hasWallet ? providers.map((p, i) => `
@@ -66,7 +67,7 @@ export function renderDashboard() {
   const resetTime = getResetCountdown();
   return `
     <div class="mobile-header">
-      <span class="mobile-logo">INFINITE</span>
+      <span class="mobile-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</span>
       <div class="mobile-header-right">
         ${STATE.connected
           ? `<span class="mobile-tier">${STATE.isGuest ? 'Guest' : (STATE.tier || '')}</span>`
@@ -78,14 +79,14 @@ export function renderDashboard() {
     <div class="mobile-nav-overlay" id="mobileNavOverlay">
       <div class="mobile-nav-drawer" id="mobileNavDrawer">
         <button class="mobile-nav-close" id="mobileNavClose">\u00d7</button>
-        <div class="sidebar-logo" style="margin-bottom:32px;">INFINITE</div>
+        <div class="sidebar-logo" style="margin-bottom:32px;"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</div>
         ${renderNavItems()}
         <div class="mobile-nav-account">
           ${STATE.connected && STATE.isGuest ? `
             <div class="wallet-info" style="color:var(--accent);">Guest — Free Access</div>
             <button class="btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="openWalletConnect()">Connect Wallet to Keep Access</button>
           ` : STATE.connected ? `
-            <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Connected'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+            <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Connected'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div>
             <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy" style="color:var(--accent);font-size:10px;">COPY</span></div>
             <button class="btn-sm danger" style="width:100%;padding:10px;margin-top:4px;" onclick="disconnectWallet()">Disconnect</button>
           ` : `
@@ -96,7 +97,8 @@ export function renderDashboard() {
     </div>
     <aside class="sidebar">
       <div class="sidebar-logo">
-        INFINITE
+        <img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">
+        Meterflow
         <span class="status-dot ${hasKey ? 'online' : 'offline'}" id="connectionDot" title="${hasKey ? 'Connected' : 'Not connected'}"></span>
       </div>
       <nav class="sidebar-nav">
@@ -106,7 +108,7 @@ export function renderDashboard() {
         ${hasKey && STATE.isGuest ? `
           <div class="sidebar-usage" id="sidebarUsage">
             <div class="sidebar-usage-header">
-              <span class="sidebar-usage-label">API Usage</span>
+              <span class="sidebar-usage-label">Metered Usage</span>
               <span class="sidebar-usage-count">${STATE.usage.limit === 0 ? '...' : STATE.usage.remaining.toLocaleString() + ' left'}</span>
             </div>
             <div class="sidebar-usage-track">
@@ -116,13 +118,13 @@ export function renderDashboard() {
           </div>
           <div class="wallet-info" id="sidebarFooterInfo" style="color:var(--accent);">Guest — Free Access</div>
           <div class="sidebar-connect-cta" style="margin-top:8px;">
-            <div class="sidebar-connect-text" style="font-size:11px;">Connect wallet & hold $INFINITE to keep access</div>
+            <div class="sidebar-connect-text" style="font-size:11px;">Connect wallet or use a paid Meterflow flow to keep access</div>
             <button class="btn-primary sidebar-connect-btn" onclick="openWalletConnect()" style="margin-top:8px;">Connect Wallet</button>
           </div>
         ` : hasKey ? `
           <div class="sidebar-usage" id="sidebarUsage">
             <div class="sidebar-usage-header">
-              <span class="sidebar-usage-label">API Usage</span>
+              <span class="sidebar-usage-label">Metered Usage</span>
               <span class="sidebar-usage-count">${STATE.usage.limit === 0 ? '...' : STATE.usage.remaining.toLocaleString() + ' left'}</span>
             </div>
             <div class="sidebar-usage-track">
@@ -130,7 +132,7 @@ export function renderDashboard() {
             </div>
             <div class="sidebar-usage-reset">resets ${resetTime}</div>
           </div>
-          <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+          <div class="wallet-info" id="sidebarFooterInfo">${STATE.tier ? STATE.tier + ' Tier' : 'Loading...'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div>
           <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
             ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}
             <span class="copy">COPY</span>
@@ -139,7 +141,7 @@ export function renderDashboard() {
             <button class="btn-sm danger" style="width:100%;padding:8px;" onclick="disconnectWallet()">Disconnect</button>
           </div>
         ` : STATE.connected ? `
-          <div class="wallet-info" id="sidebarFooterInfo">Connected \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF</div>
+          <div class="wallet-info" id="sidebarFooterInfo">Connected \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div>
           <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">
             ${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}
             <span class="copy">COPY</span>
@@ -149,16 +151,16 @@ export function renderDashboard() {
           </div>
         ` : `
           <div class="sidebar-connect-cta">
-            <div class="sidebar-connect-text">Connect wallet & hold $INFINITE to unlock API keys</div>
+            <div class="sidebar-connect-text">Connect wallet to configure meters, budgets, receipts, and keys</div>
             <button class="btn-primary sidebar-connect-btn" onclick="openWalletConnect()">Connect Wallet</button>
           </div>
         `}
         <div class="sidebar-socials">
-          <a href="https://x.com/infinitexkeys" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
-          <a href="https://discord.gg/infinite" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
+          <a href="https://x.com/meterflowsol" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
+          <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
         </div>
-        <div class="compliance-badge" title="INFINITE operates in full compliance with Anthropic, Google, and OpenAI usage policies. All API access is authorized and properly licensed.">
-          <span class="compliance-dot"></span> ToS Compliant
+        <div class="compliance-badge" title="Meterflow tracks usage, receipts, route access, and budget limits for agent-accessible APIs.">
+          <span class="compliance-dot"></span> Metering Active
         </div>
       </div>
     </aside>
@@ -182,27 +184,20 @@ function renderStatusBanner() {
 function renderNavItems() {
   const t = STATE.activeTab;
   return `
-    <div class="nav-group-label">Dashboard</div>
+    <div class="nav-group-label">Control Plane</div>
     <div class="nav-item ${t === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
+    <div class="nav-item ${t === 'meters' ? 'active' : ''}" data-tab="meters">Meters</div>
+    <div class="nav-item ${t === 'receipts' ? 'active' : ''}" data-tab="receipts">Receipts</div>
+    <div class="nav-item ${t === 'budgets' ? 'active' : ''}" data-tab="budgets">Agent Budgets</div>
+    <div class="nav-item ${t === 'mcp-tools' ? 'active' : ''}" data-tab="mcp-tools">MCP Tools</div>
     <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
-    <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Models</div>
+    <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Service Routes</div>
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
-    <div class="nav-group-label">Solana Tools</div>
-    <div class="nav-item ${t === 'launch' ? 'active' : ''}" data-tab="launch">Launch Agent <span style="font-size:9px;opacity:0.5;margin-left:4px;">NEW</span></div>
-    <div class="nav-item ${t === 'live-trades' ? 'active' : ''}" data-tab="live-trades">Live Trades</div>
-    <div class="nav-item ${t === 'trading' ? 'active' : ''}" data-tab="trading">Trade Bot</div>
-    <div class="nav-group-label">Media Tools</div>
-    <div class="nav-item ${t === 'images' ? 'active' : ''}" data-tab="images">Image Lab</div>
-    <div class="nav-item ${t === 'video' ? 'active' : ''}" data-tab="video">Video Lab</div>
-    <div class="nav-group-label">Agents</div>
-    <div class="nav-item ${t === 'chat' ? 'active' : ''}" data-tab="chat">AI Chat</div>
-    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">My Agents</div>
-    <div class="nav-item ${t === 'agents' ? 'active' : ''}" data-tab="agents">Tools Hub</div>
-    <div class="nav-group-label">X Tools</div>
-    <div class="nav-item ${t === 'x-tools' ? 'active' : ''}" data-tab="x-tools">Infinite Alpha <span style="font-size:9px;opacity:0.5;margin-left:4px;">(Beta)</span></div>
-    <div class="nav-group-label">Protocol</div>
-    <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Future APIs</div>
-    <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Treasury</div>
+
+    <div class="nav-group-label">Operations</div>
+    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agent Workflows</div>
+    <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Settlement Wallet</div>
+    <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Integrations</div>
   `;
 }
 
@@ -219,6 +214,10 @@ export function renderTab() {
   try {
     switch (STATE.activeTab) {
       case 'overview': return renderOverview();
+      case 'meters': return renderMeters();
+      case 'receipts': return renderReceipts();
+      case 'budgets': return renderBudgets();
+      case 'mcp-tools': return renderMcpTools();
       case 'keys': return renderKeys();
       case 'models': return renderModels();
       case 'connections': return renderConnections();
@@ -236,7 +235,7 @@ export function renderTab() {
       default: return renderOverview();
     }
   } catch (err) {
-    console.error(`[INFINITE] Tab render error (${STATE.activeTab}):`, err);
+    console.error(`[Meterflow] Tab render error (${STATE.activeTab}):`, err);
     return `
       <div class="page-header">
         <h1 class="page-title">Something went wrong</h1>

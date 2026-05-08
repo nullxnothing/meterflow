@@ -12,7 +12,7 @@ async function fetchBalanceFromRPC(walletAddress) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
-        id: 'infinite-balance-check',
+        id: 'meterflow-balance-check',
         method: 'getTokenAccountsByOwner',
         params: [walletAddress, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' }],
       }),

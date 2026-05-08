@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Event Bindings
+// Meterflow Dashboard - Event Bindings
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, TRADING } from './state.js';

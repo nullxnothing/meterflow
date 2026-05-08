@@ -1,14 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Infinite Alpha (Beta)",
+  "name": "Meterflow Signal",
   "version": "0.1.0",
-  "description": "Free crypto project intelligence on Twitter/X — powered by Infinite",
+  "description": "Metered crypto project intelligence on Twitter/X - powered by Meterflow",
   "permissions": ["storage", "sidePanel", "activeTab", "tabs"],
   "host_permissions": [
     "https://x.com/*",
     "https://twitter.com/*",
-    "https://*.infinitekeys.fun/*",
-    "https://infinitekeys.fun/*",
+    "https://*.meterflow.fun/*",
+    "https://meterflow.fun/*",
     "https://api.dexscreener.com/*"
   ],
   "background": {

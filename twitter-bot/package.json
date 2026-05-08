@@ -1,8 +1,8 @@
 {
-  "name": "infinite-twitter-bot",
+  "name": "meterflow-twitter-bot",
   "version": "1.0.0",
   "type": "module",
-  "description": "INFINITE Protocol — X/Twitter engagement bot",
+  "description": "Meterflow X/Twitter engagement bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

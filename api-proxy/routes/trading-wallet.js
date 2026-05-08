@@ -37,7 +37,7 @@ async function getOrLoadWallet(apiKey) {
 
 // POST /v1/trading/wallet/create
 router.post('/wallet/create', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   if (tradingWallets.has(apiKey)) {
     const existing = tradingWallets.get(apiKey);
     return res.json({ publicKey: existing.publicKey, message: 'Wallet already exists.' });
@@ -57,7 +57,7 @@ router.post('/wallet/create', authenticateApiKey, requireTradingTier, async (req
 
 // POST /v1/trading/wallet/import
 router.post('/wallet/import', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { privateKey } = req.body;
   if (!privateKey) return res.status(400).json({ error: 'missing_field', message: 'privateKey is required' });
   try {
@@ -73,7 +73,7 @@ router.post('/wallet/import', authenticateApiKey, requireTradingTier, async (req
 
 // GET /v1/trading/wallet/info
 router.get('/wallet/info', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const w = await getOrLoadWallet(apiKey);
   if (!w) return res.status(404).json({ error: 'no_wallet', message: 'Create a wallet first via POST /v1/trading/wallet/create' });
   try {
@@ -87,7 +87,7 @@ router.get('/wallet/info', authenticateApiKey, requireTradingTier, async (req, r
 
 // POST /v1/trading/wallet/export
 router.post('/wallet/export', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { confirm } = req.body;
   if (!confirm) return res.status(400).json({ error: 'confirmation_required', message: 'Set { confirm: true } to export private key.' });
   if (!checkExportRateLimit(apiKey)) {
@@ -121,7 +121,7 @@ router.post('/swap/quote', authenticateApiKey, requireTradingTier, async (req, r
 
 // POST /v1/trading/swap
 router.post('/swap', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { inputMint, outputMint, amount, slippageBps, priorityFeeLamports } = req.body;
   if (!inputMint || !outputMint || !amount) {
     return res.status(400).json({ error: 'missing_fields', message: 'inputMint, outputMint, amount required' });
@@ -148,7 +148,7 @@ router.post('/swap', authenticateApiKey, requireTradingTier, async (req, res) =>
 
 // POST /v1/trading/pump/buy
 router.post('/pump/buy', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { mint, amount, denominatedInSol = true, slippage, priorityFee, pool } = req.body;
   if (!mint || amount === undefined) return res.status(400).json({ error: 'missing_fields', message: 'mint, amount required' });
   const w = await getOrLoadWallet(apiKey);
@@ -171,7 +171,7 @@ router.post('/pump/buy', authenticateApiKey, requireTradingTier, async (req, res
 
 // POST /v1/trading/pump/sell
 router.post('/pump/sell', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { mint, amount, denominatedInSol = false, slippage, priorityFee, pool } = req.body;
   if (!mint || amount === undefined) return res.status(400).json({ error: 'missing_fields', message: 'mint, amount required' });
   const w = await getOrLoadWallet(apiKey);

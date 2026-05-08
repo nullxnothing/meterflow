@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Tab: My Agents
+// Meterflow Dashboard — Tab: Agent Workflows
 // Recipe-based launcher UX
 // ═══════════════════════════════════════════
 
@@ -11,7 +11,7 @@ import {
   renderNotifPanel, renderRecipeGrid, renderRecipeSetup,
   renderAgentCard, renderAgentDetail,
 } from './my-agents-views.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js';
 
 // ─── Data Loading ───
 
@@ -219,13 +219,33 @@ function pushAgentNotification(agentId, type, message) {
 // ─── Main Render ───
 
 export function renderMyAgents() {
-  if (!isHolder()) {
+  if (!canManageMeterflow()) {
     return `
       <div class="page-header">
         <h1 class="page-title">Agents</h1>
-        <p class="page-sub">Deploy and manage AI agents with your API key</p>
+        <p class="page-sub">Deploy agents with spend caps, route allowlists, revocation, and receipt trails.</p>
       </div>
-      ${renderHolderGate('Agents')}
+      ${renderPreviewNotice('agent workflows')}
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Daily Cap</div><div class="value accent">$25</div><div class="sub">example policy</div></div>
+        <div class="stat-card"><div class="label">Allowed Routes</div><div class="value">3</div><div class="sub">meter allowlist</div></div>
+        <div class="stat-card"><div class="label">Revocation</div><div class="value green">Ready</div><div class="sub">kill switch per agent</div></div>
+        <div class="stat-card"><div class="label">Fee Mode</div><div class="value">${STATE.token?.protocolFeeBps ? (STATE.token.protocolFeeBps / 100) + '%' : '0%'}</div><div class="sub">current protocol fee</div></div>
+      </div>
+      <div class="tools-grid">
+        ${[
+          ['Market Research Agent', 'Runs priced data routes with a $25/day cap and receipt export.'],
+          ['Support Triage Agent', 'Can call model routes but cannot touch trading or wallet routes.'],
+          ['MCP Tool Buyer', 'Allowed to purchase token-risk and wallet-trace tool calls only.'],
+        ].map(([name, desc]) => `
+          <div class="tool-card preview-disabled">
+            <div class="tool-header"><span class="tool-status">PREVIEW</span></div>
+            <div class="tool-name">${name}</div>
+            <div class="tool-desc">${desc}</div>
+            <div class="tool-launch">Unlock</div>
+          </div>
+        `).join('')}
+      </div>
     `;
   }
 

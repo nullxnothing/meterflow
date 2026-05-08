@@ -4,6 +4,7 @@ import { authenticateApiKey } from '../middleware.js';
 import { incrementUsage, incrementModelStats } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
 import { captureError } from '../lib/sentry.js';
+import { completeMeteredRequest } from '../lib/control-plane.js';
 import { getProviderForModel, isModelAvailable, translateToolsForProvider, injectImagesIntoMessages } from '../lib/providers.js';
 import { getSystemPromptWithContext } from '../lib/system-prompt.js';
 import { detectOptimalModel } from '../lib/router.js';
@@ -18,7 +19,7 @@ const router = Router();
  * Returns { model, routingReason } on success, or sends an error response and returns null.
  */
 function resolveModel(req, res, requestedModel, messages) {
-  const { tierConfig } = req.infinite;
+  const { tierConfig } = req.meterflow;
   const availableModels = tierConfig.models.filter(m => m !== 'auto');
   let routingReason = null;
 
@@ -44,8 +45,8 @@ function resolveModel(req, res, requestedModel, messages) {
 
   if (!isModelAvailable(requestedModel)) {
     res.status(503).json({
-      error: 'model_coming_soon',
-      message: `${requestedModel} is coming soon. Stay tuned.`,
+      error: 'model_unavailable',
+      message: `${requestedModel} is not configured for this Meterflow route.`,
       availableModels: availableModels.filter(isModelAvailable),
     });
     return null;
@@ -57,7 +58,7 @@ function resolveModel(req, res, requestedModel, messages) {
 // POST /v1/chat — Proxy to Claude, Gemini, or OpenAI
 router.post('/chat', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature } = req.body;
-  const { tierConfig, apiKey } = req.infinite;
+  const { tierConfig, apiKey } = req.meterflow;
 
   const resolved = resolveModel(req, res, model || tierConfig.models[0], messages);
   if (!resolved) return;
@@ -81,17 +82,23 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     const [newUsage] = await Promise.all([
       incrementUsage(apiKey, result.usage?.totalTokens || 0),
       incrementModelStats(requestedModel, result.usage?.totalTokens || 0, chatLatency, false),
+      completeMeteredRequest(req, {
+        status: 'metered_key',
+        responseStatus: 200,
+        latencyMs: chatLatency,
+        tokens: result.usage?.totalTokens || 0,
+      }),
     ]);
 
     res.json({
-      id: `inf-${crypto.randomBytes(12).toString('hex')}`,
+      id: `mf-${crypto.randomBytes(12).toString('hex')}`,
       model: requestedModel,
       ...(routingReason && { routing: { model: requestedModel, reason: routingReason } }),
       content: result.content,
       usage: {
         inputTokens: result.usage?.inputTokens || 0,
         outputTokens: result.usage?.outputTokens || 0,
-        cost: '$0.00 — funded by $INFINITE treasury'
+        cost: 'metered by Meterflow'
       },
       rateLimit: {
         remaining: tierConfig.dailyLimit - newUsage.count,
@@ -100,6 +107,12 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
     });
 
   } catch (err) {
+    completeMeteredRequest(req, {
+      status: 'upstream_error',
+      responseStatus: 502,
+      latencyMs: Date.now() - chatStart,
+      error: err.message,
+    }).catch(() => {});
     incrementModelStats(requestedModel, 0, Date.now() - chatStart, true).catch(() => {});
     logger.error('Proxy error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8) });
@@ -114,7 +127,7 @@ router.post('/chat', authenticateApiKey, async (req, res) => {
 // POST /v1/chat/stream — SSE streaming proxy
 router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const { model, messages, max_tokens, temperature, tools, images } = req.body;
-  const { tierConfig, apiKey, isTrial } = req.infinite;
+  const { tierConfig, apiKey, isTrial } = req.meterflow;
 
   const resolved = resolveModel(req, res, model || tierConfig.models[0], messages);
   if (!resolved) return;
@@ -127,7 +140,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const provider = getProviderForModel(requestedModel);
   const { native: translatedTools, serverTools } = translateToolsForProvider(provider, effectiveTools);
   const processedMessages = injectImagesIntoMessages(provider, messages, images);
-  const systemPrompt = getSystemPromptWithContext(tierConfig, req.infinite.tier);
+  const systemPrompt = getSystemPromptWithContext(tierConfig, req.meterflow.tier);
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -172,6 +185,11 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
     const [newUsage] = await Promise.all([
       incrementUsage(apiKey),
       incrementModelStats(requestedModel, 0, Date.now() - streamStart, false),
+      completeMeteredRequest(req, {
+        status: 'metered_key',
+        responseStatus: 200,
+        latencyMs: Date.now() - streamStart,
+      }),
     ]);
     if (isTrial && !clientDisconnected) {
       res.write(`data: ${JSON.stringify({ type: 'trial', used: newUsage.count, limit: tierConfig.dailyLimit })}\n\n`);
@@ -183,6 +201,12 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   } catch (err) {
     clearInterval(heartbeat);
     if (clientDisconnected || err.name === 'AbortError') return;
+    completeMeteredRequest(req, {
+      status: 'upstream_error',
+      responseStatus: 502,
+      latencyMs: Date.now() - streamStart,
+      error: err.message,
+    }).catch(() => {});
     incrementModelStats(requestedModel, 0, Date.now() - streamStart, true).catch(() => {});
     logger.error('Stream error', { model: requestedModel, err: err.message, apiKey: apiKey.slice(0, 8) });
     captureError(err, { model: requestedModel, apiKey: apiKey.slice(0, 8), stream: true });

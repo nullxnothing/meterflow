@@ -169,7 +169,7 @@
 .recipe-freq-option.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(200, 255, 0, 0.04);
+  background: rgba(79, 156, 255, 0.04);
 }
 .recipe-freq-option input[type="radio"] {
   display: none;

@@ -14,6 +14,7 @@ export async function fetchStatus() {
     const data = await api('/auth/status');
     STATE.tier = data.tier;
     STATE.balance = data.balance ?? 0;
+    if (data.token) STATE.token = { ...STATE.token, ...data.token };
     STATE.usage = data.usage || STATE.usage;
     STATE.models = data.models || STATE.models;
     STATE.isGuest = data.isGuest || STATE.isGuest;
@@ -161,7 +162,7 @@ export function stopStatusPolling() {
 
 export function updateSidebarFooter() {
   const el = document.getElementById('sidebarFooterInfo');
-  if (el) el.textContent = `${STATE.tier || '\u2014'} Tier \u2014 ${(STATE.balance ?? 0).toLocaleString()} $INF`;
+  if (el) el.textContent = `${STATE.tier || '\u2014'} Tier \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}`;
 
   const usageEl = document.getElementById('sidebarUsage');
   if (usageEl) {
@@ -213,15 +214,10 @@ function updateOverviewStats() {
   const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
 
   const sub = main.querySelector('.page-sub');
-  if (sub) sub.textContent = `${STATE.tier || '\u2014'} tier \u2014 ${STATE.usage.remaining.toLocaleString()} API calls remaining today`;
+  if (sub) sub.textContent = `${STATE.usage.remaining.toLocaleString()} metered calls remaining today. Legacy tier: ${STATE.tier || '\u2014'}.`;
 
   const cards = main.querySelectorAll('.stat-card');
-  if (cards.length >= 3) {
-    const tierVal = cards[0].querySelector('.value');
-    const tierSub = cards[0].querySelector('.sub');
-    if (tierVal) tierVal.textContent = STATE.tier || '\u2014';
-    if (tierSub) tierSub.textContent = `${(STATE.balance ?? 0).toLocaleString()} $INFINITE`;
-
+  if (cards.length >= 4) {
     const callsVal = cards[1].querySelector('.value');
     const callsSub = cards[1].querySelector('.sub');
     if (callsVal) callsVal.textContent = STATE.usage.today.toLocaleString();
@@ -229,12 +225,17 @@ function updateOverviewStats() {
 
     const modelsVal = cards[2].querySelector('.value');
     if (modelsVal) modelsVal.textContent = STATE.models.length;
+
+    const tierVal = cards[3].querySelector('.value');
+    const tierSub = cards[3].querySelector('.sub');
+    if (tierVal) tierVal.textContent = STATE.tier || '\u2014';
+    if (tierSub) tierSub.textContent = `${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}`;
   }
 
   const fill = main.querySelector('.usage-bar-fill');
   if (fill) { fill.style.width = `${usagePct}%`; fill.className = `usage-bar-fill ${barClass}`; }
 
   const counts = main.querySelectorAll('.usage-count');
-  if (counts[0]) counts[0].innerHTML = `${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} calls</span>`;
+  if (counts[0]) counts[0].innerHTML = `${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} metered calls</span>`;
   if (counts[1]) counts[1].textContent = `${Math.round(usagePct)}%`;
 }

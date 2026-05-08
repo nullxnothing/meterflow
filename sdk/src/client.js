@@ -1,9 +1,9 @@
 import { parseSSEStream, parseMultiSSEStream } from './streaming.js';
 
-const DEFAULT_BASE_URL = 'https://infinitekeys.fun/proxy';
+const DEFAULT_BASE_URL = 'https://meterflow.fun/proxy';
 const DEFAULT_TIMEOUT = 30_000;
 
-export class InfiniteClient {
+export class MeterflowClient {
   /** @param {import('./types.js').ClientConfig} config */
   constructor(config) {
     if (!config?.apiKey) throw new Error('apiKey is required');
@@ -89,6 +89,60 @@ export class InfiniteClient {
     return this._get('/providers');
   }
 
+  /**
+   * List configured meters.
+   * @returns {Promise<{meters: Array}>}
+   */
+  async meters() {
+    return this._get('/v1/meters');
+  }
+
+  /**
+   * Create a metered route, API, or MCP product.
+   * @param {import('./types.js').MeterRequest} params
+   */
+  async createMeter(params) {
+    return this._post('/v1/meters', params);
+  }
+
+  /**
+   * List request receipts for this client key.
+   * @param {{meterId?: string, status?: string, limit?: number}} [params]
+   */
+  async receipts(params = {}) {
+    return this._get(`/v1/receipts${this._query(params)}`);
+  }
+
+  /**
+   * List agent budget policies for this client key.
+   */
+  async budgets() {
+    return this._get('/v1/budgets');
+  }
+
+  /**
+   * Create an agent budget policy.
+   * @param {import('./types.js').BudgetRequest} params
+   */
+  async createBudget(params) {
+    return this._post('/v1/budgets', params);
+  }
+
+  /**
+   * Package an MCP tool behind a Meterflow gateway.
+   * @param {import('./types.js').McpToolRequest} params
+   */
+  async createMcpTool(params) {
+    return this._post('/v1/mcp-tools', params);
+  }
+
+  /**
+   * Get provider revenue aggregates by meter.
+   */
+  async providerRevenue() {
+    return this._get('/v1/providers/revenue');
+  }
+
   // ─── Internal ───
 
   async _post(path, body) {
@@ -102,6 +156,15 @@ export class InfiniteClient {
   async _get(path) {
     const response = await this._fetch(path, { method: 'GET' });
     return response.json();
+  }
+
+  _query(params) {
+    const qs = new URLSearchParams();
+    for (const [key, value] of Object.entries(params || {})) {
+      if (value !== undefined && value !== null && value !== '') qs.set(key, String(value));
+    }
+    const text = qs.toString();
+    return text ? `?${text}` : '';
   }
 
   async _fetch(path, opts) {
@@ -135,3 +198,5 @@ export class InfiniteClient {
     }
   }
 }
+
+// Backward-compatible alias for existing integrations.

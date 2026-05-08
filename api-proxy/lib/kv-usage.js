@@ -2,7 +2,7 @@
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const USAGE_PREFIX = 'infinite:usage:';
+const USAGE_PREFIX = 'meterflow:usage:';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 // In-memory fallback (dev only)
@@ -101,7 +101,7 @@ export async function incrementUsage(apiKey, tokens = 0) {
 
 // ═══════════ TRIAL USAGE (IP-BASED) ═══════════
 
-const TRIAL_PREFIX = 'infinite:trial:';
+const TRIAL_PREFIX = 'meterflow:trial:';
 
 export async function getTrialUsage(ip) {
   const today = getTodayKey();
@@ -154,8 +154,8 @@ export async function incrementTrialUsage(ip) {
 
 // ═══════════ GLOBAL STATS ═══════════
 
-const GLOBAL_DAILY_KEY = 'infinite:stats:daily:';
-const GLOBAL_ALLTIME_KEY = 'infinite:stats:alltime';
+const GLOBAL_DAILY_KEY = 'meterflow:stats:daily:';
+const GLOBAL_ALLTIME_KEY = 'meterflow:stats:alltime';
 
 // In-memory fallback for global stats
 const fallbackGlobal = { calls: 0, tokens: 0, allTimeCalls: 0, allTimeTokens: 0 };
@@ -286,7 +286,7 @@ export async function getTopUsersToday(limit = 10) {
 
 // ═══════════ MODEL ANALYTICS ═══════════
 
-const MODEL_PREFIX = 'infinite:model:';
+const MODEL_PREFIX = 'meterflow:model:';
 
 /**
  * Track per-model stats: calls, tokens, errors, latency

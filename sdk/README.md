@@ -1,32 +1,29 @@
-# @infinite-protocol/sdk
+# @meterflow/sdk
 
-SDK for INFINITE Protocol — token-gated AI API access on Solana.
+SDK for Meterflow, a Solana-native metering gateway for AI agents, APIs, MCP tools, and data feeds.
 
 Zero dependencies. Works in Node.js 18+ and modern browsers.
 
 ## Install
 
 ```bash
-npm install @infinite-protocol/sdk
+npm install @meterflow/sdk
 ```
 
 ## Quick Start
 
 ```js
-import { InfiniteClient } from '@infinite-protocol/sdk';
+import { MeterflowClient } from '@meterflow/sdk';
 
-const client = new InfiniteClient({
-  apiKey: 'inf_xxxxx',
+const client = new MeterflowClient({
+  apiKey: 'mf_xxxxx',
 });
 
-// Chat completion
 const response = await client.chat({
-  model: 'claude-sonnet-4-5-20250929',
-  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'claude-sonnet-4-6',
+  messages: [{ role: 'user', content: 'Explain x402 on Solana' }],
 });
-console.log(response.content[0].text);
 
-// Streaming
 const stream = client.chatStream({
   model: 'gemini-2.5-flash',
   messages: [{ role: 'user', content: 'Write a haiku' }],
@@ -35,38 +32,23 @@ for await (const event of stream) {
   if (event.type === 'content_delta') process.stdout.write(event.text);
 }
 
-// Multi-model (unique to INFINITE)
 const multi = await client.multi({
-  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'],
-  messages: [{ role: 'user', content: 'What is Solana?' }],
+  models: ['claude-sonnet-4-6', 'gemini-2.5-flash'],
+  messages: [{ role: 'user', content: 'What should agents pay for on Solana?' }],
 });
-multi.responses.forEach(r => console.log(`${r.model}: ${r.content[0].text}`));
-
-// Multi-model streaming
-const multiStream = client.multiStream({
-  models: ['claude-sonnet-4-5-20250929', 'gemini-2.5-flash'],
-  messages: [{ role: 'user', content: 'Explain DeFi' }],
-});
-for await (const event of multiStream) {
-  console.log(event.type, event.model, event.text || '');
-}
-
-// Image generation
-const image = await client.image({ prompt: 'A neon Solana logo' });
-
-// Protocol status
-const status = await client.status();
-const treasury = await client.treasury();
+multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || ''}`));
 ```
+
+`MeterflowClient` is the canonical client export.
 
 ## API
 
-### `new InfiniteClient(config)`
+### `new MeterflowClient(config)`
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `apiKey` | `string` | *required* | Your INFINITE API key (`inf_xxxxx`) |
-| `baseUrl` | `string` | `https://infinitekeys.fun/proxy` | API base URL |
+| `apiKey` | `string` | required | Your Meterflow API key (`mf_xxxxx`) |
+| `baseUrl` | `string` | `https://meterflow.fun/proxy` | API base URL |
 | `timeout` | `number` | `30000` | Request timeout in ms |
 
 ### Methods
@@ -78,17 +60,41 @@ const treasury = await client.treasury();
 | `multi(params)` | `Promise<MultiResponse>` | Parallel multi-model inference |
 | `multiStream(params)` | `AsyncGenerator<MultiStreamEvent>` | Streaming multi-model |
 | `image(params)` | `Promise<Object>` | Image generation |
-| `status()` | `Promise<Object>` | Your tier, balance, usage |
-| `treasury()` | `Promise<TreasuryStatus>` | Live treasury data |
+| `status()` | `Promise<Object>` | Current key, wallet, usage, and service route access |
+| `treasury()` | `Promise<TreasuryStatus>` | Settlement wallet context |
 | `providers()` | `Promise<Object>` | Available AI providers |
+| `meters()` | `Promise<Object>` | List metered API/MCP products |
+| `createMeter(params)` | `Promise<Object>` | Create a route-level meter |
+| `receipts(params)` | `Promise<Object>` | List request receipts |
+| `budgets()` | `Promise<Object>` | List agent budget policies |
+| `createBudget(params)` | `Promise<Object>` | Create a spend-control policy |
+| `createMcpTool(params)` | `Promise<Object>` | Package an MCP tool behind Meterflow |
+| `providerRevenue()` | `Promise<Object>` | Revenue and failure aggregates by meter |
 
-## Models
+## Control Plane Example
 
-| Tier | Models |
-|------|--------|
-| Signal (10K tokens) | Claude Sonnet, Gemini Flash, GPT-4o Mini |
-| Operator (100K tokens) | + Gemini Pro, GPT-4o |
-| Architect (1M tokens) | + Claude Opus |
+```js
+await client.createMeter({
+  route: '/v1/risk-score',
+  method: 'POST',
+  unit: 'request',
+  priceUsd: 0.006,
+});
+
+await client.createBudget({
+  name: 'research-agent',
+  dailyCapUsd: 12,
+  perCallCapUsd: 0.02,
+  allowedMeterIds: ['mtr_chat', 'mtr_multi'],
+});
+
+const receipts = await client.receipts({ status: 'metered_key', limit: 25 });
+const revenue = await client.providerRevenue();
+```
+
+## Meterflow Model
+
+Meterflow uses wallet identity for operator setup and API keys for agent/server calls. Gateway routes are treated as metered services so usage can be connected to receipts, settlement context, and budget policies in the dashboard. USDC is the payment asset; MFLOW is the utility layer for provider reputation, discounts, registry ranking, higher limits, retention, and future bonding.
 
 ## License
 

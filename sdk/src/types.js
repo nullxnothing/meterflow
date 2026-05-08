@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} ClientConfig
- * @property {string} apiKey - Your INFINITE API key (inf_xxxxx)
+ * @property {string} apiKey - Your Meterflow API key (mf_xxxxx)
  * @property {string} [baseUrl] - API base URL (defaults to production)
  * @property {number} [timeout] - Request timeout in ms (default: 30000)
  */
@@ -81,6 +81,35 @@
  * @property {string} wallet
  * @property {number} totalKeysIssued
  * @property {Array} tiers
+ */
+
+/**
+ * @typedef {Object} MeterRequest
+ * @property {string} route
+ * @property {'GET'|'POST'|'PUT'|'DELETE'} [method]
+ * @property {string} [unit]
+ * @property {number} priceUsd
+ * @property {string} [asset]
+ * @property {'test'|'live'|'paused'} [status]
+ * @property {string} [ownerWallet]
+ */
+
+/**
+ * @typedef {Object} BudgetRequest
+ * @property {string} [name]
+ * @property {string} [agentId]
+ * @property {number} [dailyCapUsd]
+ * @property {number} [perCallCapUsd]
+ * @property {string[]} [allowedMeterIds]
+ */
+
+/**
+ * @typedef {Object} McpToolRequest
+ * @property {string} name
+ * @property {string} [manifestUrl]
+ * @property {string} [route]
+ * @property {number} [priceUsd]
+ * @property {'test'|'live'|'paused'} [status]
  */
 
 export {};

@@ -5,6 +5,7 @@
 import { STATE } from '../state.js';
 import { api } from '../api.js';
 import { escapeHtml } from '../utils.js';
+import { showToast } from '../actions.js';
 import { launchState, resetLaunchState, TWEET_PROMPTS, TRADE_PROMPTS, CHAT_PROMPTS } from './launch-state.js';
 import { renderLaunch, renderStepIndicator, renderCurrentStep } from './launch-views.js';
 
@@ -246,9 +247,16 @@ window.submitLaunch = async function () {
 
   launchState.loading = true;
   launchState.error = null;
+  launchState.signingPhase = null;
   rerenderLaunchForm();
 
   try {
+    // Generate a mint keypair client-side (PumpPortal requires it)
+    const { Keypair } = await import('https://esm.sh/@solana/web3.js@1.98.0');
+    const mintKeypair = Keypair.generate();
+    const mintPublicKey = mintKeypair.publicKey.toBase58();
+
+    // Step 1: Create agent + get unsigned tx from backend
     const result = await api('/v1/launch/create', {
       method: 'POST',
       body: JSON.stringify({
@@ -259,6 +267,7 @@ window.submitLaunch = async function () {
         twitter: launchState.twitter,
         website: launchState.website,
         devBuySol: launchState.devBuySol,
+        mintPublicKey,
         capabilities: launchState.capabilities,
         connections: launchState.connections,
         tweetConfig: launchState.tweetConfig,
@@ -266,15 +275,153 @@ window.submitLaunch = async function () {
         chatConfig: launchState.chatConfig,
       }),
     });
+
+    // Store mint info on result for signing
+    result._mintKeypair = mintKeypair;
+    result._mintPublicKey = mintPublicKey;
+
     launchState.result = result;
     launchState.loading = false;
     launchState.step = 4;
     rerenderLaunchForm();
+
+    // Step 2: Sign and send the token creation transaction
+    if (result.launchTx && STATE.walletProvider) {
+      await signAndConfirmLaunch(result);
+    }
   } catch (err) {
     launchState.error = err.message || 'Launch failed. Please try again.';
     launchState.loading = false;
     rerenderLaunchForm();
   }
+};
+
+async function signAndConfirmLaunch(result) {
+  const provider = STATE.walletProvider;
+  if (!provider || !result.launchTx) return;
+
+  launchState.signingPhase = 'signing';
+  rerenderLaunchForm();
+
+  try {
+    const txBytes = Uint8Array.from(atob(result.launchTx), c => c.charCodeAt(0));
+    const { VersionedTransaction, Connection } = await import('https://esm.sh/@solana/web3.js@1.98.0');
+    const tx = VersionedTransaction.deserialize(txBytes);
+
+    // PumpPortal create txs require the mint keypair to co-sign
+    const mintKeypair = result._mintKeypair;
+    if (mintKeypair) {
+      tx.sign([mintKeypair]);
+    }
+
+    // Wallet provider adds the user's signature
+    const signed = await provider.signTransaction(tx);
+
+    launchState.signingPhase = 'confirming';
+    rerenderLaunchForm();
+
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+
+    const signature = await connection.sendRawTransaction(signed.serialize(), {
+      skipPreflight: false,
+      maxRetries: 3,
+    });
+
+    launchState.txSignature = signature;
+    rerenderLaunchForm();
+
+    await connection.confirmTransaction(signature, 'confirmed');
+
+    // Confirm mint with backend using the known mint public key
+    const agentId = result.agentId || result.agent?.id;
+    const mintAddress = result._mintPublicKey || result.tokenMetadata?.mint || result.agent?.tokenMint;
+    if (agentId) {
+      const confirmResult = await api(`/v1/launch/agent/${agentId}/confirm-mint`, {
+        method: 'POST',
+        body: JSON.stringify({
+          mintAddress: mintAddress || 'pending',
+          signature,
+        }),
+      });
+
+      launchState.mintAddress = confirmResult.agent?.tokenMint || mintAddress;
+      launchState.result = { ...launchState.result, ...confirmResult };
+    }
+
+    launchState.signingPhase = 'confirmed';
+    showToast('Token created on-chain');
+  } catch (err) {
+    launchState.signingPhase = 'failed';
+    launchState.signingError = err.message || 'Transaction failed';
+  }
+  rerenderLaunchForm();
+}
+
+window.retryLaunchSigning = function () {
+  if (launchState.result) {
+    signAndConfirmLaunch(launchState.result);
+  }
+};
+
+// ─── Post-Launch Actions ───
+
+window.validateAgentCredentials = async function () {
+  const agentId = launchState.result?.agentId || launchState.result?.agent?.id;
+  if (!agentId) return;
+
+  launchState.validating = true;
+  launchState.validationResults = null;
+  rerenderLaunchForm();
+
+  try {
+    const data = await api(`/v1/launch/agent/${agentId}/validate`, { method: 'POST' });
+    launchState.validationResults = data.results;
+    showToast(data.allValid ? 'All credentials valid' : 'Some credentials failed validation');
+  } catch (err) {
+    launchState.validationResults = { error: err.message };
+  }
+  launchState.validating = false;
+  rerenderLaunchForm();
+};
+
+window.activateAgent = async function () {
+  const agentId = launchState.result?.agentId || launchState.result?.agent?.id;
+  if (!agentId) return;
+
+  try {
+    await api(`/v1/launch/agent/${agentId}/activate`, { method: 'POST' });
+    showToast('Agent activated');
+    if (launchState.result?.agent) launchState.result.agent.status = 'active';
+    rerenderLaunchForm();
+  } catch (err) {
+    showToast(err.message || 'Activation failed', true);
+  }
+};
+
+window.fundAgent = async function () {
+  const agentId = launchState.result?.agentId || launchState.result?.agent?.id;
+  if (!agentId) return;
+
+  const amount = parseInt(prompt('Credits to add (1-10000):'));
+  if (!amount || amount < 1 || amount > 10000) return;
+
+  launchState.funding = true;
+  rerenderLaunchForm();
+
+  try {
+    const data = await api(`/v1/launch/agent/${agentId}/fund`, {
+      method: 'POST',
+      body: JSON.stringify({ credits: amount }),
+    });
+    if (launchState.result?.agent) {
+      launchState.result.agent = data.agent;
+    }
+    showToast(`+${amount} credits added`);
+  } catch (err) {
+    showToast(err.message || 'Funding failed', true);
+  }
+  launchState.funding = false;
+  rerenderLaunchForm();
 };
 
 // ─── Reset & Navigate ───

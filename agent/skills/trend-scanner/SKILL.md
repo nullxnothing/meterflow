@@ -61,7 +61,7 @@ Subreddits to scan: `technology`, `programming`, `artificial`, `machinelearning`
 
 **Headers required:**
 ```
-User-Agent: INFINITE-Agent/1.0
+User-Agent: Meterflow-Agent/1.0
 ```
 
 Reddit requires a User-Agent header or it returns 429.

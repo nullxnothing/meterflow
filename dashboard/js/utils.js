@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Utility Functions
+// Meterflow Dashboard — Utility Functions
 // ═══════════════════════════════════════════
 
 // ─── String Helpers ───

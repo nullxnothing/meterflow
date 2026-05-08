@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Session Persistence
+// Meterflow Dashboard — Session Persistence
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, VIDEOS, TRADING, STORAGE_KEY, CHAT_STORAGE_KEY, clearStatusPollInterval } from './state.js';
@@ -14,12 +14,13 @@ export function saveSession() {
     wallet: STATE.wallet,
     tier: STATE.tier,
     balance: STATE.balance,
+    token: STATE.token,
     models: STATE.models,
     isGuest: STATE.isGuest || false,
   }));
   // API key in sessionStorage — cleared when tab closes
   if (STATE.apiKeyFull) {
-    sessionStorage.setItem('infinite_apiKey', STATE.apiKeyFull);
+    sessionStorage.setItem('meterflow_apiKey', STATE.apiKeyFull);
   }
 }
 
@@ -34,19 +35,20 @@ export function loadSession() {
     STATE.connected = true;
     STATE.isGuest = saved.isGuest || false;
     STATE.balance = saved.balance ?? 0;
+    if (saved.token) STATE.token = { ...STATE.token, ...saved.token };
     // Restore API key from sessionStorage (tab-scoped)
-    const apiKey = saved.apiKey || sessionStorage.getItem('infinite_apiKey');
+    const apiKey = saved.apiKey || sessionStorage.getItem('meterflow_apiKey');
     if (apiKey) {
       STATE.apiKeyFull = apiKey;
       STATE.apiKey = maskKey(apiKey);
       STATE.tier = saved.tier;
       STATE.models = saved.models || [];
-      // Migrate: if key was in localStorage, move it to sessionStorage
+      // If key was in localStorage, move it to tab-scoped sessionStorage.
       if (saved.apiKey) {
-        sessionStorage.setItem('infinite_apiKey', apiKey);
-        const migrated = { ...saved };
-        delete migrated.apiKey;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+        sessionStorage.setItem('meterflow_apiKey', apiKey);
+        const cleanSaved = { ...saved };
+        delete cleanSaved.apiKey;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanSaved));
       }
       return true;
     }
@@ -57,13 +59,19 @@ export function loadSession() {
 
 export function clearSession() {
   localStorage.removeItem(STORAGE_KEY);
-  sessionStorage.removeItem('infinite_apiKey');
+  sessionStorage.removeItem('meterflow_apiKey');
   clearStatusPollInterval();
   Object.assign(STATE, {
     connected: false, connecting: false, wallet: null, walletProvider: null,
     apiKey: null, apiKeyFull: null, tier: null, balance: 0,
     usage: { today: 0, limit: 0, remaining: 0 }, models: [], keyVisible: false, error: null,
     isGuest: false, freeAccess: false, freeAccessEndsAt: null,
+    token: {
+      symbol: 'MFLOW', mint: null, chain: 'solana', isHolder: false, balance: 0,
+      minSignal: 10000, protocolFeeBps: 100, holderProtocolFeeBps: 0,
+      nonHolderProtocolFeeBps: 100, purchaseUrl: null, usdcPurchaseUrl: null,
+      agentInstructions: null,
+    },
   });
 }
 
@@ -93,7 +101,7 @@ export function loadChatHistory() {
     CHAT.conversations = data.conversations || [];
     CHAT.activeId = data.activeId;
   } catch (err) {
-    console.warn('[INFINITE] Failed to load chat history:', err.message);
+    console.warn('[Meterflow] Failed to load chat history:', err.message);
     CHAT.conversations = [];
     CHAT.activeId = null;
   }
@@ -129,18 +137,18 @@ export function saveVideoHistory() {
       .filter(v => v.status === 'complete' && v.uri)
       .slice(0, 20)
       .map(v => ({ prompt: v.prompt, uri: v.uri, status: v.status, createdAt: v.createdAt }));
-    localStorage.setItem('infinite_videos', JSON.stringify(toSave));
+    localStorage.setItem('meterflow_videos', JSON.stringify(toSave));
   } catch {}
 }
 
 export function loadVideoHistory() {
   try {
-    const raw = localStorage.getItem('infinite_videos');
+    const raw = localStorage.getItem('meterflow_videos');
     if (!raw) return;
     const data = JSON.parse(raw);
     VIDEOS.gallery = (data || []).filter(v => v.uri);
   } catch (err) {
-    console.warn('[INFINITE] Failed to load video history:', err.message);
+    console.warn('[Meterflow] Failed to load video history:', err.message);
     VIDEOS.gallery = [];
   }
 }

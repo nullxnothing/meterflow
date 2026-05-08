@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Agent View Renderers
+// Meterflow Dashboard — Agent View Renderers
 // Recipe-based UX
 // ═══════════════════════════════════════════
 

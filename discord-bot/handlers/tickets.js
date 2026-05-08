@@ -2,12 +2,12 @@ import { BOT_CONFIG, AI } from '../config.js';
 import { fetchRecentErrors, searchLogs, formatLogsForAI } from '../render.js';
 import { splitMessage } from './ai.js';
 
-const DIAGNOSTIC_PROMPT = `You are a senior DevOps engineer triaging production issues for the INFINITE Protocol platform.
+const DIAGNOSTIC_PROMPT = `You are a senior DevOps engineer triaging production issues for the Meterflow platform.
 
 PLATFORM:
-- infinite-api-proxy: Node.js API proxy (handles AI chat, image, video, trading endpoints)
-- infinite-treasury-agent: Docker-based Solana treasury agent
-- infinite-discord-bot: Discord bot for community moderation and AI chat
+- meterflow-api-proxy: Node.js API proxy (handles AI chat, image, video, trading endpoints)
+- meterflow-agent: Docker-based Solana treasury agent
+- meterflow-discord-bot: Discord bot for community moderation and AI chat
 
 YOUR JOB:
 1. Analyze the user-reported issue

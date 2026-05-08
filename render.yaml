@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: infinite-protocol
+    name: meterflow-api
     runtime: node
     region: oregon
     rootDir: api-proxy
@@ -16,7 +16,7 @@ services:
         sync: false
       - key: HELIUS_RPC_URL
         sync: false
-      - key: INFINITE_TOKEN_MINT
+      - key: METERFLOW_TOKEN_MINT
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
@@ -26,7 +26,7 @@ services:
         sync: false
       - key: JUPITER_API_KEY
         sync: false
-      - key: TREASURY_WALLET
+      - key: SETTLEMENT_WALLET
         sync: false
       - key: API_KEY_SECRET
         sync: false

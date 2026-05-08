@@ -1,92 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500">
   <defs>
-    <filter id="grain">
-      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/>
-      <feColorMatrix type="saturate" values="0"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.06"/>
-      </feComponentTransfer>
-      <feBlend in="SourceGraphic" mode="multiply"/>
-    </filter>
-    <radialGradient id="glow1" cx="70%" cy="50%" r="40%">
-      <stop offset="0%" stop-color="#c8ff00" stop-opacity="0.06"/>
-      <stop offset="100%" stop-color="#c8ff00" stop-opacity="0"/>
+    <radialGradient id="glow1" cx="28%" cy="50%" r="34%">
+      <stop offset="0%" stop-color="#5fa8ff" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#5fa8ff" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="glow2" cx="30%" cy="60%" r="30%">
-      <stop offset="0%" stop-color="#c8ff00" stop-opacity="0.03"/>
-      <stop offset="100%" stop-color="#c8ff00" stop-opacity="0"/>
+    <radialGradient id="glow2" cx="78%" cy="50%" r="38%">
+      <stop offset="0%" stop-color="#5fa8ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#5fa8ff" stop-opacity="0"/>
     </radialGradient>
     <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#c8ff00" stroke-width="0.3" opacity="0.06"/>
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#5fa8ff" stroke-width="0.3" opacity="0.07"/>
     </pattern>
-    
     <style>
       @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1');
       @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700');
     </style>
   </defs>
-  
-  <!-- Background -->
-  <rect width="1500" height="500" fill="#0a0a0a"/>
-  
-  <!-- Grid -->
-  <rect width="1500" height="500" fill="url(#grid)"/>
-  
-  <!-- Glows -->
+  <rect width="1500" height="500" fill="#05080f"/>
+  <rect width="1500" height="500" fill="url(#grid)" opacity=".55"/>
   <rect width="1500" height="500" fill="url(#glow1)"/>
   <rect width="1500" height="500" fill="url(#glow2)"/>
-  
-  <!-- Top border line -->
-  <line x1="0" y1="1" x2="1500" y2="1" stroke="#222" stroke-width="1"/>
-  <!-- Bottom border line -->
-  <line x1="0" y1="499" x2="1500" y2="499" stroke="#222" stroke-width="1"/>
-  
-  <!-- Right accent line -->
-  <line x1="1420" y1="0" x2="1420" y2="500" stroke="#c8ff00" stroke-width="1" opacity="0.15"/>
-  
-  <!-- Large faint infinity symbol — left area (behind PFP, decorative) -->
-  <!-- Proper figure-eight / lemniscate shape -->
-  <g transform="translate(280, 250)" opacity="0.07">
-    <path d="M 0,0 C 30,-50 70,-70 100,-70 C 145,-70 170,-40 170,0 C 170,40 145,70 100,70 C 70,70 30,50 0,0 C -30,-50 -70,-70 -100,-70 C -145,-70 -170,-40 -170,0 C -170,40 -145,70 -100,70 C -70,70 -30,50 0,0 Z" 
-          fill="none" stroke="#c8ff00" stroke-width="18" stroke-linecap="round"/>
+  <line x1="0" y1="1" x2="1500" y2="1" stroke="#172236"/>
+  <line x1="0" y1="499" x2="1500" y2="499" stroke="#172236"/>
+  <line x1="70" y1="60" x2="70" y2="440" stroke="#5fa8ff" opacity=".16"/>
+  <g transform="translate(115 68) scale(.36)" fill="#fff">
+    <path d="M238 206c82 28 145 61 188 111 36 42 55 96 66 168 7 44 14 95 31 153-48-64-98-126-149-183-31-34-52-60-75-105-18-35-40-70-61-144Z"/>
+    <path d="M786 206c-82 28-145 61-188 111-36 42-55 96-66 168-7 44-14 95-31 153 48-64 98-126 149-183 31-34 52-60 75-105 18-35 40-70 61-144Z"/>
+    <path d="M322 318c62 43 114 95 157 157 14 20 25 35 33 35s19-15 33-35c43-62 95-114 157-157-34 72-61 142-99 202-22 35-50 64-72 97-17 25-23 109-19 260-40-157-48-235-19-294-40-48-95-117-171-265Z"/>
+    <path d="M156 301c79 56 131 116 155 180 23 62 24 135 4 218-17 71-59 125-113 166 61-92 69-174 64-250-8-116-41-212-110-314Z"/>
+    <path d="M868 301c-79 56-131 116-155 180-23 62-24 135-4 218 17 71 59 125 113 166-61-92-69-174-64-250 8-116 41-212 110-314Z"/>
   </g>
-
-  <!-- INFINITE text — main headline, RIGHT ALIGNED -->
-  <text x="1380" y="295" 
-        font-family="'DM Serif Display', Georgia, serif" 
-        font-size="148" 
-        font-style="italic"
-        fill="#c8ff00" 
-        letter-spacing="-2"
-        text-anchor="end">INFINITE</text>
-  
-  <!-- Tagline — right aligned under headline -->
-  <text x="1380" y="345" 
-        font-family="'JetBrains Mono', monospace" 
-        font-size="14" 
-        fill="#888880" 
-        letter-spacing="4"
-        text-anchor="end">OWN THE TOKEN. USE THE AI. FOREVER.</text>
-  
-  <!-- Small infinity accent mark — far right -->
-  <g transform="translate(1440, 250)" opacity="0.25">
-    <path d="M 0,0 C 8,-14 18,-20 28,-20 C 40,-20 48,-11 48,0 C 48,11 40,20 28,20 C 18,20 8,14 0,0 C -8,-14 -18,-20 -28,-20 C -40,-20 -48,-11 -48,0 C -48,11 -40,20 -28,20 C -18,20 -8,14 0,0 Z" 
-          fill="none" stroke="#c8ff00" stroke-width="5" stroke-linecap="round"/>
-  </g>
-  
-  <!-- Corner marks -->
-  <line x1="30" y1="30" x2="70" y2="30" stroke="#333" stroke-width="1"/>
-  <line x1="30" y1="30" x2="30" y2="70" stroke="#333" stroke-width="1"/>
-  
-  <line x1="1470" y1="30" x2="1430" y2="30" stroke="#333" stroke-width="1"/>
-  <line x1="1470" y1="30" x2="1470" y2="70" stroke="#333" stroke-width="1"/>
-  
-  <line x1="30" y1="470" x2="70" y2="470" stroke="#333" stroke-width="1"/>
-  <line x1="30" y1="470" x2="30" y2="430" stroke="#333" stroke-width="1"/>
-  
-  <line x1="1470" y1="470" x2="1430" y2="470" stroke="#333" stroke-width="1"/>
-  <line x1="1470" y1="470" x2="1470" y2="430" stroke="#333" stroke-width="1"/>
-  
-  <!-- Grain -->
-  <rect width="1500" height="500" filter="url(#grain)" opacity="0.4"/>
+  <text x="560" y="250" font-family="'DM Serif Display', Georgia, serif" font-size="126" font-style="italic" fill="#eef6ff" letter-spacing="-2">Meterflow</text>
+  <text x="568" y="305" font-family="'JetBrains Mono', monospace" font-size="14" fill="#8da3bf" letter-spacing="4">USDC METERING FOR AGENTS AND APIS ON SOLANA</text>
 </svg>

@@ -2,8 +2,8 @@
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const POSITIONS_PREFIX = 'infinite:positions:';
-const HISTORY_PREFIX = 'infinite:history:';
+const POSITIONS_PREFIX = 'meterflow:positions:';
+const HISTORY_PREFIX = 'meterflow:history:';
 const HISTORY_MAX = 1000;
 const HISTORY_TTL = 30 * 24 * 3600; // 30 days
 

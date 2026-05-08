@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Entry Point
+// Meterflow Dashboard - Entry Point
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, TRADING, API_BASE } from './state.js';
@@ -8,7 +8,6 @@ import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
 import { render } from './render.js';
 import { showToast } from './actions.js';
-import { loadVotes } from './votes.js';
 import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
 
@@ -17,12 +16,21 @@ import { saveSession } from './session.js';
 loadChatHistory();
 loadVideoHistory();
 loadTradingHistory();
-loadVotes();
-
 const hasSession = loadSession();
 
+async function loadTokenAccess() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/tiers`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.token) STATE.token = { ...STATE.token, ...data.token };
+  } catch { /* public token metadata is non-critical */ }
+}
+
+loadTokenAccess().then(() => render());
+
 if (hasSession) {
-  // Holder session — start full polling (status, treasury, providers, oauth)
+  // Existing session — start full polling (status, settlement wallet, providers, oauth)
   if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
   if (STATE.models.length && !TRADING.selectedModel) TRADING.selectedModel = STATE.models[0];
   startStatusPolling();
@@ -47,6 +55,7 @@ if (hasSession) {
       STATE.apiKey = maskKey(data.apiKey);
       STATE.tier = data.tier;
       STATE.balance = 0;
+      if (data.token) STATE.token = { ...STATE.token, ...data.token };
       STATE.models = data.models || [];
       STATE.usage = { today: 0, limit: data.dailyLimit || 0, remaining: data.dailyLimit || 0 };
       STATE.freeAccess = true;
@@ -57,7 +66,7 @@ if (hasSession) {
       saveSession();
       startStatusPolling();
       render();
-      showToast('Free access activated! No wallet needed. Try the AI tools.');
+      showToast('Free access activated. Try the Meterflow gateway routes.');
     } catch { /* silent — fall through to normal public view */ }
   });
   fetchProviderStatuses();

@@ -16,7 +16,7 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel],
   presence: {
     status: 'online',
-    activities: [{ name: '$INFINITE', type: ActivityType.Watching }],
+    activities: [{ name: 'Meterflow payments', type: ActivityType.Watching }],
   },
 });
 
@@ -32,7 +32,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === 'ca') {
-    await interaction.reply('`DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump`');
+    await interaction.reply('Meterflow is live as a Solana-native payment meter for APIs and agents. Open the dashboard to create meters, manage wallet-bound budgets, and inspect USDC receipts.');
   }
 
   if (interaction.commandName === 'ticket') {

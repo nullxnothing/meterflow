@@ -547,7 +547,7 @@ function renderStepReview() {
           <div style="flex:3;height:8px;background:var(--text-muted);border-radius:4px;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px;">
-          <span style="color:var(--accent);">70% &rarr; Infinite Treasury</span>
+          <span style="color:var(--accent);">70% &rarr; Meterflow Treasury</span>
           <span style="color:var(--text-muted);">30% &rarr; Agent Operations</span>
         </div>
       </div>
@@ -663,27 +663,50 @@ function renderStepResult() {
   if (!result) return '';
 
   const metadataUri = result.metadataUri || '';
-  const agentId = result.agentId || result.id || '';
+  const agentId = result.agentId || result.agent?.id || '';
   const name = result.tokenMetadata?.name || launchState.name;
   const symbol = result.tokenMetadata?.symbol || launchState.symbol;
+  const phase = launchState.signingPhase;
+  const credits = result.agent?.credits?.balance ?? result.creditsAdded ?? 0;
+  const status = result.agent?.status || 'pending';
 
   return `
     <div class="launch-result">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">&#10003;</div>
-      <div class="launch-result-badge">AGENT LAUNCHED</div>
+      ${renderSigningStatus(phase)}
+
       <h3>${escapeHtml(name)} ($${escapeHtml(symbol)})</h3>
-      <p style="color:var(--text-muted);font-size:12px;margin-bottom:20px;">Your funded agent is live. Creator fees will power its operations autonomously.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-bottom:20px;">
+        ${phase === 'confirmed'
+          ? 'Token created on-chain. Your agent is ready.'
+          : phase === 'failed'
+            ? 'Agent config saved but token creation needs a retry.'
+            : phase === 'signing' || phase === 'confirming'
+              ? 'Signing and confirming your token transaction...'
+              : 'Agent config saved. Sign the transaction to create the token on pump.fun.'}
+      </p>
 
       <div class="launch-result-info">
         ${agentId ? `
           <div class="launch-result-row">
             <span>Agent ID</span>
-            <code onclick="copyText('${escapeHtml(agentId)}')" style="cursor:pointer;">${escapeHtml(agentId.length > 24 ? agentId.slice(0, 12) + '...' + agentId.slice(-8) : agentId)} <span style="color:var(--accent);font-size:9px;">COPY</span></code>
+            <code onclick="copyText('${escapeHtml(agentId)}')" style="cursor:pointer;">${escapeHtml(agentId)} <span style="color:var(--accent);font-size:9px;">COPY</span></code>
+          </div>
+        ` : ''}
+        ${launchState.txSignature ? `
+          <div class="launch-result-row">
+            <span>Transaction</span>
+            <a href="https://solscan.io/tx/${escapeHtml(launchState.txSignature)}" target="_blank" rel="noopener" style="font-family:var(--font-mono);font-size:11px;color:var(--accent);">${escapeHtml(launchState.txSignature.slice(0, 16))}... &#8599;</a>
+          </div>
+        ` : ''}
+        ${launchState.mintAddress ? `
+          <div class="launch-result-row">
+            <span>Token Mint</span>
+            <code onclick="copyText('${escapeHtml(launchState.mintAddress)}')" style="cursor:pointer;">${escapeHtml(launchState.mintAddress.slice(0, 16))}... <span style="color:var(--accent);font-size:9px;">COPY</span></code>
           </div>
         ` : ''}
         ${metadataUri ? `
           <div class="launch-result-row">
-            <span>Metadata URI</span>
+            <span>Metadata</span>
             <code onclick="copyText('${escapeHtml(metadataUri)}')" style="cursor:pointer;">${escapeHtml(metadataUri.slice(0, 36))}... <span style="color:var(--accent);font-size:9px;">COPY</span></code>
           </div>
         ` : ''}
@@ -692,25 +715,101 @@ function renderStepResult() {
           <code>${Object.entries(launchState.capabilities).filter(([, v]) => v).map(([k]) => k).join(', ')}</code>
         </div>
         <div class="launch-result-row">
-          <span>Platform</span>
-          <code>pump.fun</code>
+          <span>Status</span>
+          <code style="color:${status === 'active' ? '#67c23a' : status === 'pending' ? '#e6a23c' : 'var(--text-muted)'};">${status.toUpperCase()}</code>
+        </div>
+        <div class="launch-result-row">
+          <span>Credits</span>
+          <code>${credits}</code>
         </div>
       </div>
 
-      <div class="launch-next-steps">
-        <div class="section-title" style="margin-bottom:12px;">Next Steps</div>
-        <div class="tool-config-box" style="font-size:12px;line-height:1.8;">
-          1. Your agent's token is being created on pump.fun<br>
-          2. Once trading begins, creator fees will automatically fund your agent<br>
-          3. Monitor your agent's activity in the My Agents tab<br>
-          4. The agent will begin operating once sufficient fees accumulate
+      ${phase === 'failed' ? `
+        <div style="background:#2a1a1a;border:1px solid #5c2020;padding:12px 16px;margin-top:16px;font-size:12px;">
+          <div style="color:#ff6b6b;font-weight:600;margin-bottom:4px;">Transaction Failed</div>
+          <div style="color:var(--text-muted);">${escapeHtml(launchState.signingError || 'Unknown error')}</div>
+          <button class="launch-btn" style="margin-top:10px;width:auto;padding:8px 24px;font-size:11px;" onclick="retryLaunchSigning()">Retry Signing</button>
         </div>
-      </div>
+      ` : ''}
+
+      ${!phase || phase === 'confirmed' ? renderPostLaunchActions(agentId, status) : ''}
+
+      ${renderValidationResults()}
 
       <div style="display:flex;gap:12px;margin-top:20px;">
         <button class="launch-btn" style="flex:1;background:var(--accent);color:var(--bg);" onclick="navigateToAgents()">View My Agents</button>
         <button class="launch-btn" style="flex:1;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="resetLaunch()">Launch Another</button>
       </div>
+    </div>
+  `;
+}
+
+function renderSigningStatus(phase) {
+  if (!phase) {
+    return `<div style="width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">&#10003;</div>
+      <div class="launch-result-badge">AGENT CREATED</div>`;
+  }
+
+  const configs = {
+    signing: { icon: '&#9998;', bg: '#e6a23c', badge: 'SIGN TRANSACTION', text: 'Approve the transaction in your wallet...' },
+    confirming: { icon: '&#8987;', bg: '#e6a23c', badge: 'CONFIRMING', text: 'Waiting for on-chain confirmation...' },
+    confirmed: { icon: '&#10003;', bg: 'var(--accent)', badge: 'TOKEN LIVE', text: '' },
+    failed: { icon: '&#10007;', bg: '#ff5f57', badge: 'TX FAILED', text: '' },
+  };
+  const cfg = configs[phase] || configs.signing;
+
+  return `
+    <div style="width:56px;height:56px;border-radius:50%;background:${cfg.bg};color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 16px;">${cfg.icon}</div>
+    <div class="launch-result-badge">${cfg.badge}</div>
+    ${cfg.text ? `<p style="color:var(--text-muted);font-size:12px;margin-bottom:8px;">${cfg.text}</p>` : ''}
+  `;
+}
+
+function renderPostLaunchActions(agentId, status) {
+  if (!agentId) return '';
+
+  return `
+    <div style="border:1px solid var(--border);background:var(--bg);padding:16px 20px;margin-top:16px;">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Agent Actions</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="launch-btn" style="width:auto;padding:8px 20px;font-size:11px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="validateAgentCredentials()" ${launchState.validating ? 'disabled' : ''}>
+          ${launchState.validating ? 'Validating...' : 'Validate Credentials'}
+        </button>
+        ${status === 'pending' ? `
+          <button class="launch-btn" style="width:auto;padding:8px 20px;font-size:11px;" onclick="activateAgent()">
+            Activate Agent
+          </button>
+        ` : ''}
+        <button class="launch-btn" style="width:auto;padding:8px 20px;font-size:11px;background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="fundAgent()" ${launchState.funding ? 'disabled' : ''}>
+          ${launchState.funding ? 'Funding...' : 'Add Credits'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderValidationResults() {
+  const results = launchState.validationResults;
+  if (!results) return '';
+
+  if (results.error) {
+    return `<div style="color:#ff6b6b;font-size:12px;margin-top:12px;">Validation error: ${escapeHtml(results.error)}</div>`;
+  }
+
+  const entries = Object.entries(results);
+  if (!entries.length) return '';
+
+  return `
+    <div style="border:1px solid var(--border);background:var(--bg);padding:12px 16px;margin-top:12px;">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Credential Validation</div>
+      ${entries.map(([platform, res]) => {
+        const color = res.ok ? '#67c23a' : '#ff6b6b';
+        const label = res.ok ? (res.user || res.bot || 'Valid') : (res.error || 'Invalid');
+        return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">
+          <span style="text-transform:capitalize;">${platform}</span>
+          <span style="color:${color};font-weight:600;">${escapeHtml(label)}</span>
+        </div>`;
+      }).join('')}
     </div>
   `;
 }

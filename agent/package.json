@@ -1,8 +1,8 @@
 {
-  "name": "infinite-treasury",
+  "name": "meterflow-agent",
   "version": "2.0.0",
-  "description": "Autonomous treasury manager for INFINITE Protocol. Monitors creator fee inflows, manages API budget allocation, adjusts rate limits, automates vendor payments via Privacy.com cards, Bridge.xyz off-ramp, and x402 protocol.",
-  "author": "INFINITE Protocol",
+  "description": "Autonomous treasury manager for Meterflow. Monitors creator fee inflows, manages API budget allocation, adjusts rate limits, automates vendor payments via Privacy.com cards, Bridge.xyz off-ramp, and x402 protocol.",
+  "author": "Meterflow",
   "license": "MIT",
   "main": "index.js",
   "skills": [

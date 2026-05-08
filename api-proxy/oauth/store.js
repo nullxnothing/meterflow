@@ -3,7 +3,7 @@ import Redis from 'ioredis';
 import { logger } from '../lib/logger.js';
 
 // Redis key prefix for OAuth tokens
-const OAUTH_TOKEN_PREFIX = 'infinite:oauth:';
+const OAUTH_TOKEN_PREFIX = 'meterflow:oauth:';
 
 // Initialize Redis client
 let redis = null;

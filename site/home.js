@@ -12,8 +12,8 @@ function closeMobile() {
   mobileMenu.classList.remove('open');
 }
 
-// ═══════════ TOKEN CONFIG ═══════════
-const TOKEN_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
+// ═══════════ PAYMENT CONFIG ═══════════
+const PAYMENT_FLOW = 'meter -> quote -> pay -> receipt -> analytics';
 
 // ═══════════ LIVE DATA ═══════════
 const PROXY_BASE = '/proxy';
@@ -33,12 +33,14 @@ const PROXY_BASE = '/proxy';
     const countdown = document.getElementById('freeCountdown');
     if (!bar || !countdown) return;
 
+    document.body.classList.add('free-access-active');
     bar.style.display = 'flex';
 
     function tick() {
       const remaining = endTime - Date.now();
       if (remaining <= 0) {
         bar.style.display = 'none';
+        document.body.classList.remove('free-access-active');
         return;
       }
       const h = Math.floor(remaining / 3_600_000);
@@ -65,7 +67,7 @@ async function fetchLiveData() {
     if (treasuryRes.status === 'fulfilled') liveTreasury = treasuryRes.value;
     fetchFailed = (statsRes.status !== 'fulfilled' && treasuryRes.status !== 'fulfilled');
   } catch (err) {
-    console.warn('[INFINITE] Failed to fetch live data:', err);
+    console.warn('[Meterflow] Failed to fetch live data:', err);
     fetchFailed = true;
   }
 }
@@ -114,7 +116,7 @@ function formatUptime(ms) {
   return hours + 'h ' + Math.floor((ms % 3_600_000) / 60_000) + 'm';
 }
 
-// Blended cost per token across Claude Sonnet ($9/1M), GPT-4o ($7.50/1M), Gemini Flash ($0.30/1M)
+// Blended value proxy across bundled metered services.
 const BLENDED_COST_PER_TOKEN = 5.5 / 1_000_000;
 
 function formatUsd(amount) {
@@ -174,14 +176,14 @@ function populateProtocolStats() {
   }
 
   el('ps-calls-today').textContent = formatCompact(callsToday);
-  el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' tokens' : 'tokens processed';
+  el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' units' : 'billable units';
   el('ps-active-keys').textContent = formatCompact(keys);
   el('ps-treasury').textContent = balSol > 0 ? balSol.toFixed(2) + ' SOL' : '--';
   el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
   el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
   el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
 
-  // Models online
+  // Services online
   const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
   el('ps-models').textContent = activeProviders > 0 ? activeProviders : '--';
   el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(' / ') : (fetchFailed ? 'offline' : 'loading...');
@@ -219,14 +221,9 @@ function copyCA() {
   });
 }
 
-// ═══════════ TOKEN CA ═══════════
+// ═══════════ PAYMENT FLOW SUMMARY ═══════════
 function populateToken() {
-  const mint = TOKEN_MINT || liveStats.tokenMint;
-  if (!mint) {
-    const heroCa = document.querySelector('.hero-ca');
-    if (heroCa) heroCa.classList.add('pending');
-    return;
-  }
+  const mint = liveStats.tokenMint;
 
   const heroCa = document.querySelector('.hero-ca');
   if (heroCa) heroCa.classList.remove('pending');
@@ -237,22 +234,22 @@ function populateToken() {
   const footerDex = document.getElementById('footerDex');
   const treasuryLink = document.getElementById('treasurySolscan');
 
-  if (caEl) caEl.textContent = mint;
+  if (caEl) caEl.textContent = PAYMENT_FLOW;
 
   if (buyLink) {
-    buyLink.href = `https://pump.fun/coin/${mint}`;
-    buyLink.target = '_blank';
-    buyLink.rel = 'noopener';
+    buyLink.href = '/docs';
+    buyLink.removeAttribute('target');
+    buyLink.removeAttribute('rel');
   }
 
   if (ctaBuyLink) {
-    ctaBuyLink.href = `https://pump.fun/coin/${mint}`;
-    ctaBuyLink.target = '_blank';
-    ctaBuyLink.rel = 'noopener';
+    ctaBuyLink.href = '/docs';
+    ctaBuyLink.removeAttribute('target');
+    ctaBuyLink.removeAttribute('rel');
     ctaBuyLink.classList.remove('disabled');
   }
 
-  if (footerDex) {
+  if (footerDex && mint) {
     footerDex.href = `https://dexscreener.com/solana/${mint}`;
   }
 
@@ -261,7 +258,7 @@ function populateToken() {
   }
 
   document.querySelectorAll('.tier-btn').forEach(btn => {
-    btn.onclick = () => window.open(`https://pump.fun/coin/${mint}`, '_blank');
+    btn.onclick = () => window.location.href = btn.textContent.includes('Docs') ? '/docs' : '/dashboard';
   });
 }
 
@@ -387,7 +384,7 @@ if (bgCanvas && window.innerWidth > 768) {
       if (p.x > bgCanvas.width) p.x -= bgCanvas.width;
       if (p.y < 0) p.y += bgCanvas.height;
       if (p.y > bgCanvas.height) p.y -= bgCanvas.height;
-      ctx.fillStyle = `rgba(200, 255, 0, ${p.a})`;
+      ctx.fillStyle = `rgba(79, 156, 255, ${p.a})`;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
@@ -399,7 +396,7 @@ if (bgCanvas && window.innerWidth > 768) {
           const dy = particles[i].y - particles[j].y;
           const dist = dx * dx + dy * dy;
           if (dist < 22500) {
-            ctx.strokeStyle = `rgba(200, 255, 0, ${0.02 * (1 - dist / 22500)})`;
+            ctx.strokeStyle = `rgba(79, 156, 255, ${0.02 * (1 - dist / 22500)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -432,19 +429,19 @@ if (bgCanvas && window.innerWidth > 768) {
 // ═══════════ LIVE DEMO ═══════════
 const DEMO_DATA = [
   {
-    prompt: 'Explain DeFi yield farming',
-    claude: `Yield farming is the practice of depositing crypto assets into DeFi protocols to earn returns. Here's how it works:\n\n1. **Liquidity Provision** \u2014 You deposit token pairs (e.g., SOL/USDC) into an AMM like Raydium or Orca. Traders pay fees on every swap, and you earn a proportional share.\n\n2. **Lending** \u2014 Platforms like MarginFi let you lend assets. Borrowers pay interest, which flows to lenders as yield.\n\n3. **Incentive Mining** \u2014 Protocols distribute their native tokens as rewards for providing liquidity. This is often the highest-APY component.\n\n**Key risks:** Impermanent loss, smart contract exploits, and token devaluation can erode yields. Always check TVL trends and audit history before committing capital.`,
-    gemini: `DeFi yield farming is essentially putting your crypto to work to earn more crypto. Think of it like interest from a bank, but decentralized:\n\n\u2022 **Step 1:** Choose a protocol (Raydium, Jupiter, Orca)\n\u2022 **Step 2:** Deposit your tokens into a liquidity pool\n\u2022 **Step 3:** Earn fees + token rewards automatically\n\nThe APY you see comes from three sources:\n- Swap fees (0.25-1% per trade)\n- Protocol incentives (bonus tokens)\n- Compounding rewards\n\nPopular strategies on Solana right now include concentrated liquidity on Orca and leveraged lending on MarginFi. Just watch out for impermanent loss \u2014 it's the silent killer of yield farming returns.`
+    prompt: 'Endpoint revenue',
+    claude: `Provider View\n\nEndpoint: /v1/risk-score\nPrice: 0.006 USDC per call\nStatus: Live\n\nToday:\n- 8,421 meter hits\n- 7,904 paid responses\n- 311 failed payments\n- 206 policy rejections\n\nRevenue:\n- Gross: 47.42 USDC\n- Median latency: 412ms\n- Top consumer: agent_7Kp...91a\n\nMeterflow is not just checking payment. It is showing what the endpoint earned, where calls failed, and whether the route is worth scaling.`,
+    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /v1/risk-score\n- /v1/social-scan\n- /v1/token-liquidity\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/v1/risk-score\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
   },
   {
-    prompt: 'Write a Solana swap function',
-    claude: `\`\`\`typescript\nimport { Connection, PublicKey } from '@solana/web3.js';\nimport { Jupiter } from '@jup-ag/core';\n\nasync function swap(\n  inputMint: string,\n  outputMint: string,\n  amountLamports: number,\n  slippageBps: number = 50\n) {\n  const connection = new Connection(\n    process.env.RPC_URL\n  );\n  const jupiter = await Jupiter.load({\n    connection,\n    cluster: 'mainnet-beta',\n  });\n\n  const routes = await jupiter.computeRoutes({\n    inputMint: new PublicKey(inputMint),\n    outputMint: new PublicKey(outputMint),\n    amount: amountLamports,\n    slippageBps,\n  });\n\n  const bestRoute = routes.routesInfos[0];\n  const { execute } = await jupiter.exchange({\n    routeInfo: bestRoute,\n  });\n\n  const result = await execute();\n  return result.txid;\n}\n\`\`\`\n\nThis uses Jupiter's aggregator for best pricing across all Solana DEXs. Set slippageBps to 50 (0.5%) for most trades.`,
-    gemini: `Here's a clean swap implementation using Jupiter API v6:\n\n\`\`\`javascript\nasync function swapTokens(inputMint, outputMint, amount) {\n  // Get quote\n  const quoteUrl = 'https://quote-api.jup.ag/v6/quote'\n    + \`?inputMint=\${inputMint}\`\n    + \`&outputMint=\${outputMint}\`\n    + \`&amount=\${amount}\`\n    + '&slippageBps=50';\n\n  const quote = await fetch(quoteUrl)\n    .then(r => r.json());\n\n  // Build transaction\n  const { swapTransaction } = await fetch(\n    'https://quote-api.jup.ag/v6/swap',\n    {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        quoteResponse: quote,\n        userPublicKey: wallet.publicKey,\n      })\n    }\n  ).then(r => r.json());\n\n  // Sign and send\n  const tx = VersionedTransaction.deserialize(\n    Buffer.from(swapTransaction, 'base64')\n  );\n  tx.sign([wallet]);\n  return await connection.sendTransaction(tx);\n}\n\`\`\`\n\nThe v6 API handles route optimization automatically. No need to manually compare DEXs.`
+    prompt: 'Agent budget',
+    claude: `Provider View\n\nBudget policy matched:\npolicy_agent_research_v2\n\nThis request is allowed because:\n- endpoint is approved\n- agent has 8.16 USDC remaining\n- requested price is below per-call cap\n- wallet is not revoked\n\nQuote issued:\nqt_8f21\nexpires in 90 seconds\nprice: 0.006 USDC`,
+    gemini: `Agent View\n\nBefore payment:\nTask budget: 12.00 USDC\nEndpoint cap: 0.02 USDC per call\nDaily request cap: 2,000\n\nDecision:\nPay 0.006 USDC for /v1/risk-score\nExpected utility: high\nRemaining after call: 8.154 USDC\n\nMeterflow gives the agent enough context to spend intentionally, not blindly.`
   },
   {
-    prompt: 'Analyze BTC market sentiment',
-    claude: `**BTC Sentiment Analysis \u2014 Current Snapshot**\n\nOn-chain signals are mixed but leaning bullish:\n\n\uD83D\uDCCA **Exchange Flows:** Net outflows of ~12K BTC this week. Holders are moving to cold storage \u2014 typically accumulation behavior.\n\n\uD83D\uDCC8 **Funding Rates:** Slightly positive (0.01%) across major perps. Not overheated \u2014 room for a move up.\n\n\uD83D\uDC0B **Whale Activity:** Wallets holding >1K BTC have added 28K BTC in the past 30 days. Smart money is buying.\n\n\uD83D\uDCC9 **Risk Factors:**\n- RSI at 62 on the daily \u2014 approaching overbought\n- Open interest near all-time highs\n- Macro uncertainty from upcoming FOMC\n\n**Verdict:** Cautiously bullish. The accumulation pattern is strong, but high OI means volatility ahead. Key level to watch: $67,500 support.`,
-    gemini: `Here's what the data is telling us about BTC right now:\n\n**Social Sentiment:** 72% bullish across crypto Twitter/X. Fear & Greed Index at 68 (Greed). Elevated but not euphoric.\n\n**Technical Picture:**\n\u2022 Trading above 200-day MA \u2014 structural uptrend intact\n\u2022 MACD showing bullish crossover on weekly\n\u2022 Volume profile shows strong support at $65K\n\u2022 Resistance cluster at $72K-$73K\n\n**Smart Money Moves:**\n\u2022 ETF inflows averaging $340M/day this week\n\u2022 Miners not selling \u2014 hash rate at ATH\n\u2022 Stablecoin supply on exchanges increasing (dry powder)\n\n**My read:** The setup is constructive. ETF flows are the dominant force right now, and they're consistently positive. A break above $73K likely triggers a run toward $80K. Downside risk is a flush to $62K if macro deteriorates.\n\n**Risk level:** MODERATE \u2014 position accordingly.`
+    prompt: 'Failed payment',
+    claude: `Provider View\n\nRequest blocked:\n/v1/social-scan\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
+    gemini: `Agent View\n\nPayment denied.\n\nWhy:\n- daily budget already spent\n- endpoint not critical to current task\n- operator approval required for further calls\n\nNext action:\nstop workflow or request budget increase\n\nThe agent does not keep retrying blindly, and the operator has a clean audit trail.`
   }
 ];
 

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Chat Logic
+// Meterflow Dashboard — Chat Logic
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, API_BASE } from './state.js';
@@ -65,7 +65,7 @@ export async function sendChatMessage() {
         STATE.usage.remaining = 0;
         STATE.usage.today = STATE.usage.limit;
         import('./render.js').then(m => m.render());
-        throw new Error('Free trial exhausted. Hold $INFINITE tokens for unlimited access.');
+        throw new Error('Free trial exhausted. Connect a wallet or use a metered client key to continue.');
       }
       if (response.status === 429) {
         STATE.usage.remaining = 0;

@@ -1,11 +1,15 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Holder Gate Component
+// Meterflow Dashboard — Access Gate Component
 // ═══════════════════════════════════════════
 
 import { STATE } from './state.js';
 
 export function isHolder() {
   return STATE.connected && !!STATE.apiKeyFull && (STATE.tier !== 'Trial' || STATE.isGuest);
+}
+
+export function canManageMeterflow() {
+  return STATE.connected && !!STATE.apiKeyFull && !STATE.isGuest && STATE.tier !== 'Trial';
 }
 
 export function isAlphaTier() {
@@ -46,8 +50,8 @@ export function renderFreeAccessBanner() {
       <span class="free-access-banner-text">
         <strong>Free access active</strong> — expires in <strong>${countdown}</strong>
       </span>
-      <span class="free-access-banner-hint">Hold $INFINITE tokens to keep access after it ends</span>
-      <a href="https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump" target="_blank" rel="noopener" class="free-access-banner-btn">Buy $INFINITE</a>
+      <span class="free-access-banner-hint">Use wallet-based keys for full control-plane access</span>
+      <a href="/docs" class="free-access-banner-btn">Docs</a>
     </div>
   `;
 }
@@ -61,7 +65,7 @@ export function renderTrialBanner() {
     <div class="trial-banner">
       <span class="trial-banner-label">Free Trial</span>
       <span class="trial-banner-count">${remaining} of ${limit} calls remaining today</span>
-      <span class="trial-banner-hint">Hold $INFINITE tokens for unlimited access</span>
+      <span class="trial-banner-hint">Connect a wallet to configure meters and budgets</span>
     </div>
   `;
 }
@@ -71,25 +75,100 @@ function renderTierGrid() {
     <div class="holder-gate-tiers">
       <div class="holder-gate-tier">
         <div class="holder-gate-tier-name">Signal</div>
-        <div class="holder-gate-tier-req">10,000 $INF</div>
+        <div class="holder-gate-tier-req">MFLOW utility tier</div>
         <div class="holder-gate-tier-desc">1,000 calls/day</div>
       </div>
       <div class="holder-gate-tier">
         <div class="holder-gate-tier-name">Operator</div>
-        <div class="holder-gate-tier-req">100,000 $INF</div>
+        <div class="holder-gate-tier-req">MFLOW utility tier</div>
         <div class="holder-gate-tier-desc">10,000 calls/day</div>
       </div>
       <div class="holder-gate-tier">
         <div class="holder-gate-tier-name">Architect</div>
-        <div class="holder-gate-tier-req">1,000,000 $INF</div>
+        <div class="holder-gate-tier-req">MFLOW utility tier</div>
         <div class="holder-gate-tier-desc">Unlimited</div>
       </div>
       <div class="holder-gate-tier accent">
         <div class="holder-gate-tier-name">Alpha</div>
-        <div class="holder-gate-tier-req">10,000,000 $INF</div>
+        <div class="holder-gate-tier-req">MFLOW utility tier</div>
         <div class="holder-gate-tier-desc">Unlimited + X Tools</div>
       </div>
     </div>
+  `;
+}
+
+function feePct(bps) {
+  return `${(Number(bps || 0) / 100).toFixed(Number(bps || 0) % 100 === 0 ? 0 : 2)}%`;
+}
+
+export function getTokenPurchaseUrl(preferUsdc = false) {
+  return (preferUsdc && STATE.token?.usdcPurchaseUrl) || STATE.token?.purchaseUrl || STATE.token?.usdcPurchaseUrl || null;
+}
+
+export function openTokenPurchase(preferUsdc = false) {
+  const url = getTokenPurchaseUrl(preferUsdc);
+  if (!url) {
+    window.showToast?.(`${STATE.token?.symbol || 'MFLOW'} launch mint is not configured yet.`, 'warning');
+    return;
+  }
+  window.open(url, '_blank', 'noopener');
+}
+
+export function copyTokenMint() {
+  const mint = STATE.token?.mint;
+  if (!mint) {
+    window.showToast?.('Token mint is not configured yet.', 'warning');
+    return;
+  }
+  navigator.clipboard.writeText(mint).then(
+    () => window.showToast?.('Token mint copied'),
+    () => window.showToast?.('Copy failed', true),
+  );
+}
+
+export function renderTokenUtilityPanel({ compact = false } = {}) {
+  const token = STATE.token || {};
+  const symbol = token.symbol || 'MFLOW';
+  const holderFee = feePct(token.holderProtocolFeeBps);
+  const nonHolderFee = feePct(token.nonHolderProtocolFeeBps);
+  const currentFee = feePct(token.protocolFeeBps);
+  const mint = token.mint || 'Launch mint pending';
+  return `
+    <div class="token-utility-panel ${compact ? 'compact' : ''}">
+      <div class="token-utility-copy">
+        <div class="token-utility-kicker">${symbol} Utility</div>
+        <div class="token-utility-title">Hold ${symbol} to remove the non-holder protocol fee.</div>
+        <div class="token-utility-desc">
+          API and MCP calls settle in USDC. Non-holders pay a ${nonHolderFee} Meterflow protocol fee on metered usage; holders pay ${holderFee} and unlock higher limits, longer receipt retention, and provider controls.
+        </div>
+      </div>
+      <div class="token-utility-actions">
+        <div class="token-fee-chip">Current fee: <strong>${currentFee}</strong></div>
+        <button class="btn-sm primary" onclick="openTokenPurchase()">Buy ${symbol}</button>
+        <button class="btn-sm" onclick="openTokenPurchase(true)">Buy with USDC</button>
+        <button class="btn-sm" onclick="copyTokenMint()">Copy Mint</button>
+      </div>
+      <div class="token-mint-row"><span>Mint</span><code>${mint}</code></div>
+    </div>
+  `;
+}
+
+export function renderPreviewNotice(featureName = 'this feature') {
+  const needsWallet = !STATE.connected;
+  return `
+    <div class="preview-access-notice">
+      <div>
+        <div class="preview-access-label">Preview Mode</div>
+        <div class="preview-access-text">
+          You can inspect ${featureName}, but actions are disabled until ${needsWallet ? 'a wallet is connected' : 'the wallet holds Meterflow utility access or uses a paid flow'}.
+        </div>
+      </div>
+      <div class="preview-access-actions">
+        ${needsWallet ? `<button class="btn-sm primary" onclick="openWalletConnect()">Connect Wallet</button>` : ''}
+        <button class="btn-sm primary" onclick="openTokenPurchase()">Buy ${STATE.token?.symbol || 'MFLOW'}</button>
+      </div>
+    </div>
+    ${renderTokenUtilityPanel({ compact: true })}
   `;
 }
 
@@ -99,10 +178,11 @@ export function renderTrialExhausted() {
       <h2 class="holder-gate-title">Free Trial Used</h2>
       <p class="holder-gate-desc">
         You've used all <strong>${STATE.usage.limit} free calls</strong> for today.
-        Hold <strong>$INFINITE</strong> tokens for unlimited access.
+        Connect a wallet or issue a metered client key to continue.
       </p>
       ${renderTierGrid()}
-      <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
+      ${renderTokenUtilityPanel({ compact: true })}
+      <div class="holder-gate-balance">Wallet utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong></div>
     </div>
   `;
 }
@@ -112,19 +192,20 @@ export function renderHolderGate(featureName = 'this feature') {
   const trialUser = isTrial();
   return `
     <div class="holder-gate">
-      <h2 class="holder-gate-title">Token-Gated Access</h2>
+      <h2 class="holder-gate-title">Meterflow Access</h2>
       <p class="holder-gate-desc">
         ${needsWallet
-          ? `Connect your wallet and hold <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
+          ? `Connect your wallet to unlock ${featureName}.`
           : trialUser
-            ? `Hold <strong>$INFINITE</strong> tokens to unlock ${featureName}. Your free trial only includes AI Chat.`
-            : `Your wallet doesn't hold enough <strong>$INFINITE</strong> tokens to unlock ${featureName}.`
+            ? `Connect a wallet to manage meters, receipts, budgets, and service routes.`
+            : `Your wallet does not currently unlock ${featureName}.`
         }
       </p>
       ${renderTierGrid()}
       ${needsWallet ? `<button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>` : `
-        <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
+        <div class="holder-gate-balance">Wallet utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong></div>
       `}
+      ${renderTokenUtilityPanel({ compact: true })}
     </div>
   `;
 }
@@ -136,20 +217,24 @@ export function renderAlphaGate() {
       <h2 class="holder-gate-title">Alpha Tier Required</h2>
       <p class="holder-gate-desc">
         ${needsWallet
-          ? `Connect your wallet and hold <strong>10,000,000 $INF</strong> to unlock X Tools.`
-          : `X Tools requires <strong>Alpha tier</strong>. Hold <strong>10,000,000 $INF</strong> to access CT intelligence tools.`
+          ? `Connect your wallet to unlock X Tools.`
+          : `X Tools requires <strong>Alpha tier</strong> access.`
         }
       </p>
       <div class="holder-gate-tiers">
         <div class="holder-gate-tier accent">
           <div class="holder-gate-tier-name">Alpha</div>
-          <div class="holder-gate-tier-req">10,000,000 $INF</div>
+          <div class="holder-gate-tier-req">MFLOW utility tier</div>
           <div class="holder-gate-tier-desc">CT intelligence, profile scanning, discover feed, trending, alerts, watchlist</div>
         </div>
       </div>
       ${needsWallet ? `<button class="btn-primary holder-gate-btn" onclick="openWalletConnect()">Connect Wallet</button>` : `
-        <div class="holder-gate-balance">Your balance: <strong>${(STATE.balance ?? 0).toLocaleString()} $INF</strong></div>
+        <div class="holder-gate-balance">Wallet utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong></div>
       `}
+      ${renderTokenUtilityPanel({ compact: true })}
     </div>
   `;
 }
+
+window.openTokenPurchase = openTokenPurchase;
+window.copyTokenMint = copyTokenMint;

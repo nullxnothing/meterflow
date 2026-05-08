@@ -1,20 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * Register a Solana wallet with INFINITE Protocol and receive an API key.
+ * Register a Solana wallet with Meterflow and receive a metered API key.
  *
  * Requires:
- *   - SOLANA_PRIVATE_KEY (base58-encoded keypair)
- *
- * Usage:
- *   SOLANA_PRIVATE_KEY=<key> node scripts/register.js
+ *   SOLANA_PRIVATE_KEY (base58-encoded keypair)
  */
 
 import { Keypair } from '@solana/web3.js';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 
-const API_BASE = process.env.INFINITE_API_BASE || 'https://infinite-protocol.onrender.com';
+const API_BASE = process.env.METERFLOW_API_BASE || 'https://meterflow.fun/proxy';
 
 async function register() {
   const secretKey = process.env.SOLANA_PRIVATE_KEY;
@@ -26,7 +23,7 @@ async function register() {
   const keypair = Keypair.fromSecretKey(bs58.decode(secretKey));
   const wallet = keypair.publicKey.toBase58();
   const timestamp = Date.now();
-  const message = `INFINITE Protocol Agent Registration\nWallet: ${wallet}\nTimestamp: ${timestamp}`;
+  const message = `Meterflow Agent Registration\nWallet: ${wallet}\nTimestamp: ${timestamp}`;
   const messageBytes = new TextEncoder().encode(message);
   const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
   const signatureB58 = bs58.encode(signature);
@@ -46,19 +43,11 @@ async function register() {
     process.exit(1);
   }
 
-  console.log('\nRegistration successful!');
+  console.log('\nRegistration successful.');
   console.log(`  API Key:     ${data.apiKey}`);
   console.log(`  Tier:        ${data.tier}`);
-  console.log(`  Balance:     ${data.balance.toLocaleString()} $INF`);
-  console.log(`  Daily Limit: ${data.dailyLimit.toLocaleString()}`);
-  console.log(`  Models:      ${data.models.join(', ')}`);
-
-  if (data.isTrial) {
-    console.log('\n  You have trial access (3 calls/day).');
-    console.log('  Buy $INF tokens for full access: mint infjrafE4zVaCMLxRTNg9anSZoyGWaKDQPHXmzYLPUf');
-  }
-
-  // Output JSON for programmatic consumption
+  console.log(`  Daily Limit: ${data.dailyLimit?.toLocaleString?.() || data.dailyLimit}`);
+  console.log(`  Models:      ${(data.models || []).join(', ')}`);
   console.log(`\n${JSON.stringify(data)}`);
 }
 

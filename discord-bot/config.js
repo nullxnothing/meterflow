@@ -10,7 +10,7 @@ const BOT_CONFIG = {
   CLIENT_ID: process.env.DISCORD_CLIENT_ID || '',
   GUILD_ID: process.env.GUILD_ID || '',
 
-  API_PROXY_URL: process.env.API_PROXY_URL || 'https://infinite-protocol.onrender.com',
+  API_PROXY_URL: process.env.API_PROXY_URL || 'https://meterflow-api.onrender.com',
   BOT_API_KEY: process.env.BOT_API_KEY || '',
   AI_MODEL: process.env.AI_MODEL || 'gemini-2.5-flash',
 
@@ -38,7 +38,7 @@ const SPAM = {
     /dsc\.gg\//i,
   ],
   ALLOWED_DOMAINS: new Set([
-    'infinite.sh',
+    'meterflow.fun',
     'solscan.io',
     'jup.ag',
     'pump.fun',

@@ -1,7 +1,7 @@
-// Infinite Alpha — service worker (background script)
+// Meterflow Signal — service worker (background script)
 importScripts('lib/api.js');
 
-const API = globalThis.InfiniteAlphaAPI;
+const API = globalThis.MeterflowAlphaAPI;
 
 // ── Message handler — relay API calls from content scripts ──
 
@@ -109,4 +109,4 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 chrome.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: false }).catch(() => {});
 
-console.log('[Infinite Alpha] Service worker started');
+console.log('[Meterflow Signal] Service worker started');

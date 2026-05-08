@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — Wallet Management
+// Meterflow Dashboard — Wallet Management
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT } from './state.js';
@@ -52,7 +52,7 @@ export async function connectWallet(providerObj) {
     const pk = resp?.publicKey ?? provider.publicKey ?? resp;
     if (!pk) throw new Error('Wallet did not return a public key. Try reconnecting.');
     const publicKey = pk.toString();
-    const message = `INFINITE Protocol: Verify wallet ownership\n\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
+    const message = `Meterflow Authentication\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
     const encoded = new TextEncoder().encode(message);
     let signatureBytes;
     try {
@@ -78,16 +78,17 @@ export async function connectWallet(providerObj) {
     STATE.apiKey = maskKey(data.apiKey);
     STATE.tier = data.tier;
     STATE.balance = data.balance ?? 0;
+    if (data.token) STATE.token = { ...STATE.token, ...data.token };
     STATE.models = data.models || [];
     STATE.usage = { today: 0, limit: data.dailyLimit || 0, remaining: data.dailyLimit || 0 };
     STATE.freeAccess = data.freeAccess || false;
     STATE.freeAccessEndsAt = data.freeAccessEndsAt || null;
 
     if (data.freeAccess) {
-      showToast('Free access activated! Hold $INFINITE tokens before it expires to keep access.');
+      showToast('Free access activated for Meterflow gateway routes.');
     } else if (data.isTrial) {
       STATE.trial = { used: 0, limit: data.dailyLimit, remaining: data.dailyLimit, loaded: true };
-      showToast(`Welcome! You have ${data.dailyLimit} free AI chat calls today. Hold $INFINITE for unlimited access.`);
+      showToast(`Welcome. You have ${data.dailyLimit} gateway calls today. Connect a wallet for the full control plane.`);
     }
 
     if (STATE.models.length && !CHAT.selectedModel) {
@@ -124,9 +125,9 @@ export function openWalletConnect() {
   modal.innerHTML = `
     <div class="wallet-modal">
       <button class="wallet-modal-close" id="walletModalClose">\u00d7</button>
-      <div class="logo" style="font-size:24px;margin-bottom:12px;">INF</div>
+      <div class="logo" style="font-size:24px;margin-bottom:12px;"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt=""></div>
       <h2 style="margin-bottom:8px;">Connect Wallet</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Hold $INFINITE tokens to unlock API keys and tools</p>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Connect a Solana wallet to unlock Meterflow keys and tools</p>
       ${STATE.error ? `<div class="connect-error" style="margin-bottom:16px;">${STATE.error}</div>` : ''}
       <div class="connect-wallets">
         ${STATE.connecting

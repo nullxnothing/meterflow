@@ -28,7 +28,7 @@ router.get('/agents/templates', authenticateApiKey, (req, res) => {
 // GET /v1/agents — list user's agents
 router.get('/agents', authenticateApiKey, async (req, res) => {
   try {
-    const agents = await listAgents(req.infinite.apiKey);
+    const agents = await listAgents(req.meterflow.apiKey);
     // Strip sensitive fields
     const safe = agents.map(a => ({
       id: a.id,
@@ -55,7 +55,7 @@ router.get('/agents', authenticateApiKey, async (req, res) => {
 // POST /v1/agents — create a new agent
 router.post('/agents', authenticateApiKey, async (req, res) => {
   const { template, name, model, schedule, config } = req.body;
-  const { apiKey, tierConfig } = req.infinite;
+  const { apiKey, tierConfig } = req.meterflow;
 
   if (!template || !AGENT_TEMPLATES[template]) {
     return res.status(400).json({ error: 'Invalid template', validTemplates: Object.keys(AGENT_TEMPLATES) });
@@ -130,7 +130,7 @@ router.post('/agents', authenticateApiKey, async (req, res) => {
 // POST /v1/agents/:id/activate — start an agent's cron schedule
 router.post('/agents/:id/activate', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
@@ -145,7 +145,7 @@ router.post('/agents/:id/activate', authenticateApiKey, async (req, res) => {
 // POST /v1/agents/:id/pause — stop an agent's cron schedule
 router.post('/agents/:id/pause', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
@@ -160,7 +160,7 @@ router.post('/agents/:id/pause', authenticateApiKey, async (req, res) => {
 // POST /v1/agents/:id/run — trigger a one-off run now
 router.post('/agents/:id/run', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
@@ -175,7 +175,7 @@ router.post('/agents/:id/run', authenticateApiKey, async (req, res) => {
 // GET /v1/agents/:id/logs — get agent activity logs
 router.get('/agents/:id/logs', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
@@ -186,7 +186,7 @@ router.get('/agents/:id/logs', authenticateApiKey, async (req, res) => {
 // PUT /v1/agents/:id — update agent config
 router.put('/agents/:id', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
@@ -217,12 +217,12 @@ router.put('/agents/:id', authenticateApiKey, async (req, res) => {
 // DELETE /v1/agents/:id — delete an agent
 router.delete('/agents/:id', authenticateApiKey, async (req, res) => {
   const agent = await getAgent(req.params.id);
-  if (!agent || agent.apiKey !== req.infinite.apiKey) {
+  if (!agent || agent.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
   unscheduleAgent(agent.id);
-  await deleteAgent(agent.id, req.infinite.apiKey);
+  await deleteAgent(agent.id, req.meterflow.apiKey);
 
   res.json({ ok: true });
 });
@@ -230,7 +230,7 @@ router.delete('/agents/:id', authenticateApiKey, async (req, res) => {
 // GET /v1/agents/activity — aggregated activity feed across all agents
 router.get('/agents/activity', authenticateApiKey, async (req, res) => {
   try {
-    const agents = await listAgents(req.infinite.apiKey);
+    const agents = await listAgents(req.meterflow.apiKey);
     const limit = parseInt(req.query.limit) || 20;
     const allLogs = [];
 

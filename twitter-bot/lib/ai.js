@@ -8,12 +8,12 @@ async function generateReply(tweetText, authorUsername, context = 'mention') {
   }
 
   const contextHint = context === 'mention'
-    ? `Someone mentioned your project. Write a helpful reply that explains what INFINITE does.`
-    : `You found this tweet on crypto Twitter. Write a reply that adds to the conversation and clearly explains what INFINITE does.`;
+    ? `Someone mentioned your project. Write a helpful reply that explains what Meterflow does.`
+    : `You found this tweet on crypto Twitter. Write a reply that adds to the conversation and clearly explains what Meterflow does.`;
 
   const messages = [
     { role: 'user', content: `[System Instructions]\n${SYSTEM_PROMPT}` },
-    { role: 'assistant', content: 'Got it. I write natural replies that clearly explain how $INFINITE gives holders AI API access funded by pump.fun creator fees.' },
+    { role: 'assistant', content: 'Got it. I write natural replies that explain how Meterflow lets APIs quote requests, accept Solana USDC payments, verify them, and return receipts for agents.' },
     {
       role: 'user',
       content: `${contextHint}
@@ -23,7 +23,7 @@ Tweet from @${authorUsername}:
 
 Write a reply (120-260 chars) that:
 1. Reacts to what @${authorUsername} said — show you read their tweet
-2. Clearly explains what $INFINITE does in simple terms — hold the token on Solana, get Claude/GPT/Gemini API access, funded by pump.fun creator fees
+2. Clearly explains what Meterflow does in simple terms - APIs quote requests, agents pay in USDC on Solana, the gateway verifies payment and returns a receipt
 3. Sounds like a real dev in a conversation, not an ad
 
 Output ONLY the reply text. No quotes, no labels, no explanation.

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tool Indicators & Results
+// Meterflow Dashboard - Tool Indicators & Results
 // ═══════════════════════════════════════════
 
 import { escapeHtml, scrollChat } from './utils.js';

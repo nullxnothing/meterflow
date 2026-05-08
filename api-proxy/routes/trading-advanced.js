@@ -13,7 +13,7 @@ const router = Router();
 
 // POST /v1/trading/dca/create
 router.post('/dca/create', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs, slippageBps, maxCycles, maxPrice } = req.body;
   if (!inputMint || !outputMint || !totalAmountLamports || !amountPerCycleLamports || !cycleIntervalMs) {
     return res.status(400).json({ error: 'missing_fields', message: 'inputMint, outputMint, totalAmountLamports, amountPerCycleLamports, cycleIntervalMs required' });
@@ -34,7 +34,7 @@ router.post('/dca/create', authenticateApiKey, requireTradingTier, (req, res) =>
 
 // GET /v1/trading/dca/orders
 router.get('/dca/orders', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const orders = [...activeDCA.values()]
     .filter(d => d.apiKey === apiKey)
     .map(d => getDCAOrderInfo(d.order));
@@ -43,7 +43,7 @@ router.get('/dca/orders', authenticateApiKey, requireTradingTier, (req, res) => 
 
 // POST /v1/trading/dca/:id/cancel
 router.post('/dca/:id/cancel', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const entry = activeDCA.get(req.params.id);
   if (!entry || entry.apiKey !== apiKey) return res.status(404).json({ error: 'not_found', message: 'DCA order not found.' });
   cancelDCAOrder(entry.order);
@@ -52,7 +52,7 @@ router.post('/dca/:id/cancel', authenticateApiKey, requireTradingTier, (req, res
 
 // POST /v1/trading/copy/follow
 router.post('/copy/follow', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { address, name, multiplier, maxPositionSol, copyBuys, copySells, slippageBps, delayMs } = req.body;
   if (!address) return res.status(400).json({ error: 'missing_fields', message: 'address required' });
 
@@ -75,7 +75,7 @@ router.post('/copy/follow', authenticateApiKey, requireTradingTier, (req, res) =
 
 // POST /v1/trading/copy/unfollow
 router.post('/copy/unfollow', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { targetId } = req.body;
   if (!targetId) return res.status(400).json({ error: 'missing_fields', message: 'targetId required' });
   const ct = activeCopyTraders.get(apiKey);
@@ -86,7 +86,7 @@ router.post('/copy/unfollow', authenticateApiKey, requireTradingTier, (req, res)
 
 // GET /v1/trading/copy/targets
 router.get('/copy/targets', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const ct = activeCopyTraders.get(apiKey);
   if (!ct) return res.json({ targets: [], stats: { totalTargets: 0, activeTargets: 0, totalTradesCopied: 0, successRate: '0.0' } });
   res.json({ targets: ct.listTargets(), stats: ct.getStats() });
@@ -94,7 +94,7 @@ router.get('/copy/targets', authenticateApiKey, requireTradingTier, (req, res) =
 
 // POST /v1/trading/copy/start
 router.post('/copy/start', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const ct = activeCopyTraders.get(apiKey);
   if (!ct) return res.status(404).json({ error: 'not_found', message: 'Follow a wallet first.' });
   ct.start();
@@ -103,7 +103,7 @@ router.post('/copy/start', authenticateApiKey, requireTradingTier, (req, res) =>
 
 // POST /v1/trading/copy/stop
 router.post('/copy/stop', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const ct = activeCopyTraders.get(apiKey);
   if (!ct) return res.status(404).json({ error: 'not_found', message: 'No copy trader active.' });
   ct.stop();
@@ -112,7 +112,7 @@ router.post('/copy/stop', authenticateApiKey, requireTradingTier, (req, res) => 
 
 // POST /v1/trading/trigger/create
 router.post('/trigger/create', authenticateApiKey, requireTradingTier, async (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { mint, condition, order, expiresAt, oneShot } = req.body;
   if (!mint || !condition || !order) return res.status(400).json({ error: 'missing_fields', message: 'mint, condition, order required' });
 
@@ -139,7 +139,7 @@ router.post('/trigger/create', authenticateApiKey, requireTradingTier, async (re
 
 // GET /v1/trading/trigger/list
 router.get('/trigger/list', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const tm = activeTriggers.get(apiKey);
   if (!tm) return res.json([]);
   res.json(tm.list());
@@ -147,7 +147,7 @@ router.get('/trigger/list', authenticateApiKey, requireTradingTier, (req, res) =
 
 // POST /v1/trading/trigger/:id/cancel
 router.post('/trigger/:id/cancel', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const tm = activeTriggers.get(apiKey);
   if (!tm) return res.status(404).json({ error: 'not_found', message: 'No triggers active.' });
   tm.cancel(req.params.id);
@@ -156,14 +156,14 @@ router.post('/trigger/:id/cancel', authenticateApiKey, requireTradingTier, (req,
 
 // GET /v1/trading/safety/status
 router.get('/safety/status', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const safety = getSafetyManager(apiKey);
   res.json(safety.getState());
 });
 
 // POST /v1/trading/safety/kill
 router.post('/safety/kill', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const { reason } = req.body;
 
   const safety = getSafetyManager(apiKey);
@@ -184,7 +184,7 @@ router.post('/safety/kill', authenticateApiKey, requireTradingTier, (req, res) =
 
 // POST /v1/trading/safety/resume
 router.post('/safety/resume', authenticateApiKey, requireTradingTier, (req, res) => {
-  const { apiKey } = req.infinite;
+  const { apiKey } = req.meterflow;
   const safety = getSafetyManager(apiKey);
   const resumed = safety.resumeTrading();
   res.json({ resumed, state: safety.getState() });

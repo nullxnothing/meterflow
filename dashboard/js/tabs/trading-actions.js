@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Trading Bot Actions
+// Meterflow Dashboard - Trading Bot Actions
 // ═══════════════════════════════════════════
 
 import { STATE, TRADING } from '../state.js';

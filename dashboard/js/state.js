@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard — State & Constants
+// Meterflow Dashboard — State & Constants
 // ═══════════════════════════════════════════
 
 export const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:3001'
   : '/proxy';
 
-export const STORAGE_KEY = 'infinite_session';
-export const CHAT_STORAGE_KEY = 'infinite_chats';
+export const STORAGE_KEY = 'meterflow_session';
+export const CHAT_STORAGE_KEY = 'meterflow_chats';
 
 // ─── Main State ───
 
@@ -20,6 +20,20 @@ export const STATE = {
   apiKeyFull: null,
   tier: null,
   balance: 0,
+  token: {
+    symbol: 'MFLOW',
+    mint: null,
+    chain: 'solana',
+    isHolder: false,
+    balance: 0,
+    minSignal: 10000,
+    protocolFeeBps: 100,
+    holderProtocolFeeBps: 0,
+    nonHolderProtocolFeeBps: 100,
+    purchaseUrl: null,
+    usdcPurchaseUrl: null,
+    agentInstructions: null,
+  },
   usage: { today: 0, limit: 0, remaining: 0 },
   models: [],
   treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, solPrice: 0 },

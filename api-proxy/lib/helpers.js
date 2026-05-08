@@ -4,7 +4,7 @@ import { getUsage, incrementUsage as incrementUsageKV, incrementGlobalStats, inc
 
 function generateApiKey() {
   const random = crypto.randomBytes(24).toString('hex');
-  return `inf_${random}`;
+  return `mf_${random}`;
 }
 
 function getTierForBalance(balance) {

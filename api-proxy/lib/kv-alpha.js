@@ -1,8 +1,8 @@
-// Redis data layer for Infinite Alpha — CT intelligence scanner
+// Redis data layer for Meterflow Signal — CT intelligence scanner
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const P = 'infinite:alpha:';
+const P = 'meterflow:alpha:';
 
 // In-memory fallback (dev only)
 const mem = {

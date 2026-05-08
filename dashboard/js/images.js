@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Image Management
+// Meterflow Dashboard - Image Management
 // ═══════════════════════════════════════════
 
 import { CHAT, IMAGES } from './state.js';
@@ -7,16 +7,16 @@ import { api } from './api.js';
 import { escapeHtml } from './utils.js';
 import { showToast } from './actions.js';
 
-// ─── Image Upload ───
+// ─── Image Upload (Chat) ───
 
 export function handleImageUpload(files) {
   if (!files || files.length === 0) return;
-  const maxFiles = 4;
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const MAX_FILES = 4;
+  const MAX_SIZE = 5 * 1024 * 1024;
 
-  for (const file of Array.from(files).slice(0, maxFiles - CHAT.pendingImages.length)) {
+  for (const file of Array.from(files).slice(0, MAX_FILES - CHAT.pendingImages.length)) {
     if (!file.type.startsWith('image/')) continue;
-    if (file.size > maxSize) { showToast('Image too large (max 5MB)', true); continue; }
+    if (file.size > MAX_SIZE) { showToast('Image too large (max 5MB)', true); continue; }
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -102,23 +102,60 @@ export async function generateImage() {
 export function renderImageState() {
   const gallery = document.getElementById('imageGallery');
   const btn = document.getElementById('imageGenBtn');
+
   if (btn) {
     btn.disabled = IMAGES.isGenerating;
     btn.textContent = IMAGES.isGenerating ? 'GENERATING...' : 'CREATE';
   }
-  if (gallery) {
-    gallery.innerHTML = IMAGES.isGenerating
-      ? `<div class="image-loading"><div class="image-spinner"></div><span style="font-family:var(--font-mono);font-size:11px;">Generating image...</span></div>`
-      : IMAGES.gallery.map((img, idx) => `
-        <div class="image-card">
-          <img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="${escapeHtml(img.prompt)}" loading="lazy">
-          <div class="image-card-footer">
-            <div class="image-card-prompt">${escapeHtml(img.prompt)}</div>
-            <button class="btn-sm" onclick="downloadImageByIndex(${idx})">Save</button>
-          </div>
-        </div>
-      `).join('') || '<div style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px;padding:40px;text-align:center;">No images yet. Describe what you want to create.</div>';
+
+  if (!gallery) return;
+
+  if (IMAGES.isGenerating) {
+    const skeleton = `
+      <div class="media-lab-skeleton">
+        <div class="media-lab-skeleton-img"></div>
+        <div class="media-lab-skeleton-bar"><div class="media-lab-skeleton-text"></div></div>
+      </div>
+    `;
+    gallery.innerHTML = skeleton + IMAGES.gallery.map((img, idx) => renderImageCardHTML(img, idx)).join('');
+    return;
   }
+
+  if (IMAGES.gallery.length === 0) {
+    gallery.innerHTML = `
+      <div class="media-lab-empty">
+        <div class="media-lab-empty-icon">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+        </div>
+        <h3>No images yet</h3>
+        <p>Describe anything you can imagine — photorealistic renders, illustrations, concept art, or abstract designs.</p>
+        <button class="media-lab-empty-btn" onclick="fillImagePrompt('A cyberpunk cityscape at sunset with neon signs and flying cars')">Try an example</button>
+      </div>
+    `;
+    return;
+  }
+
+  gallery.innerHTML = IMAGES.gallery.map((img, idx) => renderImageCardHTML(img, idx)).join('');
+}
+
+function renderImageCardHTML(img, idx) {
+  const safePrompt = escapeHtml(img.prompt);
+  return `
+    <div class="media-lab-card">
+      <img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="${safePrompt}" loading="lazy"
+        onclick="openImageLightbox(${idx})">
+      <div class="media-lab-card-overlay">
+        <div class="media-lab-card-overlay-prompt">${safePrompt}</div>
+        <div class="media-lab-card-actions">
+          <button class="media-lab-card-action" onclick="event.stopPropagation();downloadImageByIndex(${idx})">Save</button>
+          <button class="media-lab-card-action" onclick="event.stopPropagation();copyImagePrompt(${idx})">Copy Prompt</button>
+          <button class="media-lab-card-action" onclick="event.stopPropagation();openImageLightbox(${idx})">Expand</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 export function downloadImage(base64, mimeType) {
@@ -126,7 +163,7 @@ export function downloadImage(base64, mimeType) {
   const safeMime = ALLOWED_MIME.includes(mimeType) ? mimeType : 'image/png';
   const link = document.createElement('a');
   link.href = `data:${safeMime};base64,${base64}`;
-  link.download = `infinite-${Date.now()}.png`;
+  link.download = `meterflow-${Date.now()}.png`;
   link.click();
 }
 

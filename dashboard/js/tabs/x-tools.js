@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: X Tools
+// Meterflow Dashboard - Tab: X Tools
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
@@ -16,19 +16,19 @@ export function renderXTools() {
     `;
   }
 
-  const key = STATE.apiKeyFull || 'inf_your_key_here';
+  const key = STATE.apiKeyFull || 'mf_your_key_here';
 
   return `
     <div class="page-header">
       <h1 class="page-title">X Tools</h1>
-      <p class="page-sub">Free CT intelligence on Twitter/X. Scan profiles, track key followers, detect contract addresses, and discover trending projects — all powered by your Infinite API key.</p>
+      <p class="page-sub">Metered CT intelligence on Twitter/X. Scan profiles, track key followers, detect contract addresses, and discover trending projects - all powered by your Meterflow API key.</p>
     </div>
 
     <div class="tools-section">
-      <div class="section-title">Infinite Alpha (Beta) — Chrome Extension</div>
+      <div class="section-title">Meterflow Signal — Chrome Extension</div>
       <div class="x-tools-hero">
         <div class="x-tools-card">
-          <div class="x-tools-badge">FREE / BETA</div>
+          <div class="x-tools-badge">METERED</div>
           <h3>What You Get</h3>
           <div class="x-tools-features">
             <div class="x-tools-feature">
@@ -85,8 +85,8 @@ export function renderXTools() {
           <div class="x-step-num">1</div>
           <div class="x-step-content">
             <h4>Install the Extension</h4>
-            <p>Download Infinite Alpha and load it into Chrome as an unpacked extension.</p>
-            <a href="https://github.com/infinitekeys/infinite-alpha/releases/latest/download/infinite-alpha.zip" target="_blank" rel="noopener" class="x-download-btn">&#x2B07; Download Extension (.zip)</a>
+            <p>Download Meterflow Signal and load it into Chrome as an unpacked extension.</p>
+            <a href="https://github.com/nullxnothing/meterflow-signal/releases/latest/download/meterflow-signal.zip" target="_blank" rel="noopener" class="x-download-btn">&#x2B07; Download Extension (.zip)</a>
             <div class="tool-config-box" style="margin-top:12px;">1. Unzip the downloaded file\n2. Open chrome://extensions\n3. Enable "Developer mode" (top right)\n4. Click "Load unpacked"\n5. Select the unzipped folder</div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export function renderXTools() {
           <div class="x-step-num">2</div>
           <div class="x-step-content">
             <h4>Enter Your API Key</h4>
-            <p>Click the Infinite Alpha icon in your browser toolbar and paste the key below:</p>
+            <p>Click the Meterflow Signal icon in your browser toolbar and paste the key below:</p>
             <div class="x-key-display">
               <div class="x-key-display-label">Your API Key</div>
               <div class="x-key-display-row">
@@ -108,7 +108,7 @@ export function renderXTools() {
           <div class="x-step-num">3</div>
           <div class="x-step-content">
             <h4>Browse Twitter</h4>
-            <p>Navigate to any Twitter/X profile. The Infinite Alpha panel will appear below the bio with:</p>
+            <p>Navigate to any Twitter/X profile. The Meterflow Signal panel will appear below the bio with:</p>
             <ul class="x-checklist">
               <li>Rename history badges</li>
               <li>Key follower pills with categories (VC, alpha, dev, etc.)</li>
@@ -134,7 +134,7 @@ export function renderXTools() {
 
     <div class="tools-section">
       <div class="section-title">API Endpoints</div>
-      <p class="page-sub" style="margin-bottom:16px;">You can also hit the Alpha API directly from your own tools.</p>
+      <p class="page-sub" style="margin-bottom:16px;">You can also hit the Signal API directly from your own tools.</p>
       <div class="x-api-grid">
         ${[
           { method: 'GET', path: '/v1/alpha/profile/:username', desc: 'Scan a Twitter profile' },
@@ -155,7 +155,7 @@ export function renderXTools() {
           </div>
         `).join('')}
       </div>
-      <div class="tool-config-box" style="margin-top:12px;">curl -H "Authorization: Bearer ${key}" \\\n  https://infinitekeys.fun/proxy/v1/alpha/discover</div>
+      <div class="tool-config-box" style="margin-top:12px;">curl -H "Authorization: Bearer ${key}" \\\n  https://meterflow.fun/proxy/v1/alpha/discover</div>
     </div>
   `;
 }

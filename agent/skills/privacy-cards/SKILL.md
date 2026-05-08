@@ -73,7 +73,7 @@ Authorization: api-key ${PRIVACY_API_KEY}
   "data": [
     {
       "token": "7ef7d65c-9023-4da3-b113-3b8583fd7951",
-      "memo": "INFINITE-anthropic",
+      "memo": "Meterflow-anthropic",
       "type": "MERCHANT_LOCKED",
       "last_four": "4142",
       "spend_limit": 50000,
@@ -89,7 +89,7 @@ Authorization: api-key ${PRIVACY_API_KEY}
 
 `spend_limit` is in **cents**. `50000 = $500.00`.
 
-Match cards by `memo` prefix `INFINITE-{vendor}` to find existing cards for each vendor.
+Match cards by `memo` prefix `Meterflow-{vendor}` to find existing cards for each vendor.
 
 ## Step 2: Create a Card for a Vendor
 
@@ -103,7 +103,7 @@ Content-Type: application/json
 
 {
   "type": "MERCHANT_LOCKED",
-  "memo": "INFINITE-anthropic",
+  "memo": "Meterflow-anthropic",
   "spend_limit": 50000,
   "spend_limit_duration": "MONTHLY",
   "state": "OPEN"
@@ -116,7 +116,7 @@ Content-Type: application/json
   "created": "2026-02-23T10:00:00Z",
   "token": "7ef7d65c-9023-4da3-b113-3b8583fd7951",
   "last_four": "4142",
-  "memo": "INFINITE-anthropic",
+  "memo": "Meterflow-anthropic",
   "type": "MERCHANT_LOCKED",
   "spend_limit": 50000,
   "spend_limit_duration": "MONTHLY",

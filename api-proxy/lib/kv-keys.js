@@ -2,8 +2,8 @@
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const KEY_PREFIX = 'infinite:apikey:';
-const WALLET_PREFIX = 'infinite:wallet:';
+const KEY_PREFIX = 'meterflow:apikey:';
+const WALLET_PREFIX = 'meterflow:wallet:';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 // In-memory fallback (dev only — production requires Redis)

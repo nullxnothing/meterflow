@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: Trading Bot
+// Meterflow Dashboard - Tab: Trading Bot
 // ═══════════════════════════════════════════
 
 import { STATE, TRADING, API_BASE } from '../state.js';
@@ -130,7 +130,7 @@ export function renderTrading() {
   const isTradingTier = STATE.tier === 'Operator' || STATE.tier === 'Architect' || STATE.tier === 'Alpha';
 
   if (!isTradingTier) {
-    return `<div class="bot-empty"><div class="bot-empty-icon">/</div><div>Trade Bot requires <strong>Operator</strong> tier or above.</div><div style="margin-top:8px;font-size:10px;color:var(--text-muted);">Hold 100K+ $INFINITE tokens to unlock.</div></div>`;
+    return `<div class="bot-empty"><div class="bot-empty-icon">/</div><div>Trade Bot requires <strong>Operator</strong> tier or an approved agent budget.</div><div style="margin-top:8px;font-size:10px;color:var(--text-muted);">Trading routes are high-risk metered workflows with strict policy controls.</div></div>`;
   }
 
   setTimeout(() => startBotPolling(), 50);
@@ -223,13 +223,13 @@ export function saveTradingHistory() {
       id: c.id,
       messages: c.messages.slice(-50),
     }));
-    localStorage.setItem('infinite_trading', JSON.stringify({ conversations: toSave, activeId: TRADING.activeId }));
+    localStorage.setItem('meterflow_trading', JSON.stringify({ conversations: toSave, activeId: TRADING.activeId }));
   } catch {}
 }
 
 export function loadTradingHistory() {
   try {
-    const raw = localStorage.getItem('infinite_trading');
+    const raw = localStorage.getItem('meterflow_trading');
     if (!raw) return;
     const data = JSON.parse(raw);
     TRADING.conversations = data.conversations || [];

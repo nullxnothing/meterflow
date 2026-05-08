@@ -68,7 +68,7 @@ function extractServerToolNames(tools) {
 // POST /v1/chat/completions — OpenAI-compatible chat endpoint
 router.post('/chat/completions', oaiAuth, async (req, res) => {
   const { model, messages, max_tokens, temperature, stream, tools, tool_choice } = req.body;
-  const { tierConfig, apiKey, isTrial } = req.infinite;
+  const { tierConfig, apiKey, isTrial } = req.meterflow;
 
   const requestedModel = model || tierConfig.models.find(m => m !== 'auto') || 'gemini-2.5-flash';
   const availableModels = tierConfig.models.filter(m => m !== 'auto');
@@ -181,7 +181,7 @@ async function handleStream(req, res, model, messages, maxTokens, temperature, a
   });
 
   try {
-    const systemPrompt = systemMsg?.content || getSystemPromptWithContext(tierConfig, req.infinite.tier);
+    const systemPrompt = systemMsg?.content || getSystemPromptWithContext(tierConfig, req.meterflow.tier);
     const provider = getProviderForModel(model);
 
     let isPassthrough = false;

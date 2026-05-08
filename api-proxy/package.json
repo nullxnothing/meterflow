@@ -1,8 +1,8 @@
 {
-  "name": "infinite-api-proxy",
+  "name": "meterflow-api-proxy",
   "version": "1.0.1",
   "type": "module",
-  "description": "INFINITE Protocol — Token-gated AI API proxy",
+  "description": "Meterflow — USDC metering gateway for AI agents and APIs on Solana",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

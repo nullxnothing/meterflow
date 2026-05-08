@@ -19,6 +19,7 @@ import twitterRouter from './routes/twitter.js';
 import alphaRouter from './routes/alpha.js';
 import launchRouter from './routes/launch.js';
 import openaiCompatRouter from './routes/openai-compat.js';
+import controlPlaneRouter from './routes/control-plane.js';
 import { bootstrapScheduler } from './agent-scheduler.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
 import { agentRuntime } from './lib/agent-runtime.js';
@@ -29,9 +30,12 @@ import { errorAlertMiddleware } from './lib/alerts.js';
 const app = express();
 app.use(cors({
   origin: [
-    'https://infinitekeys.fun',
-    'https://www.infinitekeys.fun',
-    /\.infinitekeys\.fun$/,
+    'https://meterflow.fun',
+    'https://www.meterflow.fun',
+    /\.meterflow\.fun$/,
+    'https://clawforge.tech',
+    'https://www.clawforge.tech',
+    /\.clawforge\.tech$/,
     /\.vercel\.app$/,
     /^chrome-extension:\/\//,
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5500', 'http://localhost:3000', 'http://127.0.0.1:5500'] : []),
@@ -79,6 +83,7 @@ app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
 app.use('/v1', express.json({ limit: '10mb' }), launchRouter);
+app.use('/v1', controlPlaneRouter);
 app.use('/v1', openaiCompatRouter);
 
 // Sentry error handler (must be after routes, before listen)

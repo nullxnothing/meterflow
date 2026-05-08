@@ -8,7 +8,7 @@ export async function executeImageGenerate({ prompt }) {
   if (!PROVIDER_AVAILABLE.gemini) {
     return { 
       error: 'Image generation is not available yet',
-      message: 'Gemini API will be activated after token launch.'
+      message: 'Gemini API is not configured for this Meterflow route.'
     };
   }
 

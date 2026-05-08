@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#05080f"/>
+      <stop offset=".45" stop-color="#071527"/>
+      <stop offset="1" stop-color="#02050a"/>
+    </linearGradient>
+    <radialGradient id="storm" cx="50%" cy="45%" r="62%">
+      <stop offset="0" stop-color="#5fa8ff" stop-opacity=".38"/>
+      <stop offset=".34" stop-color="#12385f" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#02050a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency=".012 .04" numOctaves="5" seed="22"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.05 0 0 0 0 0.12 0 0 0 0 0.22 0 0 0 .55 0"/>
+    </filter>
+    <filter id="textShadow">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+    </filter>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800&amp;family=Inter+Tight:wght@700;800&amp;display=swap');
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect width="1600" height="900" fill="url(#storm)"/>
+  <rect width="1600" height="900" filter="url(#noise)" opacity=".7"/>
+  <g opacity=".92">
+    <path d="M0 520 C160 448 266 522 411 465 C554 410 662 506 819 455 C1014 391 1141 489 1276 430 C1397 378 1492 424 1600 376 L1600 900 L0 900 Z" fill="#06101c"/>
+    <path d="M0 621 C151 558 259 636 422 565 C575 498 725 608 881 532 C1048 450 1182 610 1328 525 C1438 462 1519 513 1600 472 L1600 900 L0 900 Z" fill="#07182b"/>
+    <path d="M0 694 C142 650 250 705 396 657 C557 604 705 697 852 631 C1028 552 1180 692 1329 612 C1432 556 1515 591 1600 552 L1600 900 L0 900 Z" fill="#08111e"/>
+  </g>
+  <g fill="none" stroke-linecap="round" opacity=".55">
+    <path d="M72 569 C222 521 286 585 418 537 C548 490 650 557 780 512 C918 464 1036 537 1162 487 C1284 439 1391 483 1520 432" stroke="#5fa8ff" stroke-width="5" opacity=".25"/>
+    <path d="M104 682 C280 636 368 714 520 657 C684 596 788 675 940 622 C1115 561 1238 666 1398 593" stroke="#8ec4ff" stroke-width="4" opacity=".32"/>
+    <path d="M190 756 C363 704 499 782 642 733 C789 682 929 760 1078 707 C1252 645 1394 724 1548 660" stroke="#d7eaff" stroke-width="3" opacity=".22"/>
+  </g>
+  <g transform="translate(690 235)" fill="#fff" opacity=".95">
+    <path d="M59.5 51.5c20.5 7 36.25 15.25 47 27.75 9 10.5 13.75 24 16.5 42 1.75 11 3.5 23.75 7.75 38.25-12-16-24.5-31.5-37.25-45.75-7.75-8.5-13-15-18.75-26.25-4.5-8.75-10-17.5-15.25-36Z"/>
+    <path d="M196.5 51.5c-20.5 7-36.25 15.25-47 27.75-9 10.5-13.75 24-16.5 42-1.75 11-3.5 23.75-7.75 38.25 12-16 24.5-31.5 37.25-45.75 7.75-8.5 13-15 18.75-26.25 4.5-8.75 10-17.5 15.25-36Z"/>
+    <path d="M80.5 79.5c15.5 10.75 28.5 23.75 39.25 39.25 3.5 5 6.25 8.75 8.25 8.75s4.75-3.75 8.25-8.75c10.75-15.5 23.75-28.5 39.25-39.25-8.5 18-15.25 35.5-24.75 50.5-5.5 8.75-12.5 16-18 24.25-4.25 6.25-5.75 27.25-4.75 65-10-39.25-12-58.75-4.75-73.5-10-12-23.75-29.25-42.75-66.25Z"/>
+    <path d="M39 75.25c19.75 14 32.75 29 38.75 45 5.75 15.5 6 33.75 1 54.5-4.25 17.75-14.75 31.25-28.25 41.5 15.25-23 17.25-43.5 16-62.5-2-29-10.25-53-27.5-78.5Z"/>
+    <path d="M217 75.25c-19.75 14-32.75 29-38.75 45-5.75 15.5-6 33.75-1 54.5 4.25 17.75 14.75 31.25 28.25 41.5-15.25-23-17.25-43.5-16-62.5 2-29 10.25-53 27.5-78.5Z"/>
+  </g>
+  <text x="800" y="535" text-anchor="middle" font-family="'Inter Tight','Inter',Arial,sans-serif" font-size="148" font-weight="800" letter-spacing="0" fill="#f7fbff" filter="url(#textShadow)">Meterflow</text>
+  <text x="800" y="602" text-anchor="middle" font-family="'Inter',Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="6" fill="#9fcaff">USDC METERING FOR AGENTS AND APIS ON SOLANA</text>
+</svg>

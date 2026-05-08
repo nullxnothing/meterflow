@@ -1,4 +1,4 @@
-// Infinite Alpha — side panel feed
+// Meterflow Signal — side panel feed
 (() => {
   const discoverFeed = document.getElementById('discover-feed');
   const trendingFeed = document.getElementById('trending-feed');

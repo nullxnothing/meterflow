@@ -12,7 +12,7 @@ const router = Router();
 // POST /v1/trading/analyze — AI trading analysis with optional token context
 router.post('/analyze', authenticateApiKey, requireTradingTier, async (req, res) => {
   const { query, tokenAddress, messages: clientMessages, model } = req.body;
-  const { tierConfig, usage, apiKey } = req.infinite;
+  const { tierConfig, usage, apiKey } = req.meterflow;
 
   if (!query && (!clientMessages || !clientMessages.length)) {
     return res.status(400).json({ error: 'invalid_request', message: 'query or messages required' });

@@ -4,6 +4,7 @@ import { getVideoOp, setVideoOp } from '../lib/kv-videos.js';
 import { authenticateApiKey, authenticateAdmin } from '../middleware.js';
 import { incrementUsage } from '../lib/helpers.js';
 import { logger } from '../lib/logger.js';
+import { completeMeteredRequest } from '../lib/control-plane.js';
 
 const router = Router();
 
@@ -28,13 +29,20 @@ function extractVideoFromResponse(data) {
 
 // POST /v1/video/generate — Start async video generation via Veo 2
 router.post('/generate', authenticateApiKey, async (req, res) => {
+  const startedAt = Date.now();
   const { prompt, aspectRatio } = req.body;
-  const { tierConfig, usage, apiKey, tier } = req.infinite;
+  // Acceptable aspect ratios: 16:9, 9:16, 1:1, 1:!, etc.
+  const VALID_ASPECTS = ['16:9', '9:16', '1:1', '1:!'];
+  let safeAspect = aspectRatio || '16:9';
+  if (!VALID_ASPECTS.includes(safeAspect)) {
+    return res.status(400).json({ error: 'invalid_aspect_ratio', message: `Aspect ratio '${safeAspect}' is not supported.` });
+  }
+  const { tierConfig, usage, apiKey, tier } = req.meterflow;
 
   if (!PROVIDER_AVAILABLE.gemini) {
     return res.status(503).json({
       error: 'provider_not_configured',
-      message: 'Video generation is coming soon. Google Veo 2 will be activated after token launch.',
+      message: 'Video generation requires a configured Gemini/Veo provider key.',
     });
   }
 
@@ -63,7 +71,7 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
         body: JSON.stringify({
           instances: [{ prompt }],
           parameters: {
-            aspectRatio: aspectRatio || '16:9',
+            aspectRatio: safeAspect,
             resolution: '720p',
           },
         }),
@@ -83,7 +91,15 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
     }
 
     await setVideoOp(operationName, { apiKey, prompt, status: 'pending', createdAt: Date.now() });
-    await incrementUsage(apiKey, VIDEO_CALL_COST - 1);
+    await Promise.all([
+      incrementUsage(apiKey, VIDEO_CALL_COST - 1),
+      completeMeteredRequest(req, {
+        status: 'metered_key',
+        responseStatus: 200,
+        latencyMs: Date.now() - startedAt,
+        tokens: VIDEO_CALL_COST,
+      }),
+    ]);
 
     res.json({
       operationName,
@@ -92,6 +108,12 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
       estimatedTime: '1-3 minutes',
     });
   } catch (err) {
+    completeMeteredRequest(req, {
+      status: 'upstream_error',
+      responseStatus: 502,
+      latencyMs: Date.now() - startedAt,
+      error: err.message,
+    }).catch(() => {});
     logger.error('Video generation error', { err: err.message });
     res.status(502).json({
       error: 'upstream_error',
@@ -105,7 +127,7 @@ router.post('/generate', authenticateApiKey, async (req, res) => {
 router.get('/status/*', authenticateApiKey, async (req, res) => {
   const operationName = req.params[0];
   const op = await getVideoOp(operationName);
-  if (op && op.apiKey !== req.infinite.apiKey) {
+  if (op && op.apiKey !== req.meterflow.apiKey) {
     return res.status(403).json({ error: 'forbidden', message: 'This video belongs to another user.' });
   }
 
@@ -174,7 +196,7 @@ router.get('/download/*', async (req, res) => {
   const queryKey = req.query.token;
   const apiKey = headerKey || queryKey;
 
-  // If op is missing from Redis (e.g. generated before Redis migration), attempt live recovery from Google
+  // If op is missing from Redis, attempt live recovery from Google.
   if (!op?.video?.uri && apiKey) {
     try {
       const data = await fetchVeoOperation(operationName);

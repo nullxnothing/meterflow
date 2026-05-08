@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: API Keys
+// Meterflow Dashboard - Tab: API Keys
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
@@ -7,33 +7,28 @@ import { API_BASE } from '../state.js';
 import { api } from '../api.js';
 import { render } from '../render.js';
 import { showToast } from '../actions.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js';
 
 export function renderKeys() {
-  if (!isHolder()) {
-    return `
-      <div class="page-header">
-        <h1 class="page-title">API Keys</h1>
-        <p class="page-sub">Your key works as a drop-in replacement for Anthropic and Google API keys</p>
-      </div>
-      ${renderHolderGate('API keys')}
-    `;
-  }
+  const locked = !canManageMeterflow();
 
-  const displayKey = STATE.keyVisible ? STATE.apiKeyFull : STATE.apiKey;
+  const displayKey = locked
+    ? 'mf_preview_live_key_********************************'
+    : (STATE.keyVisible ? STATE.apiKeyFull : STATE.apiKey);
   return `
     <div class="page-header">
       <h1 class="page-title">API Keys</h1>
-      <p class="page-sub">Your key works as a drop-in replacement for Anthropic and Google API keys</p>
+      <p class="page-sub">Use keys as metered clients for model routes today and payment-verified endpoints as they ship.</p>
     </div>
+    ${locked ? renderPreviewNotice('API keys') : ''}
     <div class="section">
       <div class="section-title">Your API Key</div>
       <div class="api-key-box">
         <div class="api-key-display">
           <div class="api-key-value" id="apiKeyDisplay">${displayKey || 'No key'}</div>
-          <button class="btn-sm primary" onclick="copyText('${STATE.apiKeyFull || ''}')">Copy</button>
+          <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : `copyText('${STATE.apiKeyFull || ''}')`}">${locked ? 'Unlock' : 'Copy'}</button>
         </div>
-        <div class="api-key-actions">
+        <div class="api-key-actions ${locked ? 'preview-disabled' : ''}">
           <button class="btn-sm" onclick="toggleKeyVisibility()">${STATE.keyVisible ? 'Hide' : 'Show'}</button>
           <button class="btn-sm" onclick="rotateKey()">Rotate Key</button>
           <button class="btn-sm danger" onclick="revokeKey()">Revoke</button>
@@ -43,33 +38,33 @@ export function renderKeys() {
     <div class="section">
       <div class="section-title">Quick Start</div>
       <div class="api-key-box">
-        <div class="api-key-hint" style="margin-bottom:16px;">Use your INFINITE API key exactly like you'd use a Claude or Gemini key. Just point to our endpoint:</div>
+        <div class="api-key-hint" style="margin-bottom:16px;">Use your Meterflow key like a model gateway key today. Meterflow records usage so the same client can move to priced endpoints, budgets, and receipts.</div>
         <div class="api-key-value" style="font-size:12px;line-height:1.8;white-space:pre-wrap;margin-bottom:16px;padding:20px;">
 <span style="color:var(--text-muted)">// Works with any HTTP client</span>
 <span style="color:var(--blue)">curl</span> ${API_BASE}/v1/chat \\
-  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'inf_your_key'}"</span> \\
+  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'mf_your_key'}"</span> \\
   -d <span style="color:var(--accent)">'{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"Hello"}]}'</span></div>
         <div class="api-key-hint">
-          <strong style="color:var(--text)">Anthropic Python SDK:</strong><br>
-          <code>client = Anthropic(api_key="your_inf_key", base_url="${API_BASE}")</code>
+          <strong style="color:var(--text)">Compatible client example:</strong><br>
+          <code>client = Anthropic(api_key="your_mf_key", base_url="${API_BASE}")</code>
         </div>
       </div>
     </div>
-    ${renderXApiSection()}
+    ${renderXApiSection(locked)}
   `;
 }
 
-function renderXApiSection() {
+function renderXApiSection(locked = false) {
   const isArchitect = STATE.tier === 'Architect' || STATE.tier === 'Alpha';
   const isConnected = STATE.connections.twitter;
 
-  if (!isArchitect) {
+  if (locked || !isArchitect) {
     return `
       <div class="section" style="margin-top:32px;">
         <div class="section-title">X / Twitter API</div>
         <div class="api-key-box" style="opacity:0.5;">
-          <div class="api-key-hint">Access the X API through your INFINITE key. Search tweets, look up users, read timelines, and post.</div>
-          <div style="margin-top:12px;"><span class="connection-status coming-soon-label">Architect Tier Required</span></div>
+        <div class="api-key-hint">Access X routes through your Meterflow key. Search tweets, look up users, read timelines, and post through a metered client.</div>
+          <div style="margin-top:12px;"><span class="connection-status coming-soon-label">${locked ? 'Preview Mode' : 'Architect Tier Required'}</span></div>
         </div>
       </div>
     `;
@@ -83,21 +78,21 @@ function renderXApiSection() {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <div>
               <span class="connection-status connected">Connected</span>
-              <span class="dim" style="margin-left:8px;font-size:12px;">Your key can access the X API</span>
+              <span class="dim" style="margin-left:8px;font-size:12px;">Your key can access metered X routes</span>
             </div>
             <button class="btn-sm danger" onclick="disconnectTwitter()">Disconnect</button>
           </div>
           <div class="api-key-value" style="font-size:12px;line-height:1.8;white-space:pre-wrap;padding:20px;">
 <span style="color:var(--text-muted)">// Search recent tweets</span>
 <span style="color:var(--blue)">curl</span> -X POST ${API_BASE}/v1/twitter/search \\
-  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'inf_your_key'}"</span> \\
+  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'mf_your_key'}"</span> \\
   -H <span style="color:var(--accent)">"Content-Type: application/json"</span> \\
   -d <span style="color:var(--accent)">'{"query":"solana AI"}'</span>
 
 <span style="color:var(--text-muted)">// Look up a user</span>
 <span style="color:var(--blue)">curl</span> -X POST ${API_BASE}/v1/twitter/user \\
-  -H <span style="color:var(--accent)">"Authorization: Bearer inf_your_key"</span> \\
-  -d <span style="color:var(--accent)">'{"username":"infinitexkeys"}'</span></div>
+  -H <span style="color:var(--accent)">"Authorization: Bearer mf_your_key"</span> \\
+  -d <span style="color:var(--accent)">'{"username":"meterflowsol"}'</span></div>
           <div class="api-key-hint" style="margin-top:12px;">
             <strong style="color:var(--text)">Available actions:</strong> <code>me</code> <code>user</code> <code>search</code> <code>timeline</code> <code>tweet</code> <code>reply</code>
           </div>
@@ -110,7 +105,7 @@ function renderXApiSection() {
     <div class="section" style="margin-top:32px;">
       <div class="section-title">X / Twitter API</div>
       <div class="api-key-box">
-        <div class="api-key-hint" style="margin-bottom:16px;">Want your API key to access <strong style="color:var(--text)">X / Twitter</strong>? Connect your account or paste a Bearer Token to enable tweet search, user lookup, timelines, and posting through your INFINITE key.</div>
+        <div class="api-key-hint" style="margin-bottom:16px;">Want your API key to access <strong style="color:var(--text)">X / Twitter</strong>? Connect your account or paste a Bearer Token to enable metered tweet search, user lookup, timelines, and posting.</div>
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
           <button class="btn-sm primary" onclick="connectOAuth('twitter')">Connect X Account</button>
           <span class="dim" style="font-size:12px;">via OAuth 2.0</span>

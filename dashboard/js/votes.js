@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Votes Management
+// Meterflow Dashboard - Integration Feedback
 // ═══════════════════════════════════════════
 
 import { STATE, VOTES } from './state.js';

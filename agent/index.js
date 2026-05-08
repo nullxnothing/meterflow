@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-// INFINITE Protocol — Treasury Agent v3
+// Meterflow — Treasury Agent v3
 // ═══════════════════════════════════════════════════
 //
 // AUTOMATED PAYMENT PIPELINE:
@@ -270,7 +270,7 @@ async function syncCards() {
   try {
     const { data } = await privacyFetch('GET', '/cards?page=1&page_size=50');
     for (const card of data) {
-      const match = card.memo?.match(/^INFINITE-(\w+)$/);
+      const match = card.memo?.match(/^Meterflow-(\w+)$/);
       if (!match) continue;
       state.cards[match[1]] = {
         cardToken: card.token,
@@ -513,7 +513,7 @@ async function startServer(port) {
 }
 
 async function start() {
-  console.log(`∞ INFINITE Treasury Agent v3\n  Treasury: ${CONFIG.TREASURY_WALLET?.slice(0, 8) || 'NOT SET'}...\n  Proxy: ${CONFIG.PROXY_URL}\n  Payments: ${CONFIG.PRIVACY_API_KEY ? 'Privacy.com' : 'disabled'} | ${CONFIG.BRIDGE_API_KEY ? 'Bridge.xyz' : 'disabled'}`);
+  console.log(`∞ Meterflow Treasury Agent v3\n  Treasury: ${CONFIG.TREASURY_WALLET?.slice(0, 8) || 'NOT SET'}...\n  Proxy: ${CONFIG.PROXY_URL}\n  Payments: ${CONFIG.PRIVACY_API_KEY ? 'Privacy.com' : 'disabled'} | ${CONFIG.BRIDGE_API_KEY ? 'Bridge.xyz' : 'disabled'}`);
   await updateSolPrice();
   await checkBalance();
   await fetchProxyStats();

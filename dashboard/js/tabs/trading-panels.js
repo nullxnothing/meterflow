@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Trading Panel Renderers
+// Meterflow Dashboard - Trading Panel Renderers
 // ═══════════════════════════════════════════
 
 import { TRADING } from '../state.js';

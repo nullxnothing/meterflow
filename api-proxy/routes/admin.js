@@ -115,7 +115,7 @@ router.post('/votes', authenticateApiKey, async (req, res) => {
     if (!apiId || !VALID_API_IDS.has(apiId)) {
       return res.status(400).json({ error: 'invalid_api_id', message: 'Unknown API ID' });
     }
-    const { wallet } = req.infinite;
+    const { wallet } = req.meterflow;
     const result = await toggleVote(wallet, apiId);
     res.json(result);
   } catch (e) {
@@ -238,7 +238,7 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
       totalKeysIssued,
     },
     providers,
-    health: { status: 'ok', version: '1.0.0', protocol: 'INFINITE', treasury: health.healthStatus },
+    health: { status: 'ok', version: '1.0.0', protocol: 'Meterflow', treasury: health.healthStatus },
   };
 
   if (isFreeAccessActive()) {
@@ -251,7 +251,7 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
 // GET /health
 router.get('/health', (req, res) => {
   const treasuryState = getTreasuryState();
-  res.json({ status: 'ok', version: '1.0.0', protocol: 'INFINITE', treasury: treasuryState.healthStatus });
+  res.json({ status: 'ok', version: '1.0.0', protocol: 'Meterflow', treasury: treasuryState.healthStatus });
 });
 
 export default router;

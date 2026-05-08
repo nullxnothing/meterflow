@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   INFINITE Protocol — Shared Design System
+   Meterflow — Shared Design System
    Import this in every page:
    <link rel="stylesheet" href="/site/shared.css">
    ═══════════════════════════════════════════ */
@@ -24,29 +24,36 @@
 
 /* ─── Tokens ─── */
 :root {
-  --bg: #0a0a0a;
-  --surface: #111111;
-  --surface-2: #1a1a1a;
-  --surface-3: #141414;
-  --border: #222222;
-  --border-light: #333333;
-  --text: #f0efe9;
-  --text-dim: #888880;
-  --text-muted: #555550;
-  --accent: #c8ff00;
-  --accent-dim: #a0cc00;
-  --accent-glow: rgba(200, 255, 0, 0.08);
-  --green: #28c840;
+  --bg: #03060c;
+  --bg-deep: #02040a;
+  --surface: #0a1018;
+  --surface-2: #0e1622;
+  --surface-3: #0c1320;
+  --border: #142033;
+  --border-light: #20324d;
+  --text: #eaf2ff;
+  --text-dim: #93a8c4;
+  --text-muted: #4f6480;
+  --accent: #4f9cff;
+  --accent-2: #6cb8ff;
+  --accent-deep: #1f5fb8;
+  --accent-dim: #2c74cc;
+  --accent-glow: rgba(79, 156, 255, 0.08);
+  --green: #4f9cff;
   --red: #ff5f57;
   --blue: #00d4ff;
   --warm: #ff6b35;
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'Sora', sans-serif;
+  --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-pill: 999px;
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.03), 0 12px 32px rgba(0,0,0,0.4);
+  --shadow-elev: 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.55);
+  --section-pad: clamp(72px, 10vw, 128px);
+  --container: 1200px;
 }
 
 /* ─── Base ─── */
@@ -62,6 +69,7 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
   min-height: 100vh;
 }
 
@@ -77,20 +85,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .heading-xl {
   font-family: var(--font-display);
   font-size: clamp(48px, 7vw, 100px);
-  line-height: 0.95;
-  letter-spacing: -2px;
+  line-height: 1.04;
+  letter-spacing: 0;
+  font-weight: 800;
 }
 
 .heading-lg {
   font-family: var(--font-display);
   font-size: clamp(36px, 5vw, 64px);
-  line-height: 1.1;
+  line-height: 1.08;
+  letter-spacing: 0;
+  font-weight: 750;
 }
 
 .heading-md {
   font-family: var(--font-display);
   font-size: clamp(28px, 4vw, 40px);
-  line-height: 1.2;
+  line-height: 1.24;
+  letter-spacing: 0;
+  font-weight: 700;
 }
 
 .heading-sm {
@@ -130,15 +143,28 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .nav-logo {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 14px;
-  letter-spacing: 3px;
+  letter-spacing: 0;
   color: var(--accent);
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.brand-mark {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.nav-logo .brand-mark {
+  width: 24px;
+  height: 24px;
 }
 
 .nav-logo .infinity {
@@ -185,41 +211,41 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 /* ─── Buttons ─── */
 .btn-primary {
   font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1.5px;
+  font-size: 12px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  padding: 14px 32px;
-  background: var(--accent);
-  color: var(--bg);
+  padding: 14px 26px;
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%);
+  color: #02060d;
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
+  font-weight: 700;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
   text-decoration: none;
   display: inline-block;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 24px rgba(31, 95, 184, 0.28);
 }
 
 .btn-primary:hover {
-  background: #fff;
-  border-color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(200, 255, 0, 0.2);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 14px 36px rgba(79, 156, 255, 0.4);
+  filter: brightness(1.05);
 }
 
 .btn-secondary {
   font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 1.5px;
+  font-size: 12px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  padding: 14px 32px;
-  background: transparent;
+  padding: 14px 26px;
+  background: rgba(255,255,255,0.02);
   color: var(--text);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-weight: 400;
-  transition: all 0.3s;
+  font-weight: 600;
+  transition: all 0.25s ease;
   text-decoration: none;
   display: inline-block;
 }
@@ -227,6 +253,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: rgba(79, 156, 255, 0.06);
+  transform: translateY(-1px);
 }
 
 .btn-primary.disabled,
@@ -306,7 +334,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   background: #fff;
   border-color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(200, 255, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(79, 156, 255, 0.2);
 }
 
 /* ─── Cards ─── */
@@ -325,20 +353,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .section-label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 3px;
+  letter-spacing: 3.4px;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 16px;
-  display: flex;
+  margin-bottom: 20px;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 6px 14px 6px 12px;
+  border: 1px solid rgba(79, 156, 255, 0.18);
+  border-radius: var(--radius-pill);
+  background: rgba(79, 156, 255, 0.05);
 }
 
 .section-label::before {
   content: '';
-  width: 24px;
-  height: 1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
 }
 
 /* ─── Stats Grid ─── */

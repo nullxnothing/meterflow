@@ -47,7 +47,7 @@
   font-weight: 600;
 }
 
-.badge-live { background: rgba(200, 255, 0, 0.15); color: var(--accent); }
+.badge-live { background: rgba(79, 156, 255, 0.15); color: var(--accent); }
 .badge-paused { background: rgba(255, 200, 0, 0.15); color: #ffcc00; }
 .badge-stopped { background: rgba(255, 95, 87, 0.15); color: var(--red); }
 
@@ -137,8 +137,8 @@
   transition: all 0.2s;
 }
 
-.bot-btn-buy { background: rgba(0, 200, 83, 0.2); color: var(--green); }
-.bot-btn-buy:hover { background: rgba(0, 200, 83, 0.35); }
+.bot-btn-buy { background: rgba(79, 156, 255, 0.16); color: var(--green); }
+.bot-btn-buy:hover { background: rgba(79, 156, 255, 0.28); }
 .bot-btn-sell { background: rgba(255, 95, 87, 0.2); color: var(--red); }
 .bot-btn-sell:hover { background: rgba(255, 95, 87, 0.35); }
 
@@ -207,15 +207,15 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 10px;
-  background: rgba(0, 200, 83, 0.15);
+  background: rgba(79, 156, 255, 0.12);
   color: var(--green);
-  border: 1px solid rgba(0, 200, 83, 0.3);
+  border: 1px solid rgba(79, 156, 255, 0.28);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.bot-resume-btn:hover { background: rgba(0, 200, 83, 0.3); }
+.bot-resume-btn:hover { background: rgba(79, 156, 255, 0.24); }
 
 /* ─── Bot Main Panel ─── */
 .bot-main {
@@ -583,7 +583,7 @@
 .trading-quick-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(200, 255, 0, 0.04);
+  background: rgba(79, 156, 255, 0.04);
 }
 
 .trading-token-input {

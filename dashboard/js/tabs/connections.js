@@ -1,23 +1,15 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: Connections
+// Meterflow Dashboard - Tab: Connections
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
 import { api } from '../api.js';
 import { render } from '../render.js';
 import { showToast } from '../actions.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js';
 
 export function renderConnections() {
-  if (!isHolder()) {
-    return `
-      <div class="page-header">
-        <h1 class="page-title">Connections</h1>
-        <p class="page-sub">Connect your accounts to let the AI access your private data</p>
-      </div>
-      ${renderHolderGate('Connections')}
-    `;
-  }
+  const locked = !canManageMeterflow();
 
   const providers = [
     { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH', ready: true },
@@ -28,13 +20,14 @@ export function renderConnections() {
   return `
     <div class="page-header">
       <h1 class="page-title">Connections</h1>
-      <p class="page-sub">Connect your accounts to let the AI access your private data</p>
+      <p class="page-sub">Attach provider accounts to meters, service routes, and private agent tools.</p>
     </div>
+    ${locked ? renderPreviewNotice('connections') : ''}
     <div class="connections-grid">
       ${providers.map(p => {
         const isConnected = STATE.connections[p.id];
         return `
-          <div class="card connection-card${!p.ready ? ' coming-soon' : ''}">
+          <div class="card connection-card${!p.ready ? ' provider-setup' : ''}">
             <div class="connection-icon">${p.icon}</div>
             <div class="connection-info">
               <div class="connection-name">${p.name}</div>
@@ -42,11 +35,11 @@ export function renderConnections() {
             </div>
             <div class="connection-action">
               ${!p.ready
-                ? '<span class="connection-status coming-soon-label">Coming Soon</span>'
+                ? '<span class="connection-status coming-soon-label">Provider Setup</span>'
                 : isConnected
                   ? `<span class="connection-status connected">Connected</span>
                      <button class="btn-sm danger" onclick="disconnectOAuth('${p.id}')">Disconnect</button>`
-                  : `<button class="btn-sm primary" onclick="connectOAuth('${p.id}')">Connect</button>`
+                  : `<button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : `connectOAuth('${p.id}')`}">${locked ? 'Unlock' : 'Connect'}</button>`
               }
             </div>
           </div>

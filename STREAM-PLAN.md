@@ -1,4 +1,4 @@
-# INFINITE Launch Stream — Build Plan
+# Meterflow Launch Stream — Build Plan
 
 ## Stream Order
 
@@ -11,7 +11,7 @@
 
 ## 1. Live Token Trade Feed
 
-**What:** Real-time ticker showing buys/sells on $INFINITE as they happen. Viewers see the action live.
+**What:** Real-time ticker showing buys/sells on $Meterflow as they happen. Viewers see the action live.
 
 **Time:** ~30-40 min
 
@@ -29,7 +29,7 @@ wss://pumpportal.fun/api/data
 1. **Create `dashboard/js/tradefeed.js`**
 
 ```javascript
-const INFINITE_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
+const Meterflow_MINT = 'DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump';
 
 function initTradeFeed() {
   const ws = new WebSocket('wss://pumpportal.fun/api/data');
@@ -38,7 +38,7 @@ function initTradeFeed() {
   ws.onopen = () => {
     ws.send(JSON.stringify({
       method: 'subscribeTokenTrade',
-      keys: [INFINITE_MINT]
+      keys: [Meterflow_MINT]
     }));
   };
 
@@ -55,7 +55,7 @@ function initTradeFeed() {
     row.innerHTML = `
       <span class="trade-type">${trade.txType === 'buy' ? '▲ BUY' : '▼ SELL'}</span>
       <span class="trade-amount">${solAmount} SOL</span>
-      <span class="trade-tokens">${tokenAmount} INFINITE</span>
+      <span class="trade-tokens">${tokenAmount} Meterflow</span>
       <span class="trade-wallet">${shortWallet}</span>
       <span class="trade-time">${time}</span>
     `;
@@ -253,7 +253,7 @@ async function startBattle(prompt) {
 
 ## 3. Public Demo Chat (Free Trial)
 
-**What:** A public page where non-holders can try 3 free messages. Funnel to buy $INFINITE for unlimited access.
+**What:** A public page where non-holders can try 3 free messages. Funnel to buy $Meterflow for unlimited access.
 
 **Time:** ~20-30 min
 
@@ -280,7 +280,7 @@ function demoRateLimit(req, res, next) {
   if (count >= 3) {
     return res.status(429).json({
       error: 'Demo limit reached',
-      message: 'Buy $INFINITE for unlimited access',
+      message: 'Buy $Meterflow for unlimited access',
       link: 'https://pump.fun/coin/DhsN1JmBZCvcL9P7cK1R9NLy5VB1kQcecUG7JbKQpump'
     });
   }
@@ -304,7 +304,7 @@ After 3 messages, overlay a modal:
 
 ```
 "You've used your 3 free messages.
-Hold $INFINITE for unlimited access to Claude, Gemini, GPT-4o, image gen, trading tools, and autonomous agents.
+Hold $Meterflow for unlimited access to Claude, Gemini, GPT-4o, image gen, trading tools, and autonomous agents.
 
 [Buy on pump.fun] [View Dashboard]"
 ```
@@ -341,7 +341,7 @@ async function getHolderCount() {
       jsonrpc: '2.0',
       id: 1,
       method: 'getTokenAccounts',
-      params: { mint: INFINITE_MINT, limit: 1, page: 1 }
+      params: { mint: Meterflow_MINT, limit: 1, page: 1 }
     })
   });
   const data = await resp.json();

@@ -1,5 +1,5 @@
-// Infinite Alpha — API client for Chrome extension
-const API_BASE = 'https://infinitekeys.fun/proxy';
+// Meterflow Signal — API client for Chrome extension
+const API_BASE = 'https://meterflow.fun/proxy';
 
 async function getApiKey() {
   const { apiKey } = await chrome.storage.local.get('apiKey');
@@ -31,7 +31,7 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
-// ── Alpha API methods ──
+// ── Signal API methods ──
 
 async function scanProfile(username) {
   return apiFetch(`/v1/alpha/profile/${encodeURIComponent(username)}`);
@@ -101,7 +101,7 @@ async function removeFromWatchlist(twitterId) {
 
 // Export for use in other extension scripts via chrome.runtime.sendMessage
 if (typeof globalThis !== 'undefined') {
-  globalThis.InfiniteAlphaAPI = {
+  globalThis.MeterflowAlphaAPI = {
     getApiKey, setApiKey, apiFetch,
     scanProfile, getParents, getChildren,
     getDiscover, getTrending, getAlerts, getCAs,

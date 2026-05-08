@@ -5,7 +5,7 @@ config();
 const commands = [
   new SlashCommandBuilder()
     .setName('ca')
-    .setDescription('Get the $INFINITE contract address'),
+    .setDescription('Get current Meterflow payment and settlement info'),
   new SlashCommandBuilder()
     .setName('ticket')
     .setDescription('Submit a bug report or issue')

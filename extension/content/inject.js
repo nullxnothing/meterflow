@@ -1,8 +1,8 @@
-// Infinite Alpha — Twitter/X content script
+// Meterflow Signal — Twitter/X content script
 // Injects profile intelligence overlay on Twitter profile pages
 
 (() => {
-  const PANEL_ID = 'infinite-alpha-panel';
+  const PANEL_ID = 'meterflow-signal-panel';
   const SCAN_DEBOUNCE = 800;
   let currentUsername = null;
   let scanTimer = null;
@@ -31,7 +31,7 @@
     panel.innerHTML = `
       <div class="oc-header">
         <span class="oc-header-dot"></span>
-        Infinite Alpha
+        Meterflow Signal
       </div>
       <div class="oc-loading">
         <div class="oc-spinner"></div>
@@ -46,7 +46,7 @@
     let html = `
       <div class="oc-header">
         <span class="oc-header-dot"></span>
-        Infinite Alpha
+        Meterflow Signal
         ${isKeyProfile ? '<span class="oc-key-badge">KEY PROFILE</span>' : ''}
       </div>
     `;
@@ -152,7 +152,7 @@
     panel.innerHTML = `
       <div class="oc-header">
         <span class="oc-header-dot"></span>
-        Infinite Alpha
+        Meterflow Signal
       </div>
       <div class="oc-error">${escapeHtml(message)}</div>
     `;
@@ -192,7 +192,7 @@
       }
       if (!response?.success) {
         if (response?.error === 'not_authenticated') {
-          renderError(panel, 'Connect your Infinite Keys API key in the extension popup');
+          renderError(panel, 'Connect your Meterflow API key in the extension popup');
         } else {
           renderError(panel, response?.error || 'Scan failed');
         }
@@ -263,5 +263,5 @@
   // Initial scan
   setTimeout(checkAndScan, 1000);
 
-  console.log('[Infinite Alpha] Content script loaded');
+  console.log('[Meterflow Signal] Content script loaded');
 })();

@@ -2,15 +2,15 @@
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
-const AGENT_PREFIX = 'infinite:agent:';
-const AGENT_LIST_PREFIX = 'infinite:agents:';
-const AGENT_LOG_PREFIX = 'infinite:agent-log:';
+const AGENT_PREFIX = 'meterflow:agent:';
+const AGENT_LIST_PREFIX = 'meterflow:agents:';
+const AGENT_LOG_PREFIX = 'meterflow:agent-log:';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 // Funded agent key prefixes
-const FUNDED_WALLET_PREFIX = 'infinite:agent:by-wallet:';
-const FUNDED_TOKEN_PREFIX = 'infinite:agent:by-token:';
-const FUNDED_ACTIVE_SET = 'infinite:funded-agents:active';
+const FUNDED_WALLET_PREFIX = 'meterflow:agent:by-wallet:';
+const FUNDED_TOKEN_PREFIX = 'meterflow:agent:by-token:';
+const FUNDED_ACTIVE_SET = 'meterflow:funded-agents:active';
 
 // In-memory fallback
 const fallbackAgents = new Map(); // agentId -> agentConfig

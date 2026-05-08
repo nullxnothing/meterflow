@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: Tools Hub (Agents)
+// Meterflow Dashboard - Tab: Tools Hub (Agents)
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
 import { escapeHtml } from '../utils.js';
 
 export function renderAgents() {
-  const key = STATE.apiKeyFull || 'inf_your_key_here';
+  const key = STATE.apiKeyFull || 'mf_your_key_here';
   const base = window.location.origin + '/proxy';
 
   const tools = [
@@ -18,7 +18,7 @@ export function renderAgents() {
           icon: '',
           desc: 'AI pair programming in your terminal. Edit code across entire repos with Claude or Gemini.',
           github: 'https://github.com/Aider-AI/aider',
-          config: `# Install\npip install aider-chat\n\n# Run with INFINITE\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-6`,
+          config: `# Install\npip install aider-chat\n\n# Run with Meterflow\nexport ANTHROPIC_API_KEY=${key}\nexport ANTHROPIC_BASE_URL=${base}\naider --model claude-sonnet-4-6`,
           status: 'LIVE',
         },
         {
@@ -42,7 +42,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Self-hosted AI coding assistant. Open-source GitHub Copilot alternative — runs on consumer GPUs.',
           github: 'https://github.com/TabbyML/tabby',
-          config: `# Docker setup\ndocker run -d -p 8080:8080 \\\n  tabbyml/tabby serve \\\n  --model TabbyML/StarCoder-1B\n\n# Connect to INFINITE for chat\n# Settings > Model > Custom API\n# Base URL: ${base}\n# API Key: ${key}`,
+          config: `# Docker setup\ndocker run -d -p 8080:8080 \\\n  tabbyml/tabby serve \\\n  --model TabbyML/StarCoder-1B\n\n# Connect to Meterflow for chat\n# Settings > Model > Custom API\n# Base URL: ${base}\n# API Key: ${key}`,
           status: 'LIVE',
         },
       ]
@@ -71,7 +71,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Autonomous AI agent platform. Create agents that complete tasks independently.',
           github: 'https://github.com/Significant-Gravitas/AutoGPT',
-          config: `# .env in AutoGPT directory\nANTHROPIC_API_KEY=${key}\n\n# Configure in settings\n# Set Claude as your default model\n# Point API base to INFINITE proxy`,
+          config: `# .env in AutoGPT directory\nANTHROPIC_API_KEY=${key}\n\n# Configure in settings\n# Set Claude as your default model\n# Point API base to Meterflow proxy`,
           status: 'LIVE',
         },
         {
@@ -92,7 +92,7 @@ export function renderAgents() {
           icon: '',
           desc: 'Mirror trades from any wallet in real-time. Uses Helius WebSocket for 0.3ms latency filtering.',
           github: 'https://github.com/metaggdev/Copy-trading-bot',
-          config: `# .env\nHELIUS_API_KEY=your_helius_key\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_wallet_key\nTARGET_WALLET=wallet_to_copy\n\n# AI Analysis (uses your INFINITE key)\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}`,
+          config: `# .env\nHELIUS_API_KEY=your_helius_key\nRPC_URL=https://mainnet.helius-rpc.com\nPRIVATE_KEY=your_wallet_key\nTARGET_WALLET=wallet_to_copy\n\n# AI Analysis (uses your Meterflow key)\nANTHROPIC_API_KEY=${key}\nANTHROPIC_BASE_URL=${base}`,
           status: 'LIVE',
         },
         {

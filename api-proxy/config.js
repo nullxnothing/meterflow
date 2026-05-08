@@ -5,12 +5,16 @@ config();
 const CONFIG = {
   HELIUS_API_KEY: process.env.HELIUS_API_KEY || '',
   HELIUS_RPC_URL: process.env.HELIUS_RPC_URL || '',
-  TOKEN_MINT: process.env.INFINITE_TOKEN_MINT || '',
+  TOKEN_MINT: process.env.METERFLOW_TOKEN_MINT || '',
+  TOKEN_SYMBOL: process.env.METERFLOW_TOKEN_SYMBOL || 'MFLOW',
+  TOKEN_SWAP_URL: process.env.METERFLOW_TOKEN_SWAP_URL || '',
+  PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_PROTOCOL_FEE_BPS || '100', 10),
+  HOLDER_PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_HOLDER_PROTOCOL_FEE_BPS || '0', 10),
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   JUPITER_API_KEY: process.env.JUPITER_API_KEY || '',
-  TREASURY_WALLET: process.env.TREASURY_WALLET || '',
+  TREASURY_WALLET: process.env.SETTLEMENT_WALLET || process.env.TREASURY_WALLET || '',
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {
     alpha: {
@@ -122,7 +126,7 @@ if (isProduction) {
   const missing = [];
   if (!CONFIG.HELIUS_API_KEY) missing.push('HELIUS_API_KEY');
   if (!CONFIG.HELIUS_RPC_URL) missing.push('HELIUS_RPC_URL');
-  if (!CONFIG.TOKEN_MINT) missing.push('INFINITE_TOKEN_MINT');
+  if (!CONFIG.TOKEN_MINT) missing.push('METERFLOW_TOKEN_MINT');
   if (!CONFIG.ANTHROPIC_API_KEY && !CONFIG.GOOGLE_API_KEY && !CONFIG.OPENAI_API_KEY) {
     missing.push('ANTHROPIC_API_KEY or GOOGLE_API_KEY or OPENAI_API_KEY (at least one)');
   }

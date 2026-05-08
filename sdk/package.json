@@ -1,7 +1,7 @@
 {
-  "name": "@infinite-protocol/sdk",
+  "name": "@meterflow/sdk",
   "version": "1.0.0",
-  "description": "SDK for INFINITE Protocol — token-gated AI API access on Solana",
+  "description": "SDK for Meterflow — USDC metering for AI agents and APIs on Solana",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -14,9 +14,12 @@
     "solana",
     "ai",
     "api",
+    "x402",
+    "agents",
+    "metering",
     "claude",
     "gemini",
-    "infinite"
+    "meterflow"
   ],
   "license": "MIT",
   "engines": {
@@ -24,6 +27,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/infinite-protocol/sdk"
+    "url": "https://github.com/meterflow/sdk"
   }
 }

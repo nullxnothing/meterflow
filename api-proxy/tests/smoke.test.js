@@ -1,5 +1,5 @@
 /**
- * Smoke tests for INFINITE API Proxy production fixes.
+ * Smoke tests for Meterflow API Proxy production fixes.
  * Uses Node.js built-in test runner — no extra deps.
  * Run: node --test tests/smoke.test.js
  */
@@ -31,7 +31,7 @@ describe('Config & env validation', () => {
     const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
     assert.ok(src.includes('HELIUS_API_KEY'), 'should check HELIUS_API_KEY');
     assert.ok(src.includes('HELIUS_RPC_URL'), 'should check HELIUS_RPC_URL');
-    assert.ok(src.includes('INFINITE_TOKEN_MINT'), 'should check INFINITE_TOKEN_MINT');
+    assert.ok(src.includes('METERFLOW_TOKEN_MINT'), 'should check Meterflow token mint');
     assert.ok(src.includes('REDIS_URL'), 'should check REDIS_URL');
     // Verify at least one AI provider required
     assert.ok(src.includes('ANTHROPIC_API_KEY') && src.includes('GOOGLE_API_KEY') && src.includes('OPENAI_API_KEY'),
@@ -51,15 +51,15 @@ describe('Config & env validation', () => {
 // 2. CORS CONFIG
 // ═══════════════════════════════════════
 describe('CORS configuration', () => {
-  it('server.js whitelists infinitekeys.fun', () => {
+  it('server.js whitelists meterflow.fun', () => {
     const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
-    assert.ok(src.includes("'https://infinitekeys.fun'"), 'should include bare domain');
-    assert.ok(src.includes("'https://www.infinitekeys.fun'"), 'should include www subdomain');
+    assert.ok(src.includes("'https://meterflow.fun'"), 'should include bare domain');
+    assert.ok(src.includes("'https://www.meterflow.fun'"), 'should include www subdomain');
   });
 
   it('server.js uses regex for subdomains', () => {
     const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
-    assert.ok(src.includes('\\.infinitekeys\\.fun$'), 'should have subdomain regex');
+    assert.ok(src.includes('\\.meterflow\\.fun$'), 'should have subdomain regex');
     assert.ok(src.includes('\\.vercel\\.app$'), 'should allow Vercel preview deploys');
   });
 
@@ -166,10 +166,16 @@ describe('Treasury multiplier in rate limits', () => {
 // 7. REDIS FAIL-CLOSED IN PRODUCTION
 // ═══════════════════════════════════════
 describe('Redis fail-closed (production)', () => {
-  it('kv-keys exits in production without Redis', () => {
-    const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
+  it('redis.js exits in production without Redis', () => {
+    const src = readFileSync(resolve(root, 'lib', 'redis.js'), 'utf-8');
     assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');
     assert.ok(src.includes("process.exit(1)"), 'should exit without Redis in prod');
+  });
+
+  it('kv-keys depends on the shared Redis client', () => {
+    const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
+    assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');
+    assert.ok(src.includes("from './redis.js'"), 'should use shared Redis client');
   });
 
   it('kv-keys throws on Redis failure in production (not fallback)', () => {
@@ -178,10 +184,10 @@ describe('Redis fail-closed (production)', () => {
       'should throw instead of falling back in prod');
   });
 
-  it('kv-usage exits in production without Redis', () => {
+  it('kv-usage depends on the shared Redis client', () => {
     const src = readFileSync(resolve(root, 'lib', 'kv-usage.js'), 'utf-8');
     assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');
-    assert.ok(src.includes("process.exit(1)"), 'should exit without Redis in prod');
+    assert.ok(src.includes("from './redis.js'"), 'should use shared Redis client');
   });
 
   it('kv-usage throws on Redis failure in production', () => {
@@ -328,8 +334,8 @@ describe('Session storage for API key', () => {
   it('session.js uses sessionStorage not localStorage for apiKey', () => {
     const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'session.js'), 'utf-8');
     // There should be sessionStorage.setItem for apiKey
-    // Should NOT have localStorage.setItem('infinite_apiKey'...)
-    const localStorageApiKey = src.match(/localStorage\.(setItem|getItem)\(['"]infinite_apiKey/);
+    // Should NOT have localStorage.setItem('meterflow_apiKey'...)
+    const localStorageApiKey = src.match(/localStorage\.(setItem|getItem)\(['"]meterflow_apiKey/);
     assert.ok(!localStorageApiKey, 'should NOT store apiKey in localStorage');
 
     assert.ok(src.includes('sessionStorage'), 'should use sessionStorage');
@@ -342,13 +348,8 @@ describe('Session storage for API key', () => {
 describe('Site link integrity', () => {
   it('index.html has no bare href="#" on important links', () => {
     const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
-    // Buy buttons should be disabled, not href="#"
-    const buyHrefs = [...src.matchAll(/class="[^"]*btn[^"]*"[^>]*href="#"/g)];
-    // Filter out anchor navigation links (href="#section")
-    const bareHashLinks = buyHrefs.filter(m => !m[0].includes('href="#'));
-    // This is fine — what matters is that "buy" links aren't pointing to #
-    assert.ok(src.includes('disabled') || src.includes('return false'),
-      'buy buttons should be disabled or return false');
+    const bareHashLinks = [...src.matchAll(/href="#"/g)];
+    assert.equal(bareHashLinks.length, 0, 'important links should not point to bare #');
   });
 
   it('docs.html docs link points to /docs not #', () => {
@@ -370,7 +371,7 @@ describe('Helper functions', () => {
   it('generateApiKey produces correct format', async () => {
     // Can't import directly due to config side effects, so check source
     const src = readFileSync(resolve(root, 'lib', 'helpers.js'), 'utf-8');
-    assert.ok(src.includes('inf_'), 'should prefix with inf_');
+    assert.ok(src.includes('mf_'), 'should prefix with mf_');
     assert.ok(src.includes('randomBytes'), 'should use crypto.randomBytes');
   });
 
@@ -401,5 +402,30 @@ describe('Vercel routing', () => {
     assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
     assert.ok(sources.includes('/docs'), 'should rewrite /docs');
     assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
+  });
+});
+
+// ═══════════════════════════════════════
+// 17. METERFLOW CONTROL PLANE
+// ═══════════════════════════════════════
+describe('Meterflow control plane', () => {
+  it('server.js mounts the control-plane router', () => {
+    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    assert.ok(src.includes('controlPlaneRouter'), 'should import control-plane router');
+    assert.ok(src.includes("app.use('/v1', controlPlaneRouter)"), 'should mount control-plane routes under /v1');
+  });
+
+  it('control-plane storage defines meters receipts budgets and MCP tools', () => {
+    const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool']) {
+      assert.ok(src.includes(token), `should include ${token}`);
+    }
+  });
+
+  it('SDK exposes control-plane helpers', () => {
+    const src = readFileSync(resolve(projectRoot, 'sdk', 'src', 'client.js'), 'utf-8');
+    for (const method of ['meters()', 'createMeter', 'receipts', 'createBudget', 'createMcpTool', 'providerRevenue']) {
+      assert.ok(src.includes(method), `should include ${method}`);
+    }
   });
 });

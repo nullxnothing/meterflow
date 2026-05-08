@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Markdown Renderer
+// Meterflow Dashboard - Markdown Renderer
 // ═══════════════════════════════════════════
 
 import { escapeHtml } from './utils.js';

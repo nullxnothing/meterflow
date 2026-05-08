@@ -34,7 +34,7 @@ export async function sendErrorAlert({ title, message, model, endpoint, statusCo
       { name: 'Model', value: model || 'N/A', inline: true },
     ],
     timestamp: new Date().toISOString(),
-    footer: { text: 'INFINITE API Monitor' },
+    footer: { text: 'Meterflow API Monitor' },
   };
 
   if (message) {
@@ -71,7 +71,7 @@ export function errorAlertMiddleware(req, res, next) {
         endpoint: `${req.method} ${req.path}`,
         statusCode: res.statusCode,
         model: req.body?.model,
-        apiKey: req.infinite?.apiKey,
+        apiKey: req.meterflow?.apiKey,
       });
     }
     return originalEnd(...args);

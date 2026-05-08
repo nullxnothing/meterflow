@@ -36,7 +36,7 @@
 
 .feed-status-dot.connected {
   background: var(--green);
-  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(40, 200, 64, 0.3);
+  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(79, 156, 255, 0.3);
   animation: livePulse 2s ease-in-out infinite;
 }
 
@@ -92,7 +92,7 @@
   width: var(--buy-pct, 50%);
   background: var(--green);
   transition: width 0.5s ease-out;
-  box-shadow: 0 0 8px rgba(40, 200, 64, 0.3);
+  box-shadow: 0 0 8px rgba(79, 156, 255, 0.3);
 }
 
 .trade-ratio-bar .ratio-label {
@@ -174,7 +174,7 @@
 }
 
 .trade-row.whale {
-  background: rgba(200, 255, 0, 0.03);
+  background: rgba(79, 156, 255, 0.03);
   border-left-width: 3px;
   border-left-color: var(--accent);
 }
@@ -256,7 +256,7 @@
   right: 0;
   margin: 0 auto;
   width: fit-content;
-  background: rgba(200, 255, 0, 0.1);
+  background: rgba(79, 156, 255, 0.1);
   border: 1px solid var(--accent);
   padding: 12px 28px;
   font-family: var(--font-mono);

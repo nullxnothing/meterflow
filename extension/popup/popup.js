@@ -1,4 +1,4 @@
-// Infinite Alpha — popup script
+// Meterflow Signal — popup script
 
 const authSection = document.getElementById('auth-section');
 const connectedSection = document.getElementById('connected-section');

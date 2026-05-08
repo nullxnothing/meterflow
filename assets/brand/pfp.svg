@@ -1,52 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
   <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="45%">
+      <stop offset="0%" stop-color="#5fa8ff" stop-opacity="0.16"/>
+      <stop offset="70%" stop-color="#5fa8ff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#5fa8ff" stop-opacity="0"/>
+    </radialGradient>
     <filter id="grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" stitchTiles="stitch"/>
       <feColorMatrix type="saturate" values="0"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.06"/>
-      </feComponentTransfer>
+      <feComponentTransfer><feFuncA type="linear" slope="0.045"/></feComponentTransfer>
       <feBlend in="SourceGraphic" mode="multiply"/>
     </filter>
-    <radialGradient id="glow" cx="50%" cy="50%" r="45%">
-      <stop offset="0%" stop-color="#c8ff00" stop-opacity="0.1"/>
-      <stop offset="70%" stop-color="#c8ff00" stop-opacity="0.02"/>
-      <stop offset="100%" stop-color="#c8ff00" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="ig" x1="0%" y1="30%" x2="100%" y2="70%">
-      <stop offset="0%" stop-color="#c8ff00"/>
-      <stop offset="50%" stop-color="#d8ff50"/>
-      <stop offset="100%" stop-color="#b0e800"/>
-    </linearGradient>
-    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c8ff00" stroke-width="0.3" opacity="0.07"/>
-    </pattern>
   </defs>
-  
-  <rect width="1000" height="1000" fill="#0a0a0a"/>
-  <rect width="1000" height="1000" fill="url(#grid)" opacity="0.5"/>
-  <circle cx="500" cy="500" r="380" fill="url(#glow)"/>
-  
-  <circle cx="500" cy="500" r="410" fill="none" stroke="#1e1e1e" stroke-width="1"/>
-  <circle cx="500" cy="500" r="370" fill="none" stroke="#181818" stroke-width="0.5"/>
-  
-  <g transform="translate(500, 500)">
-    <path d="M 0,0 C 0,-95 140,-95 140,0 C 140,95 0,95 0,0 C 0,-95 -140,-95 -140,0 C -140,95 0,95 0,0 Z" 
-          fill="none" stroke="#c8ff00" stroke-width="50" stroke-linecap="round" stroke-linejoin="round" opacity="0.08" transform="scale(1.65)"/>
-    <path d="M 0,0 C 0,-95 140,-95 140,0 C 140,95 0,95 0,0 C 0,-95 -140,-95 -140,0 C -140,95 0,95 0,0 Z" 
-          fill="none" stroke="url(#ig)" stroke-width="38" stroke-linecap="round" stroke-linejoin="round" transform="scale(1.65)"/>
-    <path d="M 0,0 C 0,-95 140,-95 140,0 C 140,95 0,95 0,0 C 0,-95 -140,-95 -140,0 C -140,95 0,95 0,0 Z" 
-          fill="none" stroke="#e0ff60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" transform="scale(1.65)"/>
+  <rect width="1000" height="1000" fill="#05080f"/>
+  <circle cx="500" cy="500" r="390" fill="url(#glow)"/>
+  <g transform="translate(120 105) scale(.76)" fill="#fff">
+    <path d="M238 206c82 28 145 61 188 111 36 42 55 96 66 168 7 44 14 95 31 153-48-64-98-126-149-183-31-34-52-60-75-105-18-35-40-70-61-144Z"/>
+    <path d="M786 206c-82 28-145 61-188 111-36 42-55 96-66 168-7 44-14 95-31 153 48-64 98-126 149-183 31-34 52-60 75-105 18-35 40-70 61-144Z"/>
+    <path d="M322 318c62 43 114 95 157 157 14 20 25 35 33 35s19-15 33-35c43-62 95-114 157-157-34 72-61 142-99 202-22 35-50 64-72 97-17 25-23 109-19 260-40-157-48-235-19-294-40-48-95-117-171-265Z"/>
+    <path d="M156 301c79 56 131 116 155 180 23 62 24 135 4 218-17 71-59 125-113 166 61-92 69-174 64-250-8-116-41-212-110-314Z"/>
+    <path d="M868 301c-79 56-131 116-155 180-23 62-24 135-4 218 17 71 59 125 113 166-61-92-69-174-64-250 8-116 41-212 110-314Z"/>
   </g>
-  
-  <line x1="40" y1="40" x2="100" y2="40" stroke="#333" stroke-width="1.5"/>
-  <line x1="40" y1="40" x2="40" y2="100" stroke="#333" stroke-width="1.5"/>
-  <line x1="960" y1="40" x2="900" y2="40" stroke="#333" stroke-width="1.5"/>
-  <line x1="960" y1="40" x2="960" y2="100" stroke="#333" stroke-width="1.5"/>
-  <line x1="40" y1="960" x2="100" y2="960" stroke="#333" stroke-width="1.5"/>
-  <line x1="40" y1="960" x2="40" y2="900" stroke="#333" stroke-width="1.5"/>
-  <line x1="960" y1="960" x2="900" y2="960" stroke="#333" stroke-width="1.5"/>
-  <line x1="960" y1="960" x2="960" y2="900" stroke="#333" stroke-width="1.5"/>
-  
-  <rect width="1000" height="1000" filter="url(#grain)" opacity="0.4"/>
+  <rect width="1000" height="1000" filter="url(#grain)" opacity="0.45"/>
 </svg>

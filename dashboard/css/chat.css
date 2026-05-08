@@ -339,9 +339,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border: 1px solid rgba(200, 255, 0, 0.15);
+  border: 1px solid rgba(79, 156, 255, 0.15);
   border-radius: 6px;
-  background: rgba(200, 255, 0, 0.03);
+  background: rgba(79, 156, 255, 0.03);
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-dim);
@@ -592,7 +592,7 @@
 .tool-toggle.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(200, 255, 0, 0.05);
+  background: rgba(79, 156, 255, 0.05);
 }
 
 .tool-toggle:hover { border-color: var(--accent); }
@@ -742,7 +742,7 @@
 
 .chat-send-btn:hover {
   background: #fff;
-  box-shadow: 0 0 20px rgba(200, 255, 0, 0.3);
+  box-shadow: 0 0 20px rgba(79, 156, 255, 0.3);
 }
 .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 

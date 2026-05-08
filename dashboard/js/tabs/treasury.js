@@ -1,14 +1,14 @@
 // ═══════════════════════════════════════════
-// INFINITE Dashboard - Tab: Treasury
+// Meterflow Dashboard - Tab: Settlement Wallet
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
 
 const HEALTH_TIERS = [
-  { key: 'surplus',  label: 'Surplus',  multiplier: '1.5x', desc: 'Treasury exceeds 60-day runway. Boosted limits.' },
-  { key: 'healthy',  label: 'Healthy',  multiplier: '1.0x', desc: 'Normal operations. Standard rate limits apply.' },
-  { key: 'cautious', label: 'Cautious', multiplier: '0.7x', desc: 'Runway below 30 days. Limits reduced to conserve.' },
-  { key: 'critical', label: 'Critical', multiplier: '0.3x', desc: 'Runway below 14 days. Emergency conservation mode.' },
+  { key: 'surplus',  label: 'Surplus',  multiplier: '1.5x', desc: 'Settlement buffer exceeds 60-day runway. Extra test capacity available.' },
+  { key: 'healthy',  label: 'Healthy',  multiplier: '1.0x', desc: 'Normal operations. Standard meter limits apply.' },
+  { key: 'cautious', label: 'Cautious', multiplier: '0.7x', desc: 'Runway below 30 days. Expensive routes are throttled.' },
+  { key: 'critical', label: 'Critical', multiplier: '0.3x', desc: 'Runway below 14 days. Only core routes stay active.' },
 ];
 
 const STATUS_COLORS = {
@@ -38,8 +38,8 @@ export function renderTreasury() {
 
   return `
     <div class="page-header">
-      <h1 class="page-title">Treasury</h1>
-      <p class="page-sub">Live protocol treasury balance. 100% on-chain, independently verifiable.</p>
+      <h1 class="page-title">Settlement Wallet</h1>
+      <p class="page-sub">On-chain wallet context for settlement, provider funding, gateway costs, and control-plane operations.</p>
     </div>
 
     ${renderBalanceCards(t, statusColor)}
@@ -55,7 +55,7 @@ function renderBalanceCards(t, statusColor) {
   return `
     <div class="stats-row">
       <div class="stat-card">
-        <div class="label">SOL Balance</div>
+        <div class="label">Settlement Balance</div>
         <div class="value accent">${fmtSol(t.treasuryBalanceSol)}</div>
         <div class="sub">${fmtUsd(t.treasuryBalanceUsd)} USD</div>
       </div>
@@ -65,24 +65,24 @@ function renderBalanceCards(t, statusColor) {
         <div class="sub">via Jupiter</div>
       </div>
       <div class="stat-card">
-        <div class="label">Health Status</div>
+        <div class="label">Buffer Status</div>
         <div class="value" style="color:${statusColor};text-transform:uppercase;">${t.healthStatus}</div>
         <div class="sub">multiplier: ${t.multiplier}x</div>
       </div>
       <div class="stat-card">
         <div class="label">Runway</div>
         <div class="value">${t.runwayDays >= 999 ? '∞' : t.runwayDays || '—'}</div>
-        <div class="sub">${t.runwayDays >= 999 ? 'no active spend' : 'days at current usage'}</div>
+        <div class="sub">${t.runwayDays >= 999 ? 'no active spend' : 'days at current route cost'}</div>
       </div>
       <div class="stat-card">
-        <div class="label">Daily Budget</div>
+        <div class="label">Daily Capacity</div>
         <div class="value">${t.dailyBudget ? t.dailyBudget.toLocaleString() : '—'}</div>
-        <div class="sub">API calls fundable today</div>
+        <div class="sub">metered calls fundable today</div>
       </div>
       <div class="stat-card">
-        <div class="label">API Keys Issued</div>
+        <div class="label">Meter Clients</div>
         <div class="value green">${t.totalKeysIssued != null ? t.totalKeysIssued.toLocaleString() : '—'}</div>
-        <div class="sub">active holders</div>
+        <div class="sub">issued keys</div>
       </div>
     </div>
   `;
@@ -91,7 +91,7 @@ function renderBalanceCards(t, statusColor) {
 function renderFeeDistribution() {
   return `
     <div class="section">
-      <div class="section-title">Fee Distribution</div>
+      <div class="section-title">Settlement Distribution</div>
       <div class="treasury-fee-card">
         <div class="fee-bar-container">
           <div class="fee-bar">
@@ -103,22 +103,22 @@ function renderFeeDistribution() {
             <div class="fee-legend-item">
               <div class="fee-legend-dot" style="background:var(--accent)"></div>
               <div>
-                <div class="fee-legend-label">API Treasury</div>
-                <div class="fee-legend-desc">Pays for Claude, Gemini, and OpenAI API calls</div>
+                <div class="fee-legend-label">Provider Costs</div>
+                <div class="fee-legend-desc">Funds model, data, media, and other upstream service routes</div>
               </div>
             </div>
             <div class="fee-legend-item">
               <div class="fee-legend-dot" style="background:var(--text-dim)"></div>
               <div>
-                <div class="fee-legend-label">Dev Operations</div>
-                <div class="fee-legend-desc">Infrastructure, development, and maintenance</div>
+                <div class="fee-legend-label">Meterflow Ops</div>
+                <div class="fee-legend-desc">Gateway infrastructure, receipt storage, monitoring, and maintenance</div>
               </div>
             </div>
             <div class="fee-legend-item">
               <div class="fee-legend-dot" style="background:var(--green)"></div>
               <div>
-                <div class="fee-legend-label">Community Fund</div>
-                <div class="fee-legend-desc">Grants, bounties, and community initiatives</div>
+                <div class="fee-legend-label">Builder Programs</div>
+                <div class="fee-legend-desc">Credits, integrations, bounties, and endpoint onboarding</div>
               </div>
             </div>
           </div>
@@ -136,12 +136,12 @@ function renderWalletVerify(wallet, isFullWallet, solscanUrl) {
       <div class="treasury-wallet-card">
         <div class="treasury-wallet-row">
           <div class="treasury-wallet-info">
-            <div class="treasury-wallet-label">Treasury Wallet</div>
+            <div class="treasury-wallet-label">Settlement Wallet</div>
             <div class="treasury-wallet-addr" onclick="copyText('${wallet}')" title="Click to copy">${wallet}<span class="copy">COPY</span></div>
           </div>
           <a href="${solscanUrl}" target="_blank" rel="noopener" class="btn-sm primary treasury-verify-btn">Verify on Solscan</a>
         </div>
-        <div class="treasury-wallet-note">All treasury funds are on-chain. Click the address to copy or verify the balance directly on Solscan.</div>
+        <div class="treasury-wallet-note">Settlement funds are on-chain. Click the address to copy or verify the balance directly on Solscan.</div>
       </div>
     </div>
   `;
@@ -162,7 +162,7 @@ function renderHealthTable(t, statusColor) {
 
   return `
     <div class="section">
-      <div class="section-title">Health Status Tiers</div>
+      <div class="section-title">Buffer Status Tiers</div>
       <div class="treasury-table-wrap">
         <table class="treasury-table">
           <thead><tr><th>Status</th><th>Multiplier</th><th>Description</th><th></th></tr></thead>
@@ -188,11 +188,11 @@ function renderMultiplierImpact(t) {
 
   return `
     <div class="section">
-      <div class="section-title">Rate Multiplier Impact</div>
-      <p class="treasury-impact-sub">Current multiplier <strong style="color:var(--accent)">${t.multiplier}x</strong> applied to base tier limits.</p>
+      <div class="section-title">Route Limit Impact</div>
+      <p class="treasury-impact-sub">Current multiplier <strong style="color:var(--accent)">${t.multiplier}x</strong> applied to route limits and metered key capacity.</p>
       <div class="treasury-table-wrap">
         <table class="treasury-table">
-          <thead><tr><th>Tier</th><th>Min Tokens</th><th>Base Limit</th><th>Effective Limit</th></tr></thead>
+          <thead><tr><th>Access</th><th>MFLOW Min</th><th>Base Calls</th><th>Effective Calls</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
