@@ -511,6 +511,16 @@ describe('Meterflow control plane', () => {
     assert.ok(!src.includes('recordReceipt'), 'x402 middleware should not create duplicate receipts before route completion');
   });
 
+  it('x402 can use the PayAI hosted facilitator without a local settlement key', () => {
+    const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+    assert.ok(src.includes("from '@payai/facilitator'"), 'should import PayAI facilitator config');
+    assert.ok(src.includes('HTTPFacilitatorClient'), 'should use hosted facilitator client');
+    assert.ok(src.includes('PAYAI_API_KEY_ID'), 'should support optional PayAI merchant key id');
+    assert.ok(src.includes('PAYAI_API_KEY_SECRET'), 'should support optional PayAI merchant key secret');
+    assert.ok(pkg.dependencies['@payai/facilitator'], 'should declare PayAI facilitator dependency');
+  });
+
   it('control-plane routes enforce ownership-sensitive mutations', () => {
     const src = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     assert.ok(src.includes('canManageResource'), 'meter updates should check ownership');

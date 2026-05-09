@@ -15,10 +15,12 @@
  */
 
 import { paymentMiddleware, x402ResourceServer } from '@x402/express';
+import { HTTPFacilitatorClient } from '@x402/core/server';
 import { ExactSvmScheme as ExactSvmServerScheme } from '@x402/svm/exact/server';
 import { ExactSvmScheme as ExactSvmFacilitatorScheme } from '@x402/svm/exact/facilitator';
 import { toFacilitatorSvmSigner, SOLANA_MAINNET_CAIP2, USDC_MAINNET_ADDRESS } from '@x402/svm';
 import { createKeyPairSignerFromBytes } from '@solana/kit';
+import { createFacilitatorConfig } from '@payai/facilitator';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
@@ -50,37 +52,42 @@ export async function buildX402Middleware() {
   const privateKeyB58 = process.env.X402_FACILITATOR_PRIVATE_KEY || process.env.SETTLEMENT_WALLET_PRIVATE_KEY;
   const payTo = process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET;
 
-  if (!privateKeyB58 || !payTo) {
-    logger.warn('x402 middleware disabled: X402_FACILITATOR_PRIVATE_KEY and X402_PAY_TO (or TREASURY_WALLET) required');
+  if (!payTo) {
+    logger.warn('x402 middleware disabled: X402_PAY_TO or SETTLEMENT_WALLET required');
     return null;
   }
 
   try {
-    const keypairBytes = bs58.decode(privateKeyB58);
-    const kitSigner = await createKeyPairSignerFromBytes(keypairBytes);
-    const svmSigner = toFacilitatorSvmSigner(kitSigner, { defaultRpcUrl: CONFIG.HELIUS_RPC_URL });
-
-    // Server scheme — builds payment requirements for 402 challenges
     const serverScheme = new ExactSvmServerScheme();
+    let facilitatorClient;
+    let facilitatorProvider = 'payai';
 
-    // Facilitator scheme — verifies and settles payment proofs
-    const facilitatorScheme = new ExactSvmFacilitatorScheme(svmSigner);
+    if (privateKeyB58) {
+      const keypairBytes = bs58.decode(privateKeyB58);
+      const kitSigner = await createKeyPairSignerFromBytes(keypairBytes);
+      const svmSigner = toFacilitatorSvmSigner(kitSigner, { defaultRpcUrl: CONFIG.HELIUS_RPC_URL });
+      const facilitatorScheme = new ExactSvmFacilitatorScheme(svmSigner);
 
-    // Inline facilitator client wrapping the SVM scheme — no external service needed
-    const inlineFacilitator = {
-      verify: (payload, requirements, extensions) =>
-        facilitatorScheme.verify(payload, requirements),
-      settle: (payload, requirements) =>
-        facilitatorScheme.settle(payload, requirements),
-      getSupported: () => [{ network: SOLANA_MAINNET_CAIP2, schemes: ['exact'] }],
-    };
+      facilitatorClient = {
+        verify: (payload, requirements) =>
+          facilitatorScheme.verify(payload, requirements),
+        settle: (payload, requirements) =>
+          facilitatorScheme.settle(payload, requirements),
+        getSupported: () => [{ network: SOLANA_MAINNET_CAIP2, schemes: ['exact'] }],
+      };
+      facilitatorProvider = 'inline';
+    } else {
+      facilitatorClient = new HTTPFacilitatorClient(
+        createFacilitatorConfig(process.env.PAYAI_API_KEY_ID, process.env.PAYAI_API_KEY_SECRET)
+      );
+    }
 
-    const resourceServer = new x402ResourceServer(inlineFacilitator)
+    const resourceServer = new x402ResourceServer(facilitatorClient)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
 
     const routes = await buildRouteConfig(payTo);
 
-    logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length });
+    logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length, facilitatorProvider });
     return paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG);
   } catch (err) {
     logger.error('x402 middleware init failed', { err: err.message });

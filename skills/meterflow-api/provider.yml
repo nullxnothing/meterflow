@@ -9,12 +9,12 @@ category: ai_ml
 version: v1
 
 # This spec is used for pay.sh Skills Registry discoverability.
-# The api-proxy (Render) implements x402 natively via @x402/express + @x402/svm.
-# Run: pay --sandbox curl https://api.meterflow.fun/v1/chat -d '...'
+# The Vercel API function implements x402 natively via @x402/express + PayAI.
+# Run: pay --sandbox curl https://meterflow.fun/proxy/v1/chat -d '...'
 
 routing:
   type: proxy
-  url: ${METERFLOW_UPSTREAM_URL:-https://meterflow-api.onrender.com}
+  url: ${METERFLOW_UPSTREAM_URL:-https://meterflow.fun/proxy}
 
 operator:
   currencies:

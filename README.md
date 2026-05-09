@@ -114,8 +114,10 @@ Persistence:
 
 x402 variables:
 
-- `X402_FACILITATOR_PRIVATE_KEY` or `SETTLEMENT_WALLET_PRIVATE_KEY`
 - `X402_PAY_TO` or `SETTLEMENT_WALLET`
+- PayAI hosted facilitator is used by default
+- `PAYAI_API_KEY_ID` and `PAYAI_API_KEY_SECRET` optional, for paid PayAI merchant capacity beyond the free tier
+- `X402_FACILITATOR_PRIVATE_KEY` or `SETTLEMENT_WALLET_PRIVATE_KEY` optional, only if running an inline facilitator instead of PayAI
 
 ## Deployment
 

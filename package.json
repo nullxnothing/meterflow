@@ -12,10 +12,12 @@
     "rpc-websockets": "9.3.3"
   },
   "dependencies": {
+    "@payai/facilitator": "^2.4.1",
     "@sentry/node": "^10.39.0",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "@upstash/redis": "^1.36.2",
+    "@x402/core": "^2.11.0",
     "@x402/express": "^2.11.0",
     "@x402/svm": "^2.11.0",
     "bn.js": "^5.2.2",
