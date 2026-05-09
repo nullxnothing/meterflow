@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, model route, or agent workflow on Meterflow.">
+<meta name="theme-color" content="#05080f">
+<meta property="og:title" content="Launch a Paid Endpoint on Meterflow">
+<meta property="og:description" content="Meterflow is onboarding early providers building agent-accessible APIs, MCP tools, data feeds, model routes, and workflows.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>Launch a Paid Endpoint — Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<style>
+:root { --apply-card: rgba(7, 13, 26, .82); --apply-border: rgba(95, 154, 255, .18); --apply-muted: rgba(219, 232, 255, .68); }
+body { min-height: 100vh; background: radial-gradient(circle at 15% 10%, rgba(45, 119, 255, .22), transparent 32%), radial-gradient(circle at 82% 20%, rgba(10, 207, 255, .12), transparent 28%), #05080f; color: #eef5ff; }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.08)); }
+.apply-nav { max-width: 1180px; margin: 0 auto; padding: 22px 22px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }
+.apply-logo { display: inline-flex; align-items: center; gap: 10px; color: #f8fbff; text-decoration: none; font-family: 'Inter Tight', sans-serif; font-weight: 800; letter-spacing: -.03em; font-size: 22px; }
+.apply-logo img { width: 28px; height: 28px; }
+.apply-nav-links { display: flex; gap: 12px; align-items: center; }
+.apply-nav-links a { color: var(--apply-muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+.apply-nav-links a.primary { color: #06101d; background: #dcecff; padding: 10px 14px; border-radius: 999px; }
+.apply-shell { max-width: 1180px; margin: 0 auto; padding: 42px 22px 96px; position: relative; z-index: 1; }
+.apply-hero { display: grid; grid-template-columns: minmax(0, .92fr) minmax(360px, 1fr); gap: 32px; align-items: start; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--apply-border); background: rgba(80, 147, 255, .08); color: #a8cfff; padding: 8px 12px; border-radius: 999px; font: 700 12px/1 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+.eyebrow span { width: 7px; height: 7px; background: #61a5ff; border-radius: 999px; box-shadow: 0 0 18px #61a5ff; }
+h1 { margin: 22px 0 18px; font-family: 'Inter Tight', sans-serif; font-size: clamp(44px, 7vw, 82px); line-height: .91; letter-spacing: -.075em; }
+h1 strong { color: #7eb6ff; font-weight: 800; }
+.lede { color: var(--apply-muted); font-size: 18px; line-height: 1.65; max-width: 640px; }
+.provider-list { display: grid; gap: 12px; margin: 30px 0 0; padding: 0; list-style: none; }
+.provider-list li { display: flex; gap: 12px; align-items: flex-start; color: #dfeaff; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.08); padding: 14px 16px; border-radius: 18px; }
+.provider-list li span { color: #79b6ff; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.side-card, .form-card { border: 1px solid var(--apply-border); background: linear-gradient(180deg, rgba(10, 20, 40, .88), rgba(5, 9, 18, .92)); box-shadow: 0 24px 80px rgba(0, 0, 0, .34); border-radius: 28px; }
+.side-card { margin-top: 28px; padding: 22px; max-width: 620px; }
+.side-card h2, .form-card h2 { margin: 0 0 10px; font-family: 'Inter Tight', sans-serif; letter-spacing: -.035em; }
+.side-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+.side-stat { border: 1px solid rgba(255,255,255,.08); border-radius: 18px; padding: 16px; background: rgba(255,255,255,.03); }
+.side-stat small { display: block; color: #8aa5c8; font: 700 11px/1 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+.side-stat strong { display: block; margin-top: 10px; font-size: 18px; }
+.form-card { padding: 24px; }
+.form-card p { color: var(--apply-muted); margin: 0 0 22px; line-height: 1.55; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.field { display: grid; gap: 8px; }
+.field.full { grid-column: 1 / -1; }
+label { color: #d9e7ff; font-weight: 700; font-size: 13px; }
+input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid rgba(132, 177, 255, .18); background: rgba(2, 7, 16, .82); color: #f6fbff; border-radius: 14px; padding: 13px 14px; outline: none; font: 500 14px/1.35 'Inter', sans-serif; }
+textarea { min-height: 112px; resize: vertical; }
+input:focus, select:focus, textarea:focus { border-color: rgba(111, 174, 255, .62); box-shadow: 0 0 0 4px rgba(77, 145, 255, .12); }
+.hint { color: #7f96b8; font-size: 12px; line-height: 1.45; }
+.submit-row { display: flex; gap: 14px; align-items: center; margin-top: 20px; }
+button { border: 0; cursor: pointer; border-radius: 999px; padding: 14px 18px; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #d9edff, #75b5ff); color: #06101d; box-shadow: 0 16px 44px rgba(69, 148, 255, .25); }
+button:disabled { cursor: wait; opacity: .7; }
+.form-status { color: var(--apply-muted); font-size: 13px; line-height: 1.45; }
+.form-status.ok { color: #9df8c7; }
+.form-status.err { color: #ffb1b1; }
+@media (max-width: 920px) { .apply-hero { grid-template-columns: 1fr; } .form-card { order: -1; } }
+@media (max-width: 640px) { .apply-nav { align-items: flex-start; } .apply-nav-links { flex-direction: column; align-items: flex-end; } .form-grid, .side-grid { grid-template-columns: 1fr; } .submit-row { align-items: flex-start; flex-direction: column; } }
+</style>
+</head>
+<body>
+<nav class="apply-nav">
+  <a href="/" class="apply-logo"><img src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
+  <div class="apply-nav-links">
+    <a href="/docs">Docs</a>
+    <a href="/dashboard">Dashboard</a>
+    <a class="primary" href="/apply">Launch a paid endpoint</a>
+  </div>
+</nav>
+<main class="apply-shell">
+  <section class="apply-hero">
+    <div>
+      <div class="eyebrow"><span></span> Early provider intake</div>
+      <h1>Launch a <strong>paid endpoint</strong> agents can call.</h1>
+      <p class="lede">Meterflow is onboarding builders with APIs, MCP tools, data feeds, model routes, and workflows that should be sold per request in USDC on Solana.</p>
+      <ul class="provider-list">
+        <li><span>01</span><div><strong>Bring the valuable capability.</strong><br>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, or any endpoint agents need.</div></li>
+        <li><span>02</span><div><strong>Meterflow handles the paid request layer.</strong><br>Pricing, x402-style payment requirements, receipts, route policy, budgets, and provider visibility.</div></li>
+        <li><span>03</span><div><strong>You get launch-partner signal.</strong><br>We use this intake to prioritize integrations, demos, provider pages, and early revenue experiments.</div></li>
+      </ul>
+      <div class="side-card">
+        <h2>Best-fit early providers</h2>
+        <p class="lede" style="font-size:15px;margin:0;">Builders who already have or are close to shipping a useful endpoint that could charge per lookup, call, workflow, or generated result.</p>
+        <div class="side-grid">
+          <div class="side-stat"><small>Pricing</small><strong>per request</strong></div>
+          <div class="side-stat"><small>Settlement</small><strong>USDC / Solana</strong></div>
+          <div class="side-stat"><small>Buyer</small><strong>agents + apps</strong></div>
+          <div class="side-stat"><small>Surface</small><strong>API or MCP</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <form class="form-card" id="providerForm">
+      <h2>Provider application</h2>
+      <p>Tell us what you want to monetize. Keep it rough if you are early. The goal is to identify strong launch partners and high-signal endpoints.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="projectName">Project / product name *</label>
+          <input id="projectName" name="projectName" autocomplete="organization" required placeholder="Token Risk API">
+        </div>
+        <div class="field">
+          <label for="founderName">Your name</label>
+          <input id="founderName" name="founderName" autocomplete="name" placeholder="Founder or team lead">
+        </div>
+        <div class="field">
+          <label for="contact">Best contact *</label>
+          <input id="contact" name="contact" required placeholder="X, Telegram, Discord, or email">
+        </div>
+        <div class="field">
+          <label for="website">Website / docs</label>
+          <input id="website" name="website" inputmode="url" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label for="category">What are you selling?</label>
+          <select id="category" name="category">
+            <option>API endpoint</option>
+            <option>MCP tool</option>
+            <option>Data feed</option>
+            <option>Model route</option>
+            <option>Trading / risk tool</option>
+            <option>Agent workflow</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="chargingModel">How should it charge?</label>
+          <select id="chargingModel" name="chargingModel">
+            <option>Per request</option>
+            <option>Per lookup</option>
+            <option>Per tool call</option>
+            <option>Per workflow</option>
+            <option>Per generated result</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="endpoint">Endpoint, tool, or workflow *</label>
+          <input id="endpoint" name="endpoint" required placeholder="POST /v1/risk-score, MCP token-risk, wallet analytics feed, etc.">
+          <span class="hint">This can be a planned route if it is not live yet.</span>
+        </div>
+        <div class="field full">
+          <label for="audience">Who would pay to use it?</label>
+          <input id="audience" name="audience" placeholder="Agents, wallets, traders, devs, DAOs, research bots...">
+        </div>
+        <div class="field">
+          <label for="expectedPriceUsd">Expected price per call</label>
+          <input id="expectedPriceUsd" name="expectedPriceUsd" type="number" min="0" step="0.0001" placeholder="0.006">
+        </div>
+        <div class="field">
+          <label for="monthlyVolumeEstimate">Est. monthly calls</label>
+          <input id="monthlyVolumeEstimate" name="monthlyVolumeEstimate" type="number" min="0" step="1" placeholder="10000">
+        </div>
+        <div class="field full">
+          <label for="liveStatus">Is it live?</label>
+          <select id="liveStatus" name="liveStatus">
+            <option>Live now</option>
+            <option>Private beta</option>
+            <option>In progress</option>
+            <option>Idea stage</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="currentBilling">How do you charge today?</label>
+          <input id="currentBilling" name="currentBilling" placeholder="Free, API keys, subscriptions, manual invoices, not launched yet...">
+        </div>
+        <div class="field full">
+          <label for="notes">Anything else we should know?</label>
+          <textarea id="notes" name="notes" placeholder="What makes this endpoint valuable? What would a good launch look like?"></textarea>
+        </div>
+      </div>
+      <div class="submit-row">
+        <button type="submit" id="submitBtn">Apply to launch</button>
+        <div class="form-status" id="formStatus">We’ll use this to prioritize early integrations and provider demos.</div>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+const form = document.getElementById('providerForm');
+const statusEl = document.getElementById('formStatus');
+const submitBtn = document.getElementById('submitBtn');
+
+function setStatus(text, type) {
+  statusEl.textContent = text;
+  statusEl.className = `form-status ${type || ''}`;
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  submitBtn.disabled = true;
+  setStatus('Saving your application...', '');
+
+  const payload = Object.fromEntries(new FormData(form).entries());
+  payload.expectedPriceUsd = Number(payload.expectedPriceUsd || 0);
+  payload.monthlyVolumeEstimate = Number(payload.monthlyVolumeEstimate || 0);
+
+  try {
+    const res = await fetch('/proxy/applications/provider', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || data.error || 'Application failed');
+    form.reset();
+    setStatus(`Application received. Reference: ${data.application.id}`, 'ok');
+  } catch (err) {
+    setStatus(err.message || 'Something went wrong. Try again or DM @meterflowsol.', 'err');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
