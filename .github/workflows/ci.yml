@@ -32,6 +32,7 @@ jobs:
 
       - name: Syntax check changed backend entrypoints
         run: |
+          node --check app.js
           node --check server.js
           node --check routes/admin.js
           node --check routes/alpha.js

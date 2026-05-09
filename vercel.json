@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/proxy/:path*", "destination": "https://meterflow-api.onrender.com/:path*" },
+    { "source": "/proxy/:path*", "destination": "/api/:path*" },
+    { "source": "/health", "destination": "/api/health" },
     { "source": "/skill.md", "destination": "/skills/meterflow-api/SKILL.md" },
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },

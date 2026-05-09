@@ -31,7 +31,6 @@ describe('Config & env validation', () => {
     const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
     assert.ok(src.includes('HELIUS_API_KEY'), 'should check HELIUS_API_KEY');
     assert.ok(src.includes('HELIUS_RPC_URL'), 'should check HELIUS_RPC_URL');
-    assert.ok(src.includes('METERFLOW_TOKEN_MINT'), 'should check Meterflow token mint');
     assert.ok(src.includes('REDIS_URL'), 'should check REDIS_URL');
     // Verify at least one AI provider required
     assert.ok(src.includes('ANTHROPIC_API_KEY') && src.includes('GOOGLE_API_KEY') && src.includes('OPENAI_API_KEY'),
@@ -51,26 +50,26 @@ describe('Config & env validation', () => {
 // 2. CORS CONFIG
 // ═══════════════════════════════════════
 describe('CORS configuration', () => {
-  it('server.js whitelists meterflow.fun', () => {
-    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+  it('app.js whitelists meterflow.fun', () => {
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes("'https://meterflow.fun'"), 'should include bare domain');
     assert.ok(src.includes("'https://www.meterflow.fun'"), 'should include www subdomain');
   });
 
-  it('server.js uses regex for subdomains', () => {
-    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+  it('app.js uses regex for subdomains', () => {
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes('\\.meterflow\\.fun$'), 'should have subdomain regex');
     assert.ok(src.includes('\\.vercel\\.app$'), 'should allow Vercel preview deploys');
   });
 
   it('does NOT allow wildcard * origin', () => {
-    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(!src.includes("origin: '*'"), 'must not use wildcard CORS');
     assert.ok(!src.includes('origin: true'), 'must not use origin: true (reflects any origin)');
   });
 
   it('localhost only in non-production', () => {
-    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes("process.env.NODE_ENV !== 'production'"),
       'localhost origins should be behind env check');
   });
@@ -401,10 +400,20 @@ describe('Helper functions', () => {
 describe('Vercel routing', () => {
   const vercel = JSON.parse(readFileSync(resolve(projectRoot, 'vercel.json'), 'utf-8'));
 
-  it('has proxy rewrite to Render', () => {
+  it('has proxy rewrite to Vercel API function', () => {
     const proxyRewrite = vercel.rewrites.find(r => r.source.includes('/proxy'));
     assert.ok(proxyRewrite, 'should have /proxy rewrite');
-    assert.ok(proxyRewrite.destination.includes('onrender.com'), 'should point to Render');
+    assert.equal(proxyRewrite.destination, '/api/:path*');
+  });
+
+  it('Vercel function wraps the Express app', () => {
+    const src = readFileSync(resolve(projectRoot, 'api', '[...path].js'), 'utf-8');
+    const ignore = readFileSync(resolve(projectRoot, '.vercelignore'), 'utf-8');
+    const pkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
+    assert.ok(src.includes("from '../api-proxy/app.js'"), 'function should import the Express app');
+    assert.ok(src.includes("req.url.replace(/^\\/api"), 'function should strip /api prefix');
+    assert.ok(!ignore.split(/\r?\n/).includes('api-proxy'), 'api-proxy must be included in Vercel deployment');
+    assert.ok(pkg.dependencies.express, 'root package should include API dependencies for Vercel');
   });
 
   it('has all required page rewrites', () => {
@@ -420,14 +429,14 @@ describe('Vercel routing', () => {
 // 17. METERFLOW CONTROL PLANE
 // ═══════════════════════════════════════
 describe('Meterflow control plane', () => {
-  it('server.js mounts the control-plane router', () => {
-    const src = readFileSync(resolve(root, 'server.js'), 'utf-8');
+  it('app.js mounts the control-plane router', () => {
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes('controlPlaneRouter'), 'should import control-plane router');
     assert.ok(src.includes("app.use('/v1', controlPlaneRouter)"), 'should mount control-plane routes under /v1');
   });
 
-  it('server.js mounts the default MCP gateway route', () => {
-    const server = readFileSync(resolve(root, 'server.js'), 'utf-8');
+  it('app.js mounts the default MCP gateway route', () => {
+    const server = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const route = readFileSync(resolve(root, 'routes', 'mcp.js'), 'utf-8');
     assert.ok(server.includes('mcpRouter'), 'should import MCP router');
     assert.ok(server.includes("app.use('/mcp', mcpRouter)"), 'should mount MCP routes under /mcp');
@@ -436,7 +445,7 @@ describe('Meterflow control plane', () => {
   });
 
   it('does not mount legacy social posting bot routes', () => {
-    const server = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    const server = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const tools = readFileSync(resolve(root, 'tools', 'definitions.js'), 'utf-8');
     const oauth = readFileSync(resolve(root, 'oauth', 'config.js'), 'utf-8');
 

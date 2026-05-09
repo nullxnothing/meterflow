@@ -157,7 +157,7 @@ router.post('/chat/stream', authenticateApiKey, async (req, res) => {
   const { signal } = abortController;
   let clientDisconnected = false;
 
-  // Keepalive heartbeat — prevents Render/Cloudflare from killing idle SSE connections
+        // Keepalive heartbeat - prevents platform proxies from killing idle SSE connections.
   const heartbeat = setInterval(() => {
     if (!clientDisconnected && !res.writableEnded) {
       res.write(': heartbeat\n\n');

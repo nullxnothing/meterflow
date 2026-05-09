@@ -7,7 +7,6 @@
 env
 *.log
 
-api-proxy
 agent
 discord-bot
 twitter-bot

@@ -1,0 +1,30 @@
+{
+  "name": "meterflow",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm --prefix api-proxy test",
+    "migrate": "node api-proxy/scripts/migrate.js",
+    "api": "node api-proxy/server.js"
+  },
+  "dependencies": {
+    "@sentry/node": "^10.39.0",
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
+    "@upstash/redis": "^1.36.2",
+    "@x402/express": "^2.11.0",
+    "@x402/svm": "^2.11.0",
+    "bn.js": "^5.2.2",
+    "bs58": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "ioredis": "^5.3.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.3",
+    "tweetnacl": "^1.0.3"
+  }
+}

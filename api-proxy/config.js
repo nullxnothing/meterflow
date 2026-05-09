@@ -127,7 +127,6 @@ if (isProduction) {
   const missing = [];
   if (!CONFIG.HELIUS_API_KEY) missing.push('HELIUS_API_KEY');
   if (!CONFIG.HELIUS_RPC_URL) missing.push('HELIUS_RPC_URL');
-  if (!CONFIG.TOKEN_MINT) missing.push('METERFLOW_TOKEN_MINT');
   if (!CONFIG.ANTHROPIC_API_KEY && !CONFIG.GOOGLE_API_KEY && !CONFIG.OPENAI_API_KEY) {
     missing.push('ANTHROPIC_API_KEY or GOOGLE_API_KEY or OPENAI_API_KEY (at least one)');
   }

@@ -87,7 +87,7 @@ npm test
 npm run dev
 ```
 
-Serve the static site and dashboard from the repository root with any local static server. Vercel rewrites `/proxy/*` to the API service on Render.
+Serve the static site and dashboard from the repository root with any local static server. In production, Vercel rewrites `/proxy/*` to the local Vercel Function at `/api/*`.
 
 ## Environment
 
@@ -95,13 +95,16 @@ Core API variables:
 
 - `HELIUS_API_KEY`
 - `HELIUS_RPC_URL`
-- `METERFLOW_TOKEN_MINT`
-- `SETTLEMENT_WALLET`
 - `API_KEY_SECRET`
 - `WALLET_ENCRYPTION_SECRET`
 - `DATABASE_URL`
 - `REDIS_URL`
 - `ERROR_ALERT_WEBHOOK` optional, for production error notifications
+
+Token and settlement variables:
+
+- `METERFLOW_TOKEN_MINT` optional, enables token-gated utility tiers when set
+- `SETTLEMENT_WALLET` or `TREASURY_WALLET` optional until paid settlement is enabled
 
 Persistence:
 
@@ -111,15 +114,14 @@ Persistence:
 
 x402 variables:
 
-- `X402_FACILITATOR_PRIVATE_KEY`
-- `X402_PAY_TO`
-- `SETTLEMENT_WALLET_PRIVATE_KEY`
+- `X402_FACILITATOR_PRIVATE_KEY` or `SETTLEMENT_WALLET_PRIVATE_KEY`
+- `X402_PAY_TO` or `SETTLEMENT_WALLET`
 
 ## Deployment
 
-Frontend is deployed on Vercel at [meterflow.fun](https://meterflow.fun). The API service is configured through `render.yaml` and the Vercel `/proxy/*` rewrite.
+Frontend and API are deployed on Vercel at [meterflow.fun](https://meterflow.fun). The API is exposed through `/proxy/*`, which rewrites to a Vercel Function wrapper around the Express app in `api-proxy/app.js`.
 
-Because the API currently runs on Render, database and Redis credentials must be configured on the Render service. If a Vercel-managed Postgres or Redis resource is used, copy its connection variables into Render or move the API runtime to Vercel before relying on those Vercel project env vars.
+For production, attach Postgres and Redis resources to the Vercel project, set the API env vars in Vercel, redeploy, then run the migration against the production `DATABASE_URL`.
 
 ## License
 
