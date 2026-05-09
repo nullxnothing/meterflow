@@ -1,4 +1,4 @@
-// Meterflow Signal — background data pipeline
+// Meterflow alpha data pipeline
 // Uses SocialData.tools as primary data source (cheap), X API as fallback
 import cron from 'node-cron';
 import { logger } from './lib/logger.js';

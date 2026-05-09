@@ -11,7 +11,6 @@ Current bundled tools include:
 - Multi-model inference and streaming
 - Image and video generation routes
 - Solana token analysis and wallet tooling
-- Agent launch/runtime experiments
 - API keys and usage accounting
 
 ## How to Explain the Product

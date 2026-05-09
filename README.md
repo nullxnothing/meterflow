@@ -58,9 +58,6 @@ These are the first services running through Meterflow. The product is the meter
 | `api-proxy/` | Express gateway, auth, meters, receipts, budgets, x402, and service routes |
 | `sdk/` | JavaScript client for Meterflow routes |
 | `skills/meterflow-api/` | Agent skill and provider metadata |
-| `extension/` | Meterflow Signal browser extension |
-| `agent/` | Reference agent integration |
-| `discord-bot/`, `twitter-bot/` | Community and social automation |
 
 ## SDK Quick Start
 

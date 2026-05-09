@@ -13,16 +13,12 @@ import tradingAdvancedRouter from './routes/trading-advanced.js';
 import tradingPortfolioRouter from './routes/trading-portfolio.js';
 import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
-import agentsRouter from './routes/agents.js';
 import tradesRouter from './routes/trades.js';
 import twitterRouter from './routes/twitter.js';
 import alphaRouter from './routes/alpha.js';
-import launchRouter from './routes/launch.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
-import { bootstrapScheduler } from './agent-scheduler.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
-import { agentRuntime } from './lib/agent-runtime.js';
 import { initSocket, getIO } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
@@ -34,11 +30,7 @@ app.use(cors({
     'https://meterflow.fun',
     'https://www.meterflow.fun',
     /\.meterflow\.fun$/,
-    'https://clawforge.tech',
-    'https://www.clawforge.tech',
-    /\.clawforge\.tech$/,
     /\.vercel\.app$/,
-    /^chrome-extension:\/\//,
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5500', 'http://localhost:3000', 'http://127.0.0.1:5500'] : []),
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -85,11 +77,9 @@ app.use('/v1/trading', tradingWalletRouter);
 app.use('/v1/trading', tradingAdvancedRouter);
 app.use('/v1/trading', tradingPortfolioRouter);
 app.use('/', adminRouter);
-app.use('/v1', agentsRouter);
 app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
-app.use('/v1', express.json({ limit: '10mb' }), launchRouter);
 app.use('/v1', controlPlaneRouter);
 app.use('/v1', openaiCompatRouter);
 
@@ -100,18 +90,10 @@ const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
   logger.info('Server started', { port: PORT, token: CONFIG.TOKEN_MINT.slice(0, 8) });
 
-  bootstrapScheduler().catch(err => {
-    logger.error('Agent scheduler bootstrap failed', { err: err.message });
-  });
-
   initSocket(server);
 
   bootstrapAlphaPipeline().catch(err => {
     logger.error('Alpha pipeline bootstrap failed', { err: err.message });
-  });
-
-  agentRuntime.start().catch(err => {
-    logger.error('Agent runtime bootstrap failed', { err: err.message });
   });
 });
 
@@ -120,9 +102,6 @@ const SHUTDOWN_TIMEOUT = 15_000;
 
 function shutdown(signal) {
   logger.info('Shutdown initiated', { signal });
-
-  // Stop agent runtime loops
-  agentRuntime.stop();
 
   // Close Socket.IO first — notify connected clients, stop accepting new WS connections
   const io = getIO();

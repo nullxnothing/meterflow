@@ -189,10 +189,13 @@ nav::before {
 .nav-links {
   display: flex;
   margin-left: auto;
-  gap: 28px;
+  gap: 24px;
   align-items: center;
   height: 100%;
 }
+.nav-links > .nav-icon { margin-left: -10px; }
+.nav-links > .nav-icon + .nav-icon { margin-left: -16px; }
+.nav-links > .nav-divider + * { margin-left: 0; }
 
 .nav-links a {
   position: relative;
@@ -222,6 +225,37 @@ nav::before {
 }
 
 .nav-links a:not(.nav-cta):hover::after { width: 100%; }
+
+/* Icon links (X / Discord) */
+.nav-links a.nav-icon {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  font-size: 0;
+}
+.nav-links a.nav-icon:hover {
+  color: var(--text);
+  border-color: rgba(79, 156, 255, 0.45);
+  background: rgba(79, 156, 255, 0.08);
+  transform: translateY(-1px);
+}
+.nav-links a.nav-icon::after { display: none; content: none; }
+.nav-links a.nav-icon svg { width: 14px; height: 14px; display: block; }
+.nav-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 4px;
+}
 
 .nav-cta {
   height: 38px;

@@ -17,13 +17,9 @@ import { renderChat } from './tabs/chat.js';
 import { renderImages } from './tabs/images.js';
 import { renderVideo } from './tabs/video.js';
 import { renderTrading } from './tabs/trading.js';
-import { renderAgents } from './tabs/agents.js';
-import { renderMyAgents } from './tabs/my-agents.js';
 import { renderFutureApis } from './tabs/future-apis.js';
 import { renderTreasury } from './tabs/treasury.js?v=meterflow-control-plane';
 import { renderLiveTrades } from './tabs/live-trades.js';
-import { renderXTools } from './tabs/x-tools.js';
-import { renderLaunch } from './tabs/launch.js';
 
 export function render() {
   const app = document.getElementById('app');
@@ -196,7 +192,6 @@ function renderNavItems() {
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
 
     <div class="nav-group-label">Operations</div>
-    <div class="nav-item ${t === 'my-agents' ? 'active' : ''}" data-tab="my-agents">Agent Workflows</div>
     <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Settlement Wallet</div>
     <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Integrations</div>
   `;
@@ -227,10 +222,6 @@ export function renderTab() {
       case 'video': return renderVideo();
       case 'live-trades': return renderLiveTrades();
       case 'trading': return renderTrading();
-      case 'my-agents': return renderMyAgents();
-      case 'agents': return renderAgents();
-      case 'launch': return renderLaunch();
-      case 'x-tools': return renderXTools();
       case 'future-apis': return renderFutureApis();
       case 'treasury': return renderTreasury();
       default: return renderOverview();

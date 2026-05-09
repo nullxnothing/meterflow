@@ -1,4 +1,4 @@
-// Socket.IO real-time layer for Meterflow Signal
+// Socket.IO real-time layer for Meterflow alpha updates
 import { Server } from 'socket.io';
 import { getKeyData } from './kv-keys.js';
 import { logger } from './logger.js';

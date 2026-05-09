@@ -1,4 +1,4 @@
-// Meterflow Signal — CT intelligence scanner API routes
+// Meterflow alpha intelligence API routes
 import { Router } from 'express';
 import { authenticateApiKey, requireAlphaTier } from '../middleware.js';
 import { ensureValidTwitterToken } from '../oauth/routes.js';

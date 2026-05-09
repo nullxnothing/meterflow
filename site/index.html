@@ -42,6 +42,13 @@
     <a href="#tiers">Product</a>
     <a href="/how-it-works">How It Works</a>
     <a href="/roadmap">Roadmap</a>
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a class="nav-icon" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="Meterflow on X">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg>
+    </a>
+    <a class="nav-icon" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Meterflow Discord">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38.07.07 0 0 0-.07.04c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a.07.07 0 0 0-.07-.04 17.6 17.6 0 0 0-4.43 1.38.06.06 0 0 0-.03.03A18.06 18.06 0 0 0 .73 17.51a.07.07 0 0 0 .03.05 17.7 17.7 0 0 0 5.34 2.7.07.07 0 0 0 .08-.03c.41-.56.78-1.16 1.1-1.79a.07.07 0 0 0-.04-.1 11.7 11.7 0 0 1-1.67-.8.07.07 0 0 1 0-.12c.11-.08.22-.17.33-.26a.07.07 0 0 1 .07 0 12.6 12.6 0 0 0 10.74 0 .07.07 0 0 1 .07 0c.11.09.22.18.33.26a.07.07 0 0 1 0 .12c-.53.31-1.09.58-1.67.8a.07.07 0 0 0-.04.1c.33.63.7 1.23 1.1 1.79a.07.07 0 0 0 .08.03 17.6 17.6 0 0 0 5.35-2.7.07.07 0 0 0 .03-.05 17.95 17.95 0 0 0-3.46-12.15.06.06 0 0 0-.03-.03ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg>
+    </a>
     <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
     <a class="nav-cta ghost" href="/docs">Read Docs</a>
   </div>
@@ -346,61 +353,69 @@
   </div>
 </section>
 
-<!-- TIERS -->
+<!-- PRODUCT SURFACES -->
 <section class="tiers-section" id="tiers">
   <div class="tiers-inner">
-    <div class="section-label">Dashboard</div>
-    <h2 class="tiers-headline">The dashboard is where Meterflow becomes useful.</h2>
-    <p class="tiers-sub">The payment rail answers how money moves. The dashboard answers what was metered, who paid, what failed, and whether an agent is still inside policy.</p>
+    <div class="section-label">Product</div>
+    <h2 class="tiers-headline">Four surfaces. One control plane.</h2>
+    <p class="tiers-sub">Meters price routes. Receipts prove every paid call. Budgets cap autonomous agents. Integrations plug in the rest of the Solana stack.</p>
     <div class="tiers-grid">
-      <div class="tier-card">
-        <div class="tier-name">Meters</div>
-        <div class="tier-amount">Price <span>routes</span></div>
-        <p class="tier-desc">Create products out of APIs, MCP tools, model calls, media routes, data feeds, and compute jobs.</p>
-        <ul class="tier-features">
-          <li>Route-level pricing</li>
-          <li>Accepted asset and network</li>
-          <li>Owner and recipient settings</li>
-          <li>Active, paused, and test modes</li>
-        </ul>
-        <button class="tier-btn">Open Dashboard</button>
-      </div>
-      <div class="tier-card featured">
-        <div class="tier-name">Receipts</div>
-        <div class="tier-amount">Audit <span>usage</span></div>
-        <p class="tier-desc">Follow the full path from request to quote to payment proof to response status and receipt export.</p>
-        <ul class="tier-features">
-          <li>Payment verification state</li>
-          <li>Request and response metadata</li>
-          <li>CSV and webhook exports</li>
-          <li>Failure reasons and retries</li>
-        </ul>
-        <button class="tier-btn">Read Docs</button>
-      </div>
-      <div class="tier-card">
-        <div class="tier-name">Budgets</div>
-        <div class="tier-amount">Limit <span>agents</span></div>
-        <p class="tier-desc">Give agents controlled payment ability without handing them unlimited access to a wallet.</p>
-        <ul class="tier-features">
-          <li>Daily, weekly, and task caps</li>
-          <li>Endpoint allowlists</li>
-          <li>Revocation and kill switches</li>
-          <li>Operator alerts</li>
-        </ul>
-        <button class="tier-btn">Configure Budgets</button>
-      </div>
-      <div class="tier-card">
-        <div class="tier-name">Integrations</div>
-        <div class="tier-amount">Attach <span>providers</span></div>
-        <p class="tier-desc">Connect Solana infrastructure, wallet, data, social, and notification providers to Meterflow routes.</p>
-        <ul class="tier-features">
-          <li>Provider route catalog</li>
-          <li>Wallet and settlement context</li>
-          <li>Data and social APIs</li>
-          <li>Operator alerts</li>
-        </ul>
-        <button class="tier-btn">Open Integrations</button>
-      </div>
+
+      <a href="/dashboard" class="tier-card">
+        <div class="tier-card-head">
+          <div class="tier-name">Meters</div>
+          <span class="tier-tag">Provider</span>
+        </div>
+        <div class="tier-card-mock">
+          <div class="mock-row"><span class="mock-dot ok"></span><span class="mock-mono">/v1/risk-score</span><span class="mock-pill">$0.006</span></div>
+          <div class="mock-row"><span class="mock-dot ok"></span><span class="mock-mono">/v1/embed</span><span class="mock-pill">$0.0004</span></div>
+          <div class="mock-row"><span class="mock-dot pause"></span><span class="mock-mono">/v1/scrape</span><span class="mock-pill muted">paused</span></div>
+        </div>
+        <p class="tier-desc">Price every endpoint. Pick asset, recipient, and customer rules. Pause or test routes without redeploying.</p>
+        <span class="tier-link">Open meters &rarr;</span>
+      </a>
+
+      <a href="/dashboard" class="tier-card featured">
+        <div class="tier-card-head">
+          <div class="tier-name">Receipts</div>
+          <span class="tier-tag">Auditable</span>
+        </div>
+        <div class="tier-card-mock">
+          <div class="mock-row"><span class="mock-tag ok">200</span><span class="mock-mono">rcpt_41bd</span><span class="mock-pill">verified</span></div>
+          <div class="mock-row"><span class="mock-tag ok">200</span><span class="mock-mono">rcpt_92a</span><span class="mock-pill">verified</span></div>
+          <div class="mock-row"><span class="mock-tag warn">402</span><span class="mock-mono">rcpt_44e</span><span class="mock-pill muted">cap</span></div>
+        </div>
+        <p class="tier-desc">Every paid call links to a quote, a payment proof, and a response status. Export CSV or stream a webhook.</p>
+        <span class="tier-link">Open receipts &rarr;</span>
+      </a>
+
+      <a href="/dashboard" class="tier-card">
+        <div class="tier-card-head">
+          <div class="tier-name">Budgets</div>
+          <span class="tier-tag">Operator</span>
+        </div>
+        <div class="tier-card-mock">
+          <div class="mock-row"><span class="mock-mono">ag_research</span><span class="mock-bar"><span style="width:62%"></span></span><span class="mock-pill">$7.4 / $12</span></div>
+          <div class="mock-row"><span class="mock-mono">ag_mintbot</span><span class="mock-bar"><span style="width:18%"></span></span><span class="mock-pill">$1.8 / $10</span></div>
+          <div class="mock-row"><span class="mock-mono">ag_indexer</span><span class="mock-bar"><span style="width:96%"></span></span><span class="mock-pill warn">$28.8 / $30</span></div>
+        </div>
+        <p class="tier-desc">Daily caps, route allowlists, kill switches. Agents can pay — with limits you set.</p>
+        <span class="tier-link">Open budgets &rarr;</span>
+      </a>
+
+      <a href="/dashboard" class="tier-card">
+        <div class="tier-card-head">
+          <div class="tier-name">Integrations</div>
+          <span class="tier-tag">Plug-in</span>
+        </div>
+        <div class="tier-card-mock">
+          <div class="mock-row"><span class="mock-chip">Solana RPC</span><span class="mock-chip">Helius</span></div>
+          <div class="mock-row"><span class="mock-chip">Phantom</span><span class="mock-chip">Squads</span></div>
+          <div class="mock-row"><span class="mock-chip">Discord</span><span class="mock-chip">Webhooks</span></div>
+        </div>
+        <p class="tier-desc">Wire wallets, RPC, alerts, and dashboards. The Solana stack stays composable around Meterflow.</p>
+        <span class="tier-link">Open integrations &rarr;</span>
+      </a>
     </div>
   </div>
 </section>

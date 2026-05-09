@@ -1,4 +1,4 @@
-// Redis data layer for Meterflow Signal — CT intelligence scanner
+// Redis data layer for Meterflow alpha routes
 import { getRedis } from './redis.js';
 import { logger } from './logger.js';
 
