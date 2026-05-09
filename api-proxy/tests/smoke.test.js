@@ -506,6 +506,7 @@ describe('Meterflow control plane', () => {
   it('x402 route pricing is built from the meter registry', () => {
     const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
     assert.ok(src.includes('listBillableMeters'), 'should read x402 prices from registered meters');
+    assert.ok(src.includes('DEFAULT_METERS'), 'should fall back to default meters if dynamic registry is unavailable');
     assert.ok(src.includes('buildRouteConfig'), 'should expose route config builder');
     assert.ok(!src.includes('const METER_ROUTES'), 'should not keep a second static meter list');
     assert.ok(!src.includes('recordReceipt'), 'x402 middleware should not create duplicate receipts before route completion');

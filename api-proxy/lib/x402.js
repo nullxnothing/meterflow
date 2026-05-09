@@ -24,7 +24,7 @@ import { createFacilitatorConfig } from '@payai/facilitator';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
-import { findMeterForRequest, listBillableMeters } from './control-plane.js';
+import { DEFAULT_METERS, findMeterForRequest, listBillableMeters } from './control-plane.js';
 
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
@@ -32,7 +32,18 @@ const PAYWALL_CONFIG = {
 
 export async function buildRouteConfig(payTo) {
   const routes = {};
-  const meters = await listBillableMeters();
+  let meters;
+  try {
+    meters = await listBillableMeters();
+  } catch (err) {
+    logger.warn('x402 meter registry unavailable; using default meters', { err: err.message });
+    meters = DEFAULT_METERS.filter(meter =>
+      ['live', 'test', 'example'].includes(meter.status)
+      && Number(meter.priceUsd) >= 0
+      && (meter.asset || 'USDC').toUpperCase() === 'USDC'
+    );
+  }
+
   for (const meter of meters) {
     routes[`${(meter.method || 'GET').toUpperCase()} ${meter.route}`] = {
       accepts: {
