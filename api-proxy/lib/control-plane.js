@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { CONFIG } from '../config.js';
 import { getRedis } from './redis.js';
+import { isPostgresEnabled, query as pgQuery } from './postgres.js';
 import { logger } from './logger.js';
 
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -10,6 +11,14 @@ const BUDGET_PREFIX = 'meterflow:budget:';
 const MCP_TOOL_PREFIX = 'meterflow:mcp-tool:';
 const IDEMPOTENCY_PREFIX = 'meterflow:idempotency:';
 const WEBHOOK_PREFIX = 'meterflow:webhook:';
+
+const STORE_NAMESPACES = new Map([
+  [METER_PREFIX, 'meter'],
+  [RECEIPT_PREFIX, 'receipt'],
+  [BUDGET_PREFIX, 'budget'],
+  [MCP_TOOL_PREFIX, 'mcp_tool'],
+  [WEBHOOK_PREFIX, 'webhook'],
+]);
 
 const fallbackMeters = new Map();
 const fallbackReceipts = new Map();
@@ -121,7 +130,55 @@ function normalizePath(path = '') {
   return clean.replace(/\/$/, '') || '/';
 }
 
+function namespaceForPrefix(prefix) {
+  const namespace = STORE_NAMESPACES.get(prefix);
+  if (!namespace) throw new Error(`Unknown control-plane namespace for ${prefix}`);
+  return namespace;
+}
+
+function normalizeStoredData(data) {
+  return typeof data === 'string' ? JSON.parse(data) : data;
+}
+
+function dateOrNull(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function storageColumns(item = {}) {
+  return {
+    apiKey: item.apiKey || null,
+    ownerWallet: item.ownerWallet || item.operatorWallet || item.wallet || null,
+    route: item.route || null,
+    status: item.status || null,
+    createdAt: dateOrNull(item.createdAt),
+    updatedAt: dateOrNull(item.updatedAt || item.createdAt),
+  };
+}
+
 async function scanJson(prefix, fallbackMap) {
+  if (isPostgresEnabled()) {
+    const namespace = namespaceForPrefix(prefix);
+    try {
+      const rows = await pgQuery(
+        `select data
+           from meterflow_control_records
+          where namespace = $1
+          order by coalesce(updated_at, created_at) desc nulls last`,
+        [namespace],
+      );
+      const postgresRows = rows.rows.map(row => normalizeStoredData(row.data));
+      return [...postgresRows, ...fallbackMap.values()].filter((item, index, arr) => (
+        arr.findIndex(other => other.id === item.id) === index
+      ));
+    } catch (err) {
+      logger.error('Control plane Postgres scan failed', { namespace, err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return [...fallbackMap.values()];
+    }
+  }
+
   const r = getRedis();
   if (!r) return [...fallbackMap.values()];
 
@@ -155,6 +212,42 @@ async function scanJson(prefix, fallbackMap) {
 
 async function setJson(prefix, fallbackMap, item) {
   fallbackMap.set(item.id, item);
+  if (isPostgresEnabled()) {
+    const namespace = namespaceForPrefix(prefix);
+    const cols = storageColumns(item);
+    try {
+      await pgQuery(
+        `insert into meterflow_control_records
+          (namespace, id, api_key, owner_wallet, route, status, created_at, updated_at, data)
+         values ($1, $2, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz, $9::jsonb)
+         on conflict (namespace, id) do update set
+           api_key = excluded.api_key,
+           owner_wallet = excluded.owner_wallet,
+           route = excluded.route,
+           status = excluded.status,
+           created_at = coalesce(meterflow_control_records.created_at, excluded.created_at),
+           updated_at = excluded.updated_at,
+           data = excluded.data`,
+        [
+          namespace,
+          item.id,
+          cols.apiKey,
+          cols.ownerWallet,
+          cols.route,
+          cols.status,
+          cols.createdAt,
+          cols.updatedAt,
+          JSON.stringify(item),
+        ],
+      );
+      return item;
+    } catch (err) {
+      logger.error('Control plane Postgres set failed', { namespace, id: item.id, err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return item;
+    }
+  }
+
   const r = getRedis();
   if (!r) return item;
 
@@ -170,6 +263,21 @@ async function setJson(prefix, fallbackMap, item) {
 
 async function getJson(prefix, fallbackMap, itemId) {
   const fallback = fallbackMap.get(itemId) || null;
+  if (isPostgresEnabled()) {
+    const namespace = namespaceForPrefix(prefix);
+    try {
+      const row = await pgQuery(
+        'select data from meterflow_control_records where namespace = $1 and id = $2',
+        [namespace, itemId],
+      );
+      return row.rows[0]?.data ? normalizeStoredData(row.rows[0].data) : fallback;
+    } catch (err) {
+      logger.error('Control plane Postgres get failed', { namespace, id: itemId, err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return fallback;
+    }
+  }
+
   const r = getRedis();
   if (!r) return fallback;
 
@@ -185,6 +293,21 @@ async function getJson(prefix, fallbackMap, itemId) {
 
 async function deleteJson(prefix, fallbackMap, itemId) {
   fallbackMap.delete(itemId);
+  if (isPostgresEnabled()) {
+    const namespace = namespaceForPrefix(prefix);
+    try {
+      await pgQuery(
+        'delete from meterflow_control_records where namespace = $1 and id = $2',
+        [namespace, itemId],
+      );
+      return;
+    } catch (err) {
+      logger.error('Control plane Postgres delete failed', { namespace, id: itemId, err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return;
+    }
+  }
+
   const r = getRedis();
   if (!r) return;
   try {
@@ -199,6 +322,21 @@ async function getIdempotentReceipt(idempotencyKey) {
   if (!idempotencyKey) return null;
   const receiptId = fallbackIdempotency.get(idempotencyKey);
   if (receiptId) return getReceipt(receiptId);
+
+  if (isPostgresEnabled()) {
+    try {
+      await pgQuery('delete from meterflow_idempotency where expires_at <= now()');
+      const row = await pgQuery(
+        'select receipt_id from meterflow_idempotency where scope_key = $1 and expires_at > now()',
+        [idempotencyKey],
+      );
+      return row.rows[0]?.receipt_id ? getReceipt(row.rows[0].receipt_id) : null;
+    } catch (err) {
+      logger.error('Idempotency Postgres lookup failed', { err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return null;
+    }
+  }
 
   const r = getRedis();
   if (!r) return null;
@@ -215,6 +353,24 @@ async function getIdempotentReceipt(idempotencyKey) {
 async function setIdempotentReceipt(idempotencyKey, receiptId) {
   if (!idempotencyKey || !receiptId) return;
   fallbackIdempotency.set(idempotencyKey, receiptId);
+  if (isPostgresEnabled()) {
+    try {
+      await pgQuery(
+        `insert into meterflow_idempotency (scope_key, receipt_id, expires_at)
+         values ($1, $2, now() + interval '1 day')
+         on conflict (scope_key) do update set
+           receipt_id = excluded.receipt_id,
+           expires_at = excluded.expires_at`,
+        [idempotencyKey, receiptId],
+      );
+      return;
+    } catch (err) {
+      logger.error('Idempotency Postgres write failed', { err: err.message });
+      if (IS_PROD) throw new Error('Control plane store unavailable');
+      return;
+    }
+  }
+
   const r = getRedis();
   if (!r) return;
   try {

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test tests/smoke.test.js"
+    "test": "node --test tests/smoke.test.js",
+    "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "@sentry/node": "^10.39.0",
@@ -24,6 +25,7 @@
     "express-rate-limit": "^8.2.1",
     "ioredis": "^5.3.2",
     "node-cron": "^3.0.3",
+    "pg": "^8.16.3",
     "socket.io": "^4.8.3",
     "tweetnacl": "^1.0.3"
   }

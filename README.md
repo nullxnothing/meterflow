@@ -82,11 +82,12 @@ console.log(response.content);
 cd api-proxy
 cp .env.example .env
 npm install
+npm run migrate
 npm test
 npm run dev
 ```
 
-Serve the static site and dashboard from the repository root with any local static server. Vercel rewrites `/proxy/*` to the API service.
+Serve the static site and dashboard from the repository root with any local static server. Vercel rewrites `/proxy/*` to the API service on Render.
 
 ## Environment
 
@@ -98,6 +99,14 @@ Core API variables:
 - `SETTLEMENT_WALLET`
 - `API_KEY_SECRET`
 - `WALLET_ENCRYPTION_SECRET`
+- `DATABASE_URL`
+- `REDIS_URL`
+
+Persistence:
+
+- Postgres stores the Meterflow control plane: meters, receipts, agent budgets, MCP tools, webhooks, and idempotency records.
+- Redis stores rate limits, API keys, usage counters, and session/cache data.
+- Run `npm run migrate` from `api-proxy/` after setting `DATABASE_URL`.
 
 x402 variables:
 
@@ -108,6 +117,8 @@ x402 variables:
 ## Deployment
 
 Frontend is deployed on Vercel at [meterflow.fun](https://meterflow.fun). The API service is configured through `render.yaml` and the Vercel `/proxy/*` rewrite.
+
+Because the API currently runs on Render, database and Redis credentials must be configured on the Render service. If a Vercel-managed Postgres or Redis resource is used, copy its connection variables into Render or move the API runtime to Vercel before relying on those Vercel project env vars.
 
 ## License
 

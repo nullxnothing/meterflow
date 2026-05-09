@@ -431,6 +431,20 @@ describe('Meterflow control plane', () => {
     }
   });
 
+  it('control-plane supports persistent Postgres storage', () => {
+    const lib = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const postgres = readFileSync(resolve(root, 'lib', 'postgres.js'), 'utf-8');
+    const migration = readFileSync(resolve(root, 'db', '001_control_plane.sql'), 'utf-8');
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+
+    assert.ok(pkg.dependencies.pg, 'should install pg');
+    assert.ok(pkg.scripts.migrate, 'should expose migration script');
+    assert.ok(postgres.includes('DATABASE_URL'), 'should read DATABASE_URL');
+    assert.ok(lib.includes('isPostgresEnabled'), 'control plane should use Postgres when configured');
+    assert.ok(migration.includes('meterflow_control_records'), 'should create control records table');
+    assert.ok(migration.includes('meterflow_idempotency'), 'should create idempotency table');
+  });
+
   it('authenticated routes allow pre-verified x402 requests', () => {
     const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
     assert.ok(src.includes('req.meterflow?.paymentVerified'), 'should detect pre-verified x402 context');
