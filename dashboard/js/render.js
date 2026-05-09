@@ -8,17 +8,17 @@ import { getWalletProviders } from './wallet.js';
 import { bindEvents } from './events.js';
 
 // Tab renderers
-import { renderOverview } from './tabs/overview.js?v=meterflow-control-plane';
-import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=meterflow-control-plane';
-import { renderKeys } from './tabs/keys.js?v=meterflow-control-plane';
-import { renderModels } from './tabs/models.js?v=meterflow-control-plane';
+import { renderOverview } from './tabs/overview.js?v=v5-clean-mflow';
+import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=v5-clean-mflow';
+import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
+import { renderModels } from './tabs/models.js?v=v5-clean-mflow';
 import { renderConnections } from './tabs/connections.js';
 import { renderChat } from './tabs/chat.js';
 import { renderImages } from './tabs/images.js';
 import { renderVideo } from './tabs/video.js';
 import { renderTrading } from './tabs/trading.js';
 import { renderFutureApis } from './tabs/future-apis.js?v=logos-3';
-import { renderTreasury } from './tabs/treasury.js?v=meterflow-control-plane';
+import { renderTreasury } from './tabs/treasury.js?v=v5-clean-mflow';
 import { renderLiveTrades } from './tabs/live-trades.js';
 
 export function render() {
