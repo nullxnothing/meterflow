@@ -187,6 +187,12 @@ describe('Redis fail-closed (production)', () => {
     assert.ok(postgres.includes('migration_required'), 'Postgres health should detect missing migrations');
   });
 
+  it('normalizes Neon sslmode to avoid pg runtime warnings', () => {
+    const postgres = readFileSync(resolve(root, 'lib', 'postgres.js'), 'utf-8');
+    assert.ok(postgres.includes('normalizeConnectionString'));
+    assert.ok(postgres.includes("url.searchParams.set('sslmode', 'verify-full')"));
+  });
+
   it('kv-keys depends on the shared Redis client', () => {
     const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
     assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');

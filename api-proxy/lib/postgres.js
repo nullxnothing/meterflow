@@ -12,6 +12,21 @@ const DATABASE_URL =
 
 let pool = null;
 
+function normalizeConnectionString(connectionString) {
+  if (!connectionString) return '';
+
+  try {
+    const url = new URL(connectionString);
+    const sslMode = url.searchParams.get('sslmode');
+    if (['prefer', 'require', 'verify-ca'].includes(sslMode)) {
+      url.searchParams.set('sslmode', 'verify-full');
+    }
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
 function isPostgresEnabled() {
   return Boolean(DATABASE_URL);
 }
@@ -21,7 +36,7 @@ function getPostgresPool() {
   if (pool) return pool;
 
   pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: normalizeConnectionString(DATABASE_URL),
     ssl: process.env.POSTGRES_SSL === 'false' ? false : { rejectUnauthorized: false },
     max: Number(process.env.POSTGRES_POOL_MAX || 5),
     idleTimeoutMillis: Number(process.env.POSTGRES_IDLE_TIMEOUT_MS || 30_000),
