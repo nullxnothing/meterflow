@@ -14,7 +14,6 @@ import tradingPortfolioRouter from './routes/trading-portfolio.js';
 import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import tradesRouter from './routes/trades.js';
-import twitterRouter from './routes/twitter.js';
 import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
 import openaiCompatRouter from './routes/openai-compat.js';
@@ -41,7 +40,7 @@ app.use(cors({
 // Default body limit — overridden per-route where needed
 app.use(express.json({ limit: '1mb' }));
 
-// Error alerting — fires Discord webhook on 5xx responses
+// Error alerting — fires configured webhook on 5xx responses
 app.use(errorAlertMiddleware);
 
 // Request logging
@@ -79,7 +78,6 @@ app.use('/v1/trading', tradingAdvancedRouter);
 app.use('/v1/trading', tradingPortfolioRouter);
 app.use('/', adminRouter);
 app.use('/v1', tradesRouter);
-app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
 app.use('/mcp', mcpRouter);
 app.use('/v1', controlPlaneRouter);

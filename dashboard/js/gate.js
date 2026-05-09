@@ -155,20 +155,21 @@ export function renderTokenUtilityPanel({ compact = false } = {}) {
 
 export function renderPreviewNotice(featureName = 'this feature') {
   const needsWallet = !STATE.connected;
+  const symbol = STATE.token?.symbol || 'MFLOW';
   return `
     <div class="preview-access-notice">
       <div>
         <div class="preview-access-label">Preview Mode</div>
         <div class="preview-access-text">
           You can inspect ${featureName}, but actions are disabled until ${needsWallet ? 'a wallet is connected' : 'the wallet holds Meterflow utility access or uses a paid flow'}.
+          <a href="#overview" onclick="setTab('overview');return false;" class="preview-access-link">Hold ${symbol} to remove the 1% fee &rarr;</a>
         </div>
       </div>
       <div class="preview-access-actions">
         ${needsWallet ? `<button class="btn-sm primary" onclick="openWalletConnect()">Connect Wallet</button>` : ''}
-        <button class="btn-sm primary" onclick="openTokenPurchase()">Buy ${STATE.token?.symbol || 'MFLOW'}</button>
+        <button class="btn-sm" onclick="openTokenPurchase()">Buy ${symbol}</button>
       </div>
     </div>
-    ${renderTokenUtilityPanel({ compact: true })}
   `;
 }
 

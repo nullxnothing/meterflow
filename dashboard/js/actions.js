@@ -66,6 +66,10 @@ export function setTab(tab) {
   if (STATE.activeTab === 'live-trades' && tab !== 'live-trades') {
     stopLiveTrades();
   }
+  // Sync URL hash for deep-linking, refresh persistence, and back-button support
+  if (typeof history !== 'undefined' && location.hash !== '#' + tab) {
+    history.pushState({ tab }, '', '#' + tab);
+  }
   // Fast path: only re-render <main> + nav highlights, keep sidebar intact
   if (switchTabInPlace(tab)) return;
   // Fallback: full re-render

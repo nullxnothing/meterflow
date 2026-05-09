@@ -76,22 +76,6 @@ const TOOL_DEFINITIONS = {
       required: ['prompt'],
     },
   },
-  twitter_lookup: {
-    name: 'twitter_lookup',
-    description: 'Search tweets, look up X/Twitter users, read timelines, or post tweets. Requires the user to connect their X account or add a Bearer Token via Dashboard > Connections.',
-    parameters: {
-      type: 'object',
-      properties: {
-        action: { type: 'string', enum: ['search', 'user', 'timeline', 'me', 'tweet', 'reply'], description: 'What to do' },
-        query: { type: 'string', description: 'Search query (for search action)' },
-        username: { type: 'string', description: 'Twitter username without @ (for user action)' },
-        user_id: { type: 'string', description: 'Twitter user ID (for timeline action)' },
-        text: { type: 'string', description: 'Tweet text (for tweet/reply actions)' },
-        tweet_id: { type: 'string', description: 'Tweet ID to reply to (for reply action)' },
-      },
-      required: ['action'],
-    },
-  },
 };
 
 // Tools that require OAuth tokens — maps tool name to provider
@@ -99,7 +83,6 @@ export const AUTH_REQUIRED_TOOLS = {
   github_lookup: 'github',
   google_lookup: 'google',
   notion_lookup: 'notion',
-  twitter_lookup: 'twitter',
 };
 
 export const SERVER_TOOL_NAMES = Object.keys(TOOL_DEFINITIONS);

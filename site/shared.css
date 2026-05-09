@@ -127,8 +127,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .dim { color: var(--text-dim); }
 .muted { color: var(--text-muted); }
 
-/* ─── Master Nav (used by all pages) ─── */
-nav {
+/* ─── Master Nav (used by site pages only — scoped to top-level body > nav) ─── */
+body > nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 300;
@@ -144,7 +144,7 @@ nav {
   border-bottom: 1px solid rgba(79, 156, 255, 0.12);
 }
 
-nav::before {
+body > nav::before {
   content: '';
   position: absolute;
   left: 0;
@@ -357,14 +357,14 @@ nav::before {
 .mobile-menu a:hover { color: var(--accent); }
 
 @media (max-width: 768px) {
-  nav { height: 64px; padding: 0 20px; gap: 16px; }
-  .nav-links { display: none; }
-  .hamburger { display: flex; }
+  body > nav { height: 64px; padding: 0 20px; gap: 16px; }
+  body > nav .nav-links { display: none; }
+  body > nav .hamburger { display: flex; }
   .mobile-menu { top: 64px; padding: 20px; }
 }
 
 @media (max-width: 480px) {
-  nav { height: 60px; padding: 0 16px; }
+  body > nav { height: 60px; padding: 0 16px; }
   .mobile-menu { top: 60px; }
 }
 
@@ -782,8 +782,8 @@ footer, .footer {
   .btn-secondary { padding: 14px 28px; font-size: 11px; }
 }
 
-/* ─── Public Site Shell ─── */
-nav {
+/* ─── Public Site Shell (scoped to top-level nav only) ─── */
+body > nav {
   position: fixed;
   top: 0 !important;
   left: 0;
@@ -801,7 +801,7 @@ nav {
   border-bottom: 1px solid rgba(79, 156, 255, 0.12);
 }
 
-nav::before {
+body > nav::before {
   content: '';
   position: absolute;
   left: 0;

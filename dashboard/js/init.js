@@ -89,6 +89,28 @@ if (connectedProvider) {
   window.history.replaceState({}, '', '/dashboard');
 }
 
+// ─── Tab persistence: read URL hash and respond to back/forward ───
+
+const VALID_TABS = new Set([
+  'overview', 'meters', 'receipts', 'budgets', 'mcp-tools',
+  'keys', 'models', 'connections', 'treasury', 'future-apis',
+  'chat', 'trading', 'live-trades',
+]);
+
+function applyHashTab() {
+  const hash = (location.hash || '').replace(/^#/, '');
+  if (hash && VALID_TABS.has(hash) && STATE.activeTab !== hash) {
+    STATE.activeTab = hash;
+  }
+}
+
+applyHashTab();
+
+window.addEventListener('popstate', () => {
+  applyHashTab();
+  render();
+});
+
 // ─── Initial Render ───
 
 render();

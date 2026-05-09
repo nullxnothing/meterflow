@@ -2,16 +2,40 @@
 // Meterflow Dashboard - Tab: Integrations
 // ═══════════════════════════════════════════
 
+// Real brand logos pulled from each company's official site
+const LOGO_DOMAINS = {
+  helius: 'helius.dev',
+  jupiter: 'jup.ag',
+  phantom: 'phantom.com',
+  coingecko: 'coingecko.com',
+  webhooks: 'meterflow.fun',
+};
+
+function logoFor(id) {
+  const domain = LOGO_DOMAINS[id];
+  if (!domain) return '';
+  // DuckDuckGo serves the real, high-quality brand favicon from each site
+  // Falls back to Google's favicon service if DDG fails
+  const initial = (id || '?').charAt(0).toUpperCase();
+  return `
+    <img
+      src="https://icons.duckduckgo.com/ip3/${domain}.ico"
+      alt="${id}"
+      loading="lazy"
+      onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=128';this.onerror=function(){this.style.display='none';this.parentElement.dataset.fallback='${initial}';};"
+    >
+  `;
+}
+
 const INTEGRATIONS = [
   { id: 'helius', name: 'Helius', category: 'Solana Infrastructure', status: 'active', description: 'RPC, DAS, webhooks, and transaction parsing for metered Solana routes.', features: ['RPC', 'DAS', 'Webhooks', 'Parsing'], website: 'https://helius.dev' },
   { id: 'jupiter', name: 'Jupiter', category: 'Payments & Routing', status: 'active', description: 'Quotes, swaps, token metadata, and route intelligence for paid agent workflows.', features: ['Quotes', 'Swaps', 'Tokens', 'Routing'], website: 'https://jup.ag' },
   { id: 'phantom', name: 'Phantom', category: 'Wallets', status: 'active', description: 'Wallet connection, signing, and operator identity for client key and budget setup.', features: ['Wallet Connect', 'Signing', 'Identity', 'Approval'], website: 'https://phantom.com' },
-  { id: 'x', name: 'X API', category: 'Social Data', status: 'active', description: 'Social search and account intelligence routes that can be sold as metered data products.', features: ['Search', 'Profiles', 'Timelines', 'Posting'], website: 'https://developer.x.com' },
   { id: 'coingecko', name: 'CoinGecko', category: 'Market Data', status: 'active', description: 'Price, market, OHLCV, and pool data for agents that need paid market context.', features: ['Prices', 'OHLCV', 'Pools', 'Markets'], website: 'https://coingecko.com' },
-  { id: 'discord', name: 'Discord', category: 'Notifications', status: 'active', description: 'Operator alerts for budget exhaustion, failed payments, new route requests, and spend spikes.', features: ['Alerts', 'Webhooks', 'Bots', 'Approvals'], website: 'https://discord.com/developers' },
+  { id: 'webhooks', name: 'Meterflow Webhooks', category: 'Notifications', status: 'active', description: 'Signed delivery for receipts, verified payments, failed payments, budget exhaustion, and test events.', features: ['Signed Events', 'Retries', 'Receipts', 'Budgets'], website: 'https://meterflow.fun/docs' },
 ];
 
-const CATEGORIES = ['All', 'Solana Infrastructure', 'Payments & Routing', 'Wallets', 'Social Data', 'Market Data', 'Notifications'];
+const CATEGORIES = ['All', 'Solana Infrastructure', 'Payments & Routing', 'Wallets', 'Market Data', 'Notifications'];
 
 let selectedCategory = 'All';
 
@@ -39,12 +63,18 @@ export function renderFutureApis() {
         <button class="future-apis-tab ${selectedCategory === cat ? 'active' : ''}" onclick="filterApiCategory('${cat}')">${cat}</button>
       `).join('')}
     </div>
+    ${filtered.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-state-icon">∅</div>
+        <div class="empty-state-title">No integrations in <em>${selectedCategory}</em></div>
+        <div class="empty-state-desc">More providers coming soon. Reset the filter to see what's connected today.</div>
+        <button class="btn-sm primary" onclick="filterApiCategory('All')">Show all integrations</button>
+      </div>
+    ` : ''}
     <div class="future-apis-grid">
       ${filtered.map(item => `
         <div class="api-card">
-          <div class="api-card-logo">
-            <div style="width:48px;height:48px;background:rgba(79,156,255,0.12);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:18px;">${item.name.charAt(0)}</div>
-          </div>
+          <div class="api-card-logo">${logoFor(item.id)}</div>
           <div class="api-card-content">
             <div class="api-card-header">
               <div class="api-card-name">${item.name}</div>

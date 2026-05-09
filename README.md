@@ -101,6 +101,7 @@ Core API variables:
 - `WALLET_ENCRYPTION_SECRET`
 - `DATABASE_URL`
 - `REDIS_URL`
+- `ERROR_ALERT_WEBHOOK` optional, for production error notifications
 
 Persistence:
 

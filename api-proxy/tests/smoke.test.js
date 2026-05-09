@@ -424,6 +424,16 @@ describe('Meterflow control plane', () => {
     assert.ok(route.includes('completeMeteredRequest'), 'MCP route should write receipts');
   });
 
+  it('does not mount legacy social posting bot routes', () => {
+    const server = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    const tools = readFileSync(resolve(root, 'tools', 'definitions.js'), 'utf-8');
+    const oauth = readFileSync(resolve(root, 'oauth', 'config.js'), 'utf-8');
+
+    assert.ok(!server.includes('twitterRouter'), 'should not mount the legacy Twitter route');
+    assert.ok(!tools.includes('twitter_lookup'), 'server tools should not include social posting');
+    assert.ok(!oauth.includes('TWITTER_CLIENT_ID'), 'OAuth providers should not include Twitter app credentials');
+  });
+
   it('control-plane storage defines meters receipts budgets and MCP tools', () => {
     const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent']) {

@@ -3,11 +3,10 @@ import { executeCodeRunner } from './code-runner.js';
 import { executeGithubLookup } from './github-lookup.js';
 import { executeGoogleLookup } from './google-lookup.js';
 import { executeNotionLookup } from './notion-lookup.js';
-import { executeTwitterLookup } from './twitter-lookup.js';
 import { executeImageGenerate } from './image-generator.js';
 import { SERVER_TOOL_NAMES, AUTH_REQUIRED_TOOLS } from './definitions.js';
 import { getToken } from '../oauth/store.js';
-import { ensureValidGoogleToken, ensureValidTwitterToken } from '../oauth/routes.js';
+import { ensureValidGoogleToken } from '../oauth/routes.js';
 
 const handlers = {
   url_reader: (args) => executeUrlReader(args),
@@ -15,7 +14,6 @@ const handlers = {
   github_lookup: (args, token) => executeGithubLookup(args, token),
   google_lookup: (args, token) => executeGoogleLookup(args, token),
   notion_lookup: (args, token) => executeNotionLookup(args, token),
-  twitter_lookup: (args, token) => executeTwitterLookup(args, token),
   image_generate: (args) => executeImageGenerate(args),
 };
 
@@ -36,8 +34,6 @@ export async function executeTool(name, args, apiKey) {
     if (provider && apiKey) {
       if (provider === 'google') {
         token = await ensureValidGoogleToken(apiKey);
-      } else if (provider === 'twitter') {
-        token = await ensureValidTwitterToken(apiKey);
       } else {
         token = await getToken(apiKey, provider);
       }

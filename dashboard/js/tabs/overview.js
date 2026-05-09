@@ -98,16 +98,15 @@ function renderPublicOverview() {
       <p class="page-sub">Connect a wallet, issue metered clients, and visualize x402-style paid API usage on Solana.</p>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="label">Meters</div><div class="value accent">Routes</div><div class="sub">price API calls and tools</div></div>
-      <div class="stat-card"><div class="label">Receipts</div><div class="value accent">Logs</div><div class="sub">connect payment to usage</div></div>
-      <div class="stat-card"><div class="label">Budgets</div><div class="value accent">Agents</div><div class="sub">limit autonomous spend</div></div>
-      <div class="stat-card"><div class="label">MCP</div><div class="value accent">Tools</div><div class="sub">package paid capabilities</div></div>
+      <div class="stat-card preview"><div class="label">Meters</div><div class="value">—</div><div class="sub">price API calls and tools</div></div>
+      <div class="stat-card preview"><div class="label">Receipts</div><div class="value">—</div><div class="sub">connect payment to usage</div></div>
+      <div class="stat-card preview"><div class="label">Budgets</div><div class="value">—</div><div class="sub">limit autonomous spend</div></div>
+      <div class="stat-card preview"><div class="label">MCP Tools</div><div class="value">—</div><div class="sub">package paid capabilities</div></div>
     </div>
     ${renderTokenUtilityPanel({ compact: true })}
     ${!STATE.connected ? `
-      <div class="section" style="text-align:center;padding:32px 0;">
-        <button class="btn-primary" style="padding:14px 40px;font-size:15px;" onclick="openWalletConnect()">Connect Wallet to Get Started</button>
-        <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Wallets anchor identity and settlement. Agents call through metered keys and budget policies.</p>
+      <div class="section" style="text-align:center;padding:24px 0 8px;">
+        <p style="color:var(--text-muted);font-size:12px;">Wallets anchor identity and settlement. Agents call through metered keys and budget policies.</p>
       </div>
     ` : `
       <div class="section" style="text-align:center;padding:24px 0;">

@@ -38,7 +38,7 @@ export const STATE = {
   models: [],
   treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, solPrice: 0 },
   providers: { claude: false, gemini: false, openai: false },
-  connections: { github: false, google: false, notion: false, twitter: false },
+  connections: { github: false, google: false, notion: false },
   activeTab: 'overview',
   keyVisible: false,
   error: null,
@@ -55,7 +55,7 @@ export const CHAT = {
   selectedModel: '',
   isGenerating: false,
   abortController: null,
-  enabledTools: ['web_search', 'url_reader', 'code_runner', 'image_generate', 'github_lookup', 'google_lookup', 'notion_lookup', 'twitter_lookup'],
+  enabledTools: ['web_search', 'url_reader', 'code_runner', 'image_generate', 'github_lookup', 'google_lookup', 'notion_lookup'],
   pendingImages: [],
   sidebarOpen: true,
 };

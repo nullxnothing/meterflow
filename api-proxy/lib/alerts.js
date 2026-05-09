@@ -1,12 +1,11 @@
-// Discord webhook alerting for critical errors
 import { logger } from './logger.js';
 
-const WEBHOOK_URL = process.env.DISCORD_ALERT_WEBHOOK;
+const WEBHOOK_URL = process.env.ERROR_ALERT_WEBHOOK;
 const RATE_LIMIT_MS = 60_000; // max 1 alert per error type per minute
 const recentAlerts = new Map();
 
 /**
- * Send a critical error alert to the Discord webhook.
+ * Send a critical error alert to a compatible webhook endpoint.
  * Rate-limited per error type to avoid flooding.
  */
 export async function sendErrorAlert({ title, message, model, endpoint, statusCode, apiKey }) {
@@ -52,7 +51,7 @@ export async function sendErrorAlert({ title, message, model, endpoint, statusCo
       signal: AbortSignal.timeout(5000),
     });
   } catch (err) {
-    logger.warn('Failed to send Discord alert', { err: err.message });
+    logger.warn('Failed to send error alert', { err: err.message });
   }
 }
 

@@ -1,7 +1,6 @@
 // Meterflow alpha intelligence API routes
 import { Router } from 'express';
 import { authenticateApiKey, requireAlphaTier } from '../middleware.js';
-import { ensureValidTwitterToken } from '../oauth/routes.js';
 import { logger } from '../lib/logger.js';
 import {
   getProfile, setProfile, getProfileHistory,
@@ -19,6 +18,10 @@ const log = logger.child({ mod: 'alpha' });
 const TWITTER_API = 'https://api.twitter.com';
 const FETCH_TIMEOUT = 8_000;
 const SOLANA_CA_REGEX = /[1-9A-HJ-NP-Za-km-z]{32,44}/g;
+
+function getAlphaBearerToken() {
+  return process.env.TWITTER_BEARER_TOKEN || process.env.X_BEARER_TOKEN || null;
+}
 
 async function twitterGet(path, token) {
   const ctrl = new AbortController();
@@ -62,8 +65,8 @@ router.get('/alpha/profile/:username', authenticateApiKey, requireAlphaTier, asy
       };
     } else {
       // X API fallback
-      const token = await ensureValidTwitterToken(apiKey);
-      if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
+      const token = getAlphaBearerToken();
+      if (!token) return res.status(503).json({ error: 'alpha_source_not_configured' });
 
       const fields = 'public_metrics,description,profile_image_url,created_at';
       const userData = await twitterGet(
@@ -321,8 +324,8 @@ router.post('/alpha/watchlist', authenticateApiKey, requireAlphaTier, async (req
       userId = norm.twitterId;
       userData = { username: norm.username, displayName: norm.displayName, profileImage: norm.profileImage, bio: norm.bio, followers: Number(norm.followers) };
     } else {
-      const token = await ensureValidTwitterToken(req.meterflow.apiKey);
-      if (!token) return res.status(401).json({ error: 'twitter_not_connected' });
+      const token = getAlphaBearerToken();
+      if (!token) return res.status(503).json({ error: 'alpha_source_not_configured' });
 
       const data = await twitterGet(
         `/2/users/by/username/${encodeURIComponent(cleanUsername)}?user.fields=public_metrics,description,profile_image_url`,

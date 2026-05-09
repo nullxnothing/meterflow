@@ -30,14 +30,6 @@ export const PROVIDERS = {
     scopes: [],
     callbackPath: '/oauth/notion/callback',
   },
-  twitter: {
-    clientId: process.env.TWITTER_CLIENT_ID || '',
-    clientSecret: process.env.TWITTER_CLIENT_SECRET || '',
-    authUrl: 'https://twitter.com/i/oauth2/authorize',
-    tokenUrl: 'https://api.twitter.com/2/oauth2/token',
-    scopes: ['tweet.read', 'tweet.write', 'users.read', 'follows.read', 'offline.access'],
-    callbackPath: '/oauth/twitter/callback',
-  },
 };
 
 export function getRedirectUri(provider) {

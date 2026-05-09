@@ -123,7 +123,6 @@ export async function getConnectedProviders(apiKey) {
     github: !!tokens.github,
     google: !!tokens.google,
     notion: !!tokens.notion,
-    twitter: !!(tokens.twitter || tokens.twitter_byok),
   };
 }
 
