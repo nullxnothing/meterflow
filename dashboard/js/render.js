@@ -158,6 +158,7 @@ export function renderDashboard() {
         <div class="sidebar-socials">
           <a href="https://x.com/meterflowsol" target="_blank" rel="noopener" class="sidebar-social-link">X / Twitter</a>
           <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" class="sidebar-social-link">Discord</a>
+          <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" class="sidebar-social-link">GitHub</a>
         </div>
         <div class="compliance-badge" title="Meterflow tracks usage, receipts, route access, and budget limits for agent-accessible APIs.">
           <span class="compliance-dot"></span> Metering Active

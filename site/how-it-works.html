@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="description" content="How Meterflow works - quote API requests, settle in USDC on Solana, verify payment, and return receipts.">
 <meta name="theme-color" content="#05080f">
+<link rel="canonical" href="https://meterflow.fun/how-it-works">
 <meta property="og:title" content="Meterflow — How It Works">
 <meta property="og:description" content="A Solana-native payment meter for APIs, tools, and AI agents.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://meterflow.fun/how-it-works">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
 <meta property="og:image:width" content="1600">
 <meta property="og:image:height" content="900">
@@ -16,6 +18,8 @@
 <title>How It Works — Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
@@ -132,8 +136,9 @@ footer .links a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to content</a>
 <nav>
-  <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
+  <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools">Platform</a>
     <a href="/#tiers">Product</a>
@@ -156,6 +161,7 @@ footer .links a:hover { color: var(--accent); }
   <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
 </div>
 
+<main id="main">
 <div class="container">
   <section class="hero">
     <div class="hero-label">How It Works</div>
@@ -229,6 +235,7 @@ footer .links a:hover { color: var(--accent); }
     <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="footer-left">&copy; 2026 Meterflow</div>
@@ -241,17 +248,6 @@ footer .links a:hover { color: var(--accent); }
   </div>
   <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>
 </footer>
-<script>
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
-hamburger?.addEventListener('click', () => {
-  hamburger.classList.toggle('active');
-  mobileMenu.classList.toggle('open');
-});
-function closeMobile() {
-  hamburger?.classList.remove('active');
-  mobileMenu?.classList.remove('open');
-}
-</script>
+<script src="/site/shared.js" defer></script>
 </body>
 </html>
