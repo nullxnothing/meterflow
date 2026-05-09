@@ -11,6 +11,7 @@ import tradingAdvancedRouter from './routes/trading-advanced.js';
 import tradingPortfolioRouter from './routes/trading-portfolio.js';
 import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
+import applicationsRouter from './routes/applications.js';
 import tradesRouter from './routes/trades.js';
 import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
@@ -22,6 +23,7 @@ import { errorAlertMiddleware } from './lib/alerts.js';
 import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({
   origin: [
@@ -31,7 +33,7 @@ app.use(cors({
     /\.vercel\.app$/,
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5500', 'http://localhost:3000', 'http://127.0.0.1:5500'] : []),
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Request-Id', 'X-Payment', 'X-Payment-Transaction', 'X-Payment-Signature', 'X-Transaction-Signature'],
   credentials: true,
 }));
@@ -57,6 +59,7 @@ app.use((req, res, next) => {
 
 app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
+app.use('/', applicationsRouter);
 
 let x402Gateway = (_req, _res, next) => next();
 buildX402Middleware().then(mw => {
