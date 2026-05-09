@@ -13,7 +13,7 @@ function videoSrc(uri) {
 }
 import { saveVideoHistory } from '../session.js';
 import { showToast } from '../actions.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { isHolder, renderHolderGate } from '../gate.js?v=preview-link-2';
 
 const VIDEO_CHIPS = [
   'Drone shot over a futuristic city at night',

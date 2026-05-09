@@ -6,7 +6,7 @@ import { STATE } from '../state.js';
 import { api } from '../api.js';
 import { render } from '../render.js';
 import { showToast } from '../actions.js';
-import { canManageMeterflow, renderPreviewNotice } from '../gate.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js?v=preview-link-2';
 
 export function renderConnections() {
   const locked = !canManageMeterflow();

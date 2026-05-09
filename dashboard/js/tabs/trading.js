@@ -15,7 +15,7 @@ import {
   renderBotHistory,
 } from './trading-panels.js';
 import './trading-actions.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { isHolder, renderHolderGate } from '../gate.js?v=preview-link-2';
 
 // ─── Conversation Management ───
 

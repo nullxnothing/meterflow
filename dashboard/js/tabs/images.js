@@ -4,7 +4,7 @@
 
 import { STATE, IMAGES } from '../state.js';
 import { escapeHtml } from '../utils.js';
-import { isHolder, renderHolderGate } from '../gate.js';
+import { isHolder, renderHolderGate } from '../gate.js?v=preview-link-2';
 
 const IMAGE_CHIPS = [
   'Cyberpunk cityscape at sunset',

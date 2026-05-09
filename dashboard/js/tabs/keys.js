@@ -4,7 +4,7 @@
 
 import { STATE } from '../state.js';
 import { API_BASE } from '../state.js';
-import { canManageMeterflow, renderPreviewNotice } from '../gate.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js?v=preview-link-2';
 
 export function renderKeys() {
   const locked = !canManageMeterflow();

@@ -4,7 +4,7 @@
 
 import { STATE } from '../state.js';
 import { escapeHtml } from '../utils.js';
-import { isHolder, renderTokenUtilityPanel } from '../gate.js';
+import { isHolder, renderTokenUtilityPanel } from '../gate.js?v=preview-link-2';
 
 function getResetCountdown() {
   const now = new Date();

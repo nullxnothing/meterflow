@@ -7,7 +7,7 @@ import { escapeHtml, scrollChat } from '../utils.js';
 import { getActiveConversation, newConversation } from '../session.js';
 import { renderMarkdown } from '../markdown.js';
 import { renderToolResultCardHtml, bindCodeCopyButtons, bindCodeToggleButtons } from '../tools.js';
-import { isHolder, isTrial, canAccessChat, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js';
+import { isHolder, isTrial, canAccessChat, renderHolderGate, renderTrialBanner, renderTrialExhausted } from '../gate.js?v=preview-link-2';
 
 export function renderChat() {
   if (!canAccessChat()) {
