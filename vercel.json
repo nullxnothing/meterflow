@@ -1,7 +1,8 @@
 {
   "rewrites": [
-    { "source": "/proxy/:path*", "destination": "/api/:path*" },
-    { "source": "/health", "destination": "/api/health" },
+    { "source": "/proxy/:path*", "destination": "/api/proxy" },
+    { "source": "/api/:path*", "destination": "/api/proxy" },
+    { "source": "/health", "destination": "/api/proxy" },
     { "source": "/skill.md", "destination": "/skills/meterflow-api/SKILL.md" },
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },
