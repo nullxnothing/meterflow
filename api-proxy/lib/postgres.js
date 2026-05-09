@@ -41,10 +41,40 @@ async function query(text, params = []) {
   return db.query(text, params);
 }
 
+async function checkPostgresHealth() {
+  if (!isPostgresEnabled()) {
+    return { configured: false, connected: false, migrated: false, status: 'not_configured' };
+  }
+
+  try {
+    const result = await query(`
+      select
+        to_regclass('public.meterflow_control_records') is not null as control_records,
+        to_regclass('public.meterflow_idempotency') is not null as idempotency
+    `);
+    const row = result.rows[0] || {};
+    const migrated = Boolean(row.control_records && row.idempotency);
+    return {
+      configured: true,
+      connected: true,
+      migrated,
+      status: migrated ? 'connected' : 'migration_required',
+    };
+  } catch (err) {
+    return {
+      configured: true,
+      connected: false,
+      migrated: false,
+      status: 'error',
+      error: err.message,
+    };
+  }
+}
+
 async function closePostgresPool() {
   if (!pool) return;
   await pool.end();
   pool = null;
 }
 
-export { closePostgresPool, getPostgresPool, isPostgresEnabled, query };
+export { checkPostgresHealth, closePostgresPool, getPostgresPool, isPostgresEnabled, query };

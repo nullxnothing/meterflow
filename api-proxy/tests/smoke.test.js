@@ -172,6 +172,17 @@ describe('Redis fail-closed (production)', () => {
     assert.ok(src.includes("process.exit(1)"), 'should exit without Redis in prod');
   });
 
+  it('/health reports Redis and Postgres storage readiness', () => {
+    const route = readFileSync(resolve(root, 'routes', 'admin.js'), 'utf-8');
+    const redis = readFileSync(resolve(root, 'lib', 'redis.js'), 'utf-8');
+    const postgres = readFileSync(resolve(root, 'lib', 'postgres.js'), 'utf-8');
+    assert.ok(route.includes('checkRedisHealth'), 'health should check Redis');
+    assert.ok(route.includes('checkPostgresHealth'), 'health should check Postgres');
+    assert.ok(route.includes('storage'), 'health should return storage status');
+    assert.ok(redis.includes('checkRedisHealth'), 'Redis health helper should exist');
+    assert.ok(postgres.includes('migration_required'), 'Postgres health should detect missing migrations');
+  });
+
   it('kv-keys depends on the shared Redis client', () => {
     const src = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
     assert.ok(src.includes('IS_PROD'), 'should check IS_PROD');

@@ -9,6 +9,8 @@ import { getVoteCounts, getWalletVotes, toggleVote } from '../lib/kv-votes.js';
 import { getKeyData, countKeys } from '../lib/kv-keys.js';
 import { getGlobalStats, getTopUsersToday, getModelAnalytics } from '../lib/kv-usage.js';
 import { logger } from '../lib/logger.js';
+import { checkPostgresHealth } from '../lib/postgres.js';
+import { checkRedisHealth } from '../lib/redis.js';
 
 const router = Router();
 
@@ -249,9 +251,20 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
 });
 
 // GET /health
-router.get('/health', (req, res) => {
+router.get('/health', async (req, res) => {
   const treasuryState = getTreasuryState();
-  res.json({ status: 'ok', version: '1.0.0', protocol: 'Meterflow', treasury: treasuryState.healthStatus });
+  const [redis, postgres] = await Promise.all([
+    checkRedisHealth(),
+    checkPostgresHealth(),
+  ]);
+  const storageOk = redis.connected && (!postgres.configured || (postgres.connected && postgres.migrated));
+  res.status(storageOk ? 200 : 503).json({
+    status: storageOk ? 'ok' : 'degraded',
+    version: '1.0.0',
+    protocol: 'Meterflow',
+    treasury: treasuryState.healthStatus,
+    storage: { redis, postgres },
+  });
 });
 
 export default router;

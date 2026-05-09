@@ -47,4 +47,17 @@ function isRedisHealthy() {
   return redisHealthy;
 }
 
-export { getRedis, isRedisHealthy };
+async function checkRedisHealth() {
+  const configured = Boolean(process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL);
+  const r = getRedis();
+  if (!r) return { configured, connected: false, status: configured ? 'unavailable' : 'not_configured' };
+
+  try {
+    await r.ping();
+    return { configured: true, connected: true, status: 'connected' };
+  } catch (err) {
+    return { configured: true, connected: false, status: 'error', error: err.message };
+  }
+}
+
+export { checkRedisHealth, getRedis, isRedisHealthy };
