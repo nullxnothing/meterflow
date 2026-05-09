@@ -143,6 +143,40 @@ export class MeterflowClient {
     return this._get('/v1/providers/revenue');
   }
 
+  /**
+   * List configured webhook endpoints.
+   */
+  async webhooks() {
+    return this._get('/v1/webhooks');
+  }
+
+  /**
+   * Create a signed webhook endpoint.
+   * @param {{url: string, events?: string[], secret?: string}} params
+   */
+  async createWebhook(params) {
+    return this._post('/v1/webhooks', params);
+  }
+
+  /**
+   * Send a test event to a webhook endpoint.
+   * @param {string} webhookId
+   */
+  async testWebhook(webhookId) {
+    return this._post(`/v1/webhooks/${encodeURIComponent(webhookId)}/test`, {});
+  }
+
+  /**
+   * Delete a webhook endpoint.
+   * @param {string} webhookId
+   */
+  async deleteWebhook(webhookId) {
+    const response = await this._fetch(`/v1/webhooks/${encodeURIComponent(webhookId)}`, {
+      method: 'DELETE',
+    });
+    return response.json();
+  }
+
   // ─── Internal ───
 
   async _post(path, body) {

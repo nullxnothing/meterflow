@@ -19,6 +19,11 @@ import {
   getMcpTool,
   createMcpTool,
   deleteMcpTool,
+  listWebhooks,
+  getWebhook,
+  createWebhook,
+  deleteWebhook,
+  sendWebhookTest,
   applyProtocolFee,
 } from '../lib/control-plane.js';
 
@@ -194,6 +199,41 @@ router.delete('/mcp-tools/:id', authenticateApiKey, async (req, res) => {
   }
   await deleteMcpTool(req.params.id);
   res.json({ ok: true });
+});
+
+router.get('/webhooks', authenticateApiKey, async (req, res) => {
+  res.json({ webhooks: await listWebhooks({ apiKey: req.meterflow.apiKey }) });
+});
+
+router.post('/webhooks', authenticateApiKey, async (req, res) => {
+  if (!req.body.url || typeof req.body.url !== 'string') {
+    return badRequest(res, 'url is required');
+  }
+
+  try {
+    const webhook = await createWebhook(req.body, req.meterflow.apiKey, req.meterflow.wallet);
+    res.status(201).json({ webhook });
+  } catch (err) {
+    return badRequest(res, err.message || 'Invalid webhook');
+  }
+});
+
+router.delete('/webhooks/:id', authenticateApiKey, async (req, res) => {
+  const webhook = await getWebhook(req.params.id);
+  if (!webhook || webhook.apiKey !== req.meterflow.apiKey) {
+    return res.status(404).json({ error: 'webhook_not_found', message: 'Webhook not found.' });
+  }
+
+  await deleteWebhook(req.params.id);
+  res.json({ ok: true });
+});
+
+router.post('/webhooks/:id/test', authenticateApiKey, async (req, res) => {
+  const result = await sendWebhookTest(req.params.id, req.meterflow.apiKey);
+  if (!result) {
+    return res.status(404).json({ error: 'webhook_not_found', message: 'Webhook not found.' });
+  }
+  res.json({ delivery: result });
 });
 
 export default router;

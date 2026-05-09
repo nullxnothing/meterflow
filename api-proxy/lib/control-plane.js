@@ -9,12 +9,22 @@ const RECEIPT_PREFIX = 'meterflow:receipt:';
 const BUDGET_PREFIX = 'meterflow:budget:';
 const MCP_TOOL_PREFIX = 'meterflow:mcp-tool:';
 const IDEMPOTENCY_PREFIX = 'meterflow:idempotency:';
+const WEBHOOK_PREFIX = 'meterflow:webhook:';
 
 const fallbackMeters = new Map();
 const fallbackReceipts = new Map();
 const fallbackBudgets = new Map();
 const fallbackMcpTools = new Map();
 const fallbackIdempotency = new Map();
+const fallbackWebhooks = new Map();
+
+const WEBHOOK_EVENTS = new Set([
+  'receipt.created',
+  'payment.verified',
+  'payment.failed',
+  'budget.exhausted',
+  'webhook.test',
+]);
 
 export const DEFAULT_METERS = [
   { id: 'mtr_chat', route: '/v1/chat', method: 'POST', unit: 'model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
@@ -54,6 +64,37 @@ function requestHash(req) {
     .createHash('sha256')
     .update(`${req.method || ''}:${req.originalUrl || req.path || ''}:${body}`)
     .digest('hex');
+}
+
+function webhookSecret() {
+  return `mfwhsec_${crypto.randomBytes(24).toString('hex')}`;
+}
+
+function maskSecret(secret = '') {
+  return secret ? `${secret.slice(0, 10)}...${secret.slice(-4)}` : null;
+}
+
+function sanitizeWebhook(webhook, exposeSecret = false) {
+  if (!webhook) return null;
+  const { secret, ...safe } = webhook;
+  return {
+    ...safe,
+    ...(exposeSecret ? { secret } : { secretMasked: maskSecret(secret) }),
+  };
+}
+
+function normalizeWebhookEvents(events) {
+  const input = Array.isArray(events) && events.length ? events : ['receipt.created'];
+  return [...new Set(input.filter(event => WEBHOOK_EVENTS.has(event)))];
+}
+
+function normalizeWebhookUrl(rawUrl) {
+  const url = new URL(String(rawUrl || ''));
+  const allowedProtocol = IS_PROD ? url.protocol === 'https:' : ['http:', 'https:'].includes(url.protocol);
+  if (!allowedProtocol) {
+    throw new Error(IS_PROD ? 'Webhook URL must use HTTPS.' : 'Webhook URL must use HTTP or HTTPS.');
+  }
+  return url.toString();
 }
 
 function getProtocolFeeBps(tier) {
@@ -182,6 +223,77 @@ async function setIdempotentReceipt(idempotencyKey, receiptId) {
     logger.error('Idempotency write failed', { err: err.message });
     if (IS_PROD) throw new Error('Control plane store unavailable');
   }
+}
+
+async function listWebhookRecords(filters = {}) {
+  const webhooks = await scanJson(WEBHOOK_PREFIX, fallbackWebhooks);
+  return webhooks
+    .filter(webhook => !filters.apiKey || webhook.apiKey === filters.apiKey)
+    .filter(webhook => !filters.status || webhook.status === filters.status)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
+async function deliverWebhook(webhook, event, data) {
+  const createdAt = nowIso();
+  const body = JSON.stringify({
+    id: id('evt'),
+    event,
+    createdAt,
+    data,
+  });
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const signature = crypto
+    .createHmac('sha256', webhook.secret)
+    .update(`${timestamp}.${body}`)
+    .digest('hex');
+
+  try {
+    const response = await fetch(webhook.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Meterflow-Webhooks/1.0',
+        'X-Meterflow-Event': event,
+        'X-Meterflow-Timestamp': timestamp,
+        'X-Meterflow-Signature': `t=${timestamp},v1=${signature}`,
+      },
+      body,
+      signal: AbortSignal.timeout(8_000),
+    });
+
+    const next = {
+      ...webhook,
+      lastDeliveryAt: createdAt,
+      lastDeliveryStatus: response.status,
+      lastDeliveryOk: response.ok,
+      lastDeliveryError: response.ok ? null : `HTTP ${response.status}`,
+      updatedAt: createdAt,
+    };
+    await setJson(WEBHOOK_PREFIX, fallbackWebhooks, next);
+    return { ok: response.ok, status: response.status };
+  } catch (err) {
+    const next = {
+      ...webhook,
+      lastDeliveryAt: createdAt,
+      lastDeliveryStatus: null,
+      lastDeliveryOk: false,
+      lastDeliveryError: err.message,
+      updatedAt: createdAt,
+    };
+    await setJson(WEBHOOK_PREFIX, fallbackWebhooks, next).catch(() => {});
+    return { ok: false, error: err.message };
+  }
+}
+
+export async function dispatchWebhookEvent(apiKey, event, data = {}) {
+  if (!apiKey || !WEBHOOK_EVENTS.has(event)) return [];
+  const webhooks = await listWebhookRecords({ apiKey, status: 'active' });
+  const selected = webhooks.filter(webhook => (webhook.events || []).includes(event));
+  const results = await Promise.allSettled(selected.map(webhook => deliverWebhook(webhook, event, data)));
+  return results.map((result, index) => ({
+    webhookId: selected[index]?.id,
+    ...(result.status === 'fulfilled' ? result.value : { ok: false, error: result.reason?.message || 'delivery_failed' }),
+  }));
 }
 
 export async function listMeters() {
@@ -313,6 +425,24 @@ export async function recordReceipt(input) {
   };
   const saved = await setJson(RECEIPT_PREFIX, fallbackReceipts, receipt);
   await setIdempotentReceipt(scopedIdempotencyKey, saved.id);
+  dispatchWebhookEvent(saved.apiKey, 'receipt.created', { receipt: saved }).catch(err => {
+    logger.warn('Receipt webhook dispatch failed', { receiptId: saved.id, err: err.message });
+  });
+  if (saved.paymentState === 'verified') {
+    dispatchWebhookEvent(saved.apiKey, 'payment.verified', { receipt: saved }).catch(err => {
+      logger.warn('Payment webhook dispatch failed', { receiptId: saved.id, err: err.message });
+    });
+  }
+  if (saved.status !== 'metered_key' && saved.status !== 'verified') {
+    dispatchWebhookEvent(saved.apiKey, 'payment.failed', { receipt: saved }).catch(err => {
+      logger.warn('Payment failure webhook dispatch failed', { receiptId: saved.id, err: err.message });
+    });
+  }
+  if (saved.policyResult === 'budget_exhausted') {
+    dispatchWebhookEvent(saved.apiKey, 'budget.exhausted', { receipt: saved }).catch(err => {
+      logger.warn('Budget webhook dispatch failed', { receiptId: saved.id, err: err.message });
+    });
+  }
   return saved;
 }
 
@@ -508,4 +638,52 @@ export async function createMcpTool(input, apiKey, ownerWallet) {
 
 export async function deleteMcpTool(toolId) {
   return deleteJson(MCP_TOOL_PREFIX, fallbackMcpTools, toolId);
+}
+
+export async function listWebhooks(filters = {}) {
+  const records = await listWebhookRecords(filters);
+  return records.map(webhook => sanitizeWebhook(webhook));
+}
+
+export async function getWebhook(webhookId) {
+  return getJson(WEBHOOK_PREFIX, fallbackWebhooks, webhookId);
+}
+
+export async function createWebhook(input, apiKey, ownerWallet) {
+  const ts = nowIso();
+  const events = normalizeWebhookEvents(input.events);
+  if (!events.length) {
+    throw new Error('At least one valid webhook event is required.');
+  }
+
+  const webhook = await setJson(WEBHOOK_PREFIX, fallbackWebhooks, {
+    id: id('wh'),
+    url: normalizeWebhookUrl(input.url),
+    events,
+    secret: input.secret || webhookSecret(),
+    status: input.status || 'active',
+    apiKey,
+    ownerWallet,
+    createdAt: ts,
+    updatedAt: ts,
+    lastDeliveryAt: null,
+    lastDeliveryStatus: null,
+    lastDeliveryOk: null,
+    lastDeliveryError: null,
+  });
+
+  return sanitizeWebhook(webhook, true);
+}
+
+export async function deleteWebhook(webhookId) {
+  return deleteJson(WEBHOOK_PREFIX, fallbackWebhooks, webhookId);
+}
+
+export async function sendWebhookTest(webhookId, apiKey) {
+  const webhook = await getWebhook(webhookId);
+  if (!webhook || webhook.apiKey !== apiKey) return null;
+  return deliverWebhook(webhook, 'webhook.test', {
+    ok: true,
+    message: 'Meterflow webhook test event',
+  });
 }

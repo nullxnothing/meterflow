@@ -426,7 +426,7 @@ describe('Meterflow control plane', () => {
 
   it('control-plane storage defines meters receipts budgets and MCP tools', () => {
     const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
-    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet']) {
+    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent']) {
       assert.ok(src.includes(token), `should include ${token}`);
     }
   });
@@ -450,6 +450,19 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('canManageResource'), 'meter updates should check ownership');
     assert.ok(src.includes('getMcpTool'), 'MCP deletes should load the tool before deleting');
     assert.ok(src.includes("tool.apiKey !== req.meterflow.apiKey"), 'MCP deletes should be scoped to owner API key');
+  });
+
+  it('control-plane exposes signed webhook management', () => {
+    const lib = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const sdk = readFileSync(resolve(projectRoot, 'sdk', 'src', 'client.js'), 'utf-8');
+    assert.ok(lib.includes('WEBHOOK_PREFIX'), 'should persist webhooks');
+    assert.ok(lib.includes('X-Meterflow-Signature'), 'should sign webhook deliveries');
+    assert.ok(lib.includes('receipt.created'), 'should support receipt.created events');
+    assert.ok(routes.includes("'/webhooks'"), 'should expose webhook collection route');
+    assert.ok(routes.includes("'/webhooks/:id/test'"), 'should expose webhook test route');
+    assert.ok(sdk.includes('createWebhook'), 'SDK should expose webhook creation');
+    assert.ok(sdk.includes('testWebhook'), 'SDK should expose webhook tests');
   });
 
   it('SDK exposes control-plane helpers', () => {
