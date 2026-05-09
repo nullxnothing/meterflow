@@ -416,6 +416,16 @@ describe('Vercel routing', () => {
     assert.ok(pkg.dependencies.express, 'root package should include API dependencies for Vercel');
   });
 
+  it('pins rpc-websockets to a Vercel-compatible uuid tree', () => {
+    const pkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
+    const lock = JSON.parse(readFileSync(resolve(projectRoot, 'package-lock.json'), 'utf-8'));
+    const rpcPath = Object.keys(lock.packages).find(path => path.endsWith('node_modules/rpc-websockets'));
+    assert.equal(pkg.overrides['rpc-websockets'], '9.3.3');
+    assert.ok(rpcPath, 'root lockfile should include rpc-websockets');
+    assert.equal(lock.packages[rpcPath].version, '9.3.3');
+    assert.equal(lock.packages[rpcPath].dependencies.uuid, '^8.3.2');
+  });
+
   it('has all required page rewrites', () => {
     const sources = vercel.rewrites.map(r => r.source);
     assert.ok(sources.includes('/'), 'should rewrite /');
