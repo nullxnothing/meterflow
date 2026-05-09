@@ -403,15 +403,16 @@ describe('Vercel routing', () => {
   it('has proxy rewrite to Vercel API function', () => {
     const proxyRewrite = vercel.rewrites.find(r => r.source.includes('/proxy'));
     assert.ok(proxyRewrite, 'should have /proxy rewrite');
-    assert.equal(proxyRewrite.destination, '/api/:path*');
+    assert.equal(proxyRewrite.destination, '/api/proxy');
+    assert.ok(vercel.rewrites.some(r => r.source === '/api/:path*' && r.destination === '/api/proxy'));
   });
 
   it('Vercel function wraps the Express app', () => {
-    const src = readFileSync(resolve(projectRoot, 'api', '[...path].js'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'api', 'proxy.js'), 'utf-8');
     const ignore = readFileSync(resolve(projectRoot, '.vercelignore'), 'utf-8');
     const pkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
     assert.ok(src.includes("from '../api-proxy/app.js'"), 'function should import the Express app');
-    assert.ok(src.includes("req.url.replace(/^\\/api"), 'function should strip /api prefix');
+    assert.ok(src.includes('(?:api|proxy)'), 'function should strip /api and /proxy prefixes');
     assert.ok(!ignore.split(/\r?\n/).includes('api-proxy'), 'api-proxy must be included in Vercel deployment');
     assert.ok(pkg.dependencies.express, 'root package should include API dependencies for Vercel');
   });

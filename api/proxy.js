@@ -1,6 +1,6 @@
 import app from '../api-proxy/app.js';
 
 export default function handler(req, res) {
-  req.url = req.url.replace(/^\/api(?=\/|$)/, '') || '/';
+  req.url = req.url.replace(/^\/(?:api|proxy)(?=\/|$)/, '') || '/';
   return app(req, res);
 }
