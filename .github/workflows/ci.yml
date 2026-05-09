@@ -1,5 +1,8 @@
 name: CI
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [main]
@@ -25,7 +28,7 @@ jobs:
           cache-dependency-path: api-proxy/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --omit=optional
 
       - name: Syntax check changed backend entrypoints
         run: |
