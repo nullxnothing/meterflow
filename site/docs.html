@@ -8,40 +8,32 @@
 <meta property="og:title" content="Meterflow Documentation">
 <meta property="og:description" content="Build and operate metered API routes, receipts, and agent budgets on Solana.">
 <meta property="og:type" content="website">
-<title>Meterflow</title>
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>Docs — Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
-[id] { scroll-margin-top: 100px; }
-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-  padding: 20px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(5, 8, 15, 0.86);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
+[id] { scroll-margin-top: 96px; }
 .docs-container {
   display: grid;
   grid-template-columns: 280px 1fr;
   min-height: 100vh;
-  padding-top: 80px;
+  padding-top: 0;
   max-width: 1400px;
   margin: 0 auto;
 }
 .docs-sidebar {
-  padding: 40px;
+  padding: 40px 28px;
   border-right: 1px solid var(--border);
-  height: calc(100vh - 80px);
+  height: calc(100vh - 68px);
   position: sticky;
-  top: 80px;
+  top: 68px;
   overflow-y: auto;
   background: var(--bg);
 }
@@ -66,16 +58,18 @@ nav {
 .sidebar-link:hover,
 .sidebar-link.active { color: var(--accent); }
 .docs-content {
-  padding: 80px 60px;
+  padding: 64px 56px;
   max-width: 940px;
   margin: 0 auto;
 }
-.docs-header { margin-bottom: 60px; }
+.docs-header { margin-bottom: 56px; }
 .docs-title {
   font-family: var(--font-display);
-  font-size: 52px;
-  margin-bottom: 16px;
-  line-height: 1.05;
+  font-size: clamp(40px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 18px;
+  line-height: 1.02;
 }
 .docs-intro {
   font-size: 18px;
@@ -90,9 +84,12 @@ nav {
 .doc-section:last-child { border-bottom: none; }
 .section-title {
   font-family: var(--font-display);
-  font-size: 32px;
-  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
   color: var(--text);
+  line-height: 1.1;
 }
 .section-text {
   font-size: 16px;
@@ -109,9 +106,12 @@ nav {
 .feature-card {
   padding: 22px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 6px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
+.feature-card:hover { border-color: rgba(79, 156, 255, 0.45); transform: translateY(-2px); }
 .feature-title {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -127,10 +127,10 @@ nav {
   line-height: 1.6;
 }
 .code-block {
-  background: var(--surface);
+  background: rgba(0,0,0,0.45);
   border: 1px solid var(--border);
-  padding: 22px;
-  border-radius: 6px;
+  padding: 20px 22px;
+  border-radius: var(--radius-md);
   margin: 22px 0;
   font-family: var(--font-mono);
   font-size: 13px;
@@ -179,14 +179,14 @@ nav {
 }
 .doc-table .accent { color: var(--accent); }
 @media (max-width: 900px) {
-  .docs-container { grid-template-columns: 1fr; }
+  .docs-container { grid-template-columns: 1fr; padding-top: 0; }
   .docs-sidebar { display: none; }
   .docs-content { padding: 40px 20px; }
   .feature-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  nav { padding: 12px 16px; }
-  .docs-title { font-size: 40px; }
+  .docs-container { padding-top: 0; }
+  .docs-title { font-size: 36px; }
 }
 </style>
 </head>
@@ -195,14 +195,34 @@ nav {
 <nav>
   <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
   <div class="nav-links">
-    <a href="/">Home</a>
     <a href="/#tools">Platform</a>
-    <a href="/#tiers">Dashboard</a>
-    <a href="/#agents">Budgets</a>
-    <a href="/site/roadmap.html">Roadmap</a>
-    <a href="/docs" style="color: var(--accent);">Docs</a>
+    <a href="/#tiers">Product</a>
+    <a href="/how-it-works">How It Works</a>
+    <a href="/roadmap">Roadmap</a>
+    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
+    <a class="nav-cta ghost active" href="/docs">Read Docs</a>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#tools" onclick="closeMobile()">Platform</a>
+  <a href="/#tiers" onclick="closeMobile()">Product</a>
+  <a href="/how-it-works" onclick="closeMobile()">How It Works</a>
+  <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
+  <a href="/docs" onclick="closeMobile()" style="color: var(--accent);">Read Docs</a>
+  <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
+</div>
+
+<section class="site-subpage-hero" id="intro">
+  <div class="site-subpage-hero-inner">
+    <div class="site-subpage-label">Documentation</div>
+    <h1 class="site-subpage-title">Metered APIs.<br><span class="accent">Receipts, budgets, and policy.</span></h1>
+    <p class="site-subpage-sub">Build and operate agent-accessible API routes with prices, request receipts, MFLOW utility, gateway keys, MCP tool packaging, and Solana settlement context.</p>
+  </div>
+</section>
 
 <div class="docs-container">
   <aside class="docs-sidebar">
@@ -231,11 +251,6 @@ nav {
   </aside>
 
   <main class="docs-content">
-    <div class="docs-header" id="intro">
-      <h1 class="docs-title">Meterflow Documentation</h1>
-      <p class="docs-intro">Meterflow is a control plane for x402-style paid API usage on Solana. Providers define metered routes. Operators connect wallets and issue agent-scoped client keys. The dashboard records quote, payment, receipt, failure, revenue, and budget data.</p>
-    </div>
-
     <section class="doc-section" id="flow">
       <h2 class="section-title">Payment Flow</h2>
       <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, and whether the agent stayed inside policy.</p>
@@ -419,5 +434,29 @@ const response = await client.chat({
   </main>
 </div>
 
+<footer>
+  <div class="footer-left">&copy; 2026 Meterflow</div>
+  <div class="footer-links">
+    <a href="https://x.com/meterflowsol">X / Twitter</a>
+    <a href="https://discord.gg/tned74z4eN">Discord</a>
+    <a href="/docs">Docs</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>
+</footer>
+
+<script>
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+hamburger?.addEventListener('click', () => {
+  hamburger.classList.toggle('active');
+  mobileMenu.classList.toggle('open');
+});
+function closeMobile() {
+  hamburger?.classList.remove('active');
+  mobileMenu?.classList.remove('open');
+}
+</script>
 </body>
 </html>

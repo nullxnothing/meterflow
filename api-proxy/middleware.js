@@ -17,6 +17,29 @@ async function authenticateApiKey(req, res, next) {
   }
 
   const apiKey = authHeader.split(' ')[1];
+
+  // pay.sh gateway path — payment already verified on-chain by the gateway
+  if (CONFIG.PAY_SH_GATEWAY_SECRET && apiKey === CONFIG.PAY_SH_GATEWAY_SECRET) {
+    req.meterflow = {
+      apiKey: 'gateway',
+      wallet: 'pay_sh_gateway',
+      tier: 'operator',
+      tierConfig: CONFIG.TIERS['operator'],
+      isTrial: false,
+      paymentVerified: true,
+      usage: { count: 0, tokens: 0 },
+    };
+    const control = await authorizeMeteredRequest(req);
+    req.meterflowControl = { ...control, paymentState: 'verified' };
+    if (!control.allowed) {
+      return res.status(control.status || 403).json({
+        error: control.error || 'policy_denied',
+        message: control.message || 'Request blocked by Meterflow policy.',
+      });
+    }
+    return next();
+  }
+
   const keyData = await getKeyData(apiKey);
 
   if (!keyData) {

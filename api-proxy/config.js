@@ -44,6 +44,7 @@ const CONFIG = {
   },
   BALANCE_CACHE_TTL: 5 * 60 * 1000,
   WALLET_ENCRYPTION_SECRET: process.env.WALLET_ENCRYPTION_SECRET || 'dev-encryption-secret-change-me',
+  PAY_SH_GATEWAY_SECRET: process.env.PAY_SH_GATEWAY_SECRET || '',
   WHITELISTED_WALLETS: new Set(
     (process.env.WHITELISTED_WALLETS || '')
       .split(',')

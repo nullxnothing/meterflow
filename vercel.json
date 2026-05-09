@@ -5,6 +5,7 @@
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },
     { "source": "/docs.html", "destination": "/site/docs.html" },
+    { "source": "/roadmap", "destination": "/site/roadmap.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/", "destination": "/site/index.html" }
   ],

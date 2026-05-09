@@ -9,6 +9,7 @@ env
 cloddsbot-ref/
 *.mp4
 dist/
+target/
 CLAUDE.md
 LAUNCH-SETUP.md
 docs/

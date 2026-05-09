@@ -323,10 +323,13 @@ export async function completeMeteredRequest(req, result = {}) {
   const meter = ctx.meter || await findMeterForRequest(req.method, req.originalUrl || req.path);
   if (!meter) return null;
 
-  const status = result.status || 'metered_key';
+  const paymentState = result.paymentState || ctx.paymentState || 'legacy_key_metered';
+  const isVerified = paymentState === 'verified';
+  const status = result.status || (isVerified ? 'verified' : 'metered_key');
   const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
-  const amountUsd = result.amountUsd ?? (status === 'metered_key' ? economics.totalAmountUsd : 0);
-  if (ctx.budget && status === 'metered_key') {
+  const isBillable = status === 'metered_key' || status === 'verified';
+  const amountUsd = result.amountUsd ?? (isBillable ? economics.totalAmountUsd : 0);
+  if (ctx.budget && isBillable) {
     await addBudgetSpend(ctx.budget.id, amountUsd);
   }
 
@@ -336,14 +339,14 @@ export async function completeMeteredRequest(req, result = {}) {
     method: meter.method,
     status,
     amountUsd,
-    baseAmountUsd: status === 'metered_key' ? economics.baseAmountUsd : 0,
-    protocolFeeUsd: status === 'metered_key' ? economics.protocolFeeUsd : 0,
+    baseAmountUsd: isBillable ? economics.baseAmountUsd : 0,
+    protocolFeeUsd: isBillable ? economics.protocolFeeUsd : 0,
     protocolFeeBps: economics.protocolFeeBps,
     asset: meter.asset,
     wallet: req.meterflow?.wallet || null,
     apiKey: req.meterflow?.apiKey || null,
     agent: ctx.budget?.agentId || req.meterflow?.wallet || null,
-    paymentState: result.paymentState || 'legacy_key_metered',
+    paymentState,
     policyResult: result.policyResult || ctx.policyResult || 'allowed',
     responseStatus: result.responseStatus || null,
     latencyMs: result.latencyMs || null,

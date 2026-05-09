@@ -26,6 +26,7 @@ import { agentRuntime } from './lib/agent-runtime.js';
 import { initSocket, getIO } from './lib/socket.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
+import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
 
 const app = express();
 app.use(cors({
@@ -68,6 +69,12 @@ app.use((req, res, next) => {
 
 app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
+
+// x402 gateway — handles HTTP 402 pay-per-request before API key auth.
+// Populated async; falls back to no-op until ready.
+let x402Gateway = (_req, _res, next) => next();
+buildX402Middleware().then(mw => { if (mw) x402Gateway = createX402Gateway(mw); });
+app.use((req, res, next) => x402Gateway(req, res, next));
 // Chat routes accept base64 image uploads — higher body limit
 app.use('/v1', express.json({ limit: '10mb' }), chatRouter);
 app.use('/v1', multiRouter);
