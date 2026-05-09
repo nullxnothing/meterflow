@@ -30,6 +30,29 @@ const PAYWALL_CONFIG = {
   appName: 'Meterflow',
 };
 
+function normalizeRequestPath(path = '') {
+  return path.split('?')[0].replace(/^\/proxy/, '').replace(/\/$/, '') || '/';
+}
+
+function findDefaultMeterForRequest(method, requestPath) {
+  const normalized = normalizeRequestPath(requestPath);
+  return DEFAULT_METERS.find(meter => {
+    if (meter.status === 'paused') return false;
+    if ((meter.method || 'GET').toUpperCase() !== method.toUpperCase()) return false;
+    if (meter.route.endsWith('*')) return normalized.startsWith(meter.route.slice(0, -1));
+    return normalizeRequestPath(meter.route) === normalized;
+  }) || null;
+}
+
+async function findBillableMeterForRequest(method, requestPath) {
+  try {
+    return await findMeterForRequest(method, requestPath);
+  } catch (err) {
+    logger.warn('x402 meter lookup unavailable; using default meter match', { err: err.message });
+    return findDefaultMeterForRequest(method, requestPath);
+  }
+}
+
 export async function buildRouteConfig(payTo) {
   const routes = {};
   let meters;
@@ -121,10 +144,15 @@ export function createX402Gateway(paymentMw) {
     // Pass through to normal auth if Bearer token present
     if (req.headers.authorization?.startsWith('Bearer ')) return next();
 
+    const requestPath = req.path || req.originalUrl || req.url;
+    const meter = await findBillableMeterForRequest(req.method, requestPath);
+    if (!meter) return next();
+
+    const payTo = process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET;
+
     // Inject meterflow context after successful x402 payment, then continue
     const originalNext = next;
     const wrappedNext = async () => {
-      const meter = await findMeterForRequest(req.method, req.originalUrl || req.path).catch(() => null);
       req.meterflow = {
         apiKey: 'x402',
         wallet: req.headers['x-payment-wallet'] || 'x402_payer',
