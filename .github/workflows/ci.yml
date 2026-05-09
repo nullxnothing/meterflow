@@ -28,7 +28,7 @@ jobs:
           cache-dependency-path: api-proxy/package-lock.json
 
       - name: Install dependencies
-        run: npm ci --omit=optional
+        run: npm install --omit=optional --no-audit --no-fund
 
       - name: Syntax check changed backend entrypoints
         run: |
