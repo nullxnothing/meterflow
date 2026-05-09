@@ -68,6 +68,11 @@ describe('CORS configuration', () => {
     assert.ok(!src.includes('origin: true'), 'must not use origin: true (reflects any origin)');
   });
 
+  it('trusts the Vercel proxy for accurate rate-limit identity', () => {
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    assert.ok(src.includes("app.set('trust proxy', 1)"));
+  });
+
   it('localhost only in non-production', () => {
     const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes("process.env.NODE_ENV !== 'production'"),

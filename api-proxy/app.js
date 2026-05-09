@@ -22,6 +22,7 @@ import { errorAlertMiddleware } from './lib/alerts.js';
 import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({
   origin: [
