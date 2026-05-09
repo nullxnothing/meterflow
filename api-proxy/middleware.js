@@ -8,6 +8,10 @@ import { logger } from './lib/logger.js';
 import { authorizeMeteredRequest, recordReceipt } from './lib/control-plane.js';
 
 async function authenticateApiKey(req, res, next) {
+  if (req.meterflow?.paymentVerified) {
+    return next();
+  }
+
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({

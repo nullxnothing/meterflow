@@ -8,13 +8,15 @@ const METER_PREFIX = 'meterflow:meter:';
 const RECEIPT_PREFIX = 'meterflow:receipt:';
 const BUDGET_PREFIX = 'meterflow:budget:';
 const MCP_TOOL_PREFIX = 'meterflow:mcp-tool:';
+const IDEMPOTENCY_PREFIX = 'meterflow:idempotency:';
 
 const fallbackMeters = new Map();
 const fallbackReceipts = new Map();
 const fallbackBudgets = new Map();
 const fallbackMcpTools = new Map();
+const fallbackIdempotency = new Map();
 
-const DEFAULT_METERS = [
+export const DEFAULT_METERS = [
   { id: 'mtr_chat', route: '/v1/chat', method: 'POST', unit: 'model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
   { id: 'mtr_chat_stream', route: '/v1/chat/stream', method: 'POST', unit: 'streaming model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
   { id: 'mtr_multi', route: '/v1/multi', method: 'POST', unit: 'multi-model call', priceUsd: 0.012, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
@@ -39,6 +41,19 @@ function id(prefix) {
 
 function maskKey(apiKey = '') {
   return apiKey ? `${apiKey.slice(0, 7)}...${apiKey.slice(-4)}` : null;
+}
+
+function header(req, name) {
+  return req?.headers?.[name.toLowerCase()] || req?.headers?.[name] || null;
+}
+
+function requestHash(req) {
+  if (!req) return null;
+  const body = req.body ? JSON.stringify(req.body).slice(0, 20_000) : '';
+  return crypto
+    .createHash('sha256')
+    .update(`${req.method || ''}:${req.originalUrl || req.path || ''}:${body}`)
+    .digest('hex');
 }
 
 function getProtocolFeeBps(tier) {
@@ -139,12 +154,51 @@ async function deleteJson(prefix, fallbackMap, itemId) {
   }
 }
 
+async function getIdempotentReceipt(idempotencyKey) {
+  if (!idempotencyKey) return null;
+  const receiptId = fallbackIdempotency.get(idempotencyKey);
+  if (receiptId) return getReceipt(receiptId);
+
+  const r = getRedis();
+  if (!r) return null;
+  try {
+    const storedId = await r.get(`${IDEMPOTENCY_PREFIX}${idempotencyKey}`);
+    return storedId ? getReceipt(storedId) : null;
+  } catch (err) {
+    logger.error('Idempotency lookup failed', { err: err.message });
+    if (IS_PROD) throw new Error('Control plane store unavailable');
+    return null;
+  }
+}
+
+async function setIdempotentReceipt(idempotencyKey, receiptId) {
+  if (!idempotencyKey || !receiptId) return;
+  fallbackIdempotency.set(idempotencyKey, receiptId);
+  const r = getRedis();
+  if (!r) return;
+  try {
+    await r.set(`${IDEMPOTENCY_PREFIX}${idempotencyKey}`, receiptId, 'EX', 60 * 60 * 24);
+  } catch (err) {
+    logger.error('Idempotency write failed', { err: err.message });
+    if (IS_PROD) throw new Error('Control plane store unavailable');
+  }
+}
+
 export async function listMeters() {
   const custom = await scanJson(METER_PREFIX, fallbackMeters);
   const merged = [...DEFAULT_METERS, ...custom].filter((meter, index, arr) => (
     arr.findLastIndex(other => other.id === meter.id) === index
   ));
   return merged.map(meter => ({ ...meter, createdAt: meter.createdAt || null, updatedAt: meter.updatedAt || null }));
+}
+
+export async function listBillableMeters() {
+  const meters = await listMeters();
+  return meters.filter(meter =>
+    ['live', 'test', 'example'].includes(meter.status)
+    && Number(meter.priceUsd) >= 0
+    && (meter.asset || 'USDC').toUpperCase() === 'USDC'
+  );
 }
 
 export async function getMeter(meterId) {
@@ -180,6 +234,12 @@ export async function updateMeter(meterId, patch) {
   return setJson(METER_PREFIX, fallbackMeters, { ...current, ...patch, updatedAt: nowIso() });
 }
 
+export function canManageResource(resource, wallet, apiKey) {
+  if (!resource) return false;
+  if (resource.source === 'default') return true;
+  return resource.ownerWallet === wallet || resource.operatorWallet === wallet || resource.apiKey === apiKey;
+}
+
 export async function findMeterForRequest(method, requestPath) {
   const normalized = normalizePath(requestPath);
   const meters = await listMeters();
@@ -198,6 +258,8 @@ export async function listReceipts(filters = {}) {
     .filter(receipt => !filters.status || receipt.status === filters.status)
     .filter(receipt => !filters.wallet || receipt.wallet === filters.wallet)
     .filter(receipt => !filters.apiKey || receipt.apiKey === filters.apiKey)
+    .filter(receipt => !filters.txSignature || receipt.txSignature === filters.txSignature)
+    .filter(receipt => !filters.idempotencyKey || receipt.idempotencyKey === filters.idempotencyKey)
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     .slice(0, Math.min(Number(filters.limit) || 100, 500));
 }
@@ -207,6 +269,15 @@ export async function getReceipt(receiptId) {
 }
 
 export async function recordReceipt(input) {
+  const scopedIdempotencyKey = input.idempotencyKey
+    ? `${input.apiKey || input.wallet || 'global'}:${input.idempotencyKey}`
+    : null;
+
+  if (scopedIdempotencyKey) {
+    const existing = await getIdempotentReceipt(scopedIdempotencyKey);
+    if (existing) return existing;
+  }
+
   const ts = nowIso();
   const receipt = {
     id: input.id || id(input.status?.startsWith('fail') || input.status?.includes('denied') ? 'fail' : 'rcpt'),
@@ -224,7 +295,15 @@ export async function recordReceipt(input) {
     apiKeyMasked: maskKey(input.apiKey),
     agent: input.agent || input.wallet || null,
     quoteId: input.quoteId || id('quote'),
+    idempotencyKey: input.idempotencyKey || null,
     paymentState: input.paymentState || 'not_required',
+    paymentNetwork: input.paymentNetwork || input.network || 'solana-mainnet-beta',
+    paymentMint: input.paymentMint || input.mint || null,
+    payTo: input.payTo || null,
+    payerWallet: input.payerWallet || input.wallet || null,
+    txSignature: input.txSignature || input.signature || null,
+    quoteExpiresAt: input.quoteExpiresAt || null,
+    requestHash: input.requestHash || null,
     policyResult: input.policyResult || 'allowed',
     responseStatus: input.responseStatus || null,
     latencyMs: input.latencyMs || null,
@@ -232,7 +311,9 @@ export async function recordReceipt(input) {
     error: input.error || null,
     createdAt: ts,
   };
-  return setJson(RECEIPT_PREFIX, fallbackReceipts, receipt);
+  const saved = await setJson(RECEIPT_PREFIX, fallbackReceipts, receipt);
+  await setIdempotentReceipt(scopedIdempotencyKey, saved.id);
+  return saved;
 }
 
 export async function listBudgets(filters = {}) {
@@ -270,7 +351,11 @@ export async function createBudget(input, apiKey, operatorWallet) {
 export async function updateBudget(budgetId, patch) {
   const current = await getBudget(budgetId);
   if (!current) return null;
-  return setJson(BUDGET_PREFIX, fallbackBudgets, { ...current, ...patch, updatedAt: nowIso() });
+  const next = { ...current, ...patch, updatedAt: nowIso() };
+  if (patch.dailyCapUsd !== undefined) next.dailyCapUsd = Number(patch.dailyCapUsd);
+  if (patch.perCallCapUsd !== undefined) next.perCallCapUsd = Number(patch.perCallCapUsd);
+  if (patch.allowedMeterIds !== undefined && !Array.isArray(patch.allowedMeterIds)) next.allowedMeterIds = [];
+  return setJson(BUDGET_PREFIX, fallbackBudgets, next);
 }
 
 export async function revokeBudget(budgetId) {
@@ -329,6 +414,8 @@ export async function completeMeteredRequest(req, result = {}) {
   const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
   const isBillable = status === 'metered_key' || status === 'verified';
   const amountUsd = result.amountUsd ?? (isBillable ? economics.totalAmountUsd : 0);
+  const idempotencyKey = result.idempotencyKey || header(req, 'idempotency-key') || header(req, 'x-request-id') || null;
+  const txSignature = result.txSignature || ctx.txSignature || header(req, 'x-payment-transaction') || header(req, 'x-payment-signature') || header(req, 'x-transaction-signature') || null;
   if (ctx.budget && isBillable) {
     await addBudgetSpend(ctx.budget.id, amountUsd);
   }
@@ -346,7 +433,16 @@ export async function completeMeteredRequest(req, result = {}) {
     wallet: req.meterflow?.wallet || null,
     apiKey: req.meterflow?.apiKey || null,
     agent: ctx.budget?.agentId || req.meterflow?.wallet || null,
+    quoteId: result.quoteId || ctx.quoteId,
+    idempotencyKey,
     paymentState,
+    paymentNetwork: result.paymentNetwork || ctx.paymentNetwork || 'solana-mainnet-beta',
+    paymentMint: result.paymentMint || ctx.paymentMint,
+    payTo: result.payTo || ctx.payTo,
+    payerWallet: result.payerWallet || ctx.payerWallet || req.meterflow?.wallet || null,
+    txSignature,
+    quoteExpiresAt: result.quoteExpiresAt || ctx.quoteExpiresAt,
+    requestHash: result.requestHash || requestHash(req),
     policyResult: result.policyResult || ctx.policyResult || 'allowed',
     responseStatus: result.responseStatus || null,
     latencyMs: result.latencyMs || null,
@@ -385,6 +481,10 @@ export async function listMcpTools(filters = {}) {
   return tools
     .filter(tool => !filters.apiKey || tool.apiKey === filters.apiKey)
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
+export async function getMcpTool(toolId) {
+  return getJson(MCP_TOOL_PREFIX, fallbackMcpTools, toolId);
 }
 
 export async function createMcpTool(input, apiKey, ownerWallet) {

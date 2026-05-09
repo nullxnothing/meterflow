@@ -16,6 +16,7 @@ import adminRouter from './routes/admin.js';
 import tradesRouter from './routes/trades.js';
 import twitterRouter from './routes/twitter.js';
 import alphaRouter from './routes/alpha.js';
+import mcpRouter from './routes/mcp.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
 import { bootstrapAlphaPipeline } from './alpha-pipeline.js';
@@ -80,6 +81,7 @@ app.use('/', adminRouter);
 app.use('/v1', tradesRouter);
 app.use('/v1', twitterRouter);
 app.use('/v1', alphaRouter);
+app.use('/mcp', mcpRouter);
 app.use('/v1', controlPlaneRouter);
 app.use('/v1', openaiCompatRouter);
 

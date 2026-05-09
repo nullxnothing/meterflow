@@ -5,6 +5,7 @@ import {
   getMeter,
   createMeter,
   updateMeter,
+  canManageResource,
   findMeterForRequest,
   listReceipts,
   getReceipt,
@@ -15,6 +16,7 @@ import {
   revokeBudget,
   getProviderRevenue,
   listMcpTools,
+  getMcpTool,
   createMcpTool,
   deleteMcpTool,
   applyProtocolFee,
@@ -58,6 +60,11 @@ router.post('/meters', authenticateApiKey, async (req, res) => {
 });
 
 router.patch('/meters/:id', authenticateApiKey, async (req, res) => {
+  const current = await getMeter(req.params.id);
+  if (!current) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
+  if (!canManageResource(current, req.meterflow.wallet, req.meterflow.apiKey)) {
+    return res.status(403).json({ error: 'forbidden', message: 'You do not control this meter.' });
+  }
   const patch = { ...req.body };
   if (patch.route && requireRoute(patch, res)) return;
   if ((patch.priceUsd !== undefined || patch.price !== undefined) && requirePrice(patch, res)) return;
@@ -94,6 +101,8 @@ router.get('/receipts', authenticateApiKey, async (req, res) => {
     meterId: req.query.meterId,
     status: req.query.status,
     wallet: req.query.wallet,
+    txSignature: req.query.txSignature,
+    idempotencyKey: req.query.idempotencyKey,
     apiKey: req.meterflow.apiKey,
     limit: req.query.limit,
   });
@@ -102,7 +111,7 @@ router.get('/receipts', authenticateApiKey, async (req, res) => {
 
 router.get('/receipts/export.csv', authenticateApiKey, async (req, res) => {
   const receipts = await listReceipts({ apiKey: req.meterflow.apiKey, limit: 500 });
-  const columns = ['id', 'createdAt', 'route', 'status', 'baseAmountUsd', 'protocolFeeUsd', 'protocolFeeBps', 'amountUsd', 'asset', 'paymentState', 'policyResult', 'responseStatus', 'latencyMs', 'wallet'];
+  const columns = ['id', 'createdAt', 'route', 'status', 'baseAmountUsd', 'protocolFeeUsd', 'protocolFeeBps', 'amountUsd', 'asset', 'paymentState', 'paymentNetwork', 'paymentMint', 'payerWallet', 'payTo', 'txSignature', 'quoteId', 'idempotencyKey', 'policyResult', 'responseStatus', 'latencyMs', 'wallet'];
   const rows = [
     columns.join(','),
     ...receipts.map(receipt => columns.map(col => csvEscape(receipt[col])).join(',')),
@@ -140,6 +149,12 @@ router.patch('/budgets/:id', authenticateApiKey, async (req, res) => {
   if (!current || current.apiKey !== req.meterflow.apiKey) {
     return res.status(404).json({ error: 'budget_not_found', message: 'Budget not found.' });
   }
+  if (req.body.dailyCapUsd !== undefined && Number(req.body.dailyCapUsd) < 0) {
+    return badRequest(res, 'dailyCapUsd must be non-negative');
+  }
+  if (req.body.perCallCapUsd !== undefined && Number(req.body.perCallCapUsd) < 0) {
+    return badRequest(res, 'perCallCapUsd must be non-negative');
+  }
   const budget = await updateBudget(req.params.id, req.body);
   res.json({ budget });
 });
@@ -173,6 +188,10 @@ router.post('/mcp-tools', authenticateApiKey, async (req, res) => {
 });
 
 router.delete('/mcp-tools/:id', authenticateApiKey, async (req, res) => {
+  const tool = await getMcpTool(req.params.id);
+  if (!tool || tool.apiKey !== req.meterflow.apiKey) {
+    return res.status(404).json({ error: 'mcp_tool_not_found', message: 'MCP tool not found.' });
+  }
   await deleteMcpTool(req.params.id);
   res.json({ ok: true });
 });

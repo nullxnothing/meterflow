@@ -415,11 +415,41 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes("app.use('/v1', controlPlaneRouter)"), 'should mount control-plane routes under /v1');
   });
 
+  it('server.js mounts the default MCP gateway route', () => {
+    const server = readFileSync(resolve(root, 'server.js'), 'utf-8');
+    const route = readFileSync(resolve(root, 'routes', 'mcp.js'), 'utf-8');
+    assert.ok(server.includes('mcpRouter'), 'should import MCP router');
+    assert.ok(server.includes("app.use('/mcp', mcpRouter)"), 'should mount MCP routes under /mcp');
+    assert.ok(route.includes("router.post('/token-risk'"), 'should implement /mcp/token-risk');
+    assert.ok(route.includes('completeMeteredRequest'), 'MCP route should write receipts');
+  });
+
   it('control-plane storage defines meters receipts budgets and MCP tools', () => {
     const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
-    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool']) {
+    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet']) {
       assert.ok(src.includes(token), `should include ${token}`);
     }
+  });
+
+  it('authenticated routes allow pre-verified x402 requests', () => {
+    const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
+    assert.ok(src.includes('req.meterflow?.paymentVerified'), 'should detect pre-verified x402 context');
+    assert.ok(src.includes('return next();'), 'should pass verified x402 requests through route auth');
+  });
+
+  it('x402 route pricing is built from the meter registry', () => {
+    const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
+    assert.ok(src.includes('listBillableMeters'), 'should read x402 prices from registered meters');
+    assert.ok(src.includes('buildRouteConfig'), 'should expose route config builder');
+    assert.ok(!src.includes('const METER_ROUTES'), 'should not keep a second static meter list');
+    assert.ok(!src.includes('recordReceipt'), 'x402 middleware should not create duplicate receipts before route completion');
+  });
+
+  it('control-plane routes enforce ownership-sensitive mutations', () => {
+    const src = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    assert.ok(src.includes('canManageResource'), 'meter updates should check ownership');
+    assert.ok(src.includes('getMcpTool'), 'MCP deletes should load the tool before deleting');
+    assert.ok(src.includes("tool.apiKey !== req.meterflow.apiKey"), 'MCP deletes should be scoped to owner API key');
   });
 
   it('SDK exposes control-plane helpers', () => {

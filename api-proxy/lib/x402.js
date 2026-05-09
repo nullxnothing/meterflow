@@ -22,43 +22,29 @@ import { createKeyPairSignerFromBytes } from '@solana/kit';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
-import { findMeterForRequest, recordReceipt } from './control-plane.js';
+import { findMeterForRequest, listBillableMeters } from './control-plane.js';
 
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
 };
 
-// Build x402 routes config from DEFAULT_METERS (live routes only).
-// key format: "METHOD /path" — wildcard paths use trailing *
-const METER_ROUTES = [
-  { method: 'POST', path: '/v1/chat',         priceUsd: 0.004, description: 'Single-model chat completion' },
-  { method: 'POST', path: '/v1/chat/stream',  priceUsd: 0.004, description: 'Streaming chat completion' },
-  { method: 'POST', path: '/v1/multi',        priceUsd: 0.012, description: 'Multi-model parallel chat' },
-  { method: 'POST', path: '/v1/multi/stream', priceUsd: 0.012, description: 'Streaming multi-model chat' },
-  { method: 'POST', path: '/v1/image',        priceUsd: 0.08,  description: 'AI image generation' },
-  { method: 'POST', path: '/v1/video/generate', priceUsd: 0.35, description: 'AI video generation' },
-  { method: 'GET',  path: '/v1/alpha/*',      priceUsd: 0.012, description: 'On-chain alpha signals' },
-  { method: 'POST', path: '/mcp/token-risk',  priceUsd: 0.006, description: 'Token risk MCP tool call' },
-];
-
-function buildRouteConfig(payTo) {
+export async function buildRouteConfig(payTo) {
   const routes = {};
-  for (const m of METER_ROUTES) {
-    routes[`${m.method} ${m.path}`] = {
+  const meters = await listBillableMeters();
+  for (const meter of meters) {
+    routes[`${(meter.method || 'GET').toUpperCase()} ${meter.route}`] = {
       accepts: {
         scheme: 'exact',
-        price: `$${m.priceUsd}`,
+        price: `$${Number(meter.priceUsd || 0)}`,
         network: SOLANA_MAINNET_CAIP2,
         payTo,
         extra: { token: USDC_MAINNET_ADDRESS },
       },
-      description: m.description,
+      description: `${meter.unit || 'request'} via Meterflow`,
     };
   }
   return routes;
 }
-
-let _middleware = null;
 
 export async function buildX402Middleware() {
   const privateKeyB58 = process.env.X402_FACILITATOR_PRIVATE_KEY || process.env.SETTLEMENT_WALLET_PRIVATE_KEY;
@@ -92,7 +78,7 @@ export async function buildX402Middleware() {
     const resourceServer = new x402ResourceServer(inlineFacilitator)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
 
-    const routes = buildRouteConfig(payTo);
+    const routes = await buildRouteConfig(payTo);
 
     logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length });
     return paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG);
@@ -136,28 +122,19 @@ export function createX402Gateway(paymentMw) {
         budget: null,
         policyResult: 'x402_verified',
         paymentState: 'verified',
-      };
-
-      // Record the receipt asynchronously — don't block the response
-      if (meter) {
-        recordReceipt({
-          meterId: meter.id,
-          route: meter.route,
-          method: meter.method,
-          status: 'verified',
-          amountUsd: meter.priceUsd,
-          baseAmountUsd: meter.priceUsd,
-          protocolFeeUsd: 0,
+        economics: meter ? {
+          baseAmountUsd: Number(meter.priceUsd || 0),
           protocolFeeBps: 0,
-          asset: 'USDC',
-          wallet: req.meterflow.wallet,
-          apiKey: 'x402',
-          agent: req.meterflow.wallet,
-          paymentState: 'verified',
-          policyResult: 'x402_verified',
-          responseStatus: null,
-        }).catch(() => {});
-      }
+          protocolFeeUsd: 0,
+          totalAmountUsd: Number(meter.priceUsd || 0),
+        } : undefined,
+        paymentNetwork: SOLANA_MAINNET_CAIP2,
+        paymentMint: USDC_MAINNET_ADDRESS,
+        payTo,
+        payerWallet: req.headers['x-payment-wallet'] || 'x402_payer',
+        txSignature: req.headers['x-payment-transaction'] || req.headers['x-payment-signature'] || null,
+        quoteId: req.headers['x-payment-id'] || req.headers['x-request-id'] || null,
+      };
 
       originalNext();
     };
