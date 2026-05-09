@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-proxy:
+    name: API proxy smoke tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-proxy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: api-proxy/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check changed backend entrypoints
+        run: |
+          node --check server.js
+          node --check routes/admin.js
+          node --check routes/alpha.js
+          node --check oauth/routes.js
+          node --check tools/definitions.js
+          node --check tools/executor.js
+          node --check lib/postgres.js
+          node --check lib/redis.js
+
+      - name: Run smoke tests
+        run: npm test
