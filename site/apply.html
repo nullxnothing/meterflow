@@ -2,30 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, model route, or agent workflow on Meterflow.">
 <meta name="theme-color" content="#05080f">
-<meta property="og:title" content="Launch a Paid Endpoint on Meterflow">
+<link rel="canonical" href="https://meterflow.fun/apply">
+<meta property="og:title" content="Launch a paid endpoint on Meterflow">
 <meta property="og:description" content="Meterflow is onboarding early providers building agent-accessible APIs, MCP tools, data feeds, model routes, and workflows.">
-<title>Launch a Paid Endpoint — Meterflow</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://meterflow.fun/apply">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="900">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>Launch a paid endpoint - Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 14% 0%,rgba(54,128,255,.25),transparent 32%),radial-gradient(circle at 90% 14%,rgba(10,207,255,.13),transparent 30%),#05080f;color:#eef5ff;font-family:Inter,system-ui,sans-serif}.shell{max-width:1180px;margin:0 auto;padding:24px 22px 92px}.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:54px}.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font:800 22px 'Inter Tight',sans-serif;letter-spacing:-.035em}.logo img{width:28px}.links{display:flex;gap:12px;align-items:center}.links a{color:#cfe1ff;text-decoration:none;font-weight:700;font-size:14px}.links .cta{background:#dcecff;color:#06101d;padding:10px 14px;border-radius:999px}.grid{display:grid;grid-template-columns:minmax(0,.9fr)minmax(360px,1fr);gap:34px;align-items:start}.eyebrow{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(125,183,255,.2);background:rgba(80,147,255,.08);color:#a8cfff;padding:8px 12px;border-radius:999px;font:700 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em}.eyebrow span{width:7px;height:7px;border-radius:50%;background:#61a5ff;box-shadow:0 0 18px #61a5ff}h1{margin:22px 0 18px;font:800 clamp(44px,7vw,82px)/.91 'Inter Tight',sans-serif;letter-spacing:-.075em}h1 strong{color:#7eb6ff}p{color:rgba(219,232,255,.7);line-height:1.65}.list{display:grid;gap:12px;margin:30px 0;padding:0;list-style:none}.list li{display:flex;gap:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);padding:14px 16px;border-radius:18px}.list span{color:#79b6ff;font-family:'JetBrains Mono',monospace;font-weight:700}.card{border:1px solid rgba(95,154,255,.18);background:linear-gradient(180deg,rgba(10,20,40,.9),rgba(5,9,18,.94));border-radius:28px;box-shadow:0 24px 80px rgba(0,0,0,.34);padding:24px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:grid;gap:8px}.full{grid-column:1/-1}label{font-weight:800;font-size:13px;color:#d9e7ff}input,select,textarea{width:100%;border:1px solid rgba(132,177,255,.18);background:rgba(2,7,16,.82);color:#f6fbff;border-radius:14px;padding:13px 14px;outline:none;font:500 14px Inter,sans-serif}textarea{min-height:112px;resize:vertical}button{border:0;cursor:pointer;border-radius:999px;padding:14px 18px;font-weight:900;background:linear-gradient(135deg,#d9edff,#75b5ff);color:#06101d;margin-top:20px}.status{display:inline-block;margin-left:12px;color:rgba(219,232,255,.7);font-size:13px}.ok{color:#9df8c7}.err{color:#ffb1b1}.note{font-size:13px;color:#86a3c8}@media(max-width:900px){.grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.links{flex-wrap:wrap;justify-content:flex-end}}
-</style>
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<link rel="stylesheet" href="/site/apply.css">
 </head>
 <body>
-<main class="shell">
-<nav class="nav"><a href="/" class="logo"><img src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a><div class="links"><a href="/docs">Docs</a><a href="/dashboard">Dashboard</a><a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a><a class="cta" href="/apply">Launch a paid endpoint</a></div></nav>
-<section class="grid">
-<div><div class="eyebrow"><span></span> Early provider intake</div><h1>Launch a <strong>paid endpoint</strong> agents can call.</h1><p>Meterflow is onboarding builders with APIs, MCP tools, data feeds, model routes, and workflows that should be sold per request in USDC on Solana.</p><ul class="list"><li><span>01</span><div><b>Bring the capability.</b><br>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, or anything agents need.</div></li><li><span>02</span><div><b>Meterflow handles the paid request layer.</b><br>Pricing, x402-style payment requirements, receipts, route policy, budgets, and provider visibility.</div></li><li><span>03</span><div><b>You get launch-partner signal.</b><br>We use this intake to prioritize integrations, demos, provider pages, and early revenue experiments.</div></li></ul><p class="note">Best fit: builders who already have or are close to shipping a useful endpoint that could charge per lookup, call, workflow, or generated result.</p></div>
-<form class="card" id="providerForm"><h2>Provider application</h2><p>Tell us what you want to monetize. Rough numbers are fine.</p><div class="form-grid"><div class="field"><label>Project / product name *</label><input name="projectName" required placeholder="Token Risk API"></div><div class="field"><label>Your name</label><input name="founderName" placeholder="Founder or team lead"></div><div class="field"><label>Best contact *</label><input name="contact" required placeholder="X, Telegram, Discord, or email"></div><div class="field"><label>Website / docs</label><input name="website" placeholder="https://..."></div><div class="field"><label>What are you selling?</label><select name="category"><option>API endpoint</option><option>MCP tool</option><option>Data feed</option><option>Model route</option><option>Trading / risk tool</option><option>Agent workflow</option><option>Other</option></select></div><div class="field"><label>Charging model</label><select name="chargingModel"><option>Per request</option><option>Per lookup</option><option>Per tool call</option><option>Per workflow</option><option>Per generated result</option><option>Not sure yet</option></select></div><div class="field full"><label>Endpoint, tool, or workflow *</label><input name="endpoint" required placeholder="POST /v1/risk-score, MCP token-risk, wallet analytics feed..."></div><div class="field full"><label>Who would pay to use it?</label><input name="audience" placeholder="Agents, wallets, traders, devs, DAOs, research bots..."></div><div class="field"><label>Expected price per call</label><input name="expectedPriceUsd" type="number" min="0" step="0.0001" placeholder="0.006"></div><div class="field"><label>Est. monthly calls</label><input name="monthlyVolumeEstimate" type="number" min="0" step="1" placeholder="10000"></div><div class="field full"><label>Is it live?</label><select name="liveStatus"><option>Live now</option><option>Private beta</option><option>In progress</option><option>Idea stage</option></select></div><div class="field full"><label>How do you charge today?</label><input name="currentBilling" placeholder="Free, API keys, subscriptions, manual invoices, not launched yet..."></div><div class="field full"><label>Anything else?</label><textarea name="notes" placeholder="What makes this endpoint valuable? What would a good launch look like?"></textarea></div></div><button id="submitBtn" type="submit">Apply to launch</button><span id="formStatus" class="status">We’ll use this to prioritize early integrations and provider demos.</span></form>
-</section>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav>
+  <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
+  <div class="nav-links">
+    <a href="/#tools">Platform</a>
+    <a href="/#tiers">Product</a>
+    <a href="/how-it-works">How It Works</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/apply" class="active">Apply</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
+    <a class="nav-cta ghost" href="/docs">Read Docs</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#tools" onclick="closeMobile()">Platform</a>
+  <a href="/#tiers" onclick="closeMobile()">Product</a>
+  <a href="/how-it-works" onclick="closeMobile()">How It Works</a>
+  <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
+  <a href="/apply" onclick="closeMobile()" style="color: var(--accent);">Apply as Provider</a>
+  <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" onclick="closeMobile()">GitHub</a>
+  <a href="/docs" onclick="closeMobile()" style="color: var(--accent);">Read Docs</a>
+  <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
+</div>
+
+<main id="main">
+  <section class="site-subpage-hero apply-hero">
+    <div class="site-subpage-hero-inner">
+      <div class="site-subpage-label">Early Provider Intake</div>
+      <h1 class="site-subpage-title">Launch a <span class="accent">paid endpoint</span> agents can call.</h1>
+      <p class="site-subpage-sub">Bring the API, MCP tool, data feed, model route, or workflow. Meterflow handles pricing, x402-style payment requirements, receipts, route policy, budgets, and provider visibility.</p>
+    </div>
+  </section>
+
+  <section class="apply-section">
+    <div class="apply-shell">
+      <aside class="apply-context">
+        <div class="apply-panel">
+          <div class="section-label">What fits</div>
+          <ul class="apply-list">
+            <li><span>01</span><div><strong>Agent-useful capability</strong><p>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, or anything agents need.</p></div></li>
+            <li><span>02</span><div><strong>Clear unit economics</strong><p>Per request, lookup, tool call, workflow, generated result, or another metered unit that can settle in USDC.</p></div></li>
+            <li><span>03</span><div><strong>Launch-partner signal</strong><p>We use intake to prioritize integrations, demos, provider pages, and early revenue experiments.</p></div></li>
+          </ul>
+          <p class="apply-note">Best fit: builders who already have or are close to shipping a useful endpoint that could charge per lookup, call, workflow, or generated result.</p>
+        </div>
+      </aside>
+
+      <form class="apply-card" id="providerForm" data-submit-url="/proxy/applications/provider">
+        <div class="apply-card-head">
+          <div class="section-label">Provider application</div>
+          <h2>Tell us what you want to monetize.</h2>
+          <p>Rough numbers are fine. We are looking for useful endpoints that can become priced agent-accessible products.</p>
+        </div>
+
+        <div class="apply-form-grid">
+          <div class="apply-field">
+            <label for="projectName">Project / product name *</label>
+            <input id="projectName" name="projectName" required placeholder="Token Risk API">
+          </div>
+          <div class="apply-field">
+            <label for="founderName">Your name</label>
+            <input id="founderName" name="founderName" placeholder="Founder or team lead">
+          </div>
+          <div class="apply-field">
+            <label for="contact">Best contact *</label>
+            <input id="contact" name="contact" required placeholder="X, Telegram, Discord, or email">
+          </div>
+          <div class="apply-field">
+            <label for="website">Website / docs</label>
+            <input id="website" name="website" placeholder="https://...">
+          </div>
+          <div class="apply-field">
+            <label for="category">What are you selling?</label>
+            <select id="category" name="category">
+              <option>API endpoint</option>
+              <option>MCP tool</option>
+              <option>Data feed</option>
+              <option>Model route</option>
+              <option>Trading / risk tool</option>
+              <option>Agent workflow</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="apply-field">
+            <label for="chargingModel">Charging model</label>
+            <select id="chargingModel" name="chargingModel">
+              <option>Per request</option>
+              <option>Per lookup</option>
+              <option>Per tool call</option>
+              <option>Per workflow</option>
+              <option>Per generated result</option>
+              <option>Not sure yet</option>
+            </select>
+          </div>
+          <div class="apply-field full">
+            <label for="endpoint">Endpoint, tool, or workflow *</label>
+            <input id="endpoint" name="endpoint" required placeholder="POST /v1/risk-score, MCP token-risk, wallet analytics feed...">
+          </div>
+          <div class="apply-field full">
+            <label for="audience">Who would pay to use it?</label>
+            <input id="audience" name="audience" placeholder="Agents, wallets, traders, devs, DAOs, research bots...">
+          </div>
+          <div class="apply-field">
+            <label for="expectedPriceUsd">Expected price per call</label>
+            <input id="expectedPriceUsd" name="expectedPriceUsd" type="number" min="0" step="0.0001" placeholder="0.006">
+          </div>
+          <div class="apply-field">
+            <label for="monthlyVolumeEstimate">Est. monthly calls</label>
+            <input id="monthlyVolumeEstimate" name="monthlyVolumeEstimate" type="number" min="0" step="1" placeholder="10000">
+          </div>
+          <div class="apply-field full">
+            <label for="liveStatus">Is it live?</label>
+            <select id="liveStatus" name="liveStatus">
+              <option>Live now</option>
+              <option>Private beta</option>
+              <option>In progress</option>
+              <option>Idea stage</option>
+            </select>
+          </div>
+          <div class="apply-field full">
+            <label for="currentBilling">How do you charge today?</label>
+            <input id="currentBilling" name="currentBilling" placeholder="Free, API keys, subscriptions, manual invoices, not launched yet...">
+          </div>
+          <div class="apply-field full">
+            <label for="notes">Anything else?</label>
+            <textarea id="notes" name="notes" placeholder="What makes this endpoint valuable? What would a good launch look like?"></textarea>
+          </div>
+        </div>
+
+        <div class="apply-actions">
+          <button class="btn-primary" id="submitBtn" type="submit">Apply to launch</button>
+          <span id="formStatus" class="apply-status">We use this to prioritize early integrations and provider demos.</span>
+        </div>
+      </form>
+    </div>
+  </section>
 </main>
-<script>
-const form=document.getElementById('providerForm'),statusEl=document.getElementById('formStatus'),submitBtn=document.getElementById('submitBtn');
-function setStatus(t,c){statusEl.textContent=t;statusEl.className='status '+(c||'')}
-form.addEventListener('submit',async e=>{e.preventDefault();submitBtn.disabled=true;setStatus('Saving your application...');const payload=Object.fromEntries(new FormData(form).entries());payload.expectedPriceUsd=Number(payload.expectedPriceUsd||0);payload.monthlyVolumeEstimate=Number(payload.monthlyVolumeEstimate||0);try{const res=await fetch('/proxy/applications/provider',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||data.error||'Application failed');form.reset();setStatus('Application received. Reference: '+data.application.id,'ok')}catch(err){setStatus(err.message||'Something went wrong. Try again or DM @meterflowsol.','err')}finally{submitBtn.disabled=false}});
-</script>
+
+<footer>
+  <div class="footer-left">&copy; 2026 Meterflow</div>
+  <div class="footer-links">
+    <a href="https://x.com/meterflowsol">X / Twitter</a>
+    <a href="https://discord.gg/tned74z4eN">Discord</a>
+    <a href="/docs">Docs</a>
+    <a href="/apply">Apply</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>
+</footer>
+
+<script src="/site/shared.js" defer></script>
+<script src="/site/apply.js" defer></script>
 </body>
 </html>
