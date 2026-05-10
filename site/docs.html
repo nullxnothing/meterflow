@@ -295,7 +295,11 @@
     <section class="doc-section" id="meters">
       <h2 class="section-title">Meters</h2>
       <p class="section-text">A meter describes what is billable. Meterflow treats model calls, data feeds, MCP tools, media generation, social intelligence, and trading workflows as service routes that can share one accounting model.</p>
-      <div class="code-block">{
+      <div class="code-block">POST /v1/meters
+Authorization: Bearer mf_xxxxx
+Content-Type: application/json
+
+{
   "route": "/v1/risk-score",
   "unit": "request",
   "price": "0.006",
@@ -303,12 +307,14 @@
   "network": "solana-mainnet",
   "recipientWallet": "provider_wallet",
   "status": "active"
-}</div>
+}
+
+DELETE /v1/meters/:id</div>
     </section>
 
     <section class="doc-section" id="receipts">
       <h2 class="section-title">Receipts</h2>
-      <p class="section-text">Receipts connect payment proof to usage. They are the difference between “money moved” and “this route was served to this agent under this policy.”</p>
+      <p class="section-text">Receipts connect payment proof to usage. They are the difference between “money moved” and “this route was served to this agent under this policy.” Wallet-authenticated users can see API-key receipts and x402 receipts paid by their wallet.</p>
       <div class="code-block">{
   "id": "mf_rcpt_41bd",
   "route": "/v1/risk-score",
@@ -352,7 +358,9 @@ Content-Type: application/json
   "manifestUrl": "https://example.com/mcp/manifest.json",
   "priceUsd": 0.006,
   "status": "test"
-}</div>
+}
+
+DELETE /v1/mcp-tools/:id</div>
     </section>
 
     <section class="doc-section" id="mflow">

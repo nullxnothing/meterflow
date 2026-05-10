@@ -69,13 +69,33 @@ curl -X POST https://meterflow.fun/proxy/v1/chat \
 |--------|----------|---------|
 | GET | `/v1/meters` | List billable routes |
 | POST | `/v1/meters` | Create a meter |
+| DELETE | `/v1/meters/:id` | Delete a custom meter |
+| POST | `/v1/meters/:id/test` | Test a meter configuration |
 | GET | `/v1/receipts` | List request receipts |
+| GET | `/v1/receipts/:id` | Fetch one receipt |
 | GET | `/v1/receipts/export.csv` | Export receipts |
 | GET | `/v1/budgets` | List agent budgets |
 | POST | `/v1/budgets` | Create a budget policy |
 | POST | `/v1/budgets/:id/revoke` | Revoke a budget |
 | GET | `/v1/mcp-tools` | List packaged MCP tools |
 | POST | `/v1/mcp-tools` | Package an MCP tool |
+| DELETE | `/v1/mcp-tools/:id` | Delete a packaged MCP tool |
+| GET | `/v1/webhooks` | List webhook endpoints |
+| POST | `/v1/webhooks` | Create a webhook endpoint |
+| DELETE | `/v1/webhooks/:id` | Delete a webhook endpoint |
+| POST | `/v1/webhooks/:id/test` | Send a test webhook event |
+
+## Paid x402 Flow
+
+Protected paid routes return an x402 quote when called without a payment header. A compatible x402 SVM client signs the quote, submits payment through the facilitator, and retries the request with the payment proof.
+
+```bash
+curl -X POST https://meterflow.fun/proxy/mcp/token-risk \
+  -H "Content-Type: application/json" \
+  -d '{"token":"So11111111111111111111111111111111111111112"}'
+```
+
+After settlement, Meterflow stores the receipt with the payer wallet, route, amount, payment state, and settlement transaction. Registered wallet users can list those paid receipts through `/v1/receipts` and inspect a single receipt through `/v1/receipts/:id`.
 
 ## SDK
 

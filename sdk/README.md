@@ -65,36 +65,55 @@ multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || 
 | `providers()` | `Promise<Object>` | Available AI providers |
 | `meters()` | `Promise<Object>` | List metered API/MCP products |
 | `createMeter(params)` | `Promise<Object>` | Create a route-level meter |
+| `deleteMeter(meterId)` | `Promise<Object>` | Delete a custom meter |
 | `receipts(params)` | `Promise<Object>` | List request receipts |
 | `budgets()` | `Promise<Object>` | List agent budget policies |
 | `createBudget(params)` | `Promise<Object>` | Create a spend-control policy |
+| `revokeBudget(budgetId)` | `Promise<Object>` | Revoke an active spend-control policy |
 | `createMcpTool(params)` | `Promise<Object>` | Package an MCP tool behind Meterflow |
+| `deleteMcpTool(toolId)` | `Promise<Object>` | Delete a packaged MCP tool |
+| `webhooks()` | `Promise<Object>` | List webhook endpoints |
+| `createWebhook(params)` | `Promise<Object>` | Create a webhook endpoint |
+| `testWebhook(webhookId)` | `Promise<Object>` | Send a test webhook event |
+| `deleteWebhook(webhookId)` | `Promise<Object>` | Delete a webhook endpoint |
 | `providerRevenue()` | `Promise<Object>` | Revenue and failure aggregates by meter |
 
 ## Control Plane Example
 
 ```js
-await client.createMeter({
+const meter = await client.createMeter({
   route: '/v1/risk-score',
   method: 'POST',
   unit: 'request',
   priceUsd: 0.006,
 });
 
-await client.createBudget({
+const budget = await client.createBudget({
   name: 'research-agent',
   dailyCapUsd: 12,
   perCallCapUsd: 0.02,
   allowedMeterIds: ['mtr_chat', 'mtr_multi'],
 });
 
-const receipts = await client.receipts({ status: 'metered_key', limit: 25 });
+const tool = await client.createMcpTool({
+  name: 'Token Risk Score',
+  route: '/mcp/token-risk',
+  priceUsd: 0.006,
+});
+
+const receipts = await client.receipts({ limit: 25 });
 const revenue = await client.providerRevenue();
+
+await client.revokeBudget(budget.budget.id);
+await client.deleteMcpTool(tool.tool.id);
+await client.deleteMeter(meter.meter.id);
 ```
 
 ## Meterflow Model
 
 Meterflow uses wallet identity for operator setup and API keys for agent/server calls. Gateway routes are treated as metered services so usage can be connected to receipts, settlement context, and budget policies in the dashboard. USDC is the payment asset; MFLOW is the utility layer for provider reputation, discounts, registry ranking, higher limits, retention, and future bonding.
+
+x402-paid receipts are wallet-visible: when a wallet pays a protected route, the dashboard and `/v1/receipts` show those receipts to the paying wallet after registration, even when the route was served through the shared x402 gateway.
 
 ## License
 

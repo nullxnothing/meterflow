@@ -104,7 +104,7 @@ Core API variables:
 Token and settlement variables:
 
 - `METERFLOW_TOKEN_MINT` optional, enables token-gated utility tiers when set
-- `SETTLEMENT_WALLET` or `TREASURY_WALLET` optional until paid settlement is enabled
+- `X402_PAY_TO`, `SETTLEMENT_WALLET`, or `TREASURY_WALLET` for the provider or treasury USDC recipient
 
 Persistence:
 
@@ -124,6 +124,22 @@ x402 variables:
 Frontend and API are deployed on Vercel at [meterflow.fun](https://meterflow.fun). The API is exposed through `/proxy/*`, which rewrites to a Vercel Function wrapper around the Express app in `api-proxy/app.js`.
 
 For production, attach Postgres and Redis resources to the Vercel project, set the API env vars in Vercel, redeploy, then run the migration against the production `DATABASE_URL`.
+
+## Production Verification
+
+Use the smoke scripts before and after deploys:
+
+```bash
+npm test
+npm run smoke:prod
+npm run smoke:paid
+```
+
+`npm run smoke:prod` checks the public site, API health, wallet registration, control-plane CRUD, dashboard entrypoints, and docs routes.
+
+`npm run smoke:paid` performs a real x402 SVM payment against the production paid route, currently `POST /proxy/mcp/token-risk` at `0.006` USDC. It verifies the 402 quote, signs the payment, submits through the PayAI facilitator, requires an on-chain settlement transaction signature, and checks that the resulting receipt is visible to the paying wallet.
+
+The paid smoke uses the local Solana CLI keypair at `~/.config/solana/id.json` by default. You can override it with `METERFLOW_PAYER_PRIVATE_KEY`, `X402_PAYER_PRIVATE_KEY`, or `SVM_PRIVATE_KEY` using a base58 secret key or JSON-array keypair. Optional overrides include `METERFLOW_SMOKE_BASE_URL`, `METERFLOW_PAID_ROUTE`, `METERFLOW_PAID_TOKEN`, `SOLANA_RPC_URL`, and `HELIUS_RPC_URL`.
 
 ## License
 
