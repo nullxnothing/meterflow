@@ -497,6 +497,14 @@ describe('Meterflow control plane', () => {
     assert.ok(migration.includes('meterflow_idempotency'), 'should create idempotency table');
   });
 
+  it('x402 meter startup can quietly fall back without weakening normal control-plane reads', () => {
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const x402 = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
+    assert.ok(control.includes('options.allowFallback'), 'control-plane scans should support explicit fallback mode');
+    assert.ok(control.includes('!options.quiet'), 'handled fallback callers should be able to suppress noisy error logs');
+    assert.ok(x402.includes('listBillableMeters({ allowFallback: true, quiet: true })'), 'x402 startup should use quiet fallback mode');
+  });
+
   it('authenticated routes allow pre-verified x402 requests', () => {
     const src = readFileSync(resolve(root, 'middleware.js'), 'utf-8');
     assert.ok(src.includes('req.meterflow?.paymentVerified'), 'should detect pre-verified x402 context');

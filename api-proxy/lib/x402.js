@@ -46,7 +46,7 @@ function findMeterInList(meters, method, requestPath) {
 
 async function loadBillableMeters() {
   try {
-    return await listBillableMeters();
+    return await listBillableMeters({ allowFallback: true, quiet: true });
   } catch (err) {
     logger.warn('x402 meter registry unavailable; using default meters', { err: err.message });
     return DEFAULT_METERS.filter(meter =>

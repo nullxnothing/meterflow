@@ -157,7 +157,7 @@ function storageColumns(item = {}) {
   };
 }
 
-async function scanJson(prefix, fallbackMap) {
+async function scanJson(prefix, fallbackMap, options = {}) {
   if (isPostgresEnabled()) {
     const namespace = namespaceForPrefix(prefix);
     try {
@@ -173,8 +173,8 @@ async function scanJson(prefix, fallbackMap) {
         arr.findIndex(other => other.id === item.id) === index
       ));
     } catch (err) {
-      logger.error('Control plane Postgres scan failed', { namespace, err: err.message });
-      if (IS_PROD) throw new Error('Control plane store unavailable');
+      if (!options.quiet) logger.error('Control plane Postgres scan failed', { namespace, err: err.message });
+      if (IS_PROD && !options.allowFallback) throw new Error('Control plane store unavailable');
       return [...fallbackMap.values()];
     }
   }
@@ -204,8 +204,8 @@ async function scanJson(prefix, fallbackMap) {
       arr.findIndex(other => other.id === item.id) === index
     ));
   } catch (err) {
-    logger.error('Control plane scan failed', { prefix, err: err.message });
-    if (IS_PROD) throw new Error('Control plane store unavailable');
+    if (!options.quiet) logger.error('Control plane scan failed', { prefix, err: err.message });
+    if (IS_PROD && !options.allowFallback) throw new Error('Control plane store unavailable');
     return [...fallbackMap.values()];
   }
 }
@@ -452,16 +452,16 @@ export async function dispatchWebhookEvent(apiKey, event, data = {}) {
   }));
 }
 
-export async function listMeters() {
-  const custom = await scanJson(METER_PREFIX, fallbackMeters);
+export async function listMeters(options = {}) {
+  const custom = await scanJson(METER_PREFIX, fallbackMeters, options);
   const merged = [...DEFAULT_METERS, ...custom].filter((meter, index, arr) => (
     arr.findLastIndex(other => other.id === meter.id) === index
   ));
   return merged.map(meter => ({ ...meter, createdAt: meter.createdAt || null, updatedAt: meter.updatedAt || null }));
 }
 
-export async function listBillableMeters() {
-  const meters = await listMeters();
+export async function listBillableMeters(options = {}) {
+  const meters = await listMeters(options);
   return meters.filter(meter =>
     ['live', 'test', 'example'].includes(meter.status)
     && Number(meter.priceUsd) >= 0
