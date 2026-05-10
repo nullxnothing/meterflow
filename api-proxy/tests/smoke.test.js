@@ -596,6 +596,7 @@ describe('Meterflow control plane', () => {
     assert.ok(lib.includes('WEBHOOK_PREFIX'), 'should persist webhooks');
     assert.ok(lib.includes('X-Meterflow-Signature'), 'should sign webhook deliveries');
     assert.ok(lib.includes('receipt.created'), 'should support receipt.created events');
+    assert.ok(lib.includes('receipt.verified'), 'should support verified receipt events');
     assert.ok(routes.includes("'/webhooks'"), 'should expose webhook collection route');
     assert.ok(routes.includes("'/webhooks/:id/test'"), 'should expose webhook test route');
     assert.ok(sdk.includes('createWebhook'), 'SDK should expose webhook creation');

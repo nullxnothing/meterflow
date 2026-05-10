@@ -29,6 +29,7 @@ const fallbackWebhooks = new Map();
 
 const WEBHOOK_EVENTS = new Set([
   'receipt.created',
+  'receipt.verified',
   'payment.verified',
   'payment.failed',
   'budget.exhausted',
@@ -615,6 +616,9 @@ export async function recordReceipt(input) {
     logger.warn('Receipt webhook dispatch failed', { receiptId: saved.id, err: err.message });
   });
   if (saved.paymentState === 'verified') {
+    dispatchWebhookEvent(saved.apiKey, 'receipt.verified', { receipt: saved }).catch(err => {
+      logger.warn('Verified receipt webhook dispatch failed', { receiptId: saved.id, err: err.message });
+    });
     dispatchWebhookEvent(saved.apiKey, 'payment.verified', { receipt: saved }).catch(err => {
       logger.warn('Payment webhook dispatch failed', { receiptId: saved.id, err: err.message });
     });
