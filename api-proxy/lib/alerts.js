@@ -1,6 +1,6 @@
 import { logger } from './logger.js';
 
-const WEBHOOK_URL = process.env.ERROR_ALERT_WEBHOOK;
+const WEBHOOK_URL = process.env.ERROR_ALERT_WEBHOOK?.trim();
 const RATE_LIMIT_MS = 60_000; // max 1 alert per error type per minute
 const recentAlerts = new Map();
 
