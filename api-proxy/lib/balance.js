@@ -6,9 +6,15 @@ import { fetchWithRetry } from './retry.js';
 const FETCH_TIMEOUT = 10_000;
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
+function getRpcUrl() {
+  if (CONFIG.HELIUS_RPC_URL) return CONFIG.HELIUS_RPC_URL;
+  if (CONFIG.HELIUS_API_KEY) return `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
+  return 'https://api.mainnet-beta.solana.com';
+}
+
 async function fetchBalanceFromRPC(walletAddress) {
   const response = await fetchWithRetry(
-    () => fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+    () => fetch(getRpcUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -58,7 +64,7 @@ async function getTokenBalance(walletAddress) {
 }
 
 async function getTreasuryBalance() {
-  if (!CONFIG.TREASURY_WALLET || !CONFIG.HELIUS_API_KEY) {
+  if (!CONFIG.TREASURY_WALLET) {
     return treasuryBalanceCache;
   }
 
@@ -68,7 +74,7 @@ async function getTreasuryBalance() {
 
   try {
     const [balanceRes, usdcRes, priceRes] = await Promise.allSettled([
-      fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+      fetch(getRpcUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,7 +84,7 @@ async function getTreasuryBalance() {
         }),
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       }).then(r => r.json()),
-      fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+      fetch(getRpcUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

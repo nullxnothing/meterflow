@@ -100,6 +100,7 @@ Core API variables:
 - `DATABASE_URL`
 - `REDIS_URL`
 - `ERROR_ALERT_WEBHOOK` optional, for production error notifications
+- `SENTRY_DSN` optional, for stack traces and grouped production errors
 
 Token and settlement variables:
 
@@ -125,6 +126,8 @@ Frontend and API are deployed on Vercel at [meterflow.fun](https://meterflow.fun
 
 For production, attach Postgres and Redis resources to the Vercel project, set the API env vars in Vercel, redeploy, then run the migration against the production `DATABASE_URL`.
 
+GitHub Actions runs `npm test` on pushes and pull requests. The `Production Smoke` workflow also checks the live site and API every 30 minutes. Add a GitHub Actions secret named `METERFLOW_DISCORD_WEBHOOK` if you want failed production smoke runs to post into the private Meterflow alerts channel.
+
 ## Production Verification
 
 Use the smoke scripts before and after deploys:
@@ -135,7 +138,7 @@ npm run smoke:prod
 npm run smoke:paid
 ```
 
-`npm run smoke:prod` checks the public site, API health, wallet registration, control-plane CRUD, dashboard entrypoints, and docs routes.
+`npm run smoke:prod` checks the public site, dashboard assets, docs routes, API health, provider readiness, x402 CORS, and unpaid x402 quote generation.
 
 `npm run smoke:paid` performs a real x402 SVM payment against the production paid route, currently `POST /proxy/mcp/token-risk` at `0.006` USDC. It verifies the 402 quote, signs the payment, submits through the PayAI facilitator, requires an on-chain settlement transaction signature, and checks that the resulting receipt is visible to the paying wallet.
 

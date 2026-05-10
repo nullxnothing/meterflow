@@ -1,0 +1,52 @@
+name: Production Smoke
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  METERFLOW_SMOKE_BASE_URL: https://www.meterflow.fun
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Live site and API checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --omit=optional --no-audit --no-fund
+
+      - name: Run production smoke checks
+        run: npm run smoke:prod
+
+      - name: Alert Discord on failure
+        if: failure()
+        env:
+          METERFLOW_DISCORD_WEBHOOK: ${{ secrets.METERFLOW_DISCORD_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          node --input-type=module <<'NODE'
+          if (!process.env.METERFLOW_DISCORD_WEBHOOK) process.exit(0);
+          await fetch(process.env.METERFLOW_DISCORD_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              embeds: [{
+                title: 'Meterflow production smoke failed',
+                description: process.env.RUN_URL,
+                color: 16733525,
+                timestamp: new Date().toISOString()
+              }]
+            })
+          });
+          NODE
