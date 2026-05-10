@@ -26,7 +26,7 @@
 [id] { scroll-margin-top: 96px; }
 .docs-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: 100vh;
   padding-top: 0;
   max-width: 1400px;
@@ -183,9 +183,12 @@
 }
 .doc-table .accent { color: var(--accent); }
 @media (max-width: 900px) {
-  .docs-container { grid-template-columns: 1fr; padding-top: 0; }
+  .docs-container { grid-template-columns: minmax(0, 1fr); padding-top: 0; }
   .docs-sidebar { display: none; }
-  .docs-content { padding: 40px 20px; }
+  .docs-content { padding: 40px 20px; min-width: 0; max-width: 100%; overflow-x: hidden; }
+  .docs-content .code-block { font-size: 11px; padding: 14px; }
+  .docs-content .doc-table { font-size: 11px; }
+  .docs-content .doc-table td, .docs-content .doc-table th { padding: 8px 6px; word-break: break-word; }
   .feature-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {

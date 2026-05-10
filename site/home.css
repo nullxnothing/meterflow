@@ -2005,7 +2005,9 @@ footer {
 }
 
 /* Scroll reveal */
-.scroll-reveal {
+/* Sections fade in via JS-added .scroll-reveal class.
+   Without JS or before observer fires, content stays visible (SEO/a11y safe). */
+.js-ready .scroll-reveal {
   opacity: 0;
   transform: translateY(40px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
@@ -2013,8 +2015,8 @@ footer {
 }
 
 .scroll-reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 /* Stagger children inside revealed sections */

@@ -1,3 +1,6 @@
+// Mark JS as ready so progressive-enhancement styles activate
+document.documentElement.classList.add('js-ready');
+
 // ═══════════ MOBILE MENU ═══════════
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
