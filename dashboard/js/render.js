@@ -97,6 +97,11 @@ export function renderDashboard() {
         Meterflow
         <span class="status-dot ${hasKey ? 'online' : 'offline'}" id="connectionDot" title="${hasKey ? 'Connected' : 'Not connected'}"></span>
       </div>
+      <button class="sidebar-cmdk" onclick="openCommandPalette()" title="Search tabs (⌘K)">
+        <span class="sidebar-cmdk-icon">⌕</span>
+        <span class="sidebar-cmdk-label">Quick jump</span>
+        <span class="sidebar-cmdk-kbd">⌘K</span>
+      </button>
       <nav class="sidebar-nav">
         ${renderNavItems()}
       </nav>

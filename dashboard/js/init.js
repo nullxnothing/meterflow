@@ -6,10 +6,11 @@ import { STATE, CHAT, TRADING, API_BASE } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
-import { render } from './render.js?v=v5-clean-mflow';
+import { render } from './render.js?v=v6-cmdk';
 import { showToast } from './actions.js';
 import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
+import './cmdk.js?v=v1';
 
 // ─── Initialize ───
 
