@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npm --prefix api-proxy test",
     "smoke:prod": "node scripts/smoke-production.mjs",
+    "smoke:paid": "node scripts/smoke-paid-x402.mjs",
     "migrate": "node api-proxy/scripts/migrate.js",
     "api": "node api-proxy/server.js"
   },
