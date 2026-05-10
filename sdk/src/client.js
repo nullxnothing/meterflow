@@ -129,6 +129,37 @@ export class MeterflowClient {
   }
 
   /**
+   * List prebuilt agent budget templates.
+   */
+  async budgetTemplates() {
+    return this._get('/v1/budget-templates');
+  }
+
+  /**
+   * Fetch one prebuilt agent budget template.
+   * @param {string} templateId
+   */
+  async budgetTemplate(templateId) {
+    return this._get(`/v1/budget-templates/${encodeURIComponent(templateId)}`);
+  }
+
+  /**
+   * Create an agent budget from a prebuilt template.
+   * @param {{templateId?: string, template?: string, overrides?: Object, [key: string]: any}} params
+   */
+  async createBudgetFromTemplate(params = {}) {
+    return this._post('/v1/budgets/from-template', params);
+  }
+
+  /**
+   * Simulate expected spend against budget caps before spending real USDC.
+   * @param {{dailyCapUsd: number, perCallCapUsd: number, callsPerDay?: number, averageCallPriceUsd?: number}} params
+   */
+  async simulateBudget(params) {
+    return this._post('/v1/budgets/simulate', params);
+  }
+
+  /**
    * Package an MCP tool behind a Meterflow gateway.
    * @param {import('./types.js').McpToolRequest} params
    */
