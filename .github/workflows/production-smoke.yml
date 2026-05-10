@@ -23,11 +23,8 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --omit=optional --no-audit --no-fund
-
       - name: Run production smoke checks
-        run: npm run smoke:prod
+        run: node scripts/smoke-production.mjs
 
       - name: Alert Discord on failure
         if: failure()
