@@ -34,3 +34,22 @@
   // Expose for inline onclick handlers
   window.closeMobile = close;
 })();
+
+// ─── Mouse-tracking spotlight on cards (Linear/Vercel-style) ───
+(function () {
+  const SEL = '.hook-card, .tool-card, .tier-card, .stat-block, .stats-hero-block, .how-step, .funded-step, .card, .feature-card';
+  let raf = null;
+  document.addEventListener('mousemove', e => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = null;
+      const target = e.target.closest(SEL);
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      target.style.setProperty('--mx', x + '%');
+      target.style.setProperty('--my', y + '%');
+    });
+  });
+})();

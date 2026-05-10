@@ -4,6 +4,18 @@
 
 import { STATE } from '../state.js';
 
+const PROVIDER_DOMAINS = {
+  Anthropic: 'anthropic.com',
+  Google: 'google.com',
+  OpenAI: 'openai.com',
+};
+
+function providerLogo(provider) {
+  const domain = PROVIDER_DOMAINS[provider] || '';
+  if (!domain) return '';
+  return `<img src="https://icons.duckduckgo.com/ip3/${domain}.ico" alt="" loading="lazy" onerror="this.style.display='none'">`;
+}
+
 export function renderModels() {
   const allModels = [
     { name: 'claude-sonnet-4-6', provider: 'Anthropic', tier: 'Signal+', live: true },
@@ -30,11 +42,14 @@ export function renderModels() {
         </div>
         ${allModels.map(m => {
           const hasAccess = userModels.some(um => um.includes(m.name.split('-')[0]));
-          return `<div class="model-row" style="${hasAccess ? '' : 'opacity:0.4'}">
+          return `<div class="model-row${hasAccess ? '' : ' is-locked'}">
             <div class="model-name">${m.name}</div>
-            <div class="model-provider"><span class="model-mobile-label">Provider: </span>${m.provider}</div>
-            <div class="model-tier"><span class="model-mobile-label">Access: </span>${m.tier}</div>
-            <div class="model-status">${hasAccess ? '<span class="live">LIVE</span>' : '<span style="color:var(--text-muted)">LOCKED</span>'}</div>
+            <div class="model-provider">
+              <span class="model-mobile-label">Provider: </span>
+              <span class="provider-cell"><span class="provider-logo">${providerLogo(m.provider)}</span>${m.provider}</span>
+            </div>
+            <div class="model-tier"><span class="model-mobile-label">Access: </span><span class="tier-pill">${m.tier}</span></div>
+            <div class="model-status">${hasAccess ? '<span class="status-pill live">Live</span>' : '<span class="status-pill locked">Locked</span>'}</div>
           </div>`;
         }).join('')}
       </div>

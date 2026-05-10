@@ -126,3 +126,20 @@ document.addEventListener('keydown', e => {
 });
 
 window.openCommandPalette = open;
+
+// ─── Mouse-tracking spotlight on cards (Linear/Vercel-style) ─── */
+const SPOTLIGHT_SELECTORS = '.stat-card, .tool-card, .tier-card, .api-card, .connection-card, .feature-card, .token-utility-panel, .future-api-card';
+document.addEventListener('mousemove', e => {
+  // Throttle via requestAnimationFrame
+  if (window.__spotlightRaf) return;
+  window.__spotlightRaf = requestAnimationFrame(() => {
+    window.__spotlightRaf = null;
+    const target = e.target.closest(SPOTLIGHT_SELECTORS);
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    target.style.setProperty('--mx', x + '%');
+    target.style.setProperty('--my', y + '%');
+  });
+});

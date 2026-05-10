@@ -1073,3 +1073,139 @@ footer {
   .site-subpage-hero { padding: 104px 16px 44px; }
   .site-subpage-title { font-size: clamp(42px, 12vw, 58px); }
 }
+
+/* ═══════════════════════════════════════════
+   Premium polish — top-tier subtle effects (site-wide)
+   ═══════════════════════════════════════════ */
+
+/* Mouse spotlight on cards */
+.hook-card,
+.tool-card,
+.tier-card,
+.stat-block,
+.stats-hero-block,
+.how-step,
+.funded-step,
+.card,
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hook-card::before,
+.tool-card::before,
+.tier-card::before,
+.stat-block::before,
+.stats-hero-block::before,
+.how-step::before,
+.funded-step::before,
+.card::before,
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(79, 156, 255, 0.08),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.hook-card:hover::before,
+.tool-card:hover::before,
+.tier-card:hover::before,
+.stat-block:hover::before,
+.stats-hero-block:hover::before,
+.how-step:hover::before,
+.funded-step:hover::before,
+.card:hover::before,
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+/* Subtle noise texture (page film grain) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  z-index: 9999;
+}
+
+/* Headline text gradient */
+.hero-headline,
+.hero h1,
+.tools-headline,
+.tiers-headline,
+.funded-headline,
+.demo-headline,
+.agent-headline,
+.faq-headline,
+.cta-section h2,
+.how-headline,
+.section-title {
+  background: linear-gradient(180deg, #ffffff 0%, #c5dafe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Keep accent spans colorful */
+.hero-headline .accent,
+.cta-section h2 .accent,
+.agent-headline .accent,
+.roadmap-headline .accent {
+  background: none;
+  -webkit-text-fill-color: var(--accent);
+  color: var(--accent);
+}
+.hero-headline .thin {
+  background: none;
+  -webkit-text-fill-color: var(--text-dim);
+  color: var(--text-dim);
+}
+
+/* Button micro-press */
+.btn-primary:active,
+.btn-secondary:active,
+.btn:active,
+.btn-sm:active,
+.nav-cta:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s !important;
+}
+
+/* Refined focus ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(79, 156, 255, 0.7);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Brand mark glow */
+.nav-logo .brand-mark {
+  filter: drop-shadow(0 0 8px rgba(79, 156, 255, 0.25));
+  transition: filter 0.3s ease;
+}
+.nav-logo:hover .brand-mark {
+  filter: drop-shadow(0 0 14px rgba(79, 156, 255, 0.45));
+}
+
+/* Subtle hero-trust item lift */
+.hero-trust .trust-item {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.hero-trust .trust-item:hover { transform: translateY(-1px); }
