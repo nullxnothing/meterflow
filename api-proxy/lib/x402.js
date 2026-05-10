@@ -113,6 +113,19 @@ export async function buildX402Middleware() {
 
     const resourceServer = new x402ResourceServer(facilitatorClient)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
+    resourceServer.onAfterSettle(async ({ result, transportContext }) => {
+      const req = transportContext?.request?.adapter?.req;
+      const receiptId = req?.meterflowControl?.receiptId;
+      const txSignature = result?.transaction || null;
+      if (!receiptId || !txSignature) return;
+
+      await updateReceipt(receiptId, {
+        status: 'verified',
+        paymentState: 'verified',
+        payerWallet: result.payer || req.meterflowControl.payerWallet,
+        txSignature,
+      });
+    });
 
     const meters = await loadBillableMeters();
     const routes = await buildRouteConfig(payTo, meters);
@@ -203,17 +216,7 @@ export function createX402Gateway(x402) {
             }
 
             if (req.meterflowControl.receiptId && txSignature) {
-              updateReceipt(req.meterflowControl.receiptId, {
-                status: 'verified',
-                paymentState: 'verified',
-                payerWallet,
-                txSignature,
-              }).catch(err => {
-                logger.warn('x402 receipt settlement patch failed', {
-                  receiptId: req.meterflowControl.receiptId,
-                  err: err.message,
-                });
-              });
+              req.meterflowControl.settlementRecorded = true;
             }
           } catch (err) {
             logger.warn('x402 payment response decode failed', { err: err.message });

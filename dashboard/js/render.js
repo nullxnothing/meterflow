@@ -12,7 +12,7 @@ import { renderOverview } from './tabs/overview.js?v=v5-clean-mflow';
 import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=v5-clean-mflow';
 import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
 import { renderModels } from './tabs/models.js?v=v5-clean-mflow';
-import { renderConnections } from './tabs/connections.js';
+import { renderConnections } from './tabs/connections.js?v=logos';
 import { renderChat } from './tabs/chat.js';
 import { renderImages } from './tabs/images.js';
 import { renderVideo } from './tabs/video.js';

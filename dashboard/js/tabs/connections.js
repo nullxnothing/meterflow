@@ -12,9 +12,9 @@ export function renderConnections() {
   const locked = !canManageMeterflow();
 
   const providers = [
-    { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', icon: 'GH', ready: true },
-    { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', icon: 'G', ready: false },
-    { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', icon: 'N', ready: false },
+    { id: 'github', name: 'GitHub', desc: 'Access private repos, issues, and PRs', domain: 'github.com', ready: true },
+    { id: 'google', name: 'Google', desc: 'Search Drive, read Docs and Sheets', domain: 'google.com', ready: false },
+    { id: 'notion', name: 'Notion', desc: 'Search pages and query databases', domain: 'notion.so', ready: false },
   ];
 
   return `
@@ -28,7 +28,9 @@ export function renderConnections() {
         const isConnected = STATE.connections[p.id];
         return `
           <div class="card connection-card${!p.ready ? ' provider-setup' : ''}">
-            <div class="connection-icon">${p.icon}</div>
+            <div class="connection-icon">
+              <img src="https://icons.duckduckgo.com/ip3/${p.domain}.ico" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=${p.domain}&sz=128';this.onerror=function(){this.style.display='none';};">
+            </div>
             <div class="connection-info">
               <div class="connection-name">${p.name}</div>
               <div class="connection-desc dim">${p.desc}</div>

@@ -541,8 +541,9 @@ describe('Meterflow control plane', () => {
   it('x402 settlement patches receipts with transaction signatures', () => {
     const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    assert.ok(src.includes('onAfterSettle'), 'should persist settlement details inside the awaited x402 settlement hook');
     assert.ok(src.includes('decodePaymentResponseHeader'), 'should decode settlement response headers');
-    assert.ok(src.includes('updateReceipt(req.meterflowControl.receiptId'), 'should patch the existing receipt after settlement');
+    assert.ok(src.includes('updateReceipt(receiptId'), 'should patch the existing receipt after settlement');
     assert.ok(src.includes("'X-Payment-Transaction'"), 'should expose the settled transaction signature as a response header');
     assert.ok(control.includes('ctx.receiptId = receipt.id'), 'completeMeteredRequest should retain the receipt id on the request context');
     assert.ok(control.includes("result.status === 'metered_key'"), 'verified x402 calls should not remain marked as metered_key');
