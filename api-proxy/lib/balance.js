@@ -7,8 +7,10 @@ const FETCH_TIMEOUT = 10_000;
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
 function getRpcUrl() {
-  if (CONFIG.HELIUS_RPC_URL) return CONFIG.HELIUS_RPC_URL;
-  if (CONFIG.HELIUS_API_KEY) return `https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`;
+  const rpcUrl = CONFIG.HELIUS_RPC_URL?.trim();
+  const apiKey = CONFIG.HELIUS_API_KEY?.trim();
+  if (rpcUrl) return rpcUrl;
+  if (apiKey) return `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
   return 'https://api.mainnet-beta.solana.com';
 }
 
