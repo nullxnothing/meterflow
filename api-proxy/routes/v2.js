@@ -7,6 +7,8 @@ import {
   listBudgetTemplates,
   simulateBudget,
 } from '../lib/budget-templates.js';
+import { getIntegration, listIntegrationCatalog } from '../lib/integration-catalog.js';
+import { findPublicReceipt, getPublicRegistryItem, listPublicRegistry } from '../lib/public-registry.js';
 
 const router = Router();
 
@@ -67,6 +69,56 @@ router.post('/budgets/from-template', authenticateApiKey, async (req, res) => {
   });
 
   res.status(201).json({ budget, template: getBudgetTemplate(templateId) });
+});
+
+router.get('/registry', async (req, res) => {
+  const registry = await listPublicRegistry({
+    category: req.query.category,
+    status: req.query.status,
+  });
+  res.json({ registry });
+});
+
+router.get('/registry/:id', async (req, res) => {
+  const item = await getPublicRegistryItem(req.params.id);
+  if (!item) {
+    return res.status(404).json({ error: 'registry_item_not_found', message: 'Registry item not found.' });
+  }
+  res.json({ item });
+});
+
+router.get('/public/receipts/:id', async (req, res) => {
+  const receipt = await findPublicReceipt({ receiptId: req.params.id });
+  if (!receipt) {
+    return res.status(404).json({ error: 'receipt_not_found', message: 'Receipt not found.' });
+  }
+  res.json({ receipt });
+});
+
+router.get('/public/tx/:signature', async (req, res) => {
+  const receipt = await findPublicReceipt({ txSignature: req.params.signature });
+  if (!receipt) {
+    return res.status(404).json({ error: 'receipt_not_found', message: 'Receipt not found.' });
+  }
+  res.json({ receipt });
+});
+
+router.get('/integrations', (req, res) => {
+  res.json({
+    integrations: listIntegrationCatalog({
+      category: req.query.category,
+      priority: req.query.priority,
+      status: req.query.status,
+    }),
+  });
+});
+
+router.get('/integrations/:id', (req, res) => {
+  const integration = getIntegration(req.params.id);
+  if (!integration) {
+    return res.status(404).json({ error: 'integration_not_found', message: 'Integration not found.' });
+  }
+  res.json({ integration });
 });
 
 export default router;
