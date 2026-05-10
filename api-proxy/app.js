@@ -17,6 +17,7 @@ import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
+import v2Router from './routes/v2.js';
 import { logger } from './lib/logger.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
@@ -83,6 +84,7 @@ app.use('/v1', tradesRouter);
 app.use('/v1', alphaRouter);
 app.use('/mcp', mcpRouter);
 app.use('/v1', controlPlaneRouter);
+app.use('/v1', v2Router);
 app.use('/v1', openaiCompatRouter);
 
 initSentry(app);
