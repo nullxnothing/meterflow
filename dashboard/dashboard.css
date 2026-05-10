@@ -425,6 +425,14 @@
   transition: transform 0.2s, letter-spacing 0.2s;
 }
 
+.main .tool-card .tool-launch.danger {
+  color: var(--red);
+}
+
+.main .tool-card .tool-launch.danger:hover {
+  color: #ff8b84;
+}
+
 .main .tool-card:hover .tool-launch {
   letter-spacing: 2px;
   transform: translateX(4px);

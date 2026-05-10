@@ -502,6 +502,13 @@ export async function updateMeter(meterId, patch) {
   return setJson(METER_PREFIX, fallbackMeters, { ...current, ...patch, updatedAt: nowIso() });
 }
 
+export async function deleteMeter(meterId) {
+  const current = await getMeter(meterId);
+  if (!current || current.source === 'default') return false;
+  await deleteJson(METER_PREFIX, fallbackMeters, meterId);
+  return true;
+}
+
 export function canManageResource(resource, wallet, apiKey) {
   if (!resource) return false;
   if (resource.source === 'default') return true;

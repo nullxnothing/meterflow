@@ -106,6 +106,17 @@ export class MeterflowClient {
   }
 
   /**
+   * Delete a custom meter you own.
+   * @param {string} meterId
+   */
+  async deleteMeter(meterId) {
+    const response = await this._fetch(`/v1/meters/${encodeURIComponent(meterId)}`, {
+      method: 'DELETE',
+    });
+    return response.json();
+  }
+
+  /**
    * List request receipts for this client key.
    * @param {{meterId?: string, status?: string, limit?: number}} [params]
    */
@@ -129,11 +140,30 @@ export class MeterflowClient {
   }
 
   /**
+   * Revoke an agent budget policy.
+   * @param {string} budgetId
+   */
+  async revokeBudget(budgetId) {
+    return this._post(`/v1/budgets/${encodeURIComponent(budgetId)}/revoke`, {});
+  }
+
+  /**
    * Package an MCP tool behind a Meterflow gateway.
    * @param {import('./types.js').McpToolRequest} params
    */
   async createMcpTool(params) {
     return this._post('/v1/mcp-tools', params);
+  }
+
+  /**
+   * Delete an MCP tool package you own.
+   * @param {string} toolId
+   */
+  async deleteMcpTool(toolId) {
+    const response = await this._fetch(`/v1/mcp-tools/${encodeURIComponent(toolId)}`, {
+      method: 'DELETE',
+    });
+    return response.json();
   }
 
   /**

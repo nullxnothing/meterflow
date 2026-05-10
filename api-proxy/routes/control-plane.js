@@ -5,6 +5,7 @@ import {
   getMeter,
   createMeter,
   updateMeter,
+  deleteMeter,
   canManageResource,
   findMeterForRequest,
   listReceipts,
@@ -78,6 +79,19 @@ router.patch('/meters/:id', authenticateApiKey, async (req, res) => {
   const meter = await updateMeter(req.params.id, patch);
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
   res.json({ meter });
+});
+
+router.delete('/meters/:id', authenticateApiKey, async (req, res) => {
+  const current = await getMeter(req.params.id);
+  if (!current) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
+  if (current.source === 'default') {
+    return res.status(403).json({ error: 'default_meter_protected', message: 'Built-in Meterflow meters cannot be deleted.' });
+  }
+  if (!canManageResource(current, req.meterflow.wallet, req.meterflow.apiKey)) {
+    return res.status(403).json({ error: 'forbidden', message: 'You do not control this meter.' });
+  }
+  await deleteMeter(req.params.id);
+  res.json({ ok: true });
 });
 
 router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {

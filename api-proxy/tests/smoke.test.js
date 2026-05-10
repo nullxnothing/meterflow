@@ -565,9 +565,16 @@ describe('Meterflow control plane', () => {
 
   it('control-plane routes enforce ownership-sensitive mutations', () => {
     const src = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(src.includes('canManageResource'), 'meter updates should check ownership');
+    assert.ok(src.includes("router.delete('/meters/:id'"), 'custom meters should be deletable');
+    assert.ok(src.includes('default_meter_protected'), 'built-in meters should be protected from delete');
+    assert.ok(control.includes('deleteMeter'), 'control-plane storage should expose meter delete');
+    assert.ok(dashboard.includes('deleteMeterFromDashboard'), 'dashboard should expose custom meter cleanup');
     assert.ok(src.includes('getMcpTool'), 'MCP deletes should load the tool before deleting');
     assert.ok(src.includes("tool.apiKey !== req.meterflow.apiKey"), 'MCP deletes should be scoped to owner API key');
+    assert.ok(dashboard.includes('deleteMcpToolFromDashboard'), 'dashboard should expose MCP tool cleanup');
   });
 
   it('control-plane exposes signed webhook management', () => {
@@ -585,7 +592,7 @@ describe('Meterflow control plane', () => {
 
   it('SDK exposes control-plane helpers', () => {
     const src = readFileSync(resolve(projectRoot, 'sdk', 'src', 'client.js'), 'utf-8');
-    for (const method of ['meters()', 'createMeter', 'receipts', 'createBudget', 'createMcpTool', 'providerRevenue']) {
+    for (const method of ['meters()', 'createMeter', 'deleteMeter', 'receipts', 'createBudget', 'revokeBudget', 'createMcpTool', 'deleteMcpTool', 'providerRevenue']) {
       assert.ok(src.includes(method), `should include ${method}`);
     }
   });

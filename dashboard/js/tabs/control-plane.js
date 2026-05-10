@@ -67,6 +67,10 @@ function statusBadge(status) {
   return `<span class="tool-status">${safe.toUpperCase()}</span>`;
 }
 
+function canDeleteMeter(meter) {
+  return meter.source === 'custom' || (meter.ownerWallet && meter.ownerWallet !== 'meterflow');
+}
+
 function isReceiptSuccess(receipt) {
   return receipt.status === 'verified' || receipt.status === 'metered_key';
 }
@@ -209,6 +213,7 @@ export function renderMeters() {
                 Calls: ${Number(revenue?.calls || 0).toLocaleString()} · Gross: ${money(revenue?.estimatedUsd || 0)}
               </div>
               <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testMeter('${meter.id}')`}">${locked ? 'Unlock' : 'Test Quote'}</div>
+              ${!locked && canDeleteMeter(meter) ? `<div class="tool-launch danger" onclick="deleteMeterFromDashboard('${meter.id}')">Delete</div>` : ''}
             </div>
           `;
         }).join('')}
@@ -372,6 +377,7 @@ export function renderMcpTools() {
               Gateway: /proxy${escapeHtml(tool.route)}
             </div>
             <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `copyText('https://meterflow.fun/proxy${escapeHtml(tool.route)}')`}">${locked ? 'Unlock' : 'Copy Gateway'}</div>
+            ${!locked ? `<div class="tool-launch danger" onclick="deleteMcpToolFromDashboard('${tool.id}')">Delete</div>` : ''}
           </div>
         `).join('') : '<div class="tool-card"><div class="tool-name">No MCP tools yet</div><div class="tool-desc">Package a tool to generate a priced hosted gateway path.</div></div>'}
       </div>
@@ -405,6 +411,18 @@ async function testMeter(meterId) {
     showToast(`Quote: ${money(data.quote.amountUsd)} ${data.quote.asset}`);
   } catch (err) {
     showToast(err.message || 'Meter test failed', true);
+  }
+}
+
+async function deleteMeterFromDashboard(meterId) {
+  if (!confirm('Delete this custom meter? This cannot be undone.')) return;
+  try {
+    await api(`/v1/meters/${meterId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('Meter deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Meter deletion failed', true);
   }
 }
 
@@ -459,6 +477,18 @@ async function createMcpToolFromDashboard() {
   }
 }
 
+async function deleteMcpToolFromDashboard(toolId) {
+  if (!confirm('Delete this MCP tool package? This cannot be undone.')) return;
+  try {
+    await api(`/v1/mcp-tools/${toolId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('MCP tool deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'MCP tool deletion failed', true);
+  }
+}
+
 async function downloadReceiptsCsv() {
   try {
     const res = await fetch(`${API_BASE}/v1/receipts/export.csv`, {
@@ -479,7 +509,9 @@ async function downloadReceiptsCsv() {
 
 window.createMeterFromDashboard = createMeterFromDashboard;
 window.testMeter = testMeter;
+window.deleteMeterFromDashboard = deleteMeterFromDashboard;
 window.createBudgetFromDashboard = createBudgetFromDashboard;
 window.revokeBudgetFromDashboard = revokeBudgetFromDashboard;
 window.createMcpToolFromDashboard = createMcpToolFromDashboard;
+window.deleteMcpToolFromDashboard = deleteMcpToolFromDashboard;
 window.downloadReceiptsCsv = downloadReceiptsCsv;
