@@ -50,6 +50,11 @@ function computeTreasuryHealth(balance, globalStats, treasuryState) {
     else if (runwayDays >= 7) { healthStatus = 'healthy'; multiplier = 1.0; }
     else if (runwayDays >= 3) { healthStatus = 'cautious'; multiplier = 0.7; }
     else { healthStatus = 'critical'; multiplier = 0.3; }
+  } else if (!treasuryState.updatedAt && CONFIG.TREASURY_WALLET && balance.usd <= 0) {
+    healthStatus = 'empty';
+    runwayDays = 0;
+    dailyBudget = 0;
+    multiplier = 1.0;
   }
 
   const tiers = Object.entries(CONFIG.TIERS).map(([key, t]) => ({

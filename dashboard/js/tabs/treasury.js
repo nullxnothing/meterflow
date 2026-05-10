@@ -9,11 +9,12 @@ const HEALTH_TIERS = [
   { key: 'healthy',  label: 'Healthy',  multiplier: '1.0x', desc: 'Normal operations. Standard meter limits apply.' },
   { key: 'cautious', label: 'Cautious', multiplier: '0.7x', desc: 'Runway below 30 days. Expensive routes are throttled.' },
   { key: 'critical', label: 'Critical', multiplier: '0.3x', desc: 'Runway below 14 days. Only core routes stay active.' },
+  { key: 'empty', label: 'Empty', multiplier: '1.0x', desc: 'Settlement wallet is configured, but no USDC/SOL balance is visible on-chain.' },
 ];
 
 const STATUS_COLORS = {
   surplus: 'var(--green)', healthy: 'var(--accent)', cautious: '#febc2e',
-  critical: 'var(--red)', unknown: 'var(--text-muted)',
+  critical: 'var(--red)', empty: 'var(--text-muted)', unknown: 'var(--text-muted)',
 };
 
 function fmtSol(val) {

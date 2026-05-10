@@ -558,6 +558,7 @@ describe('Meterflow control plane', () => {
     assert.ok(balance.includes('treasury-usdc-balance'), 'treasury balance should query USDC token accounts');
     assert.ok(balance.includes('treasuryBalanceCache.usdc'), 'treasury cache should store USDC');
     assert.ok(route.includes('treasuryBalanceUsdc'), 'treasury responses should expose USDC balance');
+    assert.ok(route.includes("healthStatus = 'empty'"), 'configured empty settlement wallets should not remain unknown');
   });
 
   it('x402 settlement patches receipts with transaction signatures', () => {
