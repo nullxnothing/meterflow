@@ -17,6 +17,12 @@ function safeNumber(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function optionalNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 function percentile(values, p) {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
@@ -35,7 +41,7 @@ function summarizeReceipts(receipts = []) {
     .filter(receipt => ['verified', 'metered_key'].includes(receipt.status))
     .reduce((sum, receipt) => sum + safeNumber(receipt.baseAmountUsd ?? receipt.amountUsd), 0);
   const latencyValues = receipts
-    .map(receipt => safeNumber(receipt.latencyMs, null))
+    .map(receipt => optionalNumber(receipt.latencyMs))
     .filter(value => Number.isFinite(value) && value >= 0);
 
   return {
@@ -138,6 +144,6 @@ export async function findPublicReceipt({ receiptId, txSignature }) {
     quoteId: receipt.quoteId || null,
     policyResult: receipt.policyResult,
     responseStatus: receipt.responseStatus,
-    latencyMs: receipt.latencyMs || null,
+    latencyMs: optionalNumber(receipt.latencyMs),
   };
 }
