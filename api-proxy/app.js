@@ -82,14 +82,22 @@ app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
 app.use('/', applicationsRouter);
 
-let x402Gateway = (_req, _res, next) => next();
-buildX402Middleware().then(mw => {
-  if (mw) x402Gateway = createX402Gateway(mw);
-}).catch(err => {
-  logger.error('x402 middleware init failed', { err: err.message });
-});
+let x402Gateway = null;
+const x402GatewayReady = buildX402Middleware()
+  .then(mw => {
+    x402Gateway = mw ? createX402Gateway(mw) : (_req, _res, next) => next();
+    return x402Gateway;
+  })
+  .catch(err => {
+    logger.error('x402 middleware init failed', { err: err.message });
+    x402Gateway = (_req, _res, next) => next();
+    return x402Gateway;
+  });
 
-app.use((req, res, next) => x402Gateway(req, res, next));
+app.use(async (req, res, next) => {
+  const gateway = x402Gateway || await x402GatewayReady;
+  return gateway(req, res, next);
+});
 
 app.use('/v1', express.json({ limit: '10mb' }), chatRouter);
 app.use('/v1', multiRouter);

@@ -531,10 +531,12 @@ describe('Meterflow control plane', () => {
 
   it('x402 only wraps configured paid meter routes', () => {
     const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes('findMeterInList'), 'should pre-match paid meter routes from the initialized route table');
     assert.ok(src.includes('Array.isArray(x402?.meters)'), 'should reuse initialized meters instead of scanning storage per request');
     assert.ok(src.includes('if (!meter) return next();'), 'public routes should bypass x402 context injection');
     assert.ok(src.includes('process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET'), 'gateway should resolve payTo at request time');
+    assert.ok(app.includes('x402GatewayReady'), 'app should wait for x402 initialization on cold starts');
   });
 
   it('x402 route pricing is built from the meter registry', () => {
