@@ -1,6 +1,18 @@
 import app from '../api-proxy/app.js';
 
 export default function handler(req, res) {
-  req.url = req.url.replace(/^\/(?:api|proxy)(?=\/|$)/, '') || '/';
+  const url = new URL(req.url, 'https://meterflow.fun');
+  const rewritePath = url.searchParams.get('path');
+
+  if (rewritePath) {
+    url.searchParams.delete('path');
+    const query = url.searchParams.toString();
+    const normalizedPath = `/${rewritePath.replace(/^\/+/, '')}`;
+    req.url = `${normalizedPath}${query ? `?${query}` : ''}`;
+    req.originalUrl = `/proxy${req.url}`;
+  } else {
+    req.url = req.url.replace(/^\/(?:api\/proxy|api|proxy)(?=\/|$)/, '') || '/';
+  }
+
   return app(req, res);
 }

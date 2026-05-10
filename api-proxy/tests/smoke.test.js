@@ -78,6 +78,14 @@ describe('CORS configuration', () => {
     assert.ok(src.includes("process.env.NODE_ENV !== 'production'"),
       'localhost origins should be behind env check');
   });
+
+  it('exposes x402 payment headers to browser clients', () => {
+    const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    assert.ok(src.includes('exposedHeaders'), 'should expose payment response headers');
+    for (const header of ['Payment-Required', 'Payment-Response', 'Payment-Signature', 'X-Payment-Response']) {
+      assert.ok(src.includes(header), `should include ${header}`);
+    }
+  });
 });
 
 // ═══════════════════════════════════════
@@ -423,7 +431,9 @@ describe('Vercel routing', () => {
     const ignore = readFileSync(resolve(projectRoot, '.vercelignore'), 'utf-8');
     const pkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
     assert.ok(src.includes("from '../api-proxy/app.js'"), 'function should import the Express app');
-    assert.ok(src.includes('(?:api|proxy)'), 'function should strip /api and /proxy prefixes');
+    assert.ok(src.includes('(?:api\\/proxy|api|proxy)'), 'function should strip /api/proxy, /api, and /proxy prefixes');
+    assert.ok(src.includes("searchParams.get('path')"), 'function should normalize Vercel rewrite path params');
+    assert.ok(src.includes('req.originalUrl') && src.includes('/proxy${req.url}'), 'function should keep x402 resource URLs under /proxy');
     assert.ok(!ignore.split(/\r?\n/).includes('api-proxy'), 'api-proxy must be included in Vercel deployment');
     assert.ok(pkg.dependencies.express, 'root package should include API dependencies for Vercel');
   });
