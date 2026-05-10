@@ -25,7 +25,7 @@ import { createFacilitatorConfig } from '@payai/facilitator';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
-import { DEFAULT_METERS, listBillableMeters, updateReceipt } from './control-plane.js';
+import { DEFAULT_METERS, listBillableMeters, recordReceipt, updateReceipt } from './control-plane.js';
 
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
@@ -43,6 +43,47 @@ function findMeterInList(meters, method, requestPath) {
     if (meter.route.endsWith('*')) return normalized.startsWith(meter.route.slice(0, -1));
     return normalizeRequestPath(meter.route) === normalized;
   }) || null;
+}
+
+function requestFromTransport(transportContext) {
+  return transportContext?.request?.adapter?.req || null;
+}
+
+function errorMessage(error) {
+  if (!error) return null;
+  return error.message || error.errorMessage || error.errorReason || String(error);
+}
+
+async function recordX402Failure({ req, meters, requirements, status, paymentState, policyResult, error, payerWallet, responseStatus = 402 }) {
+  if (!req) return null;
+
+  const meter = req.meterflowControl?.meter || findMeterInList(meters, req.method, req.path || req.originalUrl || req.url);
+  if (!meter) return null;
+
+  return recordReceipt({
+    meterId: meter.id,
+    route: meter.route,
+    method: meter.method,
+    status,
+    amountUsd: 0,
+    baseAmountUsd: Number(meter.priceUsd || 0),
+    protocolFeeUsd: 0,
+    protocolFeeBps: 0,
+    asset: meter.asset || 'USDC',
+    wallet: req.headers['x-payment-wallet'] || payerWallet || null,
+    apiKey: 'x402',
+    agent: req.headers['x-payment-wallet'] || payerWallet || 'x402_payer',
+    quoteId: req.headers['x-payment-id'] || req.headers['x-request-id'] || null,
+    paymentState,
+    paymentNetwork: requirements?.network || SOLANA_MAINNET_CAIP2,
+    paymentMint: requirements?.asset || USDC_MAINNET_ADDRESS,
+    payTo: requirements?.payTo || req.meterflowControl?.payTo || null,
+    payerWallet: payerWallet || req.headers['x-payment-wallet'] || null,
+    txSignature: req.headers['x-payment-transaction'] || req.headers['x-transaction-signature'] || null,
+    policyResult,
+    responseStatus,
+    error: errorMessage(error),
+  });
 }
 
 async function loadBillableMeters() {
@@ -111,10 +152,26 @@ export async function buildX402Middleware() {
       );
     }
 
+    const meters = await loadBillableMeters();
+    const routes = await buildRouteConfig(payTo, meters);
     const resourceServer = new x402ResourceServer(facilitatorClient)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
+    resourceServer.onAfterVerify(async ({ result, requirements, transportContext }) => {
+      if (result?.isValid) return;
+
+      await recordX402Failure({
+        req: requestFromTransport(transportContext),
+        meters,
+        requirements,
+        status: 'payment_verification_failed',
+        paymentState: 'verification_failed',
+        policyResult: 'payment_verification_failed',
+        error: result?.invalidMessage || result?.invalidReason || 'payment verification failed',
+        payerWallet: result?.payer,
+      });
+    });
     resourceServer.onAfterSettle(async ({ result, transportContext }) => {
-      const req = transportContext?.request?.adapter?.req;
+      const req = requestFromTransport(transportContext);
       const receiptId = req?.meterflowControl?.receiptId;
       const txSignature = result?.transaction || null;
       if (!receiptId || !txSignature) return;
@@ -126,9 +183,30 @@ export async function buildX402Middleware() {
         txSignature,
       });
     });
+    resourceServer.onSettleFailure(async ({ error, requirements, transportContext }) => {
+      const req = requestFromTransport(transportContext);
+      const receiptId = req?.meterflowControl?.receiptId;
+      const patch = {
+        status: 'settlement_failed',
+        paymentState: 'settlement_failed',
+        policyResult: 'settlement_failed',
+        responseStatus: 402,
+        amountUsd: 0,
+        error: errorMessage(error) || 'payment settlement failed',
+      };
 
-    const meters = await loadBillableMeters();
-    const routes = await buildRouteConfig(payTo, meters);
+      if (receiptId) {
+        await updateReceipt(receiptId, patch);
+        return;
+      }
+
+      await recordX402Failure({
+        req,
+        meters,
+        requirements,
+        ...patch,
+      });
+    });
 
     logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length, facilitatorProvider });
     return {

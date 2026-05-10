@@ -535,18 +535,22 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('DEFAULT_METERS'), 'should fall back to default meters if dynamic registry is unavailable');
     assert.ok(src.includes('buildRouteConfig'), 'should expose route config builder');
     assert.ok(!src.includes('const METER_ROUTES'), 'should not keep a second static meter list');
-    assert.ok(!src.includes('recordReceipt'), 'x402 middleware should not create duplicate receipts before route completion');
+    assert.ok(src.includes('recordX402Failure'), 'x402 middleware should only create receipts for payment failures before route completion');
   });
 
   it('x402 settlement patches receipts with transaction signatures', () => {
     const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     assert.ok(src.includes('onAfterSettle'), 'should persist settlement details inside the awaited x402 settlement hook');
+    assert.ok(src.includes('onAfterVerify'), 'should record payment verification failures');
+    assert.ok(src.includes('onSettleFailure'), 'should record settlement failures');
+    assert.ok(src.includes('recordX402Failure'), 'should centralize x402 failure receipts');
     assert.ok(src.includes('decodePaymentResponseHeader'), 'should decode settlement response headers');
     assert.ok(src.includes('updateReceipt(receiptId'), 'should patch the existing receipt after settlement');
     assert.ok(src.includes("'X-Payment-Transaction'"), 'should expose the settled transaction signature as a response header');
     assert.ok(control.includes('ctx.receiptId = receipt.id'), 'completeMeteredRequest should retain the receipt id on the request context');
     assert.ok(control.includes("result.status === 'metered_key'"), 'verified x402 calls should not remain marked as metered_key');
+    assert.ok(control.includes('verified_unsettled'), 'provider failures after payment verification should be detectable as unsettled');
   });
 
   it('x402 can use the PayAI hosted facilitator without a local settlement key', () => {

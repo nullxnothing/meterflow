@@ -706,11 +706,14 @@ export async function completeMeteredRequest(req, result = {}) {
   const meter = ctx.meter || await findMeterForRequest(req.method, req.originalUrl || req.path);
   if (!meter) return null;
 
-  const paymentState = result.paymentState || ctx.paymentState || 'legacy_key_metered';
-  const isVerified = paymentState === 'verified';
+  const initialPaymentState = result.paymentState || ctx.paymentState || 'legacy_key_metered';
+  const isVerified = initialPaymentState === 'verified';
   const status = isVerified && result.status === 'metered_key'
     ? 'verified'
     : (result.status || (isVerified ? 'verified' : 'metered_key'));
+  const paymentState = isVerified && status !== 'verified' && status !== 'metered_key'
+    ? 'verified_unsettled'
+    : initialPaymentState;
   const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
   const isBillable = status === 'metered_key' || status === 'verified';
   const amountUsd = result.amountUsd ?? (isBillable ? economics.totalAmountUsd : 0);
