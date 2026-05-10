@@ -24,7 +24,7 @@ import { createFacilitatorConfig } from '@payai/facilitator';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
-import { DEFAULT_METERS, findMeterForRequest, listBillableMeters } from './control-plane.js';
+import { DEFAULT_METERS, listBillableMeters } from './control-plane.js';
 
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
@@ -34,9 +34,9 @@ function normalizeRequestPath(path = '') {
   return path.split('?')[0].replace(/^\/proxy/, '').replace(/\/$/, '') || '/';
 }
 
-function findDefaultMeterForRequest(method, requestPath) {
+function findMeterInList(meters, method, requestPath) {
   const normalized = normalizeRequestPath(requestPath);
-  return DEFAULT_METERS.find(meter => {
+  return meters.find(meter => {
     if (meter.status === 'paused') return false;
     if ((meter.method || 'GET').toUpperCase() !== method.toUpperCase()) return false;
     if (meter.route.endsWith('*')) return normalized.startsWith(meter.route.slice(0, -1));
@@ -44,28 +44,22 @@ function findDefaultMeterForRequest(method, requestPath) {
   }) || null;
 }
 
-async function findBillableMeterForRequest(method, requestPath) {
+async function loadBillableMeters() {
   try {
-    return await findMeterForRequest(method, requestPath);
-  } catch (err) {
-    logger.warn('x402 meter lookup unavailable; using default meter match', { err: err.message });
-    return findDefaultMeterForRequest(method, requestPath);
-  }
-}
-
-export async function buildRouteConfig(payTo) {
-  const routes = {};
-  let meters;
-  try {
-    meters = await listBillableMeters();
+    return await listBillableMeters();
   } catch (err) {
     logger.warn('x402 meter registry unavailable; using default meters', { err: err.message });
-    meters = DEFAULT_METERS.filter(meter =>
+    return DEFAULT_METERS.filter(meter =>
       ['live', 'test', 'example'].includes(meter.status)
       && Number(meter.priceUsd) >= 0
       && (meter.asset || 'USDC').toUpperCase() === 'USDC'
     );
   }
+}
+
+export async function buildRouteConfig(payTo, billableMeters = null) {
+  const routes = {};
+  const meters = billableMeters || await loadBillableMeters();
 
   for (const meter of meters) {
     routes[`${(meter.method || 'GET').toUpperCase()} ${meter.route}`] = {
@@ -119,10 +113,15 @@ export async function buildX402Middleware() {
     const resourceServer = new x402ResourceServer(facilitatorClient)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
 
-    const routes = await buildRouteConfig(payTo);
+    const meters = await loadBillableMeters();
+    const routes = await buildRouteConfig(payTo, meters);
 
     logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length, facilitatorProvider });
-    return paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG);
+    return {
+      middleware: paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG),
+      meters,
+      payTo,
+    };
   } catch (err) {
     logger.error('x402 middleware init failed', { err: err.message });
     return null;
@@ -135,20 +134,24 @@ export async function buildX402Middleware() {
  * If the request has no Bearer, check if x402 proof is present and delegate to paymentMiddleware.
  * After successful x402 payment, populate req.meterflow and continue.
  */
-export function createX402Gateway(paymentMw) {
+export function createX402Gateway(x402) {
+  const paymentMw = typeof x402 === 'function' ? x402 : x402?.middleware;
   if (!paymentMw) {
     return (_req, _res, next) => next();
   }
+
+  const meters = Array.isArray(x402?.meters) ? x402.meters : DEFAULT_METERS;
+  const configuredPayTo = x402?.payTo || '';
 
   return async (req, res, next) => {
     // Pass through to normal auth if Bearer token present
     if (req.headers.authorization?.startsWith('Bearer ')) return next();
 
     const requestPath = req.path || req.originalUrl || req.url;
-    const meter = await findBillableMeterForRequest(req.method, requestPath);
+    const meter = findMeterInList(meters, req.method, requestPath);
     if (!meter) return next();
 
-    const payTo = process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET;
+    const payTo = configuredPayTo || process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET;
 
     // Inject meterflow context after successful x402 payment, then continue
     const originalNext = next;

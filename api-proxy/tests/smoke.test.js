@@ -505,7 +505,8 @@ describe('Meterflow control plane', () => {
 
   it('x402 only wraps configured paid meter routes', () => {
     const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
-    assert.ok(src.includes('findBillableMeterForRequest'), 'should pre-match paid meter routes');
+    assert.ok(src.includes('findMeterInList'), 'should pre-match paid meter routes from the initialized route table');
+    assert.ok(src.includes('Array.isArray(x402?.meters)'), 'should reuse initialized meters instead of scanning storage per request');
     assert.ok(src.includes('if (!meter) return next();'), 'public routes should bypass x402 context injection');
     assert.ok(src.includes('process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET'), 'gateway should resolve payTo at request time');
   });
