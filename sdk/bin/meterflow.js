@@ -18,17 +18,17 @@ function hasFlag(name) {
   return args.includes(`--${name}`);
 }
 
-function apiKey() {
+function apiKey({ optional = false } = {}) {
   const key = argValue('api-key', process.env.METERFLOW_API_KEY);
-  if (!key) {
+  if (!key && !optional) {
     throw new Error('Missing Meterflow API key. Set METERFLOW_API_KEY or pass --api-key mf_xxxxx.');
   }
-  return key;
+  return key || 'public';
 }
 
-function client() {
+function client(options = {}) {
   return new MeterflowClient({
-    apiKey: apiKey(),
+    apiKey: apiKey(options),
     baseUrl: argValue('base-url', process.env.METERFLOW_BASE_URL),
   });
 }
@@ -44,6 +44,12 @@ Usage:
   meterflow meters
   meterflow create-meter --route /api/risk-score --price 0.006 --method POST
   meterflow receipts --limit 25
+  meterflow registry --category mcp-tool
+  meterflow registry-item --id mtr_mcp_token_risk
+  meterflow public-receipt --id rcpt_xxxxx
+  meterflow public-tx --signature 5N...
+  meterflow integrations --priority highest
+  meterflow integration --id helius
   meterflow budget-templates
   meterflow create-budget --template research_agent --agent market-bot
   meterflow simulate-budget --daily-cap 5 --per-call-cap 0.02 --calls 120
@@ -94,6 +100,49 @@ async function main() {
           limit: argValue('limit', 25),
         }));
         break;
+
+      case 'registry':
+        printJson(await client({ optional: true }).registry({
+          category: argValue('category'),
+          status: argValue('status'),
+        }));
+        break;
+
+      case 'registry-item': {
+        const id = argValue('id');
+        if (!id) throw new Error('registry-item requires --id.');
+        printJson(await client({ optional: true }).registryItem(id));
+        break;
+      }
+
+      case 'public-receipt': {
+        const id = argValue('id');
+        if (!id) throw new Error('public-receipt requires --id.');
+        printJson(await client({ optional: true }).publicReceipt(id));
+        break;
+      }
+
+      case 'public-tx': {
+        const signature = argValue('signature', argValue('tx'));
+        if (!signature) throw new Error('public-tx requires --signature.');
+        printJson(await client({ optional: true }).publicReceiptByTx(signature));
+        break;
+      }
+
+      case 'integrations':
+        printJson(await client({ optional: true }).integrations({
+          category: argValue('category'),
+          priority: argValue('priority'),
+          status: argValue('status'),
+        }));
+        break;
+
+      case 'integration': {
+        const id = argValue('id');
+        if (!id) throw new Error('integration requires --id.');
+        printJson(await client({ optional: true }).integration(id));
+        break;
+      }
 
       case 'budget-templates':
         printJson({ templates: listBudgetTemplates() });
