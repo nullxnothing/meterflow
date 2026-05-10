@@ -13,6 +13,7 @@
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
     { "source": "/admin/applications/:path*", "destination": "/site/admin-applications.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/404", "destination": "/site/404.html" },
     { "source": "/", "destination": "/site/index.html" }
   ],
   "headers": [
