@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateApiKey } from '../middleware.js';
-import { createBudget } from '../lib/control-plane.js';
+import { createBudget, updateBudget } from '../lib/control-plane.js';
 import {
   buildBudgetFromTemplate,
   getBudgetTemplate,
@@ -58,7 +58,14 @@ router.post('/budgets/from-template', authenticateApiKey, async (req, res) => {
     return badRequest(res, 'Budget caps must be non-negative');
   }
 
-  const budget = await createBudget(budgetInput, req.meterflow.apiKey, req.meterflow.wallet);
+  const created = await createBudget(budgetInput, req.meterflow.apiKey, req.meterflow.wallet);
+  const budget = await updateBudget(created.id, {
+    allowedRoutes: budgetInput.allowedRoutes,
+    expiresAt: budgetInput.expiresAt,
+    onNewRoute: budgetInput.onNewRoute,
+    metadata: budgetInput.metadata,
+  });
+
   res.status(201).json({ budget, template: getBudgetTemplate(templateId) });
 });
 
