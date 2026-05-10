@@ -10,6 +10,7 @@
   "exports": {
     ".": "./src/index.js",
     "./express": "./src/express.js",
+    "./adapters": "./src/adapters.js",
     "./budget-templates": "./src/budget-templates.js"
   },
   "files": [
