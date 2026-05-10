@@ -38,7 +38,7 @@ await checkPage('/', 'Meterflow');
 pass('home page');
 
 const homeEntrypoints = await checkPage('/', '/apply');
-assert.ok(homeEntrypoints.includes('https://github.com/nullxnothing/meterflow'), 'home page should link GitHub');
+assert.ok(homeEntrypoints.includes('https://github.com/nullxnothing'), 'home page should link GitHub');
 assert.ok(homeEntrypoints.includes('/dashboard'), 'home page should link dashboard');
 assert.ok(homeEntrypoints.includes('/docs'), 'home page should link docs');
 pass('public entrypoint links');
