@@ -8,7 +8,7 @@ import { getWalletProviders } from './wallet.js?v=v10-ledger';
 import { bindEvents } from './events.js';
 
 // Tab renderers
-import { renderOverview } from './tabs/overview.js?v=v5-clean-mflow';
+import { renderOverview } from './tabs/overview.js?v=v12-onboard';
 import { renderMeters, renderReceipts, renderBudgets, renderMcpTools, renderWebhooks } from './tabs/control-plane.js?v=v11-acceptance';
 import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
 import { renderModels } from './tabs/models.js?v=v5-clean-mflow';

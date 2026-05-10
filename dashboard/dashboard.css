@@ -3376,3 +3376,155 @@ button.sidebar-cmdk,
   font-size: 12px;
   margin-bottom: 14px;
 }
+
+/* ─── Onboarding hero (first-run) ─── */
+.onboarding-hero {
+  position: relative;
+  margin-bottom: 28px;
+  padding: 32px 32px 28px;
+  border: 1px solid rgba(79, 156, 255, 0.25);
+  border-radius: 16px;
+  background:
+    radial-gradient(900px 400px at -10% -50%, rgba(79, 156, 255, 0.18), transparent 60%),
+    radial-gradient(700px 400px at 110% 110%, rgba(31, 95, 184, 0.18), transparent 60%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow-elev);
+  overflow: hidden;
+}
+.onboarding-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 156, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 156, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.onboarding-hero > * { position: relative; }
+
+.onboarding-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 5px 12px;
+  border: 1px solid rgba(79, 156, 255, 0.3);
+  border-radius: var(--radius-pill);
+  background: rgba(79, 156, 255, 0.08);
+  margin-bottom: 18px;
+}
+.onboarding-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: live-pulse 2.4s ease-in-out infinite;
+}
+.onboarding-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 12px;
+  max-width: 720px;
+}
+.onboarding-hero-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.65;
+  max-width: 640px;
+  margin-bottom: 24px;
+}
+
+.onboarding-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 0;
+  margin: 0 0 24px;
+}
+.onboarding-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+}
+.onboarding-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(79, 156, 255, 0.4);
+  background: rgba(79, 156, 255, 0.08);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.onboarding-steps li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.onboarding-steps strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.onboarding-steps span {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.onboarding-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.onboarding-cta {
+  font-size: 12px !important;
+  letter-spacing: 1.5px !important;
+  padding: 12px 22px !important;
+}
+.onboarding-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+.onboarding-link:hover { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .onboarding-hero { padding: 22px 20px; }
+  .onboarding-hero-title { font-size: 20px; }
+  .onboarding-steps { grid-template-columns: 1fr; gap: 8px; }
+  .onboarding-cta-row { flex-direction: column; align-items: stretch; }
+  .onboarding-cta { width: 100%; text-align: center; }
+  .onboarding-link { text-align: center; }
+}

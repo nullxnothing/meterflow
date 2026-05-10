@@ -98,6 +98,31 @@ function renderPublicOverview() {
       <h1 class="page-title">Meterflow</h1>
       <p class="page-sub">Connect a wallet, issue metered clients, and visualize x402-style paid API usage on Solana.</p>
     </div>
+
+    ${!STATE.connected ? `
+      <div class="onboarding-hero">
+        <div class="onboarding-hero-eyebrow">
+          <span class="onboarding-hero-dot"></span>
+          New here? Start in 60 seconds
+        </div>
+        <h2 class="onboarding-hero-title">Connect a wallet to start metering paid API usage.</h2>
+        <p class="onboarding-hero-sub">No card. No subscription. Wallets handle identity and settlement &mdash; you keep control of every key, budget, and route.</p>
+        <ol class="onboarding-steps">
+          <li><span class="onboarding-step-num">1</span><div><strong>Connect</strong><span>Phantom, Solflare, or any Solana wallet</span></div></li>
+          <li><span class="onboarding-step-num">2</span><div><strong>Issue a key</strong><span>Bind a metered client to your wallet</span></div></li>
+          <li><span class="onboarding-step-num">3</span><div><strong>Set a budget</strong><span>Cap what each agent can spend</span></div></li>
+        </ol>
+        <div class="onboarding-cta-row">
+          <button class="btn-primary onboarding-cta" onclick="openWalletConnect()">Connect Wallet</button>
+          <a href="/docs" class="onboarding-link">Or read the docs &rarr;</a>
+        </div>
+      </div>
+    ` : `
+      <div class="section" style="text-align:center;padding:24px 0;">
+        <p style="color:var(--text-muted);font-size:13px;">Your wallet is connected. Utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong>.</p>
+      </div>
+    `}
+
     <div class="stats-row">
       <div class="stat-card preview"><div class="label">Meters</div><div class="value">—</div><div class="sub">price API calls and tools</div></div>
       <div class="stat-card preview"><div class="label">Receipts</div><div class="value">—</div><div class="sub">connect payment to usage</div></div>
@@ -105,15 +130,6 @@ function renderPublicOverview() {
       <div class="stat-card preview"><div class="label">MCP Tools</div><div class="value">—</div><div class="sub">package paid capabilities</div></div>
     </div>
     ${renderTokenUtilityPanel({ compact: true })}
-    ${!STATE.connected ? `
-      <div class="section" style="text-align:center;padding:24px 0 8px;">
-        <p style="color:var(--text-muted);font-size:12px;">Wallets anchor identity and settlement. Agents call through metered keys and budget policies.</p>
-      </div>
-    ` : `
-      <div class="section" style="text-align:center;padding:24px 0;">
-        <p style="color:var(--text-muted);font-size:13px;">Your wallet is connected. Utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong>.</p>
-      </div>
-    `}
     <div class="section">
       <div class="section-title">What The Dashboard Is For</div>
       <div class="tools-grid">
