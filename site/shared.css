@@ -932,6 +932,23 @@ nav .nav-links .nav-cta.ghost:hover {
 .mobile-menu a:last-child { border-bottom: none; }
 .mobile-menu a:hover { color: var(--accent); }
 
+@media (max-width: 1120px) {
+  body > nav,
+  nav {
+    padding: 0 24px;
+  }
+
+  body > nav .nav-links,
+  nav .nav-links {
+    display: none;
+  }
+
+  body > nav .hamburger,
+  nav .hamburger {
+    display: flex;
+  }
+}
+
 .site-subpage-hero {
   position: relative;
   overflow: hidden;

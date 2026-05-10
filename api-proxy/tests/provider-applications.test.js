@@ -48,9 +48,14 @@ describe('Provider applications intake', () => {
   it('ships public and admin pages with the required API calls', () => {
     const apply = read('site/apply.html');
     const admin = read('site/admin-applications.html');
+    const home = read('site/index.html');
+    const docs = read('site/docs.html');
     const vercel = read('vercel.json');
     assert.ok(apply.includes('Launch a paid endpoint'));
     assert.ok(apply.includes('/proxy/applications/provider'));
+    assert.ok(home.includes('href="/apply"'), 'homepage should expose provider application entrypoint');
+    assert.ok(docs.includes('href="/apply"'), 'docs should expose provider application entrypoint');
+    assert.ok(home.includes('https://github.com/nullxnothing/meterflow'), 'homepage should expose GitHub entrypoint');
     assert.ok(admin.includes('Provider applications'));
     assert.ok(admin.includes('/proxy/admin/applications'));
     assert.ok(admin.includes('Meterflow profit'));

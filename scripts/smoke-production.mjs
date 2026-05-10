@@ -37,12 +37,29 @@ function pass(name) {
 await checkPage('/', 'Meterflow');
 pass('home page');
 
+const homeEntrypoints = await checkPage('/', '/apply');
+assert.ok(homeEntrypoints.includes('https://github.com/nullxnothing/meterflow'), 'home page should link GitHub');
+assert.ok(homeEntrypoints.includes('/dashboard'), 'home page should link dashboard');
+assert.ok(homeEntrypoints.includes('/docs'), 'home page should link docs');
+pass('public entrypoint links');
+
 const dashboard = await checkPage('/dashboard', 'v10-ledger');
 assert.ok(dashboard.includes('dashboard.css'), 'dashboard should load CSS');
 pass('dashboard assets');
 
-await checkPage('/docs', 'Meterflow');
+const apply = await checkPage('/apply', 'Provider application');
+assert.ok(apply.includes('/proxy/applications/provider'), 'apply page should submit to provider application API');
+pass('provider apply page');
+
+const docs = await checkPage('/docs', 'Meterflow');
+assert.ok(docs.includes('/apply'), 'docs page should link provider application entrypoint');
 pass('docs page');
+
+await checkPage('/how-it-works', 'Meterflow');
+pass('how-it-works page');
+
+await checkPage('/roadmap', 'Meterflow');
+pass('roadmap page');
 
 const health = await checkJson('/proxy/health');
 assert.equal(health.status, 'ok');
