@@ -99,12 +99,12 @@ export function simulateBudget({ dailyCapUsd, perCallCapUsd, callsPerDay = 0, av
 
   return {
     dailyCapUsd: dailyCap,
-    perCallCapUsd: perCall,
+    perCallCapUsd: perCallCap,
     callsPerDay: calls,
     averageCallPriceUsd: callPrice,
     estimatedDailySpendUsd,
     maxCallsByDailyCap,
-    exceedsPerCallCap: callPrice > perCall,
+    exceedsPerCallCap: callPrice > perCallCap,
     exceedsDailyCap: estimatedDailySpendUsd > dailyCap,
     remainingDailyBudgetUsd: Number(Math.max(0, dailyCap - estimatedDailySpendUsd).toFixed(6)),
   };
