@@ -43,7 +43,7 @@ assert.ok(homeEntrypoints.includes('/dashboard'), 'home page should link dashboa
 assert.ok(homeEntrypoints.includes('/docs'), 'home page should link docs');
 pass('public entrypoint links');
 
-const dashboard = await checkPage('/dashboard', 'v10-ledger');
+const dashboard = await checkPage('/dashboard', 'v11-acceptance');
 assert.ok(dashboard.includes('dashboard.css'), 'dashboard should load CSS');
 pass('dashboard assets');
 

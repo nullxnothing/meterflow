@@ -214,7 +214,7 @@ function updateOverviewStats() {
   const barClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
 
   const sub = main.querySelector('.page-sub');
-  if (sub) sub.textContent = `${STATE.usage.remaining.toLocaleString()} metered calls remaining today. Legacy tier: ${STATE.tier || '\u2014'}.`;
+  if (sub) sub.textContent = `${STATE.usage.remaining.toLocaleString()} metered calls remaining today. Utility tier: ${STATE.tier || '\u2014'}.`;
 
   const cards = main.querySelectorAll('.stat-card');
   if (cards.length >= 4) {

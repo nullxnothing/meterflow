@@ -17,6 +17,7 @@ const CP = {
   budgets: [],
   revenue: [],
   mcpTools: [],
+  webhooks: [],
 };
 
 const PREVIEW_METERS = [
@@ -41,6 +42,10 @@ const PREVIEW_MCP_TOOLS = [
   { id: 'mcp_preview_002', name: 'Wallet Funding Trace', route: '/mcp/wallet-trace', priceUsd: 0.012, status: 'test' },
 ];
 
+const PREVIEW_WEBHOOKS = [
+  { id: 'wh_preview_001', url: 'https://example.com/meterflow/events', events: ['receipt.verified', 'payment.failed'], status: 'active' },
+];
+
 const PREVIEW_REVENUE = [
   { meterId: 'mtr_chat', calls: 1284, estimatedUsd: 5.14 },
   { meterId: 'mtr_mcp_token_risk', calls: 412, estimatedUsd: 2.47 },
@@ -55,6 +60,7 @@ function viewData() {
     budgets: PREVIEW_BUDGETS,
     revenue: PREVIEW_REVENUE,
     mcpTools: PREVIEW_MCP_TOOLS,
+    webhooks: PREVIEW_WEBHOOKS,
   };
 }
 
@@ -110,6 +116,28 @@ function txLink(signature) {
   return `<a class="receipt-link mono" href="https://solscan.io/tx/${safe}" target="_blank" rel="noreferrer">${shortHash(safe, 5, 5)}</a>`;
 }
 
+function renderPaidRoutePanel(locked) {
+  const endpoint = 'https://meterflow.fun/proxy/mcp/token-risk';
+  return `
+    <div class="x402-route-panel ${locked ? 'preview-disabled' : ''}">
+      <div>
+        <div class="x402-route-kicker">Live x402 Route</div>
+        <div class="x402-route-title">Token Risk Score</div>
+        <p class="x402-route-copy">A request without payment returns a machine-readable x402 quote. A compatible SVM client pays 0.006 USDC, retries with proof, and Meterflow records the settled receipt against the payer wallet.</p>
+      </div>
+      <div class="x402-route-meta">
+        <div><span>Endpoint</span><code>${endpoint}</code></div>
+        <div><span>Price</span><strong>0.006 USDC</strong></div>
+        <div><span>Receipt visibility</span><strong>payer wallet + API key</strong></div>
+      </div>
+      <div class="x402-route-actions">
+        <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : `copyText('${endpoint}')`}">${locked ? 'Unlock' : 'Copy Endpoint'}</button>
+        <button class="btn-sm" onclick="setTab('mcp-tools')">View MCP Tool</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderReceiptState(receipt) {
   const meta = receiptStateMeta(receipt);
   return `
@@ -129,12 +157,14 @@ function loadControlPlane(force = false) {
     api('/v1/budgets'),
     api('/v1/providers/revenue'),
     api('/v1/mcp-tools'),
-  ]).then(([meters, receipts, budgets, revenue, mcpTools]) => {
+    api('/v1/webhooks'),
+  ]).then(([meters, receipts, budgets, revenue, mcpTools, webhooks]) => {
     CP.meters = meters.meters || [];
     CP.receipts = receipts.receipts || [];
     CP.budgets = budgets.budgets || [];
     CP.revenue = revenue.revenue || [];
     CP.mcpTools = mcpTools.tools || [];
+    CP.webhooks = webhooks.webhooks || [];
     CP.loaded = true;
   }).catch(err => {
     showToast(err.message || 'Could not load Meterflow control plane', true);
@@ -241,6 +271,7 @@ export function renderReceipts() {
       <p class="page-sub">Connect each request to quote, payer wallet, payment proof, policy result, response status, and exportable accounting records.</p>
     </div>
     ${locked ? renderPreviewNotice('receipts') : ''}
+    ${renderPaidRoutePanel(locked)}
     <div class="stats-row">
       <div class="stat-card"><div class="label">Recorded</div><div class="value accent">${data.receipts.length}</div><div class="sub">latest events</div></div>
       <div class="stat-card"><div class="label">Settled</div><div class="value green">${verified}</div><div class="sub">verified payment receipts</div></div>
@@ -257,7 +288,7 @@ export function renderReceipts() {
       </div>
       <div class="tool-config-box receipt-table-wrap">
         <table class="treasury-table receipt-ledger-table">
-          <thead><tr><th>Time</th><th>State</th><th>Route</th><th>Payer</th><th>Amount</th><th>Tx</th><th>Response</th><th>Receipt</th></tr></thead>
+          <thead><tr><th>Time</th><th>State</th><th>Route</th><th>Payer</th><th>Amount</th><th>Tx</th><th>Response</th><th>Receipt</th><th></th></tr></thead>
           <tbody>
             ${data.receipts.length ? data.receipts.map(r => `
               <tr>
@@ -267,15 +298,72 @@ export function renderReceipts() {
                 <td><span class="mono">${escapeHtml(shortHash(r.payerWallet || r.wallet, 5, 5))}</span></td>
                 <td><strong>${money(r.amountUsd)}</strong><span class="receipt-muted"> ${escapeHtml(r.asset || 'USDC')}</span></td>
                 <td>${txLink(r.txSignature)}</td>
-                <td><span class="receipt-response ${Number(r.responseStatus || 0) >= 400 ? 'bad' : 'ok'}">${escapeHtml(r.responseStatus || '—')}</span></td>
+                <td><span class="receipt-response ${Number(r.responseStatus || 0) >= 400 ? 'bad' : 'ok'}">${escapeHtml(String(r.responseStatus || '—'))}</span></td>
                 <td><span class="mono">${escapeHtml(shortHash(r.id, 8, 4))}</span></td>
+                <td><button class="receipt-row-action" onclick="${locked ? 'openTokenPurchase()' : `viewReceiptDetails('${r.id}')`}">View</button></td>
               </tr>
-            `).join('') : '<tr><td colspan="8">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
+            `).join('') : '<tr><td colspan="9">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
           </tbody>
         </table>
       </div>
       <div style="margin-top:12px;">
         <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : 'downloadReceiptsCsv()'}">${locked ? 'Unlock Export' : 'Export CSV'}</button>
+      </div>
+    </div>
+  `;
+}
+
+export function renderWebhooks() {
+  const ready = ensureLoaded('Webhooks');
+  if (ready !== true) return ready;
+
+  const data = viewData();
+  const locked = !canManageMeterflow();
+  const active = data.webhooks.filter(w => w.status === 'active').length;
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Webhooks</h1>
+      <p class="page-sub">Send signed events for verified receipts, payment failures, budget exhaustion, and test deliveries.</p>
+    </div>
+    ${locked ? renderPreviewNotice('webhooks') : ''}
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Endpoints</div><div class="value accent">${data.webhooks.length}</div><div class="sub">configured destinations</div></div>
+      <div class="stat-card"><div class="label">Active</div><div class="value green">${active}</div><div class="sub">ready for delivery</div></div>
+      <div class="stat-card"><div class="label">Signing</div><div class="value">HMAC</div><div class="sub">per endpoint secret</div></div>
+      <div class="stat-card"><div class="label">Events</div><div class="value accent">4</div><div class="sub">receipt + budget lifecycle</div></div>
+    </div>
+    <div class="section ${locked ? 'preview-disabled' : ''}">
+      <div class="section-title">Create Webhook</div>
+      <div class="tool-config-box webhook-form-grid">
+        <input id="webhookUrl" class="bot-form-input" placeholder="https://example.com/meterflow/events">
+        <select id="webhookEvents" class="bot-form-input" multiple>
+          <option value="receipt.verified" selected>receipt.verified</option>
+          <option value="payment.failed" selected>payment.failed</option>
+          <option value="budget.exhausted">budget.exhausted</option>
+          <option value="webhook.test">webhook.test</option>
+        </select>
+        <input id="webhookSecret" class="bot-form-input" placeholder="optional signing secret">
+        <select id="webhookStatus" class="bot-form-input"><option>active</option><option>paused</option></select>
+        <button class="btn-sm primary" onclick="createWebhookFromDashboard()">Create Webhook</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Delivery Endpoints</div>
+      <div class="tools-grid">
+        ${data.webhooks.length ? data.webhooks.map(webhook => `
+          <div class="tool-card">
+            <div class="tool-header">${statusBadge(webhook.status)}</div>
+            <div class="tool-name">${escapeHtml(webhook.url)}</div>
+            <div class="tool-desc">
+              Events: ${(webhook.events || []).map(escapeHtml).join(', ') || 'none'}<br>
+              Secret: ${webhook.hasSecret === false ? 'not set' : 'configured'}<br>
+              ID: <span class="mono">${escapeHtml(shortHash(webhook.id, 7, 4))}</span>
+            </div>
+            <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testWebhookFromDashboard('${webhook.id}')`}">${locked ? 'Unlock' : 'Send Test'}</div>
+            ${!locked ? `<div class="tool-launch danger" onclick="deleteWebhookFromDashboard('${webhook.id}')">Delete</div>` : ''}
+          </div>
+        `).join('') : '<div class="tool-card"><div class="tool-name">No webhooks yet</div><div class="tool-desc">Create an endpoint to receive signed payment and budget events.</div></div>'}
       </div>
     </div>
   `;
@@ -507,6 +595,93 @@ async function downloadReceiptsCsv() {
   }
 }
 
+async function viewReceiptDetails(receiptId) {
+  try {
+    const data = await api(`/v1/receipts/${receiptId}`);
+    const receipt = data.receipt;
+    const existing = document.getElementById('receiptDetailModal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'receiptDetailModal';
+    modal.className = 'receipt-modal-overlay';
+    const rows = [
+      ['Receipt', receipt.id],
+      ['Route', receipt.route],
+      ['State', receipt.paymentState || receipt.status],
+      ['Amount', `${money(receipt.amountUsd)} ${receipt.asset || 'USDC'}`],
+      ['Payer', receipt.payerWallet || receipt.wallet || '—'],
+      ['Pay To', receipt.payTo || '—'],
+      ['Transaction', receipt.txSignature || '—'],
+      ['Policy', receipt.policyResult || '—'],
+      ['Response', receipt.responseStatus || '—'],
+      ['Created', receipt.createdAt || '—'],
+    ];
+    modal.innerHTML = `
+      <div class="receipt-modal">
+        <button class="receipt-modal-close" aria-label="Close">&times;</button>
+        <div class="receipt-modal-kicker">Receipt Detail</div>
+        <h2>${escapeHtml(shortHash(receipt.id, 10, 6))}</h2>
+        <div class="receipt-modal-grid">
+          ${rows.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('')}
+        </div>
+        <div class="receipt-modal-actions">
+          ${receipt.txSignature ? `<a class="btn-sm primary" href="https://solscan.io/tx/${escapeHtml(receipt.txSignature)}" target="_blank" rel="noreferrer">Open Solscan</a>` : ''}
+          <button class="btn-sm" onclick="copyText('${escapeHtml(receipt.id)}')">Copy Receipt ID</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.querySelector('.receipt-modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', event => {
+      if (event.target === modal) modal.remove();
+    });
+  } catch (err) {
+    showToast(err.message || 'Receipt detail failed', true);
+  }
+}
+
+async function createWebhookFromDashboard() {
+  const select = document.getElementById('webhookEvents');
+  const events = select ? [...select.selectedOptions].map(opt => opt.value) : [];
+  try {
+    await api('/v1/webhooks', {
+      method: 'POST',
+      body: JSON.stringify({
+        url: document.getElementById('webhookUrl')?.value.trim(),
+        events,
+        secret: document.getElementById('webhookSecret')?.value.trim() || undefined,
+        status: document.getElementById('webhookStatus')?.value || 'active',
+      }),
+    });
+    CP.loaded = false;
+    showToast('Webhook created');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Webhook creation failed', true);
+  }
+}
+
+async function testWebhookFromDashboard(webhookId) {
+  try {
+    const data = await api(`/v1/webhooks/${webhookId}/test`, { method: 'POST' });
+    showToast(data.delivery?.ok === false ? 'Webhook test sent with delivery error' : 'Webhook test sent');
+  } catch (err) {
+    showToast(err.message || 'Webhook test failed', true);
+  }
+}
+
+async function deleteWebhookFromDashboard(webhookId) {
+  if (!confirm('Delete this webhook endpoint? This cannot be undone.')) return;
+  try {
+    await api(`/v1/webhooks/${webhookId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('Webhook deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Webhook deletion failed', true);
+  }
+}
+
 window.createMeterFromDashboard = createMeterFromDashboard;
 window.testMeter = testMeter;
 window.deleteMeterFromDashboard = deleteMeterFromDashboard;
@@ -515,3 +690,7 @@ window.revokeBudgetFromDashboard = revokeBudgetFromDashboard;
 window.createMcpToolFromDashboard = createMcpToolFromDashboard;
 window.deleteMcpToolFromDashboard = deleteMcpToolFromDashboard;
 window.downloadReceiptsCsv = downloadReceiptsCsv;
+window.viewReceiptDetails = viewReceiptDetails;
+window.createWebhookFromDashboard = createWebhookFromDashboard;
+window.testWebhookFromDashboard = testWebhookFromDashboard;
+window.deleteWebhookFromDashboard = deleteWebhookFromDashboard;

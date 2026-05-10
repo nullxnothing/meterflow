@@ -9,7 +9,7 @@ import { bindEvents } from './events.js';
 
 // Tab renderers
 import { renderOverview } from './tabs/overview.js?v=v5-clean-mflow';
-import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=v10-ledger';
+import { renderMeters, renderReceipts, renderBudgets, renderMcpTools, renderWebhooks } from './tabs/control-plane.js?v=v11-acceptance';
 import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
 import { renderModels } from './tabs/models.js?v=v5-clean-mflow';
 import { renderConnections } from './tabs/connections.js?v=logos';
@@ -198,6 +198,7 @@ function renderNavItems() {
     <div class="nav-item ${t === 'receipts' ? 'active' : ''}" data-tab="receipts">Receipts</div>
     <div class="nav-item ${t === 'budgets' ? 'active' : ''}" data-tab="budgets">Agent Budgets</div>
     <div class="nav-item ${t === 'mcp-tools' ? 'active' : ''}" data-tab="mcp-tools">MCP Tools</div>
+    <div class="nav-item ${t === 'webhooks' ? 'active' : ''}" data-tab="webhooks">Webhooks</div>
     <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
     <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Service Routes</div>
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
@@ -225,6 +226,7 @@ export function renderTab() {
       case 'receipts': return renderReceipts();
       case 'budgets': return renderBudgets();
       case 'mcp-tools': return renderMcpTools();
+      case 'webhooks': return renderWebhooks();
       case 'keys': return renderKeys();
       case 'models': return renderModels();
       case 'connections': return renderConnections();

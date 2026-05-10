@@ -6,7 +6,7 @@ import { STATE, CHAT, TRADING, API_BASE } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
-import { render } from './render.js?v=v10-ledger';
+import { render } from './render.js?v=v11-acceptance';
 import { showToast } from './actions.js';
 import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
@@ -93,7 +93,7 @@ if (connectedProvider) {
 // ─── Tab persistence: read URL hash and respond to back/forward ───
 
 const VALID_TABS = new Set([
-  'overview', 'meters', 'receipts', 'budgets', 'mcp-tools',
+  'overview', 'meters', 'receipts', 'budgets', 'mcp-tools', 'webhooks',
   'keys', 'models', 'connections', 'treasury', 'future-apis',
   'chat', 'trading', 'live-trades',
 ]);
