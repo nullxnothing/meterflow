@@ -175,6 +175,54 @@ export class MeterflowClient {
   }
 
   /**
+   * List public registry entries for paid routes and MCP tools.
+   * @param {{category?: string, status?: string}} [params]
+   */
+  async registry(params = {}) {
+    return this._get(`/v1/registry${this._query(params)}`);
+  }
+
+  /**
+   * Fetch one public registry entry.
+   * @param {string} meterId
+   */
+  async registryItem(meterId) {
+    return this._get(`/v1/registry/${encodeURIComponent(meterId)}`);
+  }
+
+  /**
+   * Fetch a public-safe receipt by Meterflow receipt id.
+   * @param {string} receiptId
+   */
+  async publicReceipt(receiptId) {
+    return this._get(`/v1/public/receipts/${encodeURIComponent(receiptId)}`);
+  }
+
+  /**
+   * Fetch a public-safe receipt by Solana transaction signature.
+   * @param {string} signature
+   */
+  async publicReceiptByTx(signature) {
+    return this._get(`/v1/public/tx/${encodeURIComponent(signature)}`);
+  }
+
+  /**
+   * List planned Solana ecosystem integrations for paid agent routes.
+   * @param {{category?: string, priority?: string, status?: string}} [params]
+   */
+  async integrations(params = {}) {
+    return this._get(`/v1/integrations${this._query(params)}`);
+  }
+
+  /**
+   * Fetch one integration plan.
+   * @param {string} integrationId
+   */
+  async integration(integrationId) {
+    return this._get(`/v1/integrations/${encodeURIComponent(integrationId)}`);
+  }
+
+  /**
    * List configured webhook endpoints.
    */
   async webhooks() {
