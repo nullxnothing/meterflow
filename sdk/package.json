@@ -1,14 +1,20 @@
 {
   "name": "@meterflow/sdk",
-  "version": "1.0.0",
+  "version": "1.1.0-v2.0",
   "description": "SDK for Meterflow — USDC metering for AI agents and APIs on Solana",
   "type": "module",
   "main": "src/index.js",
+  "bin": {
+    "meterflow": "./bin/meterflow.js"
+  },
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./express": "./src/express.js",
+    "./budget-templates": "./src/budget-templates.js"
   },
   "files": [
-    "src/"
+    "src/",
+    "bin/"
   ],
   "keywords": [
     "solana",
@@ -19,7 +25,9 @@
     "metering",
     "claude",
     "gemini",
-    "meterflow"
+    "meterflow",
+    "mcp",
+    "usdc"
   ],
   "license": "MIT",
   "engines": {
