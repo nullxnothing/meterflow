@@ -1,3 +1,11 @@
+// Global handler — suppress dev-only network errors from proxy 404s
+window.addEventListener('unhandledrejection', e => {
+  const msg = String(e.reason || '');
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) {
+    e.preventDefault();
+  }
+});
+
 // Shared site behaviors: mobile menu toggle, ESC close, link-tap close
 (function () {
   const hamburger = document.getElementById('hamburger');
