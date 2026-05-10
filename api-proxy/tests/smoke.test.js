@@ -454,6 +454,8 @@ describe('Vercel routing', () => {
     assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
     assert.ok(sources.includes('/docs'), 'should rewrite /docs');
     assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
+    assert.ok(sources.includes('/privacy'), 'should rewrite /privacy');
+    assert.ok(sources.includes('/terms'), 'should rewrite /terms');
   });
 });
 

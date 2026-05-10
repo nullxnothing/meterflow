@@ -110,7 +110,7 @@
   grid-template-columns: 1fr;
 }
 
-/* ─── Ambient Background ─── */
+/* ─── Structured Background ─── */
 .main {
   position: relative;
 }
@@ -118,25 +118,20 @@
 .main::before {
   content: '';
   position: fixed;
-  top: 0; right: 0;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(79, 156, 255, 0.03) 0%, transparent 70%);
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 156, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 156, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 75%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 75%);
+  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
-  animation: ambientDrift 20s ease-in-out infinite;
 }
 
 .main::after {
-  content: '';
-  position: fixed;
-  bottom: -200px; left: -100px;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(79, 156, 255, 0.02) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: ambientDrift 25s ease-in-out infinite reverse;
+  content: none;
 }
 
 .main > * {
@@ -148,12 +143,6 @@
 @keyframes tabFadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ambientDrift {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
-  33% { transform: translate(-30px, 20px) scale(1.1); opacity: 1; }
-  66% { transform: translate(20px, -10px) scale(0.95); opacity: 0.8; }
 }
 
 /* ─── Sidebar ─── */

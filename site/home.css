@@ -2155,3 +2155,46 @@ footer {
   .tier-card { padding: 24px 20px; }
   .tool-card { padding: 20px 16px; }
 }
+
+/* ─── Footer status indicator ─── */
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.footer-copyright {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+  padding: 4px 10px 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,0.02);
+}
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(79, 156, 255, 0.6);
+  animation: gentlePulse 2.4s ease-in-out infinite;
+}
+.status-indicator.degraded .status-indicator-dot {
+  background: #febc2e;
+  box-shadow: 0 0 8px rgba(254, 188, 46, 0.6);
+}
+.status-indicator.offline .status-indicator-dot {
+  background: #ff5f57;
+  box-shadow: 0 0 8px rgba(255, 95, 87, 0.6);
+}

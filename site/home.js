@@ -185,6 +185,7 @@ function populateProtocolStats() {
   el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
   el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
   el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
+  updateStatusIndicator(fetchFailed ? 'offline' : health);
 
   // Services online
   const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
@@ -194,6 +195,25 @@ function populateProtocolStats() {
   // Uptime
   el('ps-uptime').textContent = uptimeMs > 0 ? formatUptime(uptimeMs) : '--';
   el('ps-uptime-pct').textContent = uptimeMs > 0 ? 'current session' : (fetchFailed ? 'offline' : 'loading...');
+}
+
+function updateStatusIndicator(status) {
+  const indicator = document.getElementById('statusIndicator');
+  if (!indicator) return;
+  const text = indicator.querySelector('.status-indicator-text');
+  const normalized = String(status || 'unknown').toLowerCase();
+  indicator.classList.remove('degraded', 'offline');
+  if (normalized === 'offline') {
+    indicator.classList.add('offline');
+    if (text) text.textContent = 'API status unavailable';
+    return;
+  }
+  if (['cautious', 'degraded', 'warning'].includes(normalized)) {
+    indicator.classList.add('degraded');
+    if (text) text.textContent = 'API operating with warnings';
+    return;
+  }
+  if (text) text.textContent = 'All systems operational';
 }
 
 // ═══════════ FAQ ═══════════

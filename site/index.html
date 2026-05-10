@@ -17,9 +17,14 @@
 <meta name="twitter:title" content="Meterflow — Metering and spend control for agent APIs">
 <meta name="twitter:description" content="Meter endpoints, track receipts, and control agent spend on Solana.">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
-<title>Meterflow — Usage billing for agent APIs on Solana</title>
+<title>Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Meterflow">
+<meta name="application-name" content="Meterflow">
+<meta name="msapplication-TileColor" content="#03060c">
+<meta name="color-scheme" content="dark">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/home.css">
@@ -629,13 +634,21 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-left">&copy; 2026 Meterflow</div>
+  <div class="footer-left">
+    <span class="status-indicator" id="statusIndicator" title="API operational status">
+      <span class="status-indicator-dot"></span>
+      <span class="status-indicator-text">All systems operational</span>
+    </span>
+    <span class="footer-copyright">&copy; 2026 Meterflow</span>
+  </div>
   <div class="footer-links">
-    <a href="https://x.com/meterflowsol">X / Twitter</a>
-    <a href="https://discord.gg/tned74z4eN">Discord</a>
-    <a href="docs.html">Docs</a>
-    <a href="/apply">Apply</a>
+    <a href="/docs">Docs</a>
     <a href="/roadmap">Roadmap</a>
+    <a href="/apply">Apply</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="https://x.com/meterflowsol" target="_blank" rel="noopener">X</a>
+    <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener">Discord</a>
     <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
   </div>
   <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>

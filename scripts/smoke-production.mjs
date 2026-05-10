@@ -41,6 +41,8 @@ const homeEntrypoints = await checkPage('/', '/apply');
 assert.ok(homeEntrypoints.includes('https://github.com/nullxnothing/meterflow'), 'home page should link GitHub');
 assert.ok(homeEntrypoints.includes('/dashboard'), 'home page should link dashboard');
 assert.ok(homeEntrypoints.includes('/docs'), 'home page should link docs');
+assert.ok(homeEntrypoints.includes('/privacy'), 'home page should link privacy policy');
+assert.ok(homeEntrypoints.includes('/terms'), 'home page should link terms');
 pass('public entrypoint links');
 
 const dashboard = await checkPage('/dashboard', 'v11-acceptance');
@@ -60,6 +62,17 @@ pass('how-it-works page');
 
 await checkPage('/roadmap', 'Meterflow');
 pass('roadmap page');
+
+await checkPage('/privacy', 'Privacy Policy');
+pass('privacy page');
+
+await checkPage('/terms', 'Terms of Service');
+pass('terms page');
+
+const manifest = await checkJson('/site.webmanifest');
+assert.equal(manifest.name, 'Meterflow');
+assert.equal(manifest.start_url, '/');
+pass('web app manifest');
 
 const health = await checkJson('/proxy/health');
 assert.equal(health.status, 'ok');
