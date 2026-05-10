@@ -45,8 +45,9 @@ assert.ok(homeEntrypoints.includes('/privacy'), 'home page should link privacy p
 assert.ok(homeEntrypoints.includes('/terms'), 'home page should link terms');
 pass('public entrypoint links');
 
-const dashboard = await checkPage('/dashboard', 'v11-acceptance');
+const dashboard = await checkPage('/dashboard', '<title>Meterflow</title>');
 assert.ok(dashboard.includes('dashboard.css'), 'dashboard should load CSS');
+assert.ok(dashboard.includes('init.js'), 'dashboard should load JS');
 pass('dashboard assets');
 
 const apply = await checkPage('/apply', 'Provider application');
