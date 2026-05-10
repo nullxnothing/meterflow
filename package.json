@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "npm --prefix api-proxy test",
+    "smoke:prod": "node scripts/smoke-production.mjs",
     "migrate": "node api-proxy/scripts/migrate.js",
     "api": "node api-proxy/server.js"
   },
