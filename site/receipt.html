@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="Lookup public-safe Meterflow receipts by receipt id or Solana transaction signature.">
+<meta name="theme-color" content="#05080f">
+<link rel="canonical" href="https://meterflow.fun/receipt">
+<meta property="og:title" content="Meterflow Receipt Lookup">
+<meta property="og:description" content="Verify paid API calls, MCP tool calls, and agent spend with public-safe Meterflow receipts.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://meterflow.fun/receipt">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta name="twitter:card" content="summary_large_image">
+<title>Receipt Lookup — Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<style>
+.lookup-shell {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 132px 24px 72px;
+}
+.lookup-hero {
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at top right, rgba(79,156,255,0.14), transparent 42%), linear-gradient(180deg, rgba(79,156,255,0.06), rgba(10,16,24,0.94));
+  border-radius: var(--radius-lg);
+  padding: 34px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 18px;
+}
+.lookup-title {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  margin: 18px 0;
+}
+.lookup-copy {
+  color: var(--text-dim);
+  max-width: 740px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+.lookup-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  margin-top: 28px;
+}
+.lookup-input {
+  border: 1px solid var(--border-light);
+  background: rgba(0,0,0,0.22);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 15px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  min-width: 0;
+}
+.lookup-hint {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 12px;
+}
+.receipt-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow-card);
+  padding: 26px;
+  margin-top: 18px;
+}
+.receipt-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.receipt-id {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  word-break: break-all;
+}
+.receipt-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  border: 1px solid rgba(79,156,255,0.35);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  padding: 6px 10px;
+  align-self: flex-start;
+}
+.receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.receipt-field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.18);
+  padding: 14px;
+  min-width: 0;
+}
+.receipt-field span {
+  display: block;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.receipt-field strong {
+  display: block;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  word-break: break-word;
+}
+.receipt-wide { grid-column: 1 / -1; }
+.receipt-empty {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,0.02);
+  padding: 28px;
+  color: var(--text-dim);
+  margin-top: 18px;
+}
+@media (max-width: 760px) {
+  .lookup-box { grid-template-columns: 1fr; }
+  .receipt-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<nav>
+  <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
+  <div class="nav-links">
+    <a href="/registry">Registry</a>
+    <a href="/receipt" class="active">Receipts</a>
+    <a href="/how-it-works">How It Works</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/docs">Docs</a>
+    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/registry" onclick="closeMobile()">Registry</a>
+  <a href="/receipt" onclick="closeMobile()">Receipts</a>
+  <a href="/docs" onclick="closeMobile()">Docs</a>
+  <a href="/dashboard" onclick="closeMobile()">Dashboard</a>
+</div>
+
+<main class="lookup-shell" id="main">
+  <section class="lookup-hero">
+    <div class="section-label">Receipt Proof</div>
+    <h1 class="lookup-title">Verify a paid agent request.</h1>
+    <p class="lookup-copy">Lookup a public-safe Meterflow receipt by receipt id or Solana transaction signature. Wallets are masked, but payment state, route, amount, policy result, and response status stay visible.</p>
+    <div class="lookup-box">
+      <input class="lookup-input" id="lookupInput" placeholder="rcpt_xxxxx or Solana transaction signature" autocomplete="off">
+      <button class="btn-primary" id="lookupButton">Lookup</button>
+    </div>
+    <div class="lookup-hint">Tip: add <span class="accent">?id=rcpt_xxxxx</span> or <span class="accent">?tx=signature</span> to prefill this page.</div>
+  </section>
+
+  <section id="receiptResult" aria-live="polite">
+    <div class="receipt-empty">Enter a receipt id or transaction signature to verify a Meterflow payment trail.</div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-left">&copy; 2026 Meterflow</div>
+  <div class="footer-links">
+    <a href="/registry">Registry</a>
+    <a href="/receipt">Receipts</a>
+    <a href="/docs">Docs</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<script src="/site/shared.js" defer></script>
+<script>
+const input = document.getElementById('lookupInput');
+const button = document.getElementById('lookupButton');
+const result = document.getElementById('receiptResult');
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+}
+function fmtMoney(value) {
+  const n = Number(value || 0);
+  return `$${n.toFixed(n >= 1 ? 2 : 6)}`;
+}
+function field(label, value) {
+  return `<div class="receipt-field"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value ?? '-')}</strong></div>`;
+}
+function renderReceipt(receipt) {
+  result.innerHTML = `<article class="receipt-card">
+    <div class="receipt-head">
+      <div>
+        <div class="receipt-id">${escapeHtml(receipt.id)}</div>
+        <div class="lookup-hint">${escapeHtml(receipt.createdAt || '')}</div>
+      </div>
+      <div class="receipt-status">${escapeHtml(receipt.status || receipt.paymentState || 'receipt')}</div>
+    </div>
+    <div class="receipt-grid">
+      ${field('Route', `${receipt.method || ''} ${receipt.route || ''}`.trim())}
+      ${field('Amount', `${fmtMoney(receipt.amountUsd)} ${receipt.asset || 'USDC'}`)}
+      ${field('Payment State', receipt.paymentState)}
+      ${field('Payer', receipt.payerWallet)}
+      ${field('Pay To', receipt.payTo)}
+      ${field('Network', receipt.paymentNetwork)}
+      ${field('Policy', receipt.policyResult)}
+      ${field('Response', receipt.responseStatus)}
+      ${field('Latency', receipt.latencyMs === null || receipt.latencyMs === undefined ? '-' : `${receipt.latencyMs} ms`)}
+      <div class="receipt-field receipt-wide"><span>Transaction Signature</span><strong>${escapeHtml(receipt.txSignature || '-')}</strong></div>
+      <div class="receipt-field receipt-wide"><span>Quote ID</span><strong>${escapeHtml(receipt.quoteId || '-')}</strong></div>
+    </div>
+  </article>`;
+}
+async function lookup(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return;
+  result.innerHTML = '<div class="receipt-empty">Looking up receipt...</div>';
+  const isReceiptId = raw.startsWith('rcpt_') || raw.startsWith('fail_');
+  const url = isReceiptId ? `/proxy/v1/public/receipts/${encodeURIComponent(raw)}` : `/proxy/v1/public/tx/${encodeURIComponent(raw)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.status === 404 ? 'Receipt not found.' : `HTTP ${res.status}`);
+    const data = await res.json();
+    renderReceipt(data.receipt);
+  } catch (err) {
+    result.innerHTML = `<div class="receipt-empty">${escapeHtml(err.message)}</div>`;
+  }
+}
+button.addEventListener('click', () => lookup(input.value));
+input.addEventListener('keydown', event => {
+  if (event.key === 'Enter') lookup(input.value);
+});
+const params = new URLSearchParams(window.location.search);
+const preset = params.get('id') || params.get('tx');
+if (preset) {
+  input.value = preset;
+  lookup(preset);
+}
+</script>
+</body>
+</html>
