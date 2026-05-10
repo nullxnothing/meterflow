@@ -15,6 +15,7 @@
  */
 
 import { paymentMiddleware, x402ResourceServer } from '@x402/express';
+import { decodePaymentResponseHeader } from '@x402/core/http';
 import { HTTPFacilitatorClient } from '@x402/core/server';
 import { ExactSvmScheme as ExactSvmServerScheme } from '@x402/svm/exact/server';
 import { ExactSvmScheme as ExactSvmFacilitatorScheme } from '@x402/svm/exact/facilitator';
@@ -24,7 +25,7 @@ import { createFacilitatorConfig } from '@payai/facilitator';
 import bs58 from 'bs58';
 import { CONFIG } from '../config.js';
 import { logger } from './logger.js';
-import { DEFAULT_METERS, listBillableMeters } from './control-plane.js';
+import { DEFAULT_METERS, listBillableMeters, updateReceipt } from './control-plane.js';
 
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
@@ -183,6 +184,42 @@ export function createX402Gateway(x402) {
         payerWallet: req.headers['x-payment-wallet'] || 'x402_payer',
         txSignature: req.headers['x-payment-transaction'] || req.headers['x-payment-signature'] || null,
         quoteId: req.headers['x-payment-id'] || req.headers['x-request-id'] || null,
+      };
+
+      const originalSetHeader = res.setHeader.bind(res);
+      res.setHeader = (name, value) => {
+        if (String(name).toLowerCase() === 'payment-response') {
+          try {
+            const settlement = decodePaymentResponseHeader(String(value));
+            const txSignature = settlement.transaction || null;
+            const payerWallet = settlement.payer || req.meterflowControl.payerWallet;
+
+            if (txSignature) {
+              req.meterflowControl.txSignature = txSignature;
+              originalSetHeader('X-Payment-Transaction', txSignature);
+            }
+            if (payerWallet) {
+              req.meterflowControl.payerWallet = payerWallet;
+            }
+
+            if (req.meterflowControl.receiptId && txSignature) {
+              updateReceipt(req.meterflowControl.receiptId, {
+                status: 'verified',
+                paymentState: 'verified',
+                payerWallet,
+                txSignature,
+              }).catch(err => {
+                logger.warn('x402 receipt settlement patch failed', {
+                  receiptId: req.meterflowControl.receiptId,
+                  err: err.message,
+                });
+              });
+            }
+          } catch (err) {
+            logger.warn('x402 payment response decode failed', { err: err.message });
+          }
+        }
+        return originalSetHeader(name, value);
       };
 
       originalNext();

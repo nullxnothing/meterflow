@@ -536,6 +536,18 @@ export async function getReceipt(receiptId) {
   return getJson(RECEIPT_PREFIX, fallbackReceipts, receiptId);
 }
 
+export async function updateReceipt(receiptId, patch = {}) {
+  const current = await getReceipt(receiptId);
+  if (!current) return null;
+  return setJson(RECEIPT_PREFIX, fallbackReceipts, {
+    ...current,
+    ...patch,
+    id: current.id,
+    createdAt: current.createdAt,
+    updatedAt: nowIso(),
+  });
+}
+
 export async function recordReceipt(input) {
   const scopedIdempotencyKey = input.idempotencyKey
     ? `${input.apiKey || input.wallet || 'global'}:${input.idempotencyKey}`
@@ -696,7 +708,9 @@ export async function completeMeteredRequest(req, result = {}) {
 
   const paymentState = result.paymentState || ctx.paymentState || 'legacy_key_metered';
   const isVerified = paymentState === 'verified';
-  const status = result.status || (isVerified ? 'verified' : 'metered_key');
+  const status = isVerified && result.status === 'metered_key'
+    ? 'verified'
+    : (result.status || (isVerified ? 'verified' : 'metered_key'));
   const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
   const isBillable = status === 'metered_key' || status === 'verified';
   const amountUsd = result.amountUsd ?? (isBillable ? economics.totalAmountUsd : 0);
@@ -706,7 +720,7 @@ export async function completeMeteredRequest(req, result = {}) {
     await addBudgetSpend(ctx.budget.id, amountUsd);
   }
 
-  return recordReceipt({
+  const receipt = await recordReceipt({
     meterId: meter.id,
     route: meter.route,
     method: meter.method,
@@ -735,6 +749,8 @@ export async function completeMeteredRequest(req, result = {}) {
     tokens: result.tokens || 0,
     error: result.error || null,
   });
+  ctx.receiptId = receipt.id;
+  return receipt;
 }
 
 export async function getProviderRevenue() {
