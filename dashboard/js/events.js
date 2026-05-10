@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE, CHAT, TRADING } from './state.js';
-import { getWalletProviders, connectWallet } from './wallet.js';
+import { getWalletProviders, connectWallet } from './wallet.js?v=v10-ledger';
 import { setTab } from './actions.js';
 import { sendChatMessage } from './chat.js';
 import { handleImageUpload } from './images.js';

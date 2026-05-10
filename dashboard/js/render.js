@@ -4,12 +4,12 @@
 
 import { STATE } from './state.js';
 import { escapeHtml } from './utils.js';
-import { getWalletProviders } from './wallet.js';
+import { getWalletProviders } from './wallet.js?v=v10-ledger';
 import { bindEvents } from './events.js';
 
 // Tab renderers
 import { renderOverview } from './tabs/overview.js?v=v5-clean-mflow';
-import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=v5-clean-mflow';
+import { renderMeters, renderReceipts, renderBudgets, renderMcpTools } from './tabs/control-plane.js?v=v10-ledger';
 import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
 import { renderModels } from './tabs/models.js?v=v5-clean-mflow';
 import { renderConnections } from './tabs/connections.js?v=logos';

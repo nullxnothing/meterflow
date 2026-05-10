@@ -26,8 +26,9 @@ const PREVIEW_METERS = [
 ];
 
 const PREVIEW_RECEIPTS = [
-  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/v1/chat', status: 'metered_key', amountUsd: 0.00404, baseAmountUsd: 0.004, protocolFeeUsd: 0.00004, protocolFeeBps: 100, asset: 'USDC', policyResult: 'allowed', latencyMs: 728 },
-  { id: 'fail_preview_002', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'budget_exhausted', amountUsd: 0, asset: 'USDC', policyResult: 'daily_cap', latencyMs: 0 },
+  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/v1/chat', status: 'verified', paymentState: 'verified', amountUsd: 0.004, baseAmountUsd: 0.004, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 728 },
+  { id: 'fail_preview_002', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'settlement_failed', paymentState: 'settlement_failed', amountUsd: 0, baseAmountUsd: 0.006, asset: 'USDC', policyResult: 'settlement_failed', responseStatus: 402, error: 'facilitator settlement failed' },
+  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/v1/alpha/token', status: 'payment_verification_failed', paymentState: 'verification_failed', amountUsd: 0, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'payment_verification_failed', responseStatus: 402, error: 'invalid payment signature' },
 ];
 
 const PREVIEW_BUDGETS = [
@@ -64,6 +65,55 @@ function money(value) {
 function statusBadge(status) {
   const safe = escapeHtml(status || 'unknown');
   return `<span class="tool-status">${safe.toUpperCase()}</span>`;
+}
+
+function isReceiptSuccess(receipt) {
+  return receipt.status === 'verified' || receipt.status === 'metered_key';
+}
+
+function isReceiptFailure(receipt) {
+  return [
+    'settlement_failed',
+    'payment_verification_failed',
+    'budget_exhausted',
+    'policy_denied',
+    'per_call_cap_exceeded',
+    'upstream_error',
+  ].includes(receipt.status) || String(receipt.status || '').includes('failed');
+}
+
+function receiptStateMeta(receipt) {
+  const state = receipt.paymentState || receipt.status || 'unknown';
+  const normalized = String(state).toLowerCase();
+  if (normalized === 'verified') return { label: 'Settled', tone: 'ok', detail: 'USDC settled on Solana' };
+  if (normalized === 'legacy_key_metered') return { label: 'Key Metered', tone: 'neutral', detail: 'API key usage record' };
+  if (normalized === 'verified_unsettled') return { label: 'Paid / Upstream Failed', tone: 'warn', detail: 'Payment verified before provider failure' };
+  if (normalized === 'settlement_failed') return { label: 'Settlement Failed', tone: 'bad', detail: 'Facilitator could not settle payment' };
+  if (normalized === 'verification_failed') return { label: 'Verification Failed', tone: 'bad', detail: 'Payment proof rejected' };
+  return { label: state.replaceAll('_', ' '), tone: isReceiptFailure(receipt) ? 'bad' : 'neutral', detail: receipt.error || receipt.policyResult || 'Receipt recorded' };
+}
+
+function shortHash(value, left = 4, right = 4) {
+  const text = String(value || '');
+  if (!text) return '—';
+  if (text.length <= left + right + 3) return text;
+  return `${text.slice(0, left)}…${text.slice(-right)}`;
+}
+
+function txLink(signature) {
+  if (!signature) return '<span class="receipt-muted">—</span>';
+  const safe = escapeHtml(signature);
+  return `<a class="receipt-link mono" href="https://solscan.io/tx/${safe}" target="_blank" rel="noreferrer">${shortHash(safe, 5, 5)}</a>`;
+}
+
+function renderReceiptState(receipt) {
+  const meta = receiptStateMeta(receipt);
+  return `
+    <div class="receipt-state">
+      <span class="receipt-state-badge ${meta.tone}">${escapeHtml(meta.label)}</span>
+      <span class="receipt-state-detail">${escapeHtml(receipt.error || meta.detail)}</span>
+    </div>
+  `;
 }
 
 function loadControlPlane(force = false) {
@@ -173,10 +223,11 @@ export function renderReceipts() {
 
   const data = viewData();
   const locked = !canManageMeterflow();
-  const verified = data.receipts.filter(r => r.status === 'metered_key' || r.status === 'verified').length;
-  const denied = data.receipts.filter(r => String(r.status).includes('denied') || String(r.status).includes('cap') || String(r.status).includes('exhausted')).length;
+  const verified = data.receipts.filter(isReceiptSuccess).length;
+  const failed = data.receipts.filter(isReceiptFailure).length;
+  const unsettled = data.receipts.filter(r => r.paymentState === 'verified_unsettled').length;
   const gross = data.receipts
-    .filter(r => r.status === 'metered_key' || r.status === 'verified')
+    .filter(isReceiptSuccess)
     .reduce((sum, r) => sum + Number(r.amountUsd || 0), 0);
 
   return `
@@ -187,29 +238,34 @@ export function renderReceipts() {
     ${locked ? renderPreviewNotice('receipts') : ''}
     <div class="stats-row">
       <div class="stat-card"><div class="label">Recorded</div><div class="value accent">${data.receipts.length}</div><div class="sub">latest events</div></div>
-      <div class="stat-card"><div class="label">Allowed</div><div class="value green">${verified}</div><div class="sub">metered-key receipts</div></div>
-      <div class="stat-card"><div class="label">Denied</div><div class="value">${denied}</div><div class="sub">policy/payment failures</div></div>
-      <div class="stat-card"><div class="label">Gross</div><div class="value green">${money(gross)}</div><div class="sub">estimated USDC</div></div>
+      <div class="stat-card"><div class="label">Settled</div><div class="value green">${verified}</div><div class="sub">verified payment receipts</div></div>
+      <div class="stat-card"><div class="label">Needs Review</div><div class="value">${failed + unsettled}</div><div class="sub">failed or unsettled states</div></div>
+      <div class="stat-card"><div class="label">Gross</div><div class="value green">${money(gross)}</div><div class="sub">settled USDC</div></div>
     </div>
     <div class="section">
-      <div class="section-title">Recent Receipt Events</div>
-      <div class="tool-config-box" style="white-space:normal;overflow:auto;">
-        <table class="treasury-table">
-          <thead><tr><th>Time</th><th>Receipt</th><th>Route</th><th>Status</th><th>Base</th><th>Fee</th><th>Total</th><th>Policy</th><th>Latency</th></tr></thead>
+      <div class="section-title">Payment Ledger</div>
+      <div class="receipt-summary-strip">
+        <div><span>${verified}</span> settled</div>
+        <div><span>${data.receipts.filter(r => r.status === 'settlement_failed').length}</span> settlement failed</div>
+        <div><span>${data.receipts.filter(r => r.status === 'payment_verification_failed').length}</span> verification failed</div>
+        <div><span>${unsettled}</span> upstream failed after pay</div>
+      </div>
+      <div class="tool-config-box receipt-table-wrap">
+        <table class="treasury-table receipt-ledger-table">
+          <thead><tr><th>Time</th><th>State</th><th>Route</th><th>Payer</th><th>Amount</th><th>Tx</th><th>Response</th><th>Receipt</th></tr></thead>
           <tbody>
             ${data.receipts.length ? data.receipts.map(r => `
               <tr>
                 <td>${escapeHtml((r.createdAt || '').slice(0, 19).replace('T', ' '))}</td>
-                <td>${escapeHtml(r.id)}</td>
+                <td>${renderReceiptState(r)}</td>
                 <td>${escapeHtml(r.route || '—')}</td>
-                <td>${escapeHtml(r.status || '—')}</td>
-                <td>${money(r.baseAmountUsd ?? r.amountUsd)}</td>
-                <td>${money(r.protocolFeeUsd || 0)}${r.protocolFeeBps ? ` (${Number(r.protocolFeeBps) / 100}%)` : ''}</td>
-                <td>${money(r.amountUsd)} ${escapeHtml(r.asset || 'USDC')}</td>
-                <td>${escapeHtml(r.policyResult || '—')}</td>
-                <td>${r.latencyMs ? Number(r.latencyMs).toLocaleString() + 'ms' : '—'}</td>
+                <td><span class="mono">${escapeHtml(shortHash(r.payerWallet || r.wallet, 5, 5))}</span></td>
+                <td><strong>${money(r.amountUsd)}</strong><span class="receipt-muted"> ${escapeHtml(r.asset || 'USDC')}</span></td>
+                <td>${txLink(r.txSignature)}</td>
+                <td><span class="receipt-response ${Number(r.responseStatus || 0) >= 400 ? 'bad' : 'ok'}">${escapeHtml(r.responseStatus || '—')}</span></td>
+                <td><span class="mono">${escapeHtml(shortHash(r.id, 8, 4))}</span></td>
               </tr>
-            `).join('') : '<tr><td colspan="9">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
+            `).join('') : '<tr><td colspan="8">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
           </tbody>
         </table>
       </div>

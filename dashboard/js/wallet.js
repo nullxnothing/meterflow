@@ -124,25 +124,52 @@ export function openWalletConnect() {
   modal.className = 'wallet-modal-overlay';
   modal.innerHTML = `
     <div class="wallet-modal">
-      <button class="wallet-modal-close" id="walletModalClose">\u00d7</button>
-      <div class="logo" style="font-size:24px;margin-bottom:12px;"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt=""></div>
-      <h2 style="margin-bottom:8px;">Connect Wallet</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">Connect a Solana wallet to unlock Meterflow keys and tools</p>
-      ${STATE.error ? `<div class="connect-error" style="margin-bottom:16px;">${STATE.error}</div>` : ''}
+      <button class="wallet-modal-close" id="walletModalClose" aria-label="Close">\u00d7</button>
+      <div class="wallet-modal-header">
+        <div class="wallet-modal-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt=""></div>
+        <h2 class="wallet-modal-title">Connect a Solana wallet</h2>
+        <p class="wallet-modal-sub">Wallets handle identity and settlement. You can issue keys and set budgets after connecting.</p>
+      </div>
+
+      <ul class="wallet-modal-benefits">
+        <li><span class="wallet-modal-benefit-icon">\u26a1</span> Issue metered API keys for agents</li>
+        <li><span class="wallet-modal-benefit-icon">$</span> Pay per request in USDC \u2014 no subscriptions</li>
+        <li><span class="wallet-modal-benefit-icon">\u26e8</span> Set spend caps and revoke any key instantly</li>
+      </ul>
+
+      ${STATE.error ? `<div class="connect-error">${STATE.error}</div>` : ''}
+
       <div class="connect-wallets">
         ${STATE.connecting
-          ? `<button class="connect-btn btn-loading" disabled style="min-height:52px;">Connecting...</button>`
+          ? `<button class="connect-btn btn-loading" disabled>Connecting<span class="dot-pulse">...</span></button>`
           : hasWallet ? providers.map((p, i) => `
             <button class="connect-btn${i > 0 ? ' connect-btn-secondary' : ''}" data-provider="${i}">
-              <img src="${p.icon}" alt="${p.name}" width="20" height="20" style="border-radius:4px;">
-              Connect ${p.name}
+              <img src="${p.icon}" alt="${p.name}" width="22" height="22" style="border-radius:5px;">
+              <span>Continue with ${p.name}</span>
+              <span class="connect-btn-arrow">\u2192</span>
             </button>
           `).join('') : `
-            <button class="connect-btn" onclick="window.open('https://phantom.com/download','_blank')">Install Phantom Wallet</button>
+            <button class="connect-btn" onclick="window.open('https://phantom.com/download','_blank')">
+              <img src="https://icons.duckduckgo.com/ip3/phantom.com.ico" alt="" width="22" height="22" style="border-radius:5px;">
+              <span>Install Phantom Wallet</span>
+              <span class="connect-btn-arrow">\u2197</span>
+            </button>
+            <button class="connect-btn connect-btn-secondary" onclick="window.open('https://solflare.com/download','_blank')">
+              <img src="https://icons.duckduckgo.com/ip3/solflare.com.ico" alt="" width="22" height="22" style="border-radius:5px;">
+              <span>Install Solflare Wallet</span>
+              <span class="connect-btn-arrow">\u2197</span>
+            </button>
           `
         }
       </div>
-      <div class="connect-note" style="margin-top:12px;">${hasWallet ? providers.map(p => p.name).join(', ') + ' detected' : 'No wallet detected'}</div>
+
+      <div class="wallet-modal-footer">
+        <span class="wallet-modal-status">
+          <span class="wallet-modal-status-dot ${hasWallet ? 'live' : ''}"></span>
+          ${hasWallet ? `${providers.length} wallet${providers.length > 1 ? 's' : ''} detected` : 'No wallet detected'}
+        </span>
+        <a href="/docs" class="wallet-modal-link">How it works \u2192</a>
+      </div>
     </div>
   `;
 
