@@ -531,12 +531,23 @@ export async function listReceipts(filters = {}) {
   return receipts
     .filter(receipt => !filters.meterId || receipt.meterId === filters.meterId)
     .filter(receipt => !filters.status || receipt.status === filters.status)
-    .filter(receipt => !filters.wallet || receipt.wallet === filters.wallet)
+    .filter(receipt => !filters.wallet || receipt.wallet === filters.wallet || receipt.payerWallet === filters.wallet || receipt.agent === filters.wallet)
     .filter(receipt => !filters.apiKey || receipt.apiKey === filters.apiKey)
     .filter(receipt => !filters.txSignature || receipt.txSignature === filters.txSignature)
     .filter(receipt => !filters.idempotencyKey || receipt.idempotencyKey === filters.idempotencyKey)
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     .slice(0, Math.min(Number(filters.limit) || 100, 500));
+}
+
+export async function listReceiptsForPrincipal({ apiKey, wallet, limit = 100, ...filters } = {}) {
+  const [byKey, byWallet] = await Promise.all([
+    apiKey ? listReceipts({ ...filters, apiKey, limit }) : [],
+    wallet ? listReceipts({ ...filters, wallet, limit }) : [],
+  ]);
+  return [...byKey, ...byWallet]
+    .filter((receipt, index, rows) => rows.findIndex(row => row.id === receipt.id) === index)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, Math.min(Number(limit) || 100, 500));
 }
 
 export async function getReceipt(receiptId) {

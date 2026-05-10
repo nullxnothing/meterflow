@@ -9,6 +9,7 @@ import {
   canManageResource,
   findMeterForRequest,
   listReceipts,
+  listReceiptsForPrincipal,
   getReceipt,
   listBudgets,
   getBudget,
@@ -116,20 +117,20 @@ router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {
 });
 
 router.get('/receipts', authenticateApiKey, async (req, res) => {
-  const receipts = await listReceipts({
+  const receipts = await listReceiptsForPrincipal({
     meterId: req.query.meterId,
     status: req.query.status,
-    wallet: req.query.wallet,
     txSignature: req.query.txSignature,
     idempotencyKey: req.query.idempotencyKey,
     apiKey: req.meterflow.apiKey,
+    wallet: req.meterflow.wallet,
     limit: req.query.limit,
   });
   res.json({ receipts });
 });
 
 router.get('/receipts/export.csv', authenticateApiKey, async (req, res) => {
-  const receipts = await listReceipts({ apiKey: req.meterflow.apiKey, limit: 500 });
+  const receipts = await listReceiptsForPrincipal({ apiKey: req.meterflow.apiKey, wallet: req.meterflow.wallet, limit: 500 });
   const columns = ['id', 'createdAt', 'route', 'status', 'baseAmountUsd', 'protocolFeeUsd', 'protocolFeeBps', 'amountUsd', 'asset', 'paymentState', 'paymentNetwork', 'paymentMint', 'payerWallet', 'payTo', 'txSignature', 'quoteId', 'idempotencyKey', 'policyResult', 'responseStatus', 'latencyMs', 'wallet'];
   const rows = [
     columns.join(','),
@@ -142,7 +143,14 @@ router.get('/receipts/export.csv', authenticateApiKey, async (req, res) => {
 
 router.get('/receipts/:id', authenticateApiKey, async (req, res) => {
   const receipt = await getReceipt(req.params.id);
-  if (!receipt || receipt.apiKey !== req.meterflow.apiKey) {
+  const ownsReceipt = receipt
+    && (
+      receipt.apiKey === req.meterflow.apiKey
+      || receipt.wallet === req.meterflow.wallet
+      || receipt.payerWallet === req.meterflow.wallet
+      || receipt.agent === req.meterflow.wallet
+    );
+  if (!ownsReceipt) {
     return res.status(404).json({ error: 'receipt_not_found', message: 'Receipt not found.' });
   }
   res.json({ receipt });

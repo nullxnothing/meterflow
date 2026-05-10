@@ -488,9 +488,17 @@ describe('Meterflow control plane', () => {
 
   it('control-plane storage defines meters receipts budgets and MCP tools', () => {
     const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
-    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'updateReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent']) {
+    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'updateReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent', 'listReceiptsForPrincipal']) {
       assert.ok(src.includes(token), `should include ${token}`);
     }
+  });
+
+  it('wallet-authenticated users can inspect x402 payer receipts', () => {
+    const src = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    assert.ok(src.includes('listReceiptsForPrincipal'), 'receipt routes should merge API-key and wallet-scoped receipts');
+    assert.ok(src.includes('payerWallet === req.meterflow.wallet'), 'receipt detail access should include x402 payer wallet ownership');
+    assert.ok(control.includes('receipt.payerWallet === filters.wallet'), 'wallet receipt filters should match payerWallet');
   });
 
   it('control-plane supports persistent Postgres storage', () => {
