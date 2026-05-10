@@ -36,7 +36,7 @@ export const STATE = {
   },
   usage: { today: 0, limit: 0, remaining: 0 },
   models: [],
-  treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, solPrice: 0 },
+  treasury: { healthStatus: 'unknown', runwayDays: 0, multiplier: 1.0, treasuryBalanceUsd: 0, treasuryBalanceSol: 0, treasuryBalanceUsdc: 0, solPrice: 0 },
   providers: { claude: false, gemini: false, openai: false },
   connections: { github: false, google: false, notion: false },
   activeTab: 'overview',

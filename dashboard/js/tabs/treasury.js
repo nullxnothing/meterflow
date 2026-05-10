@@ -55,14 +55,14 @@ function renderBalanceCards(t, statusColor) {
   return `
     <div class="stats-row">
       <div class="stat-card">
-        <div class="label">Settlement Balance</div>
-        <div class="value accent">${fmtSol(t.treasuryBalanceSol)}</div>
+        <div class="label">USDC Settlement</div>
+        <div class="value accent">${fmtUsd(t.treasuryBalanceUsdc || 0)}</div>
         <div class="sub">${fmtUsd(t.treasuryBalanceUsd)} USD</div>
       </div>
       <div class="stat-card">
-        <div class="label">SOL Price</div>
-        <div class="value">${priceDisplay}</div>
-        <div class="sub">via Jupiter</div>
+        <div class="label">SOL Fee Buffer</div>
+        <div class="value">${fmtSol(t.treasuryBalanceSol)}</div>
+        <div class="sub">${priceDisplay} SOL reference</div>
       </div>
       <div class="stat-card">
         <div class="label">Buffer Status</div>

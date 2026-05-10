@@ -4,6 +4,7 @@ import { logger } from './logger.js';
 import { fetchWithRetry } from './retry.js';
 
 const FETCH_TIMEOUT = 10_000;
+const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
 async function fetchBalanceFromRPC(walletAddress) {
   const response = await fetchWithRetry(
@@ -66,7 +67,7 @@ async function getTreasuryBalance() {
   }
 
   try {
-    const [balanceRes, priceRes] = await Promise.allSettled([
+    const [balanceRes, usdcRes, priceRes] = await Promise.allSettled([
       fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,6 +75,16 @@ async function getTreasuryBalance() {
           jsonrpc: '2.0', id: 'treasury-balance',
           method: 'getBalance',
           params: [CONFIG.TREASURY_WALLET]
+        }),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      }).then(r => r.json()),
+      fetch(`https://mainnet.helius-rpc.com/?api-key=${CONFIG.HELIUS_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 'treasury-usdc-balance',
+          method: 'getTokenAccountsByOwner',
+          params: [CONFIG.TREASURY_WALLET, { mint: USDC_MINT }, { encoding: 'jsonParsed' }]
         }),
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       }).then(r => r.json()),
@@ -88,13 +99,20 @@ async function getTreasuryBalance() {
       treasuryBalanceCache.sol = lamports / 1_000_000_000;
     }
 
+    if (usdcRes.status === 'fulfilled' && Array.isArray(usdcRes.value.result?.value)) {
+      treasuryBalanceCache.usdc = usdcRes.value.result.value.reduce((sum, account) => {
+        const amount = account.account?.data?.parsed?.info?.tokenAmount?.uiAmount;
+        return sum + Number(amount || 0);
+      }, 0);
+    }
+
     if (priceRes.status === 'fulfilled') {
       const solData = priceRes.value?.['So11111111111111111111111111111111111111112'];
       const price = parseFloat(solData?.usdPrice ?? solData?.price ?? 0);
       if (price > 0) treasuryBalanceCache.solPrice = price;
     }
 
-    treasuryBalanceCache.usd = treasuryBalanceCache.sol * treasuryBalanceCache.solPrice;
+    treasuryBalanceCache.usd = treasuryBalanceCache.usdc + (treasuryBalanceCache.sol * treasuryBalanceCache.solPrice);
     treasuryBalanceCache.checkedAt = Date.now();
   } catch (err) {
     logger.error('Treasury balance check failed', { err: err.message });

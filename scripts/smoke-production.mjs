@@ -79,7 +79,13 @@ const health = await checkJson('/proxy/health');
 assert.equal(health.status, 'ok');
 assert.equal(health.storage?.redis?.configured, true);
 assert.equal(health.storage?.postgres?.configured, true);
+assert.equal(typeof health.ops?.x402PayToConfigured, 'boolean');
 pass('proxy health');
+
+const treasury = await checkJson('/proxy/treasury');
+assert.ok(treasury.wallet, 'treasury response should include settlement wallet');
+assert.equal(typeof treasury.treasuryBalanceUsdc, 'number');
+pass('treasury');
 
 const providers = await checkJson('/proxy/providers');
 assert.ok(Object.values(providers).some(Boolean), 'at least one AI provider should be configured');

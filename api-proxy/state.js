@@ -46,7 +46,7 @@ let _treasuryState = {
 function getTreasuryState() { return _treasuryState; }
 function setTreasuryState(state) { _treasuryState = state; }
 
-const treasuryBalanceCache = { sol: 0, usd: 0, solPrice: 0, checkedAt: 0 };
+const treasuryBalanceCache = { sol: 0, usdc: 0, usd: 0, solPrice: 0, checkedAt: 0 };
 const TREASURY_CACHE_TTL = 5 * 60 * 1000;
 
 export {

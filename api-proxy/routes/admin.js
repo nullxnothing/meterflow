@@ -61,6 +61,14 @@ function computeTreasuryHealth(balance, globalStats, treasuryState) {
   return { multiplier, healthStatus, runwayDays, dailyBudget, tiers };
 }
 
+function getOpsReadiness() {
+  return {
+    errorAlertWebhookConfigured: !!process.env.ERROR_ALERT_WEBHOOK,
+    sentryConfigured: !!process.env.SENTRY_DSN,
+    x402PayToConfigured: !!(process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET),
+  };
+}
+
 // GET /stats
 router.get('/stats', publicLimiter, async (req, res) => {
   if (statsCache.data && Date.now() - statsCache.ts < CACHE_TTL) {
@@ -197,6 +205,7 @@ router.get('/treasury', publicLimiter, async (req, res) => {
     ...treasuryState,
     ...health,
     treasuryBalanceSol: balance.sol,
+    treasuryBalanceUsdc: balance.usdc,
     treasuryBalanceUsd: balance.usd,
     solPrice: balance.solPrice,
     wallet: CONFIG.TREASURY_WALLET || null,
@@ -234,6 +243,7 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
       ...treasuryState,
       ...health,
       treasuryBalanceSol: balance.sol,
+      treasuryBalanceUsdc: balance.usdc,
       treasuryBalanceUsd: balance.usd,
       solPrice: balance.solPrice,
       wallet: CONFIG.TREASURY_WALLET || null,
@@ -253,16 +263,20 @@ router.get('/status/aggregate', publicLimiter, async (req, res) => {
 // GET /health
 router.get('/health', async (req, res) => {
   const treasuryState = getTreasuryState();
-  const [redis, postgres] = await Promise.all([
+  const [redis, postgres, balance, globalStats] = await Promise.all([
     checkRedisHealth(),
     checkPostgresHealth(),
+    getTreasuryBalance(),
+    getGlobalStats(),
   ]);
+  const treasury = computeTreasuryHealth(balance, globalStats, treasuryState);
   const storageOk = redis.connected && (!postgres.configured || (postgres.connected && postgres.migrated));
   res.status(storageOk ? 200 : 503).json({
     status: storageOk ? 'ok' : 'degraded',
     version: '1.0.0',
     protocol: 'Meterflow',
-    treasury: treasuryState.healthStatus,
+    treasury: treasury.healthStatus,
+    ops: getOpsReadiness(),
     storage: { redis, postgres },
   });
 });

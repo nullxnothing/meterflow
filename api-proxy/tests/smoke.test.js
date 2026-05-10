@@ -191,6 +191,8 @@ describe('Redis fail-closed (production)', () => {
     assert.ok(route.includes('checkRedisHealth'), 'health should check Redis');
     assert.ok(route.includes('checkPostgresHealth'), 'health should check Postgres');
     assert.ok(route.includes('storage'), 'health should return storage status');
+    assert.ok(route.includes('errorAlertWebhookConfigured'), 'health should expose alerting readiness');
+    assert.ok(route.includes('sentryConfigured'), 'health should expose Sentry readiness');
     assert.ok(redis.includes('checkRedisHealth'), 'Redis health helper should exist');
     assert.ok(postgres.includes('migration_required'), 'Postgres health should detect missing migrations');
   });
@@ -548,6 +550,14 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('buildRouteConfig'), 'should expose route config builder');
     assert.ok(!src.includes('const METER_ROUTES'), 'should not keep a second static meter list');
     assert.ok(src.includes('recordX402Failure'), 'x402 middleware should only create receipts for payment failures before route completion');
+  });
+
+  it('treasury health includes USDC settlement balance', () => {
+    const balance = readFileSync(resolve(root, 'lib', 'balance.js'), 'utf-8');
+    const route = readFileSync(resolve(root, 'routes', 'admin.js'), 'utf-8');
+    assert.ok(balance.includes('treasury-usdc-balance'), 'treasury balance should query USDC token accounts');
+    assert.ok(balance.includes('treasuryBalanceCache.usdc'), 'treasury cache should store USDC');
+    assert.ok(route.includes('treasuryBalanceUsdc'), 'treasury responses should expose USDC balance');
   });
 
   it('x402 settlement patches receipts with transaction signatures', () => {
