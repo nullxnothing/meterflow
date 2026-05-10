@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 
-const DSN = process.env.SENTRY_DSN;
+const DSN = process.env.SENTRY_DSN?.trim();
 
 export function initSentry(app) {
   if (!DSN) return;
