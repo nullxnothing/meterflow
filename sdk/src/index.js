@@ -8,3 +8,10 @@ export {
   simulateBudget,
 } from './budget-templates.js';
 export { meterflowPaywall, registerMeterflowRoute } from './express.js';
+export {
+  expressMeterflowPaywall,
+  fastifyMeterflowPaywall,
+  fetchMeterflowPaywall,
+  honoMeterflowPaywall,
+  nextMeterflowPaywall,
+} from './adapters.js';
