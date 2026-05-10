@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="Discover Meterflow paid API routes, MCP tools, and agent-accessible Solana services.">
+<meta name="theme-color" content="#05080f">
+<link rel="canonical" href="https://meterflow.fun/registry">
+<meta property="og:title" content="Meterflow Registry">
+<meta property="og:description" content="Discover paid API routes and MCP tools with prices, usage stats, receipts, and Solana settlement context.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://meterflow.fun/registry">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta name="twitter:card" content="summary_large_image">
+<title>Registry — Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<style>
+.registry-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 132px 24px 72px;
+}
+.registry-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+.registry-panel {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(79,156,255,0.075), rgba(10,16,24,0.92));
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-card);
+}
+.registry-title {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  margin: 18px 0;
+}
+.registry-copy {
+  color: var(--text-dim);
+  max-width: 680px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+.registry-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+.registry-mini {
+  display: grid;
+  gap: 12px;
+}
+.registry-mini-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: rgba(255,255,255,0.02);
+}
+.registry-mini-card strong {
+  display: block;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+.registry-mini-card span {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+.registry-toolbar {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 26px 0 18px;
+  flex-wrap: wrap;
+}
+.registry-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.registry-tab {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 13px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.registry-tab.active,
+.registry-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(79,156,255,0.07);
+}
+.registry-search {
+  min-width: 260px;
+  flex: 1;
+  max-width: 420px;
+  border: 1px solid var(--border-light);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.registry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.registry-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  padding: 22px;
+  box-shadow: var(--shadow-card);
+}
+.registry-card-head {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.registry-route {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  word-break: break-all;
+}
+.registry-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(79,156,255,0.35);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.registry-meta {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.registry-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+.registry-stat {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: rgba(0,0,0,0.16);
+}
+.registry-stat strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+}
+.registry-stat span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+.registry-code {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.32);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  overflow-x: auto;
+}
+.registry-empty {
+  grid-column: 1 / -1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  color: var(--text-dim);
+  text-align: center;
+}
+@media (max-width: 900px) {
+  .registry-hero { grid-template-columns: 1fr; }
+  .registry-grid { grid-template-columns: 1fr; }
+  .registry-stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+<nav>
+  <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
+  <div class="nav-links">
+    <a href="/#tools">Platform</a>
+    <a href="/registry" class="active">Registry</a>
+    <a href="/receipt">Receipts</a>
+    <a href="/how-it-works">How It Works</a>
+    <a href="/roadmap">Roadmap</a>
+    <a href="/docs">Docs</a>
+    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/registry" onclick="closeMobile()">Registry</a>
+  <a href="/receipt" onclick="closeMobile()">Receipts</a>
+  <a href="/docs" onclick="closeMobile()">Docs</a>
+  <a href="/dashboard" onclick="closeMobile()">Dashboard</a>
+</div>
+
+<main class="registry-shell" id="main">
+  <section class="registry-hero">
+    <div class="registry-panel">
+      <div class="section-label">Public Registry</div>
+      <h1 class="registry-title">Paid tools agents can call.</h1>
+      <p class="registry-copy">Discover Meterflow routes, MCP tools, model calls, data feeds, and workflows with prices, usage stats, Solana settlement context, and receipt trails.</p>
+      <div class="registry-actions">
+        <a class="btn-primary" href="/docs">Build a paid route</a>
+        <a class="btn-secondary" href="/receipt">Lookup receipt</a>
+      </div>
+    </div>
+    <div class="registry-panel registry-mini" aria-label="Registry stats">
+      <div class="registry-mini-card"><strong id="totalRoutes">-</strong><span>Listed routes</span></div>
+      <div class="registry-mini-card"><strong id="liveRoutes">-</strong><span>Live routes</span></div>
+      <div class="registry-mini-card"><strong id="totalCalls">-</strong><span>Observed calls</span></div>
+    </div>
+  </section>
+
+  <section class="registry-toolbar">
+    <div class="registry-tabs" id="tabs">
+      <button class="registry-tab active" data-category="">All</button>
+      <button class="registry-tab" data-category="mcp-tool">MCP</button>
+      <button class="registry-tab" data-category="model">Models</button>
+      <button class="registry-tab" data-category="data">Data</button>
+      <button class="registry-tab" data-category="trading">Trading</button>
+      <button class="registry-tab" data-category="media">Media</button>
+    </div>
+    <input class="registry-search" id="search" placeholder="Search route, category, provider..." autocomplete="off">
+  </section>
+
+  <section class="registry-grid" id="registryGrid" aria-live="polite">
+    <div class="registry-empty">Loading registry...</div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-left">&copy; 2026 Meterflow</div>
+  <div class="footer-links">
+    <a href="/registry">Registry</a>
+    <a href="/receipt">Receipts</a>
+    <a href="/docs">Docs</a>
+    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<script src="/site/shared.js" defer></script>
+<script>
+let registry = [];
+let selectedCategory = '';
+const grid = document.getElementById('registryGrid');
+const search = document.getElementById('search');
+const tabs = document.getElementById('tabs');
+
+function fmtMoney(value) {
+  const n = Number(value || 0);
+  return `$${n.toFixed(n >= 1 ? 2 : 4)}`;
+}
+function fmtPct(value) {
+  if (value === null || value === undefined) return '-';
+  return `${Math.round(Number(value) * 100)}%`;
+}
+function fmtNum(value) {
+  return new Intl.NumberFormat().format(Number(value || 0));
+}
+function card(item) {
+  const stats = item.stats || {};
+  return `<article class="registry-card">
+    <div class="registry-card-head">
+      <div>
+        <div class="registry-route">${item.method || 'GET'} ${item.route}</div>
+        <div class="registry-meta">${item.unit || 'request'} · ${fmtMoney(item.priceUsd)} ${item.asset || 'USDC'} · ${item.provider?.verified ? 'verified provider' : 'provider'}</div>
+      </div>
+      <span class="registry-badge">${item.category || 'api'}</span>
+    </div>
+    <div class="registry-stats">
+      <div class="registry-stat"><strong>${fmtNum(stats.totalCalls)}</strong><span>calls</span></div>
+      <div class="registry-stat"><strong>${fmtPct(stats.successRate)}</strong><span>success</span></div>
+      <div class="registry-stat"><strong>${fmtMoney(stats.estimatedGrossUsd)}</strong><span>gross</span></div>
+      <div class="registry-stat"><strong>${stats.p95LatencyMs ?? '-'}</strong><span>p95 ms</span></div>
+    </div>
+    <div class="registry-code">${item.sampleCurl || `curl -i https://meterflow.fun/proxy${item.route}`}</div>
+  </article>`;
+}
+function render() {
+  const q = search.value.trim().toLowerCase();
+  const filtered = registry.filter(item => {
+    if (selectedCategory && item.category !== selectedCategory) return false;
+    const text = `${item.route} ${item.category} ${item.method} ${item.provider?.wallet || ''}`.toLowerCase();
+    return !q || text.includes(q);
+  });
+  grid.innerHTML = filtered.length ? filtered.map(card).join('') : '<div class="registry-empty">No registry entries match that filter.</div>';
+}
+function updateStats() {
+  document.getElementById('totalRoutes').textContent = fmtNum(registry.length);
+  document.getElementById('liveRoutes').textContent = fmtNum(registry.filter(item => item.status === 'live').length);
+  document.getElementById('totalCalls').textContent = fmtNum(registry.reduce((sum, item) => sum + Number(item.stats?.totalCalls || 0), 0));
+}
+async function loadRegistry() {
+  try {
+    const res = await fetch('/proxy/v1/registry');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    registry = data.registry || [];
+    updateStats();
+    render();
+  } catch (err) {
+    grid.innerHTML = `<div class="registry-empty">Registry unavailable: ${err.message}</div>`;
+  }
+}
+tabs.addEventListener('click', event => {
+  const button = event.target.closest('button[data-category]');
+  if (!button) return;
+  selectedCategory = button.dataset.category;
+  tabs.querySelectorAll('.registry-tab').forEach(tab => tab.classList.toggle('active', tab === button));
+  render();
+});
+search.addEventListener('input', render);
+loadRegistry();
+</script>
+</body>
+</html>
