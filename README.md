@@ -10,6 +10,22 @@ Meterflow helps API providers, MCP tool builders, data vendors, and agent operat
 
 Solana moves the money. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, how much was owed, and where the receipt lives.
 
+## v2 Direction
+
+Meterflow v2 makes the builder promise sharper:
+
+> Turn any API, MCP tool, data feed, model call, or workflow into a paid USDC endpoint with agent-safe budgets and receipts.
+
+The first v2 slice adds:
+
+- Express paywall middleware for declaring paid API routes in builder apps.
+- A Meterflow CLI for meters, receipts, budget templates, budget simulation, and MCP publishing.
+- Agent budget templates for research agents, token-risk agents, trading bots, hackathon demos, and production agents.
+- API routes for budget templates and spend simulation.
+- SDK methods for creating budgets from templates and simulating agent spend.
+
+Read the v2 builder guide at [`docs/v2-builder-guide.md`](docs/v2-builder-guide.md).
+
 ## Why It Exists
 
 Agents need paid tools they can call without monthly SaaS accounts, shared credit cards, or unlimited wallet access. API providers need per-request pricing, receipts, budgets, and customer visibility after a payment clears.
@@ -56,8 +72,9 @@ These are the first services running through Meterflow. The product is the meter
 | `site/` | Public website and docs |
 | `dashboard/` | Wallet-connected control plane |
 | `api-proxy/` | Express gateway, auth, meters, receipts, budgets, x402, and service routes |
-| `sdk/` | JavaScript client for Meterflow routes |
+| `sdk/` | JavaScript client, CLI, middleware helper, and budget templates |
 | `skills/meterflow-api/` | Agent skill and provider metadata |
+| `docs/` | Builder guides and v2 product notes |
 
 ## SDK Quick Start
 
@@ -74,6 +91,38 @@ const response = await client.chat({
 });
 
 console.log(response.content);
+```
+
+## Paywall Any Express Route
+
+```js
+import express from 'express';
+import { meterflowPaywall } from '@meterflow/sdk/express';
+
+const app = express();
+
+app.use(meterflowPaywall({
+  route: '/api/risk-score',
+  method: 'POST',
+  priceUsd: 0.006,
+  payTo: process.env.SETTLEMENT_WALLET,
+  description: 'Token risk score paid through Meterflow',
+  async verify(req) {
+    return Boolean(req.headers['x-payment']);
+  },
+}));
+```
+
+## CLI Quick Start
+
+```bash
+export METERFLOW_API_KEY=mf_xxxxx
+
+meterflow create-meter --route /api/risk-score --price 0.006 --method POST
+meterflow budget-templates
+meterflow create-budget --template research_agent --agent market-bot
+meterflow simulate-budget --daily-cap 5 --per-call-cap 0.02 --calls 120
+meterflow publish-mcp --name token-risk --route /mcp/token-risk --price 0.006
 ```
 
 ## Local Development
