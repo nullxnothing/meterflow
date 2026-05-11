@@ -2,20 +2,29 @@ import { config } from 'dotenv';
 import { Connection } from '@solana/web3.js';
 config();
 
+function cleanEnv(value) {
+  return String(value || '').trim();
+}
+
+function configuredTokenMint() {
+  const mint = cleanEnv(process.env.METERFLOW_TOKEN_CA) || cleanEnv(process.env.METERFLOW_TOKEN_MINT);
+  return ['PASTE_YOUR_TOKEN_MINT_HERE', 'TBA', 'COMING_SOON'].includes(mint.toUpperCase()) ? '' : mint;
+}
+
 const CONFIG = {
-  HELIUS_API_KEY: process.env.HELIUS_API_KEY || '',
-  HELIUS_RPC_URL: process.env.HELIUS_RPC_URL || '',
-  TOKEN_MINT: process.env.METERFLOW_TOKEN_CA || process.env.METERFLOW_TOKEN_MINT || '',
-  TOKEN_NAME: process.env.METERFLOW_TOKEN_NAME || 'Meterflow',
-  TOKEN_SYMBOL: process.env.METERFLOW_TOKEN_SYMBOL || 'MFLOW',
-  TOKEN_SWAP_URL: process.env.METERFLOW_TOKEN_SWAP_URL || '',
+  HELIUS_API_KEY: cleanEnv(process.env.HELIUS_API_KEY),
+  HELIUS_RPC_URL: cleanEnv(process.env.HELIUS_RPC_URL),
+  TOKEN_MINT: configuredTokenMint(),
+  TOKEN_NAME: cleanEnv(process.env.METERFLOW_TOKEN_NAME) || 'Meterflow',
+  TOKEN_SYMBOL: cleanEnv(process.env.METERFLOW_TOKEN_SYMBOL) || 'MFLOW',
+  TOKEN_SWAP_URL: cleanEnv(process.env.METERFLOW_TOKEN_SWAP_URL),
   PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_PROTOCOL_FEE_BPS || '100', 10),
   HOLDER_PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_HOLDER_PROTOCOL_FEE_BPS || '0', 10),
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   JUPITER_API_KEY: process.env.JUPITER_API_KEY || '',
-  TREASURY_WALLET: process.env.SETTLEMENT_WALLET || process.env.TREASURY_WALLET || '',
+  TREASURY_WALLET: cleanEnv(process.env.SETTLEMENT_WALLET) || cleanEnv(process.env.TREASURY_WALLET),
   API_KEY_SECRET: process.env.API_KEY_SECRET || 'dev-secret-change-me',
   TIERS: {
     alpha: {
@@ -45,7 +54,7 @@ const CONFIG = {
   },
   BALANCE_CACHE_TTL: 5 * 60 * 1000,
   WALLET_ENCRYPTION_SECRET: process.env.WALLET_ENCRYPTION_SECRET || 'dev-encryption-secret-change-me',
-  PAY_SH_GATEWAY_SECRET: process.env.PAY_SH_GATEWAY_SECRET || '',
+  PAY_SH_GATEWAY_SECRET: cleanEnv(process.env.PAY_SH_GATEWAY_SECRET),
   WHITELISTED_WALLETS: new Set(
     (process.env.WHITELISTED_WALLETS || '')
       .split(',')
@@ -63,7 +72,7 @@ const TRIAL_CONFIG = {
 
 const TRADING_TIERS = ['operator', 'architect', 'alpha'];
 const ALPHA_TIERS = ['alpha'];
-const TOKEN_GATING_ENABLED = CONFIG.TOKEN_MINT && CONFIG.TOKEN_MINT !== 'PASTE_YOUR_TOKEN_MINT_HERE';
+const TOKEN_GATING_ENABLED = !!CONFIG.TOKEN_MINT;
 
 // Time-limited free access window — set FREE_ACCESS_UNTIL env var to an ISO date
 // e.g. FREE_ACCESS_UNTIL=2026-02-27T00:00:00Z gives 24h of free signal-tier access
