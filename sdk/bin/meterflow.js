@@ -50,6 +50,9 @@ Usage:
   meterflow public-tx --signature 5N...
   meterflow integrations --priority highest
   meterflow integration --id helius
+  meterflow provider-policies
+  meterflow provider-policy --id fair_api_default
+  meterflow evaluate-policy --preset fair_api_default --status 500
   meterflow budget-templates
   meterflow create-budget --template research_agent --agent market-bot
   meterflow simulate-budget --daily-cap 5 --per-call-cap 0.02 --calls 120
@@ -143,6 +146,26 @@ async function main() {
         printJson(await client({ optional: true }).integration(id));
         break;
       }
+
+      case 'provider-policies':
+        printJson(await client({ optional: true }).providerPolicies());
+        break;
+
+      case 'provider-policy': {
+        const id = argValue('id');
+        if (!id) throw new Error('provider-policy requires --id.');
+        printJson(await client({ optional: true }).providerPolicy(id));
+        break;
+      }
+
+      case 'evaluate-policy':
+        printJson(await client({ optional: true }).evaluateProviderPolicy({
+          preset: argValue('preset', 'fair_api_default'),
+          responseStatus: argValue('status') ? Number(argValue('status')) : undefined,
+          timedOut: hasFlag('timeout'),
+          policyResult: argValue('policy-result'),
+        }));
+        break;
 
       case 'budget-templates':
         printJson({ templates: listBudgetTemplates() });
