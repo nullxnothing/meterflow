@@ -8,11 +8,12 @@ This guide documents the first v2 implementation slices on the `v2` branch.
 
 ## What v2 Adds First
 
-- Express paywall middleware for declaring paid API routes in builder apps.
+- Express, Fastify, Hono, Fetch/Cloudflare Worker, and Next.js route-handler paywall adapters for declaring paid API routes in builder apps.
 - CLI workflows for meters, receipts, budget templates, budget simulation, MCP publishing, registry discovery, public receipts, and integrations.
 - Prebuilt agent budget templates for research agents, token-risk agents, trading bots, hackathon demos, and production agents.
 - API routes for listing templates, creating budgets from templates, simulating spend, public registry discovery, public-safe receipt lookup, and integration plans.
 - SDK methods for budget workflows, registry discovery, public receipt lookup, and integration discovery.
+- Public `/registry` and `/receipt` pages for marketplace-style route discovery and receipt verification.
 
 ## Paywall Any Express Route
 
@@ -40,6 +41,73 @@ app.post('/api/risk-score', async (req, res) => {
 ```
 
 The middleware returns a standard `402 payment_required` quote when no proof is present. It supports an optional `verify(req)` hook so this helper can evolve into full hosted/local settlement without changing the builder-facing route declaration.
+
+## Framework Adapters
+
+All adapters share the same config shape: `route`, `method`, `priceUsd`, `payTo`, optional `description`, optional `verify`, and optional `onEvent`.
+
+### Next.js route handler
+
+```js
+import { nextMeterflowPaywall } from '@meterflow/sdk/adapters';
+
+export const POST = nextMeterflowPaywall({
+  route: '/api/risk-score',
+  method: 'POST',
+  priceUsd: 0.006,
+  payTo: process.env.SETTLEMENT_WALLET,
+}, async request => {
+  return Response.json({ score: 82 });
+});
+```
+
+### Fastify
+
+```js
+import { fastifyMeterflowPaywall } from '@meterflow/sdk/adapters';
+
+fastify.post('/api/risk-score', {
+  preHandler: fastifyMeterflowPaywall({
+    route: '/api/risk-score',
+    priceUsd: 0.006,
+    payTo: process.env.SETTLEMENT_WALLET,
+  }),
+}, async () => ({ score: 82 }));
+```
+
+### Hono
+
+```js
+import { Hono } from 'hono';
+import { honoMeterflowPaywall } from '@meterflow/sdk/adapters';
+
+const app = new Hono();
+app.use('/api/risk-score', honoMeterflowPaywall({
+  route: '/api/risk-score',
+  priceUsd: 0.006,
+  payTo: process.env.SETTLEMENT_WALLET,
+}));
+```
+
+### Cloudflare Worker / Fetch
+
+```js
+import { fetchMeterflowPaywall } from '@meterflow/sdk/adapters';
+
+const guard = fetchMeterflowPaywall({
+  route: '/api/risk-score',
+  priceUsd: 0.006,
+  payTo: env.SETTLEMENT_WALLET,
+});
+
+export default {
+  async fetch(request) {
+    const blocked = await guard(request);
+    if (blocked) return blocked;
+    return Response.json({ score: 82 });
+  },
+};
+```
 
 ## Register A Meter From Code
 
@@ -138,6 +206,8 @@ const registry = await meterflow.registry({ category: 'mcp-tool' });
 const item = await meterflow.registryItem('mtr_mcp_token_risk');
 ```
 
+A public registry page is also available at `/registry`.
+
 ## Public Receipts
 
 Public receipt lookups are designed for proof without leaking API key or private customer context. Wallets are masked, but payment state, amount, route, policy result, response status, latency, and transaction signature remain visible.
@@ -146,6 +216,8 @@ Public receipt lookups are designed for proof without leaking API key or private
 const receipt = await meterflow.publicReceipt('rcpt_xxxxx');
 const receiptByTx = await meterflow.publicReceiptByTx('5N...');
 ```
+
+A public lookup page is also available at `/receipt`. It supports `?id=rcpt_xxxxx` and `?tx=signature` query params.
 
 ## Integration Catalog
 
@@ -175,9 +247,8 @@ GET /v1/integrations/:id
 
 ## Next v2 Slices
 
-1. Full hosted x402 verification helper for the Express middleware.
-2. Next.js, Fastify, Hono, Cloudflare Workers, and Vercel adapters.
-3. Public registry UI inside the site/dashboard.
-4. Public receipt viewer page by receipt id or transaction signature.
-5. Provider refund/retry policies for failed responses.
-6. First live integration: Helius-powered paid data routes.
+1. Full hosted x402 verification helper for the adapters.
+2. Provider refund/retry policies for failed responses.
+3. First live integration: Helius-powered paid data routes.
+4. Dashboard widgets for registry publishing, public receipt sharing, and budget template creation.
+5. Provider onboarding wizard for turning an existing endpoint into a listed paid route.
