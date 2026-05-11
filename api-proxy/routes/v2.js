@@ -9,6 +9,12 @@ import {
 } from '../lib/budget-templates.js';
 import { getIntegration, listIntegrationCatalog } from '../lib/integration-catalog.js';
 import { findPublicReceipt, getPublicRegistryItem, listPublicRegistry } from '../lib/public-registry.js';
+import {
+  buildProviderPolicy,
+  evaluateProviderPolicy,
+  getProviderPolicyPreset,
+  listProviderPolicyPresets,
+} from '../lib/provider-policies.js';
 
 const router = Router();
 
@@ -119,6 +125,38 @@ router.get('/integrations/:id', (req, res) => {
     return res.status(404).json({ error: 'integration_not_found', message: 'Integration not found.' });
   }
   res.json({ integration });
+});
+
+router.get('/provider-policies', (_req, res) => {
+  res.json({ policies: listProviderPolicyPresets() });
+});
+
+router.get('/provider-policies/:id', (req, res) => {
+  const policy = getProviderPolicyPreset(req.params.id);
+  if (!policy) {
+    return res.status(404).json({ error: 'policy_not_found', message: 'Provider policy preset not found.' });
+  }
+  res.json({ policy });
+});
+
+router.post('/provider-policies/evaluate', (req, res) => {
+  const policy = buildProviderPolicy(req.body.policy || req.body);
+  if (!policy) {
+    return res.status(404).json({ error: 'policy_not_found', message: 'Provider policy preset not found.' });
+  }
+
+  const responseStatus = Number(req.body.responseStatus ?? req.body.event?.responseStatus ?? 0);
+  if (responseStatus && (!Number.isFinite(responseStatus) || responseStatus < 100 || responseStatus > 599)) {
+    return badRequest(res, 'responseStatus must be a valid HTTP status code');
+  }
+
+  const decision = evaluateProviderPolicy(policy, {
+    responseStatus,
+    timedOut: Boolean(req.body.timedOut ?? req.body.event?.timedOut),
+    policyResult: req.body.policyResult ?? req.body.event?.policyResult,
+  });
+
+  res.json({ policy, decision });
 });
 
 export default router;
