@@ -30,3 +30,8 @@ export function captureError(err, ctx) {
     Sentry.captureException(err);
   });
 }
+
+export async function flushSentry(timeoutMs = 2000) {
+  if (!DSN) return false;
+  return Sentry.flush(timeoutMs);
+}

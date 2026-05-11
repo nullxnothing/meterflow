@@ -12,6 +12,7 @@ import tradingPortfolioRouter from './routes/trading-portfolio.js';
 import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import applicationsRouter from './routes/applications.js';
+import discordRouter from './routes/discord.js';
 import tradesRouter from './routes/trades.js';
 import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
@@ -60,7 +61,14 @@ app.use(cors({
 }));
 
 // Default body limit - overridden per-route where needed.
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, _res, buf) => {
+    if (req.originalUrl?.includes('/discord/interactions') || req.url?.includes('/discord/interactions')) {
+      req.rawBody = buf.toString('utf8');
+    }
+  },
+}));
 app.use(errorAlertMiddleware);
 
 app.use((req, res, next) => {
@@ -81,6 +89,7 @@ app.use((req, res, next) => {
 app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
 app.use('/', applicationsRouter);
+app.use('/discord', discordRouter);
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()

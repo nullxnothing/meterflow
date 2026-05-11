@@ -6,7 +6,7 @@
 <meta name="description" content="Meterflow product map - meters, receipts, agent budgets, integrations, and Solana settlement for paid API usage.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/roadmap">
-<meta property="og:title" content="Meterflow — Roadmap">
+<meta property="og:title" content="Meterflow: Roadmap">
 <meta property="og:description" content="The Meterflow product surface for Solana-native API payments.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/roadmap">
@@ -15,7 +15,7 @@
 <meta property="og:image:height" content="900">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
-<title>Roadmap — Meterflow</title>
+<title>Roadmap | Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,8 +31,8 @@
 <nav>
   <a class="nav-logo" href="/" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
-    <a href="/#tools">Platform</a>
-    <a href="/#tiers">Product</a>
+    <a href="/#tools">Tools</a>
+    <a href="/#tiers">Surfaces</a>
     <a href="/how-it-works">How It Works</a>
     <a href="/roadmap" class="active">Roadmap</a>
     <a href="/apply">Apply</a>
@@ -55,8 +55,8 @@
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="/#tools" onclick="closeMobile()">Platform</a>
-  <a href="/#tiers" onclick="closeMobile()">Product</a>
+  <a href="/#tools" onclick="closeMobile()">Tools</a>
+  <a href="/#tiers" onclick="closeMobile()">Surfaces</a>
   <a href="/how-it-works" onclick="closeMobile()">How It Works</a>
   <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
   <a href="/apply" onclick="closeMobile()" style="color: var(--accent);">Apply as Provider</a>
@@ -98,7 +98,7 @@
     <div class="timeline-phase completed" data-phase="1">
       <div class="phase-marker"><div class="phase-dot"></div><div class="phase-pulse"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 01</span></div>
+        <div class="phase-header"><span class="phase-badge completed">Shipped</span><span class="phase-number">Surface 01</span></div>
         <h2 class="phase-title">Metering Foundation</h2>
         <p class="phase-desc">Dashboard accounts, API key management, service routes, and usage tracking.</p>
         <div class="phase-items">
@@ -112,7 +112,7 @@
     <div class="timeline-phase active" data-phase="2">
       <div class="phase-marker"><div class="phase-dot active"></div><div class="phase-pulse active"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge active">Active</span><span class="phase-number">Surface 02</span></div>
+        <div class="phase-header"><span class="phase-badge active">Live</span><span class="phase-number">Surface 02</span></div>
         <h2 class="phase-title">Receipts And Payment State</h2>
         <p class="phase-desc">Connect quote, payment proof, payer wallet, response state, and exportable accounting records.</p>
         <div class="phase-items">
@@ -126,7 +126,7 @@
     <div class="timeline-phase" data-phase="3">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 03</span></div>
+        <div class="phase-header"><span class="phase-badge active">Live</span><span class="phase-number">Surface 03</span></div>
         <h2 class="phase-title">Provider Revenue</h2>
         <p class="phase-desc">Aggregate calls, estimated gross revenue, verified revenue, failures, and latency by meter so providers can see which endpoints earn.</p>
         <div class="phase-code-preview">
@@ -144,7 +144,7 @@ const receipts = await meterflow.receipts({
     <div class="timeline-phase" data-phase="4">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 04</span></div>
+        <div class="phase-header"><span class="phase-badge active">Live</span><span class="phase-number">Surface 04</span></div>
         <h2 class="phase-title">Agent Budgets</h2>
         <p class="phase-desc">Wallet-bound spending policies, route allowlists, per-call caps, daily caps, alerts, and revocation for autonomous agents.</p>
       </div>
@@ -153,7 +153,7 @@ const receipts = await meterflow.receipts({
     <div class="timeline-phase" data-phase="5">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 05</span></div>
+        <div class="phase-header"><span class="phase-badge active">Live</span><span class="phase-number">Surface 05</span></div>
         <h2 class="phase-title">MCP Tool Packaging</h2>
         <p class="phase-desc">Package, price, meter, and monitor MCP tools from one dashboard with hosted gateway paths and receipt streams.</p>
       </div>
@@ -162,9 +162,24 @@ const receipts = await meterflow.receipts({
     <div class="timeline-phase" data-phase="6">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 06</span></div>
+        <div class="phase-header"><span class="phase-badge upcoming">Planned</span><span class="phase-number">Token Layer</span></div>
         <h2 class="phase-title">MFLOW Utility</h2>
         <p class="phase-desc">USDC is the payment asset. MFLOW powers provider reputation, fee discounts, registry ranking, higher policy limits, longer receipt retention, and future provider bonding.</p>
+      </div>
+    </div>
+
+    <div class="timeline-phase" data-phase="7">
+      <div class="phase-marker"><div class="phase-dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-badge upcoming">Next</span><span class="phase-number">Q3 2026</span></div>
+        <h2 class="phase-title">Open Provider Registry</h2>
+        <p class="phase-desc">Third-party API providers can register endpoints, configure pricing, and receive revenue directly. Custom meter creation via API, revenue share routing, and provider analytics.</p>
+        <div class="phase-items">
+          <div class="phase-item"><span class="item-check">></span><div class="item-content"><span class="item-name">Third-party provider registration</span><span class="item-tag">Registry</span></div></div>
+          <div class="phase-item"><span class="item-check">></span><div class="item-content"><span class="item-name">Custom meter creation via API</span><span class="item-tag">Meters</span></div></div>
+          <div class="phase-item"><span class="item-check">></span><div class="item-content"><span class="item-name">Revenue share and payout routing</span><span class="item-tag">Settlement</span></div></div>
+          <div class="phase-item"><span class="item-check">></span><div class="item-content"><span class="item-name">Provider earnings dashboard</span><span class="item-tag">Analytics</span></div></div>
+        </div>
       </div>
     </div>
   </div>

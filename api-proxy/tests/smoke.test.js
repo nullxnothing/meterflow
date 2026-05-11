@@ -620,4 +620,16 @@ describe('Meterflow control plane', () => {
       assert.ok(src.includes(method), `should include ${method}`);
     }
   });
+
+  it('ops routes expose Sentry tests and Discord interactions safely', () => {
+    const admin = readFileSync(resolve(root, 'routes', 'admin.js'), 'utf-8');
+    const discord = readFileSync(resolve(root, 'routes', 'discord.js'), 'utf-8');
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    assert.ok(admin.includes("'/admin/sentry-test'"), 'admin route should expose a controlled Sentry test');
+    assert.ok(admin.includes('authenticateAdmin'), 'Sentry test route must require admin auth');
+    assert.ok(discord.includes('x-signature-ed25519'), 'Discord interactions should verify request signatures');
+    assert.ok(discord.includes('nacl.sign.detached.verify'), 'Discord route should use Ed25519 verification');
+    assert.ok(app.includes('/discord'), 'app should mount Discord interactions before paid routes');
+    assert.ok(app.includes('req.rawBody'), 'app should preserve raw body for Discord signature verification');
+  });
 });

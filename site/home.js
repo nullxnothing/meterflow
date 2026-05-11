@@ -190,7 +190,7 @@ function populateProtocolStats() {
   // Services online
   const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
   el('ps-models').textContent = activeProviders > 0 ? activeProviders : '--';
-  el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(' / ') : (fetchFailed ? 'offline' : 'loading...');
+  el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(', ') : (fetchFailed ? 'offline' : 'loading...');
 
   // Uptime
   el('ps-uptime').textContent = uptimeMs > 0 ? formatUptime(uptimeMs) : '--';
@@ -286,6 +286,16 @@ function populateToken() {
 }
 
 // ═══════════ INIT ═══════════
+// Set loading state immediately so stats don't show -- before data arrives
+(function setLoadingState() {
+  const loading = ['ps-alltime-calls', 'ps-alltime-tokens', 'ps-money-saved',
+    'ps-calls-today', 'ps-active-keys', 'ps-treasury', 'ps-runway', 'ps-models', 'ps-uptime'];
+  loading.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '···';
+  });
+})();
+
 fetchLiveData().then(() => {
   clearTimeout(dataTimeout);
   populateToken();

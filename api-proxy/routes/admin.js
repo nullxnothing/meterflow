@@ -11,6 +11,7 @@ import { getGlobalStats, getTopUsersToday, getModelAnalytics } from '../lib/kv-u
 import { logger } from '../lib/logger.js';
 import { checkPostgresHealth } from '../lib/postgres.js';
 import { checkRedisHealth } from '../lib/redis.js';
+import { captureError, flushSentry } from '../lib/sentry.js';
 
 const router = Router();
 
@@ -193,6 +194,19 @@ router.post('/admin/rate-limits', authenticateAdmin, (req, res) => {
   treasuryCache = { data: null, ts: 0 }; // bust cache on update
   logger.info('Rate limits updated', { multiplier, healthStatus, runwayDays });
   res.json({ ok: true, applied: getTreasuryState() });
+});
+
+// POST /admin/sentry-test
+router.post('/admin/sentry-test', authenticateAdmin, async (req, res) => {
+  const err = new Error('Meterflow controlled Sentry test event');
+  err.name = 'MeterflowSentryTest';
+  captureError(err, {
+    route: '/admin/sentry-test',
+    runtime: process.env.VERCEL ? 'vercel' : 'node',
+    requestedBy: 'admin',
+  });
+  await flushSentry(2000);
+  res.json({ ok: true, sentryConfigured: !!process.env.SENTRY_DSN });
 });
 
 // GET /treasury

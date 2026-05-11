@@ -64,6 +64,9 @@ pass('how-it-works page');
 await checkPage('/roadmap', 'Meterflow');
 pass('roadmap page');
 
+await checkPage('/status', 'Meterflow Status');
+pass('status page');
+
 await checkPage('/privacy', 'Privacy Policy');
 pass('privacy page');
 

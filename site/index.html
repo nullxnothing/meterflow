@@ -6,7 +6,7 @@
 <meta name="description" content="Meterflow is usage-based billing, receipts, and spend control for agent-accessible APIs on Solana. Meter endpoints, track revenue, and set budgets.">
 <meta name="theme-color" content="#05080f">
 <meta name="mobile-web-app-capable" content="yes">
-<meta property="og:title" content="Meterflow — Metering and spend control for agent APIs">
+<meta property="og:title" content="Meterflow: Metering and spend control for agent APIs">
 <meta property="og:description" content="Usage-based billing, receipts, and agent budgets for APIs, MCP tools, models, and data feeds on Solana.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -14,10 +14,10 @@
 <meta property="og:image:height" content="900">
 <meta property="og:url" content="https://meterflow.fun">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Meterflow — Metering and spend control for agent APIs">
+<meta name="twitter:title" content="Meterflow: Metering and spend control for agent APIs">
 <meta name="twitter:description" content="Meter endpoints, track receipts, and control agent spend on Solana.">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
-<title>Meterflow</title>
+<title>Meterflow — Usage billing for agent APIs on Solana</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link rel="manifest" href="/site.webmanifest">
@@ -63,7 +63,7 @@
 <div class="free-access-topbar" id="freeAccessBar" style="display:none;">
   <span class="free-access-topbar-pulse"></span>
   <span class="free-access-topbar-text">
-    <strong>FREE ACCESS</strong> — try Meterflow gateway routes. Ends in <strong id="freeCountdown">--</strong>
+    <strong>FREE ACCESS</strong>: try Meterflow gateway routes. Ends in <strong id="freeCountdown">--</strong>
   </span>
   <a href="/dashboard" class="free-access-topbar-btn">Try it now</a>
 </div>
@@ -72,9 +72,10 @@
 <nav>
   <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
   <div class="nav-links">
-    <a href="#tools">Platform</a>
-    <a href="#tiers">Product</a>
+    <a href="#tools">Tools</a>
+    <a href="#tiers">Surfaces</a>
     <a href="/how-it-works">How It Works</a>
+    <a href="/status">Status</a>
     <a href="/roadmap">Roadmap</a>
     <a href="/apply">Apply</a>
     <a class="nav-icon" href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" aria-label="Meterflow on GitHub">
@@ -99,9 +100,10 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#tools" onclick="closeMobile()">Platform</a>
-  <a href="#tiers" onclick="closeMobile()">Product</a>
+  <a href="#tools" onclick="closeMobile()">Tools</a>
+  <a href="#tiers" onclick="closeMobile()">Surfaces</a>
   <a href="/how-it-works" onclick="closeMobile()">How It Works</a>
+  <a href="/status" onclick="closeMobile()">Status</a>
   <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
   <a href="/apply" onclick="closeMobile()" style="color: var(--accent);">Apply as Provider</a>
   <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" onclick="closeMobile()">GitHub</a>
@@ -123,11 +125,11 @@
         <span class="arrow">&rarr;</span>
       </a>
       <h1 class="hero-headline">
-        Usage billing for <span class="accent">agent APIs.</span>
+        Launch a paid endpoint <span class="accent">agents can call.</span>
         <span class="thin">Receipts on Solana.</span>
       </h1>
       <p class="hero-sub">
-        Meter endpoints, track x402-style paid requests, export receipts, and cap what autonomous agents can spend. Wallets handle identity and settlement — keys and policies keep automation safe.
+        Agents don't have accounts or credit cards. Meterflow meters each request, enforces spending limits, settles in USDC via x402, and returns verifiable receipts. No SaaS subscriptions, no shared wallets.
       </p>
       <div class="hero-actions">
         <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
@@ -229,7 +231,7 @@
       </div>
       <div class="stats-hero-block saved">
         <div class="stats-hero-number" id="ps-money-saved">--</div>
-        <div class="stats-hero-label">Estimated value routed</div>
+        <div class="stats-hero-label">Est. compute value</div>
       </div>
     </div>
     <div class="stats-grid">
@@ -237,7 +239,7 @@
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-calls-today">--</div>
         <div class="stat-label">Meter Hits Today</div>
-        <div class="stat-sub" id="ps-tokens-today">&mdash;</div>
+        <div class="stat-sub" id="ps-tokens-today"></div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
@@ -248,26 +250,26 @@
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-treasury">--</div>
-        <div class="stat-label">Settlement Wallet</div>
-        <div class="stat-sub" id="ps-treasury-usd">&mdash;</div>
+        <div class="stat-label">Treasury Balance</div>
+        <div class="stat-sub" id="ps-treasury-usd"></div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-runway">--</div>
-        <div class="stat-label">Budget Window</div>
-        <div class="stat-sub" id="ps-health">&mdash;</div>
+        <div class="stat-label">Ops Runway</div>
+        <div class="stat-sub" id="ps-health"></div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-models">--</div>
         <div class="stat-label">Services Online</div>
-        <div class="stat-sub" id="ps-providers">&mdash;</div>
+        <div class="stat-sub" id="ps-providers"></div>
       </div>
       <div class="stat-block">
         <span class="stat-icon">//</span>
         <div class="stat-number" id="ps-uptime">--</div>
         <div class="stat-label">Uptime</div>
-        <div class="stat-sub" id="ps-uptime-pct">&mdash;</div>
+        <div class="stat-sub" id="ps-uptime-pct"></div>
       </div>
     </div>
   </div>
@@ -299,7 +301,7 @@
 <!-- TOOLS -->
 <section class="tools-section" id="tools">
   <div class="tools-inner">
-    <div class="section-label">Platform</div>
+    <div class="section-label">Tools</div>
     <h2 class="tools-headline">The layer around agent payments.</h2>
     <p class="tools-sub">Plenty of teams are building payment rails. Meterflow focuses on the product surface builders need after the payment exists.</p>
     <div class="tools-grid">
@@ -397,7 +399,7 @@
 <!-- PRODUCT SURFACES -->
 <section class="tiers-section" id="tiers">
   <div class="tiers-inner">
-    <div class="section-label">Product</div>
+    <div class="section-label">Surfaces</div>
     <h2 class="tiers-headline">Four surfaces. One control plane.</h2>
     <p class="tiers-sub">Meters price routes. Receipts prove every paid call. Budgets cap autonomous agents. Integrations plug in the rest of the Solana stack.</p>
     <div class="tiers-grid">
@@ -440,7 +442,7 @@
           <div class="mock-row"><span class="mock-mono">ag_mintbot</span><span class="mock-bar"><span style="width:18%"></span></span><span class="mock-pill">$1.8 / $10</span></div>
           <div class="mock-row"><span class="mock-mono">ag_indexer</span><span class="mock-bar"><span style="width:96%"></span></span><span class="mock-pill warn">$28.8 / $30</span></div>
         </div>
-        <p class="tier-desc">Daily caps, route allowlists, kill switches. Agents can pay — with limits you set.</p>
+        <p class="tier-desc">Daily caps, route allowlists, kill switches. Agents can pay, with limits you set.</p>
         <span class="tier-link">Open budgets &rarr;</span>
       </a>
 
@@ -466,7 +468,7 @@
   <div class="funded-inner">
     <div class="section-label">Settlement</div>
     <h2 class="funded-headline">Payments alone are not the product.</h2>
-    <p class="funded-sub">Solana and x402-style flows can move money. Meterflow focuses on the control layer around that movement: quote integrity, usage records, revenue attribution, wallet-linked receipts, and agent-safe limits.</p>
+    <p class="funded-sub">Solana and x402 flows can move money. Meterflow focuses on the control layer around that movement: quote integrity, usage records, revenue attribution, wallet-linked receipts, and agent-safe limits.</p>
 
     <div class="funded-flow">
       <div class="funded-step">
@@ -487,16 +489,10 @@
         <h3>The dashboard records the truth</h3>
         <p>Successful and failed requests become searchable receipts, revenue analytics, and exportable logs.</p>
       </div>
-      <div class="funded-step">
-        <span class="funded-step-icon">04</span>
-        <div class="funded-step-label">Utility</div>
-        <h3>MFLOW powers the control layer</h3>
-        <p>USDC settles usage. MFLOW supports provider reputation, fee discounts, registry ranking, higher policy limits, longer retention, and future bonding.</p>
-      </div>
     </div>
 
     <p class="funded-note">
-      The dashboard records wallet context, metered usage, budgets, and receipts for paid API routes.<br>
+      The dashboard records wallet context, metered usage, budgets, and receipts for paid API routes. USDC settles usage. MFLOW powers provider reputation, fee discounts, and registry ranking.<br>
       <a href="https://solscan.io" target="_blank" rel="noopener" id="treasurySolscan">View wallet on Solscan</a>
     </p>
   </div>
@@ -572,7 +568,7 @@
         <span class="faq-toggle">+</span>
       </button>
       <div class="faq-answer">
-        <p>No. x402-style payments are one rail Meterflow can support. The differentiation is the metering, accounting, observability, and spend-control layer around paid API usage.</p>
+        <p>No. x402 payments are one rail Meterflow can support. The differentiation is the metering, accounting, observability, and spend-control layer around paid API usage.</p>
       </div>
     </div>
 
