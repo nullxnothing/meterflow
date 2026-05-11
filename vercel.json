@@ -7,6 +7,8 @@
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },
     { "source": "/docs.html", "destination": "/site/docs.html" },
+    { "source": "/registry", "destination": "/site/registry.html" },
+    { "source": "/receipt", "destination": "/site/receipt.html" },
     { "source": "/roadmap", "destination": "/site/roadmap.html" },
     { "source": "/apply", "destination": "/site/apply.html" },
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
