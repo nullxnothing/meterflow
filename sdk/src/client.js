@@ -223,6 +223,29 @@ export class MeterflowClient {
   }
 
   /**
+   * List provider refund/retry policy presets.
+   */
+  async providerPolicies() {
+    return this._get('/v1/provider-policies');
+  }
+
+  /**
+   * Fetch one provider refund/retry policy preset.
+   * @param {string} policyId
+   */
+  async providerPolicy(policyId) {
+    return this._get(`/v1/provider-policies/${encodeURIComponent(policyId)}`);
+  }
+
+  /**
+   * Evaluate how a provider policy handles a failed/slow response.
+   * @param {{preset?: string, policy?: Object, responseStatus?: number, timedOut?: boolean, policyResult?: string, event?: Object}} params
+   */
+  async evaluateProviderPolicy(params = {}) {
+    return this._post('/v1/provider-policies/evaluate', params);
+  }
+
+  /**
    * List configured webhook endpoints.
    */
   async webhooks() {
