@@ -791,3 +791,13 @@
   margin-bottom: 4px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .media-lab-gen-btn,
+  .media-lab-chip,
+  .media-lab-composer,
+  [class*="media-lab"] {
+    animation: none;
+    transition: none;
+  }
+}
+

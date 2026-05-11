@@ -36,7 +36,7 @@
   outline: none;
 }
 
-.chat-model-select:focus { border-color: var(--accent); }
+.chat-model-select:focus-visible { border-color: var(--accent); }
 
 .chat-model-select option {
   background: var(--bg);
@@ -722,7 +722,7 @@
   transition: border-color 0.2s;
 }
 
-.chat-input:focus { border-color: var(--accent); }
+.chat-input:focus-visible { border-color: var(--accent); }
 
 .chat-input::placeholder { color: var(--text-muted); }
 
@@ -826,4 +826,12 @@
   .chat-msg-content .code-block-header { padding: 4px 10px; }
   .chat-msg-content .code-block-header .code-copy,
   .chat-msg-content .code-block-header .code-toggle { padding: 3px 8px; font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-message,
+  .typing-indicator .dot {
+    animation: none;
+    transition: none;
+  }
 }

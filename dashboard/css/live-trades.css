@@ -346,3 +346,12 @@
     font-size: 11px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-status-dot,
+  .trade-row,
+  .whale-alert {
+    animation: none;
+    transition: none;
+  }
+}

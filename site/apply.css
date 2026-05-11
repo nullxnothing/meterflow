@@ -157,9 +157,9 @@
   color: var(--text-muted);
 }
 
-.apply-field input:focus,
-.apply-field select:focus,
-.apply-field textarea:focus {
+.apply-field input:focus-visible,
+.apply-field select:focus-visible,
+.apply-field textarea:focus-visible {
   border-color: rgba(79, 156, 255, 0.65);
   background: rgba(2, 7, 16, 0.92);
   box-shadow: 0 0 0 3px rgba(79, 156, 255, 0.08);

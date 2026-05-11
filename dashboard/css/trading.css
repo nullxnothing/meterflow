@@ -48,7 +48,7 @@
 }
 
 .badge-live { background: rgba(79, 156, 255, 0.15); color: var(--accent); }
-.badge-paused { background: rgba(255, 200, 0, 0.15); color: #ffcc00; }
+.badge-paused { background: rgba(245, 181, 68, 0.15); color: var(--amber); }
 .badge-stopped { background: rgba(255, 95, 87, 0.15); color: var(--red); }
 
 .bot-wallet-addr {
@@ -116,7 +116,7 @@
   width: 100%;
 }
 
-.bot-input:focus { border-color: var(--accent); }
+.bot-input:focus-visible { border-color: var(--accent); }
 
 .bot-trade-btns {
   display: grid;
@@ -323,7 +323,7 @@
   outline: none;
 }
 
-.bot-form-input:focus { border-color: var(--accent); }
+.bot-form-input:focus-visible { border-color: var(--accent); }
 
 .bot-form-submit {
   font-family: var(--font-mono);
@@ -604,4 +604,4 @@
   outline: none;
 }
 
-.trading-token-input input:focus { border-color: var(--accent); }
+.trading-token-input input:focus-visible { border-color: var(--accent); }

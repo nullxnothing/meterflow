@@ -48,7 +48,7 @@
 }
 
 .status-dot.ok { background: var(--accent); box-shadow: 0 0 18px rgba(79,156,255,0.8); }
-.status-dot.warn { background: #eab308; box-shadow: 0 0 18px rgba(234,179,8,0.45); }
+.status-dot.warn { background: var(--amber); box-shadow: 0 0 18px rgba(245,181,68,0.45); }
 .status-dot.bad { background: var(--red); box-shadow: 0 0 18px rgba(255,95,87,0.45); }
 
 .status-grid {

@@ -64,7 +64,7 @@
   --radius-pill: 999px;
   --shadow-card: 0 1px 0 rgba(255,255,255,0.03), 0 12px 32px rgba(0,0,0,0.4);
   --shadow-elev: 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.55);
-  --section-pad: clamp(72px, 10vw, 128px);
+  --section-pad: clamp(48px, 5vw, 72px);
   --container: 1200px;
 }
 
@@ -267,7 +267,7 @@ body > nav::before {
 .nav-links > .nav-icon + .nav-icon { margin-left: -16px; }
 .nav-links > .nav-divider + * { margin-left: 0; }
 
-.nav-links a {
+.nav-links a:not(.nav-cta):not(.nav-icon) {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -280,8 +280,8 @@ body > nav::before {
   transition: color 0.2s ease;
 }
 
-.nav-links a:hover,
-.nav-links a.active { color: var(--text); }
+.nav-links a:not(.nav-cta):not(.nav-icon):hover,
+.nav-links a:not(.nav-cta):not(.nav-icon).active { color: var(--text); }
 
 .nav-links a:not(.nav-cta)::after {
   content: '';
@@ -332,16 +332,16 @@ body > nav::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 18px !important;
-  font-family: var(--font-mono) !important;
-  font-size: 10px !important;
-  letter-spacing: 0.18em !important;
-  font-weight: 700 !important;
+  padding: 0 18px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
   text-transform: uppercase;
-  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%) !important;
-  color: #02060d !important;
-  border: 1px solid var(--accent) !important;
-  border-radius: var(--radius-sm) !important;
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%);
+  color: var(--bg-deep);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
   text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
   box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px rgba(31, 95, 184, 0.25);
@@ -354,16 +354,16 @@ body > nav::before {
 }
 
 .nav-cta.ghost {
-  background: rgba(255,255,255,0.02) !important;
-  border: 1px solid rgba(79, 156, 255, 0.22) !important;
-  color: var(--text-dim) !important;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(79, 156, 255, 0.22);
+  color: var(--text-dim);
   box-shadow: none;
 }
 
 .nav-cta.ghost:hover {
-  background: rgba(79, 156, 255, 0.08) !important;
-  border-color: rgba(79, 156, 255, 0.45) !important;
-  color: var(--text) !important;
+  background: rgba(79, 156, 255, 0.08);
+  border-color: rgba(79, 156, 255, 0.45);
+  color: var(--text);
   transform: translateY(-1px);
   filter: none;
   box-shadow: none;
@@ -446,7 +446,7 @@ body > nav::before {
   text-transform: uppercase;
   padding: 14px 26px;
   background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%);
-  color: #02060d;
+  color: var(--bg-deep);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
   cursor: pointer;
