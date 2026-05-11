@@ -129,11 +129,11 @@ async function authenticateApiKey(req, res, next) {
 }
 
 function authenticateAdmin(req, res, next) {
-  const adminKey = process.env.ADMIN_KEY;
+  const adminKey = process.env.ADMIN_KEY?.trim();
   if (!adminKey || adminKey === 'dev-admin-key') {
     return res.status(503).json({ error: 'admin_not_configured', message: 'ADMIN_KEY env var not set.' });
   }
-  const key = req.headers.authorization?.split(' ')[1];
+  const key = req.headers.authorization?.split(' ')[1]?.trim();
   if (!key || key.length !== adminKey.length ||
       !timingSafeEqual(Buffer.from(key), Buffer.from(adminKey))) {
     return res.status(401).json({ error: 'unauthorized' });
