@@ -39,20 +39,22 @@ const PROXY_BASE = '/proxy';
     document.body.classList.add('free-access-active');
     bar.style.display = 'flex';
 
+    let countdownTimer = null;
     function tick() {
       const remaining = endTime - Date.now();
       if (remaining <= 0) {
         bar.style.display = 'none';
         document.body.classList.remove('free-access-active');
+        if (countdownTimer) clearInterval(countdownTimer);
         return;
       }
       const h = Math.floor(remaining / 3_600_000);
       const m = Math.floor((remaining % 3_600_000) / 60_000);
       const s = Math.floor((remaining % 60_000) / 1_000);
       countdown.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-      requestAnimationFrame(tick);
     }
     tick();
+    countdownTimer = setInterval(tick, 1_000);
   } catch { /* silent */ }
 })();
 
@@ -323,15 +325,20 @@ function showTab(tab) {
   document.getElementById('btnAgent').classList.toggle('active', tab === 'agent');
 }
 
-// ═══════════ PARALLAX ═══════════
-let rafScrollId = null;
-window.addEventListener('scroll', () => {
-  if (rafScrollId) return;
-  rafScrollId = requestAnimationFrame(() => {
-    const scroll = window.scrollY;
-    const glow = document.querySelector('.hero-glow');
-    if (glow) glow.style.transform = `translate(0, ${scroll * 0.3}px)`;
-    rafScrollId = null;
+// ═══════════ ANCHOR SCROLL ═══════════
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href === '#' || href.length < 2) return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+    history.replaceState(null, '', href);
+    closeMobile();
   });
 });
 
@@ -367,22 +374,10 @@ const spyObserver = new IntersectionObserver((entries) => {
 
 spySections.forEach(s => spyObserver.observe(s));
 
-// ═══════════ CARD MOUSE GLOW ═══════════
-document.querySelectorAll('.tool-card, .how-step, .tier-card, .funded-step, .stat-block, .stats-hero-block, .hook-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.setProperty('--mouse-x', '50%');
-    card.style.setProperty('--mouse-y', '50%');
-  });
-});
-
 // ═══════════ BACKGROUND PARTICLES ═══════════
 const bgCanvas = document.getElementById('bgCanvas');
-if (bgCanvas && window.innerWidth > 768) {
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (bgCanvas && window.innerWidth > 768 && !reduceMotion) {
   const ctx = bgCanvas.getContext('2d');
   const particles = [];
   const isTablet = window.innerWidth <= 1024;
@@ -505,24 +500,26 @@ function startDemo(index) {
   let geminiDone = false;
   let lastClaudeTime = 0;
   let lastGeminiTime = 0;
-  let claudeInterval = 18 + Math.random() * 20;
-  let geminiInterval = 14 + Math.random() * 18;
+  let claudeInterval = 28 + Math.random() * 18;
+  let geminiInterval = 24 + Math.random() * 16;
 
   function tick(now) {
     const elapsed = now - startTime;
 
     if (!claudeDone && elapsed - lastClaudeTime > claudeInterval) {
-      claudeEl.textContent = data.claude.slice(0, ++claudeIdx);
+      claudeIdx = Math.min(claudeIdx + 4, data.claude.length);
+      claudeEl.textContent = data.claude.slice(0, claudeIdx);
       lastClaudeTime = elapsed;
-      claudeInterval = 18 + Math.random() * 25;
+      claudeInterval = 28 + Math.random() * 24;
       timerClaude.textContent = (elapsed / 1000).toFixed(1) + 's';
       if (claudeIdx >= data.claude.length) claudeDone = true;
     }
 
     if (!geminiDone && elapsed - lastGeminiTime > geminiInterval) {
-      geminiEl.textContent = data.gemini.slice(0, ++geminiIdx);
+      geminiIdx = Math.min(geminiIdx + 4, data.gemini.length);
+      geminiEl.textContent = data.gemini.slice(0, geminiIdx);
       lastGeminiTime = elapsed;
-      geminiInterval = 14 + Math.random() * 20;
+      geminiInterval = 24 + Math.random() * 20;
       timerGemini.textContent = (elapsed / 1000).toFixed(1) + 's';
       if (geminiIdx >= data.gemini.length) geminiDone = true;
     }

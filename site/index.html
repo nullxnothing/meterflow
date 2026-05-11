@@ -689,25 +689,5 @@
 
 <script src="/site/home.js"></script>
 
-<!-- Lenis smooth scroll -->
-<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
-<script>
-const lenis = new Lenis({ autoRaf: true, duration: 1.1, easing: t => 1 - Math.pow(1 - t, 3) });
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href === '#' || href.length < 2) return;
-    const target = document.querySelector(href);
-    if (!target) return;
-    e.preventDefault();
-    const navHeight = document.querySelector('nav')?.offsetHeight || 68;
-    // Scroll the section itself, with offset that lands the section start (eyebrow label) just under the nav
-    lenis.scrollTo(target, { offset: -(navHeight + 32), duration: 1.1 });
-    history.replaceState(null, '', href);
-    if (typeof closeMobile === 'function') closeMobile();
-  });
-});
-</script>
-
 </body>
 </html>

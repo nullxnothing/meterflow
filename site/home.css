@@ -22,12 +22,6 @@
   backdrop-filter: blur(12px);
   font-family: var(--font-mono);
   font-size: 13px;
-  animation: freeBarPulse 3s ease-in-out infinite;
-}
-
-@keyframes freeBarPulse {
-  0%, 100% { border-bottom-color: rgba(79, 156, 255, 0.3); }
-  50% { border-bottom-color: rgba(79, 156, 255, 0.7); }
 }
 
 .free-access-topbar-pulse {
@@ -35,7 +29,6 @@
   height: 8px;
   border-radius: 50%;
   background: var(--accent);
-  animation: live-pulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
@@ -320,13 +313,7 @@ section[id] { scroll-margin-top: 100px; }
     0 30px 80px rgba(0,0,0,0.55),
     0 0 0 1px rgba(79, 156, 255, 0.04);
   opacity: 0;
-  animation: heroEnter 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards,
-             panelFloat 8s ease-in-out 1.5s infinite;
-}
-
-@keyframes panelFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  animation: heroEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.22s forwards;
 }
 
 .hero-panel::before {
@@ -385,7 +372,6 @@ section[id] { scroll-margin-top: 100px; }
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 8px var(--accent);
-  animation: live-pulse 2s ease-in-out infinite;
 }
 
 .hero-panel-body {
@@ -465,15 +451,7 @@ section[id] { scroll-margin-top: 100px; }
   height: 5px;
   background: var(--accent);
   border-radius: 50%;
-  filter: blur(2px);
-  animation: railPulse 2.4s ease-in-out infinite;
-}
-
-@keyframes railPulse {
-  0%   { left: -10px; opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { left: 100%; opacity: 0; }
+  opacity: 0.55;
 }
 
 /* Stats grid */
@@ -536,10 +514,10 @@ section[id] { scroll-margin-top: 100px; }
   color: var(--text-dim);
 }
 
-.log-line:first-child { animation: logFadeIn 0.5s ease 0.4s both; }
-.log-line:nth-child(2) { animation: logFadeIn 0.5s ease 0.7s both; }
-.log-line:nth-child(3) { animation: logFadeIn 0.5s ease 1.0s both; }
-.log-line:nth-child(4) { animation: logFadeIn 0.5s ease 1.3s both; }
+.log-line:first-child { animation: logFadeIn 0.3s ease 0.16s both; }
+.log-line:nth-child(2) { animation: logFadeIn 0.3s ease 0.22s both; }
+.log-line:nth-child(3) { animation: logFadeIn 0.3s ease 0.28s both; }
+.log-line:nth-child(4) { animation: logFadeIn 0.3s ease 0.34s both; }
 
 @keyframes logFadeIn {
   from { opacity: 0; transform: translateX(-6px); }
@@ -815,12 +793,6 @@ section[id] { scroll-margin-top: 100px; }
   height: 8px;
   background: var(--accent);
   border-radius: 50%;
-  animation: live-pulse 2s ease-in-out infinite;
-}
-
-@keyframes live-pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(79, 156, 255, 0.4); }
-  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(79, 156, 255, 0); }
 }
 
 /* Hero stats row */
@@ -1963,13 +1935,13 @@ section[id] { scroll-margin-top: 100px; }
 /* Hero entrance */
 .hero-text > * {
   opacity: 0;
-  animation: heroEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: heroEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .hero-text > *:nth-child(1) { animation-delay: 0.1s; }
-.hero-text > *:nth-child(2) { animation-delay: 0.3s; }
-.hero-text > *:nth-child(3) { animation-delay: 0.55s; }
-.hero-text > *:nth-child(4) { animation-delay: 0.75s; }
-.hero-text > *:nth-child(5) { animation-delay: 0.9s; }
+.hero-text > *:nth-child(2) { animation-delay: 0.16s; }
+.hero-text > *:nth-child(3) { animation-delay: 0.22s; }
+.hero-text > *:nth-child(4) { animation-delay: 0.28s; }
+.hero-text > *:nth-child(5) { animation-delay: 0.34s; }
 
 .globe-wrap {
   opacity: 0;
@@ -1977,8 +1949,8 @@ section[id] { scroll-margin-top: 100px; }
 }
 
 @keyframes heroEnter {
-  from { opacity: 0; transform: translateY(30px); filter: blur(4px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hero-headline .accent { text-shadow: 0 0 60px rgba(79, 156, 255, 0.25), 0 0 120px rgba(79, 156, 255, 0.1); }
@@ -2031,7 +2003,7 @@ section[id] { scroll-margin-top: 100px; }
 .scroll-reveal > *:nth-child(4) { transition-delay: 0.24s; }
 .scroll-reveal > *:nth-child(5) { transition-delay: 0.32s; }
 
-/* Mouse-tracking card glow */
+/* Static card glow */
 .tool-card::after,
 .how-step::after,
 .tier-card::after,
@@ -2204,7 +2176,6 @@ section[id] { scroll-margin-top: 100px; }
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 8px rgba(79, 156, 255, 0.6);
-  animation: gentlePulse 2.4s ease-in-out infinite;
 }
 .status-indicator.degraded .status-indicator-dot {
   background: #febc2e;
