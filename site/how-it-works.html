@@ -11,8 +11,8 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/how-it-works">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
-<meta property="og:image:width" content="1600">
-<meta property="og:image:height" content="900">
+<meta property="og:image:width" content="1672">
+<meta property="og:image:height" content="941">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
 <title>How It Works | Meterflow</title>
@@ -140,11 +140,13 @@ footer .links a:hover { color: var(--accent); }
 <nav>
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
-    <a href="/#tools">Tools</a>
-    <a href="/#tiers">Surfaces</a>
-    <a href="/how-it-works" class="active">How It Works</a>
-    <a href="/roadmap">Roadmap</a>
-    <a href="/apply">Apply</a>
+    <a href="/#tools" data-nav="tools">Tools</a>
+    <a href="/#tiers" data-nav="surfaces">Surfaces</a>
+    <a href="/how-it-works" data-nav="how-it-works">How It Works</a>
+    <a href="/token" data-nav="token">Token</a>
+    <a href="/status" data-nav="status">Status</a>
+    <a href="/roadmap" data-nav="roadmap">Roadmap</a>
+    <a href="/apply" data-nav="apply">Apply</a>
     <a class="nav-icon" href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" aria-label="Meterflow on GitHub">
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.16c-3.22.7-3.9-1.37-3.9-1.37-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.3-5.27-1.29-5.27-5.72 0-1.27.45-2.3 1.2-3.11-.12-.3-.52-1.48.11-3.07 0 0 .98-.31 3.18 1.19A10.92 10.92 0 0 1 12 6.23c.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.64 1.59.24 2.78.12 3.07.75.82 1.19 1.85 1.19 3.11 0 4.45-2.7 5.42-5.28 5.7.42.37.79 1.08.79 2.18v3.24c0 .31.2.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
     </a>
@@ -155,8 +157,8 @@ footer .links a:hover { color: var(--accent); }
       <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38.07.07 0 0 0-.07.04c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a.07.07 0 0 0-.07-.04 17.6 17.6 0 0 0-4.43 1.38.06.06 0 0 0-.03.03A18.06 18.06 0 0 0 .73 17.51a.07.07 0 0 0 .03.05 17.7 17.7 0 0 0 5.34 2.7.07.07 0 0 0 .08-.03c.41-.56.78-1.16 1.1-1.79a.07.07 0 0 0-.04-.1 11.7 11.7 0 0 1-1.67-.8.07.07 0 0 1 0-.12c.11-.08.22-.17.33-.26a.07.07 0 0 1 .07 0 12.6 12.6 0 0 0 10.74 0 .07.07 0 0 1 .07 0c.11.09.22.18.33.26a.07.07 0 0 1 0 .12c-.53.31-1.09.58-1.67.8a.07.07 0 0 0-.04.1c.33.63.7 1.23 1.1 1.79a.07.07 0 0 0 .08.03 17.6 17.6 0 0 0 5.35-2.7.07.07 0 0 0 .03-.05 17.95 17.95 0 0 0-3.46-12.15.06.06 0 0 0-.03-.03ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg>
     </a>
     <span class="nav-divider" aria-hidden="true"></span>
-    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
-    <a class="nav-cta ghost" href="/docs">Read Docs</a>
+    <a class="nav-cta" href="/dashboard" data-nav="dashboard">Launch Dashboard</a>
+    <a class="nav-cta ghost" href="/docs" data-nav="docs">Read Docs</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -164,14 +166,18 @@ footer .links a:hover { color: var(--accent); }
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="/#tools" onclick="closeMobile()">Tools</a>
-  <a href="/#tiers" onclick="closeMobile()">Surfaces</a>
-  <a href="/how-it-works" onclick="closeMobile()">How It Works</a>
-  <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
-  <a href="/apply" onclick="closeMobile()" style="color: var(--accent);">Apply as Provider</a>
+  <a href="/#tools" data-nav="tools" onclick="closeMobile()">Tools</a>
+  <a href="/#tiers" data-nav="surfaces" onclick="closeMobile()">Surfaces</a>
+  <a href="/how-it-works" data-nav="how-it-works" onclick="closeMobile()">How It Works</a>
+  <a href="/token" data-nav="token" onclick="closeMobile()">Token</a>
+  <a href="/status" data-nav="status" onclick="closeMobile()">Status</a>
+  <a href="/roadmap" data-nav="roadmap" onclick="closeMobile()">Roadmap</a>
+  <a href="/apply" data-nav="apply" onclick="closeMobile()">Apply as Provider</a>
   <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" onclick="closeMobile()">GitHub</a>
-  <a href="/docs" onclick="closeMobile()" style="color: var(--accent);">Read Docs</a>
-  <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
+  <a href="https://x.com/meterflowsol" target="_blank" rel="noopener" onclick="closeMobile()">X</a>
+  <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" onclick="closeMobile()">Discord</a>
+  <a href="/docs" class="mobile-menu-cta" data-nav="docs" onclick="closeMobile()">Read Docs</a>
+  <a href="/dashboard" class="mobile-menu-cta primary" data-nav="dashboard" onclick="closeMobile()">Launch Dashboard</a>
 </div>
 
 <main id="main">

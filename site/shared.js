@@ -8,6 +8,23 @@ window.addEventListener('unhandledrejection', e => {
 
 // Shared site behaviors: mobile menu toggle, ESC close, link-tap close
 (function () {
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  const activeByPath = {
+    '/docs': 'docs',
+    '/how-it-works': 'how-it-works',
+    '/token': 'token',
+    '/status': 'status',
+    '/roadmap': 'roadmap',
+    '/apply': 'apply',
+    '/dashboard': 'dashboard',
+  };
+  const activeKey = activeByPath[path];
+  if (activeKey) {
+    document.querySelectorAll(`[data-nav="${activeKey}"]`).forEach(link => {
+      link.classList.add('active');
+    });
+  }
+
   const hamburger = document.getElementById('hamburger');
   const menu = document.getElementById('mobileMenu');
   if (!menu) return;
