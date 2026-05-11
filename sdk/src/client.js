@@ -148,6 +148,37 @@ export class MeterflowClient {
   }
 
   /**
+   * List prebuilt agent budget templates.
+   */
+  async budgetTemplates() {
+    return this._get('/v1/budget-templates');
+  }
+
+  /**
+   * Fetch one prebuilt agent budget template.
+   * @param {string} templateId
+   */
+  async budgetTemplate(templateId) {
+    return this._get(`/v1/budget-templates/${encodeURIComponent(templateId)}`);
+  }
+
+  /**
+   * Create an agent budget from a prebuilt template.
+   * @param {{templateId?: string, template?: string, overrides?: Object, [key: string]: any}} params
+   */
+  async createBudgetFromTemplate(params = {}) {
+    return this._post('/v1/budgets/from-template', params);
+  }
+
+  /**
+   * Simulate expected spend against budget caps before spending real USDC.
+   * @param {{dailyCapUsd: number, perCallCapUsd: number, callsPerDay?: number, averageCallPriceUsd?: number}} params
+   */
+  async simulateBudget(params) {
+    return this._post('/v1/budgets/simulate', params);
+  }
+
+  /**
    * Package an MCP tool behind a Meterflow gateway.
    * @param {import('./types.js').McpToolRequest} params
    */
@@ -171,6 +202,77 @@ export class MeterflowClient {
    */
   async providerRevenue() {
     return this._get('/v1/providers/revenue');
+  }
+
+  /**
+   * List public registry entries for paid routes and MCP tools.
+   * @param {{category?: string, status?: string}} [params]
+   */
+  async registry(params = {}) {
+    return this._get(`/v1/registry${this._query(params)}`);
+  }
+
+  /**
+   * Fetch one public registry entry.
+   * @param {string} meterId
+   */
+  async registryItem(meterId) {
+    return this._get(`/v1/registry/${encodeURIComponent(meterId)}`);
+  }
+
+  /**
+   * Fetch a public-safe receipt by Meterflow receipt id.
+   * @param {string} receiptId
+   */
+  async publicReceipt(receiptId) {
+    return this._get(`/v1/public/receipts/${encodeURIComponent(receiptId)}`);
+  }
+
+  /**
+   * Fetch a public-safe receipt by Solana transaction signature.
+   * @param {string} signature
+   */
+  async publicReceiptByTx(signature) {
+    return this._get(`/v1/public/tx/${encodeURIComponent(signature)}`);
+  }
+
+  /**
+   * List planned Solana ecosystem integrations for paid agent routes.
+   * @param {{category?: string, priority?: string, status?: string}} [params]
+   */
+  async integrations(params = {}) {
+    return this._get(`/v1/integrations${this._query(params)}`);
+  }
+
+  /**
+   * Fetch one integration plan.
+   * @param {string} integrationId
+   */
+  async integration(integrationId) {
+    return this._get(`/v1/integrations/${encodeURIComponent(integrationId)}`);
+  }
+
+  /**
+   * List provider refund/retry policy presets.
+   */
+  async providerPolicies() {
+    return this._get('/v1/provider-policies');
+  }
+
+  /**
+   * Fetch one provider refund/retry policy preset.
+   * @param {string} policyId
+   */
+  async providerPolicy(policyId) {
+    return this._get(`/v1/provider-policies/${encodeURIComponent(policyId)}`);
+  }
+
+  /**
+   * Evaluate how a provider policy handles a failed/slow response.
+   * @param {{preset?: string, policy?: Object, responseStatus?: number, timedOut?: boolean, policyResult?: string, event?: Object}} params
+   */
+  async evaluateProviderPolicy(params = {}) {
+    return this._post('/v1/provider-policies/evaluate', params);
   }
 
   /**
