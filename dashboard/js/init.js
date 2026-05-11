@@ -6,8 +6,9 @@ import { STATE, CHAT, TRADING, API_BASE } from './state.js';
 import { loadSession, loadChatHistory, loadVideoHistory } from './session.js';
 import { loadTradingHistory } from './tabs/trading.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
-import { render } from './render.js?v=v13-polish';
+import { render } from './render.js?v=agent-checkout';
 import { showToast } from './actions.js';
+import { loadVotes } from './votes.js';
 import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
 import './cmdk.js?v=v1';
@@ -29,6 +30,7 @@ async function loadTokenAccess() {
 }
 
 loadTokenAccess().then(() => render());
+loadVotes();
 
 if (hasSession) {
   // Existing session — start full polling (status, settlement wallet, providers, oauth)
@@ -95,6 +97,7 @@ if (connectedProvider) {
 const VALID_TABS = new Set([
   'overview', 'meters', 'receipts', 'budgets', 'mcp-tools', 'webhooks',
   'keys', 'models', 'connections', 'treasury', 'future-apis',
+  'holder-tools',
   'chat', 'trading', 'live-trades',
 ]);
 

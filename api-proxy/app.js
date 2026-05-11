@@ -17,6 +17,7 @@ import tokenRouter from './routes/token.js';
 import tradesRouter from './routes/trades.js';
 import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
+import holderRouter from './routes/holder.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
 import { logger } from './lib/logger.js';
@@ -91,6 +92,7 @@ app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
 app.use('/', applicationsRouter);
 app.use('/discord', discordRouter);
+app.use('/holder', holderRouter);
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()

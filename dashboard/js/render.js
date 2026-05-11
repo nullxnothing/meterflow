@@ -18,6 +18,7 @@ import { renderImages } from './tabs/images.js';
 import { renderVideo } from './tabs/video.js';
 import { renderTrading } from './tabs/trading.js';
 import { renderFutureApis } from './tabs/future-apis.js?v=logos-3';
+import { renderHolderTools } from './tabs/holder-tools.js?v=agent-checkout-1';
 import { renderTreasury } from './tabs/treasury.js?v=v5-clean-mflow';
 import { renderLiveTrades } from './tabs/live-trades.js';
 
@@ -204,6 +205,7 @@ function renderNavItems() {
     <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
 
     <div class="nav-group-label">Operations</div>
+    <div class="nav-item ${t === 'holder-tools' ? 'active' : ''}" data-tab="holder-tools">Agent Checkout</div>
     <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Settlement Wallet</div>
     <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Integrations</div>
   `;
@@ -236,6 +238,7 @@ export function renderTab() {
       case 'live-trades': return renderLiveTrades();
       case 'trading': return renderTrading();
       case 'future-apis': return renderFutureApis();
+      case 'holder-tools': return renderHolderTools();
       case 'treasury': return renderTreasury();
       default: return renderOverview();
     }

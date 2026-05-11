@@ -258,6 +258,26 @@
   display: none;
 }
 
+.chart-wrap.has-iframe {
+  height: 480px;
+  min-height: 480px;
+  padding: 0;
+}
+
+.chart-wrap.has-iframe iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.chart-wrap.has-iframe #priceChart,
+.chart-wrap.has-iframe .chart-empty {
+  display: none;
+}
+
 .detail-list {
   display: grid;
   gap: 10px;

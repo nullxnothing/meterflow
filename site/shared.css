@@ -202,16 +202,16 @@ body > nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 300;
-  height: 68px;
+  height: 72px;
   padding: 0 40px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 28px;
-  background: rgba(3, 6, 12, 0.9);
-  -webkit-backdrop-filter: blur(18px) saturate(145%);
-  backdrop-filter: blur(18px) saturate(145%);
-  border-bottom: 1px solid rgba(112, 177, 255, 0.18);
+  gap: 0;
+  background: rgba(3, 8, 18, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid rgba(96, 165, 250, 0.12);
 }
 
 body > nav::before {
@@ -258,68 +258,63 @@ body > nav::before {
 
 .nav-links {
   display: flex;
-  margin-left: auto;
-  gap: 18px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 28px;
   align-items: center;
   height: 100%;
 }
-.nav-links > .nav-icon { margin-left: 0; }
-.nav-links > .nav-icon + .nav-icon { margin-left: 0; }
-.nav-links > .nav-divider + * { margin-left: 0; }
 
-.nav-links a:not(.nav-cta):not(.nav-icon) {
+.nav-actions {
+  display: flex;
+  margin-left: auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.nav-links a:not(.nav-cta):not(.nav-docs) {
   position: relative;
   display: inline-flex;
   align-items: center;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-dim);
+  color: #8fa3bf;
   text-decoration: none;
   white-space: nowrap;
   transition: color 0.2s ease;
 }
 
-.nav-links a:not(.nav-cta):not(.nav-icon):hover,
-.nav-links a:not(.nav-cta):not(.nav-icon).active { color: var(--text); }
+.nav-links a:not(.nav-cta):not(.nav-docs):hover,
+.nav-links a:not(.nav-cta):not(.nav-docs).active { color: #ffffff; }
 
-.nav-links a:not(.nav-cta)::after {
+.nav-links a:not(.nav-cta):not(.nav-docs)::after {
   content: '';
   position: absolute;
   left: 0;
-  bottom: -8px;
+  bottom: -6px;
   width: 0;
   height: 1px;
   background: var(--accent);
   transition: width 0.25s ease;
 }
 
-.nav-links a:not(.nav-cta):hover::after { width: 100%; }
+.nav-links a:not(.nav-cta):not(.nav-docs):hover::after { width: 100%; }
 
-/* Icon links (X / Discord) */
-.nav-links a.nav-icon {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.02);
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
-  font-size: 0;
+/* Docs text link */
+.nav-docs {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: #8fa3bf;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  margin-right: -4px;
 }
-.nav-links a.nav-icon:hover {
-  color: var(--text);
-  border-color: rgba(79, 156, 255, 0.45);
-  background: rgba(79, 156, 255, 0.08);
-  transform: translateY(-1px);
-}
-.nav-links a.nav-icon::after { display: none; content: none; }
-.nav-links a.nav-icon svg { width: 14px; height: 14px; display: block; }
+.nav-docs:hover { color: #ffffff; }
+
 .nav-divider {
   width: 1px;
   height: 18px;
@@ -328,21 +323,21 @@ body > nav::before {
 }
 
 .nav-cta {
-  min-height: 42px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 22px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   font-weight: 700;
   text-transform: uppercase;
   line-height: 1;
   background: linear-gradient(180deg, #8fc7ff 0%, #4f9cff 52%, #236fd5 100%);
   color: #020711;
   border: 1px solid rgba(174, 216, 255, 0.86);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   text-decoration: none;
   text-shadow: 0 1px 0 rgba(255,255,255,0.22);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
@@ -406,7 +401,7 @@ body > nav::before {
 .mobile-menu {
   display: none;
   position: fixed;
-  top: 68px;
+  top: 72px;
   left: 0; right: 0;
   background: rgba(3, 6, 12, 0.96);
   -webkit-backdrop-filter: blur(20px);
@@ -436,7 +431,7 @@ body > nav::before {
 .mobile-menu a:hover { color: var(--accent); }
 .mobile-menu a.active { color: var(--text); }
 
-body > nav .nav-links a.active:not(.nav-cta)::after,
+body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
 .mobile-menu a.active::after { width: 100%; }
 
 .mobile-menu a.mobile-menu-cta {

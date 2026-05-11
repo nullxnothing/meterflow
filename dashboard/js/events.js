@@ -123,6 +123,16 @@ export function bindEvents(scope = document) {
     tradingModelSelect.addEventListener('change', () => { TRADING.selectedModel = tradingModelSelect.value; });
   }
 
+  const agentWalletInput = document.getElementById('agentWalletInput');
+  if (agentWalletInput) {
+    agentWalletInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        import('./tabs/holder-tools.js').then(mod => mod.runWalletDeepDive());
+      }
+    });
+  }
+
   bindCodeCopyButtons();
   bindCodeToggleButtons();
 

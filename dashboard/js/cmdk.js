@@ -11,8 +11,9 @@ const COMMANDS = [
   { id: 'keys', label: 'API Keys', icon: '07', tab: 'keys', keywords: 'auth token credential developer' },
   { id: 'models', label: 'Service Routes', icon: '08', tab: 'models', keywords: 'ai model gateway claude gpt' },
   { id: 'connections', label: 'Connections', icon: '09', tab: 'connections', keywords: 'oauth provider connect' },
-  { id: 'treasury', label: 'Settlement Wallet', icon: '10', tab: 'treasury', keywords: 'usdc solana balance treasury' },
-  { id: 'future-apis', label: 'Integrations', icon: '11', tab: 'future-apis', keywords: 'helius jupiter phantom discord webhook' },
+  { id: 'holder-tools', label: 'Agent Checkout', icon: '10', tab: 'holder-tools', keywords: 'mflow token holders wallet deep dive helius receipts checkout' },
+  { id: 'treasury', label: 'Settlement Wallet', icon: '11', tab: 'treasury', keywords: 'usdc solana balance treasury' },
+  { id: 'future-apis', label: 'Integrations', icon: '12', tab: 'future-apis', keywords: 'helius jupiter phantom discord webhook' },
   { id: 'docs', label: 'Open Docs', icon: '↗', url: '/docs', keywords: 'documentation help guide' },
   { id: 'roadmap', label: 'View Roadmap', icon: '↗', url: '/roadmap', keywords: 'plan milestones' },
   { id: 'home', label: 'Back to Site', icon: '↗', url: '/', keywords: 'landing meterflow' },
@@ -128,7 +129,7 @@ document.addEventListener('keydown', e => {
 window.openCommandPalette = open;
 
 // ─── Mouse-tracking spotlight on cards (Linear/Vercel-style) ─── */
-const SPOTLIGHT_SELECTORS = '.stat-card, .tool-card, .tier-card, .api-card, .connection-card, .feature-card, .token-utility-panel, .future-api-card';
+const SPOTLIGHT_SELECTORS = '.stat-card, .tool-card, .tier-card, .api-card, .connection-card, .feature-card, .token-utility-panel, .future-api-card, .holder-command-panel, .holder-tool-main, .holder-missions, .holder-vote-card';
 document.addEventListener('mousemove', e => {
   // Throttle via requestAnimationFrame
   if (window.__spotlightRaf) return;

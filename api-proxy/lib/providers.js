@@ -12,6 +12,7 @@ function getProviderForModel(model) {
 }
 
 function isModelAvailable(model) {
+  if (model === 'auto') return true;
   const provider = getProviderForModel(model);
   return provider ? PROVIDER_AVAILABLE[provider] : false;
 }

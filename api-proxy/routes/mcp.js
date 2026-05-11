@@ -4,9 +4,9 @@ import { completeMeteredRequest } from '../lib/control-plane.js';
 import { logger } from '../lib/logger.js';
 
 const router = Router();
-const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+export const SOLANA_ADDRESS_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
-function scoreRisk(pair) {
+export function scoreRisk(pair) {
   const liquidityUsd = Number(pair?.liquidity?.usd || 0);
   const fdv = Number(pair?.fdv || 0);
   const volume24h = Number(pair?.volume?.h24 || 0);
@@ -56,7 +56,7 @@ function scoreRisk(pair) {
   return { risk, label, reasons };
 }
 
-function pickSolanaPair(pairs = []) {
+export function pickSolanaPair(pairs = []) {
   return pairs
     .filter(pair => String(pair.chainId).toLowerCase() === 'solana')
     .sort((a, b) => Number(b?.liquidity?.usd || 0) - Number(a?.liquidity?.usd || 0))[0] || null;

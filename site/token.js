@@ -45,6 +45,8 @@ function setStatus(title, detail) {
 
 function setComingSoonState() {
   setText('tokenAddress', 'TBA');
+  setText('statusCA', 'TBA');
+  setText('statusMarket', 'Coming soon');
   setText('tokenAddressLabel', 'Contract address');
   setText('tokenUpdated', 'TBA');
   setText('metricPrice', 'TBA');
@@ -63,6 +65,7 @@ function setComingSoonState() {
   setText('detailFdv', 'TBA');
   setText('detailChanges', 'TBA');
   setText('detailSources', 'Coming soon');
+  setText('chartHeading', 'Chart coming soon');
   setText('chartSource', 'TBA');
   setText('swapLink', 'Coming Soon');
   setText('orbLink', 'Explorer TBA');
@@ -72,11 +75,28 @@ function setComingSoonState() {
   renderHolders([]);
 }
 
-function renderChart(candles) {
-  const svg = $('priceChart');
+function renderChartIframe(wrap, embedUrl) {
+  wrap.innerHTML = '';
+  const iframe = document.createElement('iframe');
+  iframe.src = embedUrl;
+  iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('title', '$MFLOW price chart');
+  wrap.appendChild(iframe);
+  wrap.classList.add('has-data', 'has-iframe');
+}
+
+function renderChart(candles, dexEmbedUrl) {
   const wrap = $('chartWrap');
-  if (!svg || !wrap) return;
+  if (!wrap) return;
+  if (dexEmbedUrl) {
+    renderChartIframe(wrap, dexEmbedUrl);
+    return;
+  }
+  const svg = $('priceChart');
+  if (!svg) return;
   svg.textContent = '';
+  wrap.classList.remove('has-iframe');
   const points = (candles || []).filter(c => Number.isFinite(Number(c.close)));
   if (points.length < 2) {
     wrap.classList.remove('has-data');
@@ -138,6 +158,7 @@ function applySummary(data) {
   const cfg = data.config || {};
   const symbol = cfg.symbol || 'MFLOW';
   setText('tokenSymbol', `$${symbol.replace(/^\$/, '')}`);
+  setText('tokenHeroSuffix', '');
   setText('tokenAddress', cfg.mint || 'TBA');
   setText('tokenAddressLabel', 'Contract address');
   setLink('orbLink', data.links?.orb || cfg.orbUrl);
@@ -161,6 +182,8 @@ function applySummary(data) {
   setText('dexLink', 'DEX Screener');
   setText('holdersExplorer', 'Open token');
   setStatus(market?.priceUsd ? 'Market data available' : 'Token details available', market?.priceUsd ? 'Public token data is updating.' : 'Market data is coming soon.');
+  setText('statusCA', cfg.mint ? shortAddress(cfg.mint) : 'TBA');
+  setText('statusMarket', market?.priceUsd ? formatUsd(market.priceUsd, 6) : (cfg.mint ? 'Fetching...' : 'Coming soon'));
   setText('tokenName', asset.name || cfg.name || 'Meterflow');
   setText('tokenDescription', asset.description || '$MFLOW token details are available on Solana.');
   setText('tokenUpdated', data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString() : '--');
@@ -184,8 +207,11 @@ function applySummary(data) {
     : '--';
   setText('detailChanges', changes);
   setText('detailSources', (data.sources || []).join(', ') || '--');
+  const hasCandles = (data.chart?.candles || []).length >= 2;
+  const hasDexEmbed = !!data.chart?.dexEmbedUrl;
+  setText('chartHeading', hasCandles ? `$${(cfg.symbol || 'MFLOW').replace(/^\$/, '')} / USD` : hasDexEmbed ? `$${(cfg.symbol || 'MFLOW').replace(/^\$/, '')} / USD` : 'Awaiting liquidity');
   setText('chartSource', data.chart?.poolAddress ? `Pool ${shortAddress(data.chart.poolAddress)}` : 'GeckoTerminal');
-  renderChart(data.chart?.candles || []);
+  renderChart(data.chart?.candles || [], data.chart?.dexEmbedUrl || null);
   renderHolders(data.holders || []);
 }
 

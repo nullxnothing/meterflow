@@ -177,8 +177,11 @@ async function getDexMarket(mint) {
   return data;
 }
 
-async function getGeckoChart(mint, pairAddress) {
-  const empty = { poolAddress: null, timeframe: 'hour', candles: [] };
+async function getGeckoChart(mint, pairAddress, dexscreenerPairAddress) {
+  const dexEmbedUrl = dexscreenerPairAddress
+    ? `https://dexscreener.com/solana/${dexscreenerPairAddress}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=0&chartType=usd&interval=15`
+    : null;
+  const empty = { poolAddress: null, timeframe: 'hour', candles: [], dexEmbedUrl };
   try {
     let pool = pairAddress || null;
     if (!pool) {
@@ -187,16 +190,23 @@ async function getGeckoChart(mint, pairAddress) {
       pool = first?.attributes?.address || String(first?.id || '').replace(/^solana_/, '') || null;
     }
     if (!pool) return empty;
-    const ohlcv = await fetchJson(`https://api.geckoterminal.com/api/v2/networks/solana/pools/${pool}/ohlcv/hour?aggregate=1&limit=72`);
-    const candles = (ohlcv?.data?.attributes?.ohlcv_list || []).map(row => ({
-      timestamp: row[0],
-      open: numberOrNull(row[1]),
-      high: numberOrNull(row[2]),
-      low: numberOrNull(row[3]),
-      close: numberOrNull(row[4]),
-      volume: numberOrNull(row[5]),
-    })).reverse();
-    return { poolAddress: pool, timeframe: 'hour', candles };
+
+    // Try hourly first, fall back to 5-minute candles for new tokens
+    let candles = [];
+    for (const [resolution, agg] of [['hour', 1], ['minute', 5]]) {
+      const ohlcv = await fetchJson(`https://api.geckoterminal.com/api/v2/networks/solana/pools/${pool}/ohlcv/${resolution}?aggregate=${agg}&limit=200`);
+      candles = (ohlcv?.data?.attributes?.ohlcv_list || []).map(row => ({
+        timestamp: row[0],
+        open: numberOrNull(row[1]),
+        high: numberOrNull(row[2]),
+        low: numberOrNull(row[3]),
+        close: numberOrNull(row[4]),
+        volume: numberOrNull(row[5]),
+      })).reverse().filter(c => Number.isFinite(c.close));
+      if (candles.length >= 2) break;
+    }
+
+    return { poolAddress: pool, timeframe: candles.length >= 2 ? 'ohlcv' : 'none', candles, dexEmbedUrl };
   } catch (err) {
     logger.warn('token chart lookup failed', { err: err.message, mint });
     return empty;
@@ -268,7 +278,7 @@ async function getTokenSummary({ refresh = false } = {}) {
     getTopHolders(mint),
     getHolderCount(mint),
   ]);
-  const chart = await getGeckoChart(mint, market?.pairAddress);
+  const chart = await getGeckoChart(mint, market?.pairAddress, market?.pairAddress);
   const circulatingSupply = supply.uiAmount || asset.supply || null;
   const marketCap = market?.marketCap || (market?.priceUsd && circulatingSupply ? market.priceUsd * circulatingSupply : null);
   const holdersWithPct = holders.map(h => ({
