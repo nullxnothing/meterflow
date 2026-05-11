@@ -104,7 +104,9 @@ Core API variables:
 
 Token and settlement variables:
 
-- `METERFLOW_TOKEN_MINT` optional, enables token-gated utility tiers when set
+- `METERFLOW_TOKEN_CA` is the canonical `$MFLOW` contract address used by the whole site, token page, and token-gated utility tiers
+- `METERFLOW_TOKEN_MINT` is still supported as a backward-compatible fallback
+- `METERFLOW_TOKEN_NAME`, `METERFLOW_TOKEN_SYMBOL`, and `METERFLOW_TOKEN_SWAP_URL` control token page labeling and trade links
 - `X402_PAY_TO`, `SETTLEMENT_WALLET`, or `TREASURY_WALLET` for the provider or treasury USDC recipient
 
 Persistence:

@@ -9,6 +9,7 @@
     { "source": "/docs.html", "destination": "/site/docs.html" },
     { "source": "/status", "destination": "/site/status.html" },
     { "source": "/roadmap", "destination": "/site/roadmap.html" },
+    { "source": "/token", "destination": "/site/token.html" },
     { "source": "/apply", "destination": "/site/apply.html" },
     { "source": "/apply/:path*", "destination": "/site/apply.html" },
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },

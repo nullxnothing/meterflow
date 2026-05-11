@@ -5,7 +5,8 @@ config();
 const CONFIG = {
   HELIUS_API_KEY: process.env.HELIUS_API_KEY || '',
   HELIUS_RPC_URL: process.env.HELIUS_RPC_URL || '',
-  TOKEN_MINT: process.env.METERFLOW_TOKEN_MINT || '',
+  TOKEN_MINT: process.env.METERFLOW_TOKEN_CA || process.env.METERFLOW_TOKEN_MINT || '',
+  TOKEN_NAME: process.env.METERFLOW_TOKEN_NAME || 'Meterflow',
   TOKEN_SYMBOL: process.env.METERFLOW_TOKEN_SYMBOL || 'MFLOW',
   TOKEN_SWAP_URL: process.env.METERFLOW_TOKEN_SWAP_URL || '',
   PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_PROTOCOL_FEE_BPS || '100', 10),

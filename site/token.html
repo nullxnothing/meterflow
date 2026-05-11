@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="$MFLOW token details for Meterflow. Contract address, market data, chart, supply, and holder information are coming soon.">
+<meta name="theme-color" content="#05080f">
+<link rel="canonical" href="https://meterflow.fun/token">
+<meta property="og:title" content="$MFLOW | Meterflow">
+<meta property="og:description" content="$MFLOW token details are coming soon.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta property="og:url" content="https://meterflow.fun/token">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>$MFLOW | Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="color-scheme" content="dark">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<link rel="stylesheet" href="/site/token.css">
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
+  <div class="nav-links">
+    <a href="/#tools">Tools</a>
+    <a href="/#tiers">Surfaces</a>
+    <a href="/token" class="active">Token</a>
+    <a href="/docs">Docs</a>
+    <a href="/status">Status</a>
+    <a href="/apply">Apply</a>
+    <a class="nav-icon" href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" aria-label="Meterflow on GitHub">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.16c-3.22.7-3.9-1.37-3.9-1.37-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.3-5.27-1.29-5.27-5.72 0-1.27.45-2.3 1.2-3.11-.12-.3-.52-1.48.11-3.07 0 0 .98-.31 3.18 1.19A10.92 10.92 0 0 1 12 6.23c.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.64 1.59.24 2.78.12 3.07.75.82 1.19 1.85 1.19 3.11 0 4.45-2.7 5.42-5.28 5.7.42.37.79 1.08.79 2.18v3.24c0 .31.2.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+    </a>
+    <span class="nav-divider" aria-hidden="true"></span>
+    <a class="nav-cta" href="/dashboard">Launch Dashboard</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#tools" onclick="closeMobile()">Tools</a>
+  <a href="/#tiers" onclick="closeMobile()">Surfaces</a>
+  <a href="/token" onclick="closeMobile()">Token</a>
+  <a href="/docs" onclick="closeMobile()">Docs</a>
+  <a href="/status" onclick="closeMobile()">Status</a>
+  <a href="/apply" onclick="closeMobile()">Apply as Provider</a>
+  <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Launch Dashboard</a>
+</div>
+
+<main class="token-page">
+  <section class="token-hero">
+    <div class="label-sm">METERFLOW TOKEN</div>
+    <div class="token-hero-grid">
+      <div>
+        <h1><span id="tokenSymbol">$MFLOW</span> is coming soon.</h1>
+        <p>The official Meterflow token page will show the contract address, market data, charting, holder distribution, and launch links once the token is public.</p>
+        <div class="token-address">
+          <span id="tokenAddressLabel">Contract address</span>
+          <code id="tokenAddress">TBA</code>
+          <button id="copyTokenAddress" type="button">Copy</button>
+        </div>
+        <div class="token-actions">
+          <a class="btn-primary" id="swapLink" href="/token">Coming Soon</a>
+          <a class="btn-secondary" id="orbLink" href="/token">Explorer TBA</a>
+          <a class="btn-secondary" id="dexLink" href="/token">Market TBA</a>
+        </div>
+      </div>
+      <aside class="token-status-card">
+        <div class="card-label">TOKEN STATUS</div>
+        <h2 id="tokenStatus">Coming soon</h2>
+        <p id="tokenStatusDetail">Official token details will appear here after launch.</p>
+        <dl>
+          <div><dt>CA</dt><dd>TBA</dd></div>
+          <div><dt>Market</dt><dd>Coming soon</dd></div>
+          <div><dt>Updated</dt><dd id="tokenUpdated">TBA</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="token-metrics">
+    <article><span>Price</span><strong id="metricPrice">TBA</strong><em id="metricChange">coming soon</em></article>
+    <article><span>Market Cap</span><strong id="metricMarketCap">TBA</strong><em>coming soon</em></article>
+    <article><span>Liquidity</span><strong id="metricLiquidity">TBA</strong><em id="metricDex">coming soon</em></article>
+    <article><span>24h Volume</span><strong id="metricVolume">TBA</strong><em id="metricTxns">coming soon</em></article>
+    <article><span>Supply</span><strong id="metricSupply">TBA</strong><em id="metricDecimals">coming soon</em></article>
+    <article><span>Holders</span><strong id="metricHolders">TBA</strong><em id="metricTopPct">coming soon</em></article>
+  </section>
+
+  <section class="token-main-grid">
+    <article class="token-panel chart-panel">
+      <div class="panel-head">
+        <div>
+          <div class="card-label">PRICE CHART</div>
+          <h2>Chart coming soon</h2>
+        </div>
+        <span id="chartSource">TBA</span>
+      </div>
+      <div class="chart-wrap" id="chartWrap">
+        <svg id="priceChart" viewBox="0 0 720 260" preserveAspectRatio="none" aria-label="$MFLOW price chart"></svg>
+        <div class="chart-empty" id="chartEmpty">Chart appears after launch.</div>
+      </div>
+    </article>
+
+    <article class="token-panel token-details">
+      <div class="card-label">TOKEN DETAILS</div>
+      <h2 id="tokenName">Meterflow</h2>
+      <p id="tokenDescription">$MFLOW details are coming soon.</p>
+      <div class="detail-list">
+        <div><span>Pair</span><strong id="detailPair">TBA</strong></div>
+        <div><span>FDV</span><strong id="detailFdv">TBA</strong></div>
+        <div><span>5m / 1h / 6h</span><strong id="detailChanges">TBA</strong></div>
+        <div><span>Data sources</span><strong id="detailSources">Coming soon</strong></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="token-panel holders-panel">
+    <div class="panel-head">
+      <div>
+        <div class="card-label">HOLDERS</div>
+        <h2>Holder data coming soon</h2>
+      </div>
+      <a id="holdersExplorer" href="/token">TBA</a>
+    </div>
+    <div class="holders-table-wrap">
+      <table class="holders-table">
+        <thead><tr><th>#</th><th>Wallet</th><th>Amount</th><th>Supply</th><th>Accounts</th></tr></thead>
+        <tbody id="holdersBody"><tr><td colspan="5">Holder data appears after launch.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="/site/shared.js" defer></script>
+<script src="/site/token.js" defer></script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

@@ -13,6 +13,7 @@ import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import applicationsRouter from './routes/applications.js';
 import discordRouter from './routes/discord.js';
+import tokenRouter from './routes/token.js';
 import tradesRouter from './routes/trades.js';
 import alphaRouter from './routes/alpha.js';
 import mcpRouter from './routes/mcp.js';
@@ -127,6 +128,7 @@ app.use('/v1', tradesRouter);
 app.use('/v1', alphaRouter);
 app.use('/mcp', mcpRouter);
 app.use('/v1', controlPlaneRouter);
+app.use('/v1', tokenRouter);
 app.use('/v1', openaiCompatRouter);
 
 initSentry(app);

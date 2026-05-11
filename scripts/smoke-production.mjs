@@ -41,6 +41,7 @@ const homeEntrypoints = await checkPage('/', '/apply');
 assert.ok(homeEntrypoints.includes('https://github.com/nullxnothing/meterflow'), 'home page should link GitHub');
 assert.ok(homeEntrypoints.includes('/dashboard'), 'home page should link dashboard');
 assert.ok(homeEntrypoints.includes('/docs'), 'home page should link docs');
+assert.ok(homeEntrypoints.includes('/token'), 'home page should link token page');
 assert.ok(homeEntrypoints.includes('/privacy'), 'home page should link privacy policy');
 assert.ok(homeEntrypoints.includes('/terms'), 'home page should link terms');
 pass('public entrypoint links');
@@ -66,6 +67,9 @@ pass('roadmap page');
 
 await checkPage('/status', 'Meterflow Status');
 pass('status page');
+
+await checkPage('/token', '$MFLOW');
+pass('token page');
 
 await checkPage('/privacy', 'Privacy Policy');
 pass('privacy page');
@@ -98,6 +102,11 @@ const stats = await checkJson('/proxy/stats');
 assert.ok(stats.totalCallsToday !== undefined, 'stats response should include daily call telemetry');
 assert.ok(stats.activeProviders >= 1, 'stats response should include active providers');
 pass('stats');
+
+const token = await checkJson('/proxy/v1/token/config');
+assert.equal(token.symbol, 'MFLOW');
+assert.ok(Object.prototype.hasOwnProperty.call(token, 'configured'), 'token config should expose configured flag');
+pass('token config');
 
 const cors = await fetch(`${baseUrl}/proxy/v1/chat`, {
   method: 'OPTIONS',

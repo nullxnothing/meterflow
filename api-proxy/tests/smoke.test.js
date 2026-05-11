@@ -79,6 +79,14 @@ describe('CORS configuration', () => {
       'localhost origins should be behind env check');
   });
 
+  it('uses a single canonical token CA env with legacy mint fallback', () => {
+    const src = readFileSync(resolve(root, 'config.js'), 'utf-8');
+    assert.ok(src.includes('METERFLOW_TOKEN_CA'), 'should support canonical token CA env');
+    assert.ok(src.includes('METERFLOW_TOKEN_MINT'), 'should retain legacy mint fallback');
+    assert.ok(src.indexOf('METERFLOW_TOKEN_CA') < src.indexOf('METERFLOW_TOKEN_MINT'),
+      'canonical CA env should take precedence over legacy mint env');
+  });
+
   it('exposes x402 payment headers to browser clients', () => {
     const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes('exposedHeaders'), 'should expose payment response headers');
@@ -455,6 +463,7 @@ describe('Vercel routing', () => {
     assert.ok(sources.includes('/'), 'should rewrite /');
     assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
     assert.ok(sources.includes('/docs'), 'should rewrite /docs');
+    assert.ok(sources.includes('/token'), 'should rewrite /token');
     assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
     assert.ok(sources.includes('/privacy'), 'should rewrite /privacy');
     assert.ok(sources.includes('/terms'), 'should rewrite /terms');
@@ -631,5 +640,22 @@ describe('Meterflow control plane', () => {
     assert.ok(discord.includes('nacl.sign.detached.verify'), 'Discord route should use Ed25519 verification');
     assert.ok(app.includes('/discord'), 'app should mount Discord interactions before paid routes');
     assert.ok(app.includes('req.rawBody'), 'app should preserve raw body for Discord signature verification');
+  });
+
+  it('token routes expose public token config and profile data safely', () => {
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const route = readFileSync(resolve(root, 'routes', 'token.js'), 'utf-8');
+    const profile = readFileSync(resolve(root, 'lib', 'token-profile.js'), 'utf-8');
+    const page = readFileSync(resolve(projectRoot, 'site', 'token.html'), 'utf-8');
+    assert.ok(app.includes('tokenRouter'), 'app should import token router');
+    assert.ok(app.includes("app.use('/v1', tokenRouter)"), 'token router should mount under /v1');
+    assert.ok(route.includes("router.get('/token/config'"), 'should expose public token config');
+    assert.ok(route.includes("router.get('/token'"), 'should expose token summary');
+    assert.ok(profile.includes('getTokenLargestAccounts'), 'should use Solana RPC holder data');
+    assert.ok(profile.includes('getAsset'), 'should use Helius DAS metadata');
+    assert.ok(profile.includes('dexscreener.com'), 'should use DEX Screener for market data');
+    assert.ok(profile.includes('geckoterminal.com'), 'should use GeckoTerminal for chart data');
+    assert.ok(!page.includes('METERFLOW_TOKEN_CA'), 'public token page should not expose internal env names');
+    assert.ok(page.includes('Coming soon') || page.includes('TBA'), 'public token page should use pre-launch language');
   });
 });
