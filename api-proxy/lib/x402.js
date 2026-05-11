@@ -156,6 +156,11 @@ export async function buildX402Middleware() {
     const routes = await buildRouteConfig(payTo, meters);
     const resourceServer = new x402ResourceServer(facilitatorClient)
       .register(SOLANA_MAINNET_CAIP2, serverScheme);
+
+    // Eagerly initialize so any facilitator network failures are caught here
+    // rather than propagating during the first request.
+    await resourceServer.initialize();
+
     resourceServer.onAfterVerify(async ({ result, requirements, transportContext }) => {
       if (result?.isValid) return;
 

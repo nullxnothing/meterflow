@@ -104,8 +104,14 @@ const x402GatewayReady = buildX402Middleware()
   });
 
 app.use(async (req, res, next) => {
-  const gateway = x402Gateway || await x402GatewayReady;
-  return gateway(req, res, next);
+  try {
+    const gateway = x402Gateway || await x402GatewayReady;
+    return gateway(req, res, next);
+  } catch (err) {
+    logger.error('x402 gateway error, disabling', { err: err.message });
+    x402Gateway = (_req, _res, n) => n();
+    return next();
+  }
 });
 
 app.use('/v1', express.json({ limit: '10mb' }), chatRouter);

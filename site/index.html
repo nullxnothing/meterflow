@@ -629,25 +629,62 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="footer-left">
-    <span class="status-indicator" id="statusIndicator" title="API operational status">
-      <span class="status-indicator-dot"></span>
-      <span class="status-indicator-text">All systems operational</span>
-    </span>
-    <span class="footer-copyright">&copy; 2026 Meterflow</span>
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <a href="/" class="site-footer-logo">
+        <img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">
+        Meterflow
+      </a>
+      <p class="site-footer-tagline">Usage billing for agent APIs on Solana. Meter endpoints, track receipts, cap autonomous spend.</p>
+      <a href="/status" class="status-indicator" id="statusIndicator" title="API operational status">
+        <span class="status-indicator-dot"></span>
+        <span class="status-indicator-text">All systems operational</span>
+      </a>
+    </div>
+
+    <div class="site-footer-cols">
+      <div class="site-footer-col">
+        <div class="site-footer-col-title">Product</div>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/#tools">Platform</a>
+        <a href="/#tiers">Surfaces</a>
+        <a href="/how-it-works">How it works</a>
+      </div>
+      <div class="site-footer-col">
+        <div class="site-footer-col-title">Resources</div>
+        <a href="/docs">Documentation</a>
+        <a href="/roadmap">Roadmap</a>
+        <a href="/status">Status</a>
+        <a href="/apply">Apply as provider</a>
+      </div>
+      <div class="site-footer-col">
+        <div class="site-footer-col-title">Legal</div>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </div>
+      <div class="site-footer-col">
+        <div class="site-footer-col-title">Community</div>
+        <div class="site-footer-socials">
+          <a class="site-footer-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="Meterflow on X">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg>
+          </a>
+          <a class="site-footer-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg>
+          </a>
+          <a class="site-footer-social" href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.16c-3.22.7-3.9-1.37-3.9-1.37-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.3-5.27-1.29-5.27-5.72 0-1.27.45-2.3 1.2-3.11-.12-.3-.52-1.48.11-3.07 0 0 .98-.31 3.18 1.19A10.92 10.92 0 0 1 12 6.23c.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.64 1.59.24 2.78.12 3.07.75.82 1.19 1.85 1.19 3.11 0 4.45-2.7 5.42-5.28 5.7.42.37.79 1.08.79 2.18v3.24c0 .31.2.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+          </a>
+        </div>
+        <a href="/dashboard" class="site-footer-cta">Launch dashboard &rarr;</a>
+      </div>
+    </div>
   </div>
-  <div class="footer-links">
-    <a href="/docs">Docs</a>
-    <a href="/roadmap">Roadmap</a>
-    <a href="/apply">Apply</a>
-    <a href="/privacy">Privacy</a>
-    <a href="/terms">Terms</a>
-    <a href="https://x.com/meterflowsol" target="_blank" rel="noopener">X</a>
-    <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener">Discord</a>
-    <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
+
+  <div class="site-footer-bottom">
+    <span>&copy; 2026 Meterflow. Built on Solana.</span>
+    <span class="site-footer-bottom-meta">Usage metering &middot; Receipts &middot; Spend control</span>
   </div>
-  <div class="footer-compliance">Usage metering, receipts, and spend control for agent-accessible APIs.</div>
 </footer>
 
 <script src="/site/home.js"></script>
@@ -655,28 +692,19 @@
 <!-- Lenis smooth scroll -->
 <script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
 <script>
-const lenis = new Lenis({ autoRaf: true });
+const lenis = new Lenis({ autoRaf: true, duration: 1.1, easing: t => 1 - Math.pow(1 - t, 3) });
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href === '#' || href.length < 2) return;
+    const target = document.querySelector(href);
+    if (!target) return;
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      const contentTarget = target.querySelector([
-        ':scope > .protocol-stats-inner',
-        ':scope > .how-inner',
-        ':scope > .tools-inner',
-        ':scope > .tiers-inner',
-        ':scope > .funded-inner',
-        ':scope > .demo-inner',
-        ':scope > .agent-inner',
-        ':scope > .faq-inner',
-        ':scope > .cta-inner',
-      ].join(', ')) || target;
-      const navHeight = document.querySelector('nav')?.offsetHeight || 72;
-      lenis.scrollTo(contentTarget, { offset: -(navHeight + 24) });
-      history.replaceState(null, '', this.getAttribute('href'));
-    }
-    closeMobile();
+    const navHeight = document.querySelector('nav')?.offsetHeight || 68;
+    // Scroll the section itself, with offset that lands the section start (eyebrow label) just under the nav
+    lenis.scrollTo(target, { offset: -(navHeight + 32), duration: 1.1 });
+    history.replaceState(null, '', href);
+    if (typeof closeMobile === 'function') closeMobile();
   });
 });
 </script>
