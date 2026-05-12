@@ -23,10 +23,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/roadmap.css">
+<link rel="stylesheet" href="/site/subpage.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
-<canvas id="bgCanvas"></canvas>
 
 <nav>
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
@@ -229,7 +229,7 @@ const receipts = await meterflow.receipts({
 </footer>
 
 <script src="/site/shared.js" defer></script>
-<script src="/site/roadmap.js"></script>
+<script src="/site/roadmap.js" defer></script>
 <script>
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
