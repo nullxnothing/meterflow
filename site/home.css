@@ -2024,14 +2024,13 @@ section[id] { scroll-margin-top: 100px; }
   background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.12) 20%, rgba(79, 156, 255, 0.3) 50%, rgba(79, 156, 255, 0.12) 80%, transparent);
 }
 
-/* Scroll reveal */
-/* Sections fade in via JS-added .scroll-reveal class.
-   Without JS or before observer fires, content stays visible (SEO/a11y safe). */
+/* Scroll reveal is intentionally no-op on the homepage.
+   The first pass used section fade-ins, but they made normal scrolling feel
+   jittery. Keep this guard so any stale class never hides content. */
 .js-ready .scroll-reveal {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 .scroll-reveal.visible {

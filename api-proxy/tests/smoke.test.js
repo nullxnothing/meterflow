@@ -408,9 +408,9 @@ describe('Site link integrity', () => {
     assert.ok(readme.includes('The Solana control plane for agent commerce'), 'README should lead with agent-commerce positioning');
     assert.ok(readme.includes('x402 today, MPP-ready next'), 'README should explain the protocol-neutral direction');
     assert.ok(readme.includes('These routes are examples'), 'README should frame bundled routes as examples');
-    assert.ok(home.includes('Agent commerce needs'), 'landing page should lead with agent-commerce positioning');
+    assert.ok(home.includes('The control plane for'), 'landing page should lead with agent-commerce positioning');
     assert.ok(home.includes('MPP-ready'), 'landing page should mention MPP-ready payment adapters');
-    assert.ok(home.includes('Wrap API') && home.includes('Package MCP'), 'landing page CTAs should be provider-focused');
+    assert.ok(home.includes('Wrap an API') && home.includes('View dashboard'), 'landing page CTAs should stay focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('Protocol Adapter'), 'docs should explain the x402 and MPP-ready adapter layer');
     assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
