@@ -85,13 +85,27 @@
 
 /**
  * @typedef {Object} MeterRequest
- * @property {string} route
+ * @property {string} [route]
  * @property {'GET'|'POST'|'PUT'|'DELETE'} [method]
  * @property {string} [unit]
  * @property {number} priceUsd
  * @property {string} [asset]
  * @property {'test'|'live'|'paused'} [status]
  * @property {string} [ownerWallet]
+ * @property {string} [targetUrl]
+ * @property {string} [providerName]
+ * @property {{type?: 'bearer'|'header', headerName?: string, value: string}} [upstreamAuth]
+ */
+
+/**
+ * @typedef {Object} HostedMeterRequest
+ * @property {string} targetUrl - External API origin or base URL to proxy.
+ * @property {'GET'|'POST'|'PUT'|'DELETE'} [method]
+ * @property {number} priceUsd
+ * @property {string} [unit]
+ * @property {'test'|'live'|'paused'} [status]
+ * @property {string} [providerName]
+ * @property {{type?: 'bearer'|'header', headerName?: string, value: string}} [upstreamAuth]
  */
 
 /**

@@ -4,7 +4,7 @@
 
 # Meterflow
 
-Control plane for x402-style API payments on Solana.
+Solana-native payment, metering, receipt, and budget infrastructure for third-party APIs and MCP tools.
 
 [Website](https://meterflow.fun) · [Dashboard](https://meterflow.fun/dashboard) · [Docs](https://meterflow.fun/docs) · [GitHub](https://github.com/nullxnothing/meterflow) · [X](https://x.com/meterflowsol) · [Discord](https://discord.gg/tned74z4eN)
 
@@ -16,7 +16,7 @@ The site and backend use `METERFLOW_TOKEN_CA` as the master token address. Set t
 
 ## What It Is
 
-Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products.
+Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. It is a Stripe-like control plane for per-request Solana USDC settlement using x402-style HTTP 402 payments.
 
 Solana moves the money. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, how much was owed, and where the receipt lives.
 
@@ -44,9 +44,48 @@ Meterflow is the layer around that request:
 | Settlement Wallet | Inspect wallet context for provider funding and gateway operations |
 | Integrations | Attach Solana, data, model, social, and notification providers |
 
-## Gateway Routes
+## Hosted Provider Gateway
 
-The current gateway includes live service routes that can be metered and shown in the dashboard:
+Providers can wrap an external API without moving it into the Meterflow app:
+
+```js
+const { meter } = await client.createHostedMeter({
+  targetUrl: 'https://api.example.com',
+  method: 'GET',
+  unit: 'lookup',
+  priceUsd: 0.01,
+  providerName: 'Example Data API',
+  status: 'test',
+});
+
+console.log(meter.route); // /gateway/mtr_xxxxx/*
+```
+
+Meterflow stores the target origin on the meter, generates a hosted route, issues x402 payment requirements for callers, proxies successful requests upstream, and records receipts with upstream status and latency. Upstream auth secrets are stored server-side and never returned in meter API responses.
+
+## Wrap Your API In 10 Minutes
+
+1. Connect a wallet and create a Meterflow API key.
+2. Create a hosted meter with `targetUrl`, `method`, `priceUsd`, `unit`, and optional `providerName`.
+3. Test the meter with `POST /v1/meters/:id/test`.
+4. Send callers to `https://meterflow.fun/proxy/gateway/{meterId}/...`.
+5. Watch receipts, provider revenue, webhook deliveries, and budget decisions in the dashboard.
+
+## Monetize An MCP Tool
+
+Register an MCP tool with `POST /v1/mcp-tools` or create a hosted meter for your MCP HTTP endpoint. Meterflow handles payment quotes, Solana USDC settlement context, receipts, webhooks, and agent budget enforcement. The built-in `/mcp/token-risk` route is a demo of this pattern.
+
+## Agent Budgets And Spend Caps
+
+Agent operators can create budgets with daily caps, per-call caps, and meter allowlists. Budgets let agents call paid APIs without receiving unlimited wallet authority or open-ended API spend.
+
+## Receipts, Settlement, Revenue, And Webhooks
+
+Every metered call can produce a receipt with meter id, route, payer, amount, policy result, upstream status, latency, and settlement metadata. Providers can query `/v1/providers/revenue` and subscribe to signed webhooks such as `receipt.created`, `receipt.verified`, and `payment.failed`.
+
+## Demo Routes
+
+The current gateway includes AI, token-risk, and trading routes that demonstrate Meterflow running real paid capabilities:
 
 - `POST /v1/chat`
 - `POST /v1/chat/stream`
@@ -57,7 +96,7 @@ The current gateway includes live service routes that can be metered and shown i
 - `GET /v1/alpha/*`
 - `POST /mcp/token-risk`
 
-These are the first services running through Meterflow. The product is the metering, receipt, budget, and settlement layer around any paid endpoint.
+These routes are examples. The product is the metering, receipt, budget, webhook, provider revenue, and settlement layer around any paid endpoint.
 
 ## Repository Layout
 
@@ -75,15 +114,17 @@ These are the first services running through Meterflow. The product is the meter
 import { MeterflowClient } from '@meterflow/sdk';
 
 const client = new MeterflowClient({
-  apiKey: 'mf_xxxxx',
+  apiKey: 'mf_live_xxxxx_secret',
 });
 
-const response = await client.chat({
-  model: 'claude-sonnet-4-6',
-  messages: [{ role: 'user', content: 'Explain agent budgets on Solana' }],
+const { meter } = await client.createHostedMeter({
+  targetUrl: 'https://api.example.com',
+  method: 'GET',
+  unit: 'lookup',
+  priceUsd: 0.01,
 });
 
-console.log(response.content);
+console.log(meter.route);
 ```
 
 ## Local Development

@@ -400,6 +400,18 @@ describe('Site link integrity', () => {
     const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
+
+  it('product docs position Meterflow as API and MCP payment infrastructure', () => {
+    const readme = readFileSync(resolve(projectRoot, 'README.md'), 'utf-8');
+    const home = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
+    const docs = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
+    assert.ok(readme.includes('Solana-native payment, metering, receipt, and budget infrastructure'), 'README should lead with infrastructure positioning');
+    assert.ok(readme.includes('These routes are examples'), 'README should frame bundled routes as examples');
+    assert.ok(home.includes('Wrap any API or MCP tool'), 'landing page should be provider-focused');
+    assert.ok(home.includes('Wrap an API') && home.includes('Create a paid MCP tool'), 'landing page CTAs should be provider-focused');
+    assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
+    assert.ok(docs.includes('The current AI, token-risk, and trading routes are demos'), 'docs should frame bundled routes as demos');
+  });
 });
 
 // ═══════════════════════════════════════
@@ -410,7 +422,7 @@ describe('Helper functions', () => {
   it('generateApiKey produces correct format', async () => {
     // Can't import directly due to config side effects, so check source
     const src = readFileSync(resolve(root, 'lib', 'helpers.js'), 'utf-8');
-    assert.ok(src.includes('mf_'), 'should prefix with mf_');
+    assert.ok(src.includes('mf_live_'), 'should prefix new keys with mf_live_');
     assert.ok(src.includes('randomBytes'), 'should use crypto.randomBytes');
   });
 
@@ -561,6 +573,36 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('recordX402Failure'), 'x402 middleware should only create receipts for payment failures before route completion');
   });
 
+  it('x402 meter matching refreshes custom meters without process restart', () => {
+    const src = readFileSync(resolve(root, 'lib', 'x402.js'), 'utf-8');
+    assert.ok(src.includes('METER_REFRESH_TTL_MS'), 'should use a short meter refresh TTL');
+    assert.ok(src.includes('refreshGateway(true)'), 'should force-refresh once on missing meter');
+    assert.ok(src.includes('x402.refresh()'), 'should rebuild x402 middleware from current billable meters');
+  });
+
+  it('hosted gateway meters store target metadata safely', () => {
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const gateway = readFileSync(resolve(root, 'routes', 'provider-gateway.js'), 'utf-8');
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    assert.ok(control.includes('normalizeTargetUrl'), 'should validate targetUrl');
+    assert.ok(control.includes('targetHost'), 'should store target host metadata');
+    assert.ok(control.includes('upstreamAuthConfigured'), 'meter responses should redact upstream auth secret values');
+    assert.ok(control.includes("`/gateway/${meterId}/*`"), 'should generate hosted gateway route when route is omitted');
+    assert.ok(routes.includes('hostedGateway'), 'meter test should expose hosted gateway preview');
+    assert.ok(gateway.includes('HOP_BY_HOP_HEADERS'), 'gateway should filter unsafe caller headers');
+    assert.ok(gateway.includes('completeMeteredRequest'), 'gateway should complete Meterflow receipts');
+    assert.ok(app.includes("app.use('/', providerGatewayRouter)") && app.indexOf("app.use('/', providerGatewayRouter)") > app.indexOf('const gateway = x402Gateway'), 'hosted gateway should mount after x402 middleware');
+  });
+
+  it('unsafe hosted target URLs are rejected', () => {
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    assert.ok(control.includes('targetUrl must use HTTPS in production'), 'production target URLs should require HTTPS');
+    for (const token of ['localhost', '169', '192', 'metadata.google.internal', '.internal', '.local']) {
+      assert.ok(control.includes(token), `should block ${token} target hosts`);
+    }
+  });
+
   it('treasury health includes USDC settlement balance', () => {
     const balance = readFileSync(resolve(root, 'lib', 'balance.js'), 'utf-8');
     const route = readFileSync(resolve(root, 'routes', 'admin.js'), 'utf-8');
@@ -592,6 +634,7 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('HTTPFacilitatorClient'), 'should use hosted facilitator client');
     assert.ok(src.includes('PAYAI_API_KEY_ID'), 'should support optional PayAI merchant key id');
     assert.ok(src.includes('PAYAI_API_KEY_SECRET'), 'should support optional PayAI merchant key secret');
+    assert.ok(src.includes('PAYWALL_CONFIG, undefined, false'), 'should avoid duplicate unawaited x402 startup initialization');
     assert.ok(pkg.dependencies['@payai/facilitator'], 'should declare PayAI facilitator dependency');
   });
 
@@ -625,8 +668,36 @@ describe('Meterflow control plane', () => {
 
   it('SDK exposes control-plane helpers', () => {
     const src = readFileSync(resolve(projectRoot, 'sdk', 'src', 'client.js'), 'utf-8');
-    for (const method of ['meters()', 'createMeter', 'deleteMeter', 'receipts', 'createBudget', 'revokeBudget', 'createMcpTool', 'deleteMcpTool', 'providerRevenue']) {
+    for (const method of ['meters()', 'createMeter', 'createHostedMeter', 'testMeter', 'deleteMeter', 'receipts', 'createBudget', 'revokeBudget', 'createMcpTool', 'deleteMcpTool', 'providerRevenue', 'webhooks', 'createWebhook']) {
       assert.ok(src.includes(method), `should include ${method}`);
+    }
+  });
+
+  it('new API keys are HMAC hashed while legacy keys remain compatible', () => {
+    const helpers = readFileSync(resolve(root, 'lib', 'helpers.js'), 'utf-8');
+    const keys = readFileSync(resolve(root, 'lib', 'kv-keys.js'), 'utf-8');
+    assert.ok(helpers.includes('mf_live_'), 'new keys should include public key id and secret parts');
+    assert.ok(keys.includes('createHmac'), 'new key secrets should be hashed with HMAC');
+    assert.ok(keys.includes('keyHash'), 'stored new key records should contain a hash');
+    assert.ok(keys.includes('Legacy raw-key compatibility'), 'old raw mf_ keys should still be supported during migration');
+    assert.ok(keys.includes('if (parsed) fallbackApiKeyIds.set(parsed.kid, record.data);'), 'new key path should store by key id');
+    assert.ok(keys.includes('else fallbackApiKeys.set(apiKey, data);'), 'legacy raw key path should remain isolated to compatibility branch');
+  });
+
+  it('wallet auth uses a server-issued challenge and consumes the nonce', () => {
+    const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    const wallet = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'wallet.js'), 'utf-8');
+    assert.ok(auth.includes("router.get('/challenge'"), 'should expose challenge route');
+    assert.ok(auth.includes('consumeChallenge'), 'register should consume nonce once');
+    assert.ok(auth.includes('ALLOW_LEGACY_WALLET_REGISTER'), 'legacy timestamp registration should require explicit compat flag');
+    assert.ok(auth.includes('Domain: meterflow.fun'), 'challenge message should bind domain/product');
+    assert.ok(wallet.includes('/auth/challenge?wallet='), 'dashboard should request a challenge before signing');
+  });
+
+  it('payment ledger migration prepares accounting tables', () => {
+    const migration = readFileSync(resolve(root, 'db', '002_payment_ledger.sql'), 'utf-8');
+    for (const table of ['meterflow_payment_quotes', 'meterflow_payment_attempts', 'meterflow_settlements', 'meterflow_webhook_deliveries', 'meterflow_provider_balances']) {
+      assert.ok(migration.includes(table), `migration should include ${table}`);
     }
   });
 

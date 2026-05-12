@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { CONFIG, TRIAL_CONFIG, FREE_ACCESS_TIER, isFreeAccessActive, getFreeAccessEndsAt } from '../config.js';
@@ -11,10 +12,14 @@ import { getKeyData, setKeyData, getKeyForWallet, setKeyForWallet, deleteKey } f
 import { deleteWallet } from '../lib/kv-wallets.js';
 import { logger } from '../lib/logger.js';
 import { resetUsage } from '../lib/kv-usage.js';
+import { getRedis } from '../lib/redis.js';
 
 const router = Router();
 
 const SIG_MAX_AGE_MS = 5 * 60 * 1000;
+const CHALLENGE_TTL_SECONDS = 5 * 60;
+const CHALLENGE_PREFIX = 'meterflow:auth-challenge:';
+const fallbackChallenges = new Map();
 const WRAPPED_SOL_MINT = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
@@ -25,6 +30,63 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'rate_limited', message: 'Too many registration attempts. Try again in 15 minutes.' },
 });
+
+function challengeKey(wallet, nonce) {
+  return `${CHALLENGE_PREFIX}${wallet}:${nonce}`;
+}
+
+function buildChallengeMessage(wallet, nonce, action = 'register') {
+  const timestamp = Date.now();
+  return {
+    nonce,
+    timestamp,
+    expiresAt: new Date(timestamp + CHALLENGE_TTL_SECONDS * 1000).toISOString(),
+    message: [
+      'Meterflow Wallet Challenge',
+      'Domain: meterflow.fun',
+      'Product: Meterflow',
+      `Action: ${action}`,
+      `Wallet: ${wallet}`,
+      `Nonce: ${nonce}`,
+      `Timestamp: ${timestamp}`,
+    ].join('\n'),
+  };
+}
+
+async function storeChallenge(wallet, challenge) {
+  const key = challengeKey(wallet, challenge.nonce);
+  const row = { wallet, nonce: challenge.nonce, message: challenge.message, expiresAt: Date.now() + CHALLENGE_TTL_SECONDS * 1000 };
+  fallbackChallenges.set(key, row);
+  const r = getRedis();
+  if (r) await r.set(key, JSON.stringify(row), 'EX', CHALLENGE_TTL_SECONDS);
+}
+
+async function consumeChallenge(wallet, nonce) {
+  const key = challengeKey(wallet, nonce);
+  const fallback = fallbackChallenges.get(key) || null;
+  fallbackChallenges.delete(key);
+  const r = getRedis();
+  if (!r) return fallback && fallback.expiresAt > Date.now() ? fallback : null;
+  const raw = await r.get(key);
+  await r.del(key);
+  const row = raw ? JSON.parse(raw) : fallback;
+  return row && row.expiresAt > Date.now() ? row : null;
+}
+
+function validateChallengeMessage(message, wallet) {
+  const fields = Object.fromEntries(
+    String(message || '').split(/\r?\n/).map(line => {
+      const idx = line.indexOf(':');
+      return idx > 0 ? [line.slice(0, idx).trim().toLowerCase(), line.slice(idx + 1).trim()] : null;
+    }).filter(Boolean)
+  );
+  if (fields.domain !== 'meterflow.fun' || fields.product !== 'Meterflow') return { ok: false, error: 'invalid_domain' };
+  if (!['register', 'agent-register'].includes(fields.action)) return { ok: false, error: 'invalid_action' };
+  if (fields.wallet !== wallet) return { ok: false, error: 'wallet_mismatch' };
+  if (!fields.nonce) return { ok: false, error: 'missing_nonce' };
+  if (!fields.timestamp || Math.abs(Date.now() - Number(fields.timestamp)) > SIG_MAX_AGE_MS) return { ok: false, error: 'signature_expired' };
+  return { ok: true, nonce: fields.nonce };
+}
 
 function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
   const isHolder = tier && tier !== 'trial';
@@ -67,6 +129,22 @@ function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
  * @returns {{ status: number, body: object }}
  */
 async function registerWallet({ wallet, signature, message }, opts = {}) {
+  const challenge = validateChallengeMessage(message, wallet);
+  if (challenge.ok) {
+    const stored = await consumeChallenge(wallet, challenge.nonce);
+    if (!stored || stored.message !== message) {
+      return { status: 401, body: { error: 'invalid_challenge', message: 'Challenge is missing, expired, or already used.' } };
+    }
+  } else if (process.env.ALLOW_LEGACY_WALLET_REGISTER !== 'true') {
+    return {
+      status: 400,
+      body: {
+        error: 'challenge_required',
+        message: 'Request /auth/challenge first and sign the returned Meterflow challenge message.',
+      },
+    };
+  }
+
   const tsMatch = message.match(/Timestamp:\s*(\d+)/);
   if (!tsMatch) {
     return { status: 400, body: { error: 'invalid_message', message: 'Signed message must include a Timestamp field.' } };
@@ -161,6 +239,26 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
     },
   };
 }
+
+// GET /auth/challenge?wallet=<solana address>
+router.get('/challenge', registerLimiter, async (req, res) => {
+  const wallet = String(req.query.wallet || '').trim();
+  try {
+    bs58.decode(wallet);
+  } catch {
+    return res.status(400).json({ error: 'invalid_wallet', message: 'wallet must be a base58 Solana public key.' });
+  }
+  const action = req.query.action === 'agent-register' ? 'agent-register' : 'register';
+  const challenge = buildChallengeMessage(wallet, crypto.randomUUID(), action);
+  await storeChallenge(wallet, challenge);
+  res.json({
+    wallet,
+    action,
+    nonce: challenge.nonce,
+    message: challenge.message,
+    expiresAt: challenge.expiresAt,
+  });
+});
 
 // POST /auth/register
 router.post('/register', registerLimiter, async (req, res) => {

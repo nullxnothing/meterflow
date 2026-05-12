@@ -106,6 +106,22 @@ export class MeterflowClient {
   }
 
   /**
+   * Create a hosted gateway meter for an external provider API.
+   * @param {import('./types.js').HostedMeterRequest} params
+   */
+  async createHostedMeter(params) {
+    return this.createMeter(params);
+  }
+
+  /**
+   * Preview route matching, quote economics, and hosted gateway status.
+   * @param {string} meterId
+   */
+  async testMeter(meterId) {
+    return this._post(`/v1/meters/${encodeURIComponent(meterId)}/test`, {});
+  }
+
+  /**
    * Delete a custom meter you own.
    * @param {string} meterId
    */

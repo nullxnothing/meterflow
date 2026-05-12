@@ -3,8 +3,9 @@ import { CONFIG, TOKEN_GATING_ENABLED, FREE_ACCESS_TIER, isFreeAccessActive } fr
 import { getUsage, incrementUsage as incrementUsageKV, incrementGlobalStats, incrementModelStats, getModelAnalytics } from './kv-usage.js';
 
 function generateApiKey() {
-  const random = crypto.randomBytes(24).toString('hex');
-  return `mf_${random}`;
+  const kid = crypto.randomBytes(8).toString('hex');
+  const secret = crypto.randomBytes(24).toString('base64url');
+  return `mf_live_${kid}_${secret}`;
 }
 
 function getTierForBalance(balance) {

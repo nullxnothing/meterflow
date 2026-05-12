@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import net from 'net';
 import { CONFIG } from '../config.js';
 import { getRedis } from './redis.js';
 import { isPostgresEnabled, query as pgQuery } from './postgres.js';
@@ -129,6 +130,86 @@ function normalizePath(path = '') {
   const clean = path.split('?')[0].replace(/^\/proxy/, '');
   if (clean.startsWith('/v1/video/')) return clean;
   return clean.replace(/\/$/, '') || '/';
+}
+
+function normalizeProviderName(value) {
+  const name = String(value || '').trim();
+  return name ? name.slice(0, 80) : null;
+}
+
+function isPrivateIPv4(hostname) {
+  if (net.isIP(hostname) !== 4) return false;
+  const parts = hostname.split('.').map(Number);
+  return (
+    parts[0] === 10
+    || parts[0] === 127
+    || (parts[0] === 169 && parts[1] === 254)
+    || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
+    || (parts[0] === 192 && parts[1] === 168)
+    || parts[0] === 0
+  );
+}
+
+function isUnsafeTargetHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  return (
+    !host
+    || host === 'localhost'
+    || host.endsWith('.localhost')
+    || host === 'metadata.google.internal'
+    || host.endsWith('.internal')
+    || host.endsWith('.local')
+    || net.isIP(host) === 6
+    || isPrivateIPv4(host)
+  );
+}
+
+export function normalizeTargetUrl(rawUrl) {
+  const url = new URL(String(rawUrl || '').trim());
+  if (IS_PROD && url.protocol !== 'https:') {
+    throw new Error('targetUrl must use HTTPS in production.');
+  }
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    throw new Error('targetUrl must use HTTP or HTTPS.');
+  }
+  if (isUnsafeTargetHost(url.hostname)) {
+    throw new Error('targetUrl host is not allowed.');
+  }
+  url.username = '';
+  url.password = '';
+  url.hash = '';
+  return {
+    targetUrl: url.toString().replace(/\/$/, ''),
+    targetHost: url.host,
+  };
+}
+
+function normalizeUpstreamAuth(input) {
+  if (!input) return null;
+  if (typeof input === 'string') {
+    return { type: 'bearer', value: input, configured: true };
+  }
+  if (typeof input !== 'object') return null;
+  const type = String(input.type || 'bearer').toLowerCase();
+  if (!['bearer', 'header'].includes(type)) return null;
+  const headerName = String(input.headerName || input.name || (type === 'bearer' ? 'Authorization' : '')).trim();
+  const value = String(input.value || input.token || '').trim();
+  if (!value) return null;
+  return {
+    type,
+    headerName: headerName || 'Authorization',
+    value,
+    configured: true,
+  };
+}
+
+function sanitizeMeter(meter) {
+  if (!meter) return null;
+  const { upstreamAuth, ...safe } = meter;
+  return {
+    ...safe,
+    upstreamAuthConfigured: !!upstreamAuth?.value,
+  };
 }
 
 function namespaceForPrefix(prefix) {
@@ -458,7 +539,14 @@ export async function listMeters(options = {}) {
   const merged = [...DEFAULT_METERS, ...custom].filter((meter, index, arr) => (
     arr.findLastIndex(other => other.id === meter.id) === index
   ));
-  return merged.map(meter => ({ ...meter, createdAt: meter.createdAt || null, updatedAt: meter.updatedAt || null }));
+  return merged.map(meter => sanitizeMeter({ ...meter, createdAt: meter.createdAt || null, updatedAt: meter.updatedAt || null }));
+}
+
+export async function listRawMeters(options = {}) {
+  const custom = await scanJson(METER_PREFIX, fallbackMeters, options);
+  return [...DEFAULT_METERS, ...custom].filter((meter, index, arr) => (
+    arr.findLastIndex(other => other.id === meter.id) === index
+  ));
 }
 
 export async function listBillableMeters(options = {}) {
@@ -471,14 +559,27 @@ export async function listBillableMeters(options = {}) {
 }
 
 export async function getMeter(meterId) {
+  return sanitizeMeter(await getRawMeter(meterId));
+}
+
+export async function getRawMeter(meterId) {
   return DEFAULT_METERS.find(meter => meter.id === meterId) || getJson(METER_PREFIX, fallbackMeters, meterId);
 }
 
 export async function createMeter(input, ownerWallet) {
   const ts = nowIso();
-  return setJson(METER_PREFIX, fallbackMeters, {
-    id: id('mtr'),
-    route: normalizePath(input.route),
+  const meterId = id('mtr');
+  const target = input.targetUrl ? normalizeTargetUrl(input.targetUrl) : null;
+  const route = input.route
+    ? normalizePath(input.route)
+    : target
+      ? `/gateway/${meterId}/*`
+      : null;
+  if (!route) throw new Error('route is required unless targetUrl is provided.');
+
+  const saved = await setJson(METER_PREFIX, fallbackMeters, {
+    id: meterId,
+    route,
     method: (input.method || 'POST').toUpperCase(),
     unit: input.unit || 'request',
     priceUsd: Number(input.priceUsd ?? input.price ?? 0),
@@ -488,19 +589,32 @@ export async function createMeter(input, ownerWallet) {
     ownerWallet: input.ownerWallet || ownerWallet || 'meterflow',
     policyPreset: input.policyPreset || 'standard',
     source: 'custom',
+    targetUrl: target?.targetUrl || null,
+    targetHost: target?.targetHost || null,
+    providerName: normalizeProviderName(input.providerName),
+    upstreamAuth: normalizeUpstreamAuth(input.upstreamAuth),
     createdAt: ts,
     updatedAt: ts,
   });
+  return sanitizeMeter(saved);
 }
 
 export async function updateMeter(meterId, patch) {
-  const current = await getMeter(meterId);
+  const current = await getRawMeter(meterId);
   if (!current) return null;
-  if (current.source === 'default') {
-    const copy = { ...current, source: 'custom', updatedAt: nowIso(), ...patch };
-    return setJson(METER_PREFIX, fallbackMeters, copy);
+  const nextPatch = { ...patch };
+  if (nextPatch.targetUrl) {
+    const target = normalizeTargetUrl(nextPatch.targetUrl);
+    nextPatch.targetUrl = target.targetUrl;
+    nextPatch.targetHost = target.targetHost;
   }
-  return setJson(METER_PREFIX, fallbackMeters, { ...current, ...patch, updatedAt: nowIso() });
+  if (nextPatch.upstreamAuth) nextPatch.upstreamAuth = normalizeUpstreamAuth(nextPatch.upstreamAuth);
+  if (nextPatch.providerName !== undefined) nextPatch.providerName = normalizeProviderName(nextPatch.providerName);
+  if (current.source === 'default') {
+    const copy = { ...current, source: 'custom', updatedAt: nowIso(), ...nextPatch };
+    return sanitizeMeter(await setJson(METER_PREFIX, fallbackMeters, copy));
+  }
+  return sanitizeMeter(await setJson(METER_PREFIX, fallbackMeters, { ...current, ...nextPatch, updatedAt: nowIso() }));
 }
 
 export async function deleteMeter(meterId) {
@@ -518,7 +632,7 @@ export function canManageResource(resource, wallet, apiKey) {
 
 export async function findMeterForRequest(method, requestPath) {
   const normalized = normalizePath(requestPath);
-  const meters = await listMeters();
+  const meters = await listRawMeters();
   return meters.find(meter => {
     if (meter.status === 'paused') return false;
     if ((meter.method || 'GET').toUpperCase() !== method.toUpperCase()) return false;

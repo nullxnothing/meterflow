@@ -239,7 +239,7 @@
   <div class="site-subpage-hero-inner">
     <div class="site-subpage-label">Documentation</div>
     <h1 class="site-subpage-title">Build with <span class="accent">Meterflow.</span></h1>
-    <p class="site-subpage-sub">Build and operate agent-accessible API routes with prices, request receipts, MFLOW utility, gateway keys, MCP tool packaging, and Solana settlement context.</p>
+    <p class="site-subpage-sub">Wrap third-party APIs and MCP tools with Solana USDC payments, x402-style quotes, meters, receipts, budgets, provider revenue, and webhooks.</p>
   </div>
 </section>
 
@@ -254,6 +254,7 @@
     <div class="sidebar-group">
       <span class="sidebar-title">Control Plane</span>
       <a href="#meters" class="sidebar-link">Meters</a>
+      <a href="#wrap-api" class="sidebar-link">Wrap An API</a>
       <a href="#receipts" class="sidebar-link">Receipts</a>
       <a href="#budgets" class="sidebar-link">Agent Budgets</a>
       <a href="#mcp" class="sidebar-link">MCP Tools</a>
@@ -266,6 +267,7 @@
       <a href="#api" class="sidebar-link">Gateway API</a>
       <a href="#sdk" class="sidebar-link">SDK</a>
       <a href="#settlement" class="sidebar-link">Settlement</a>
+      <a href="#webhooks" class="sidebar-link">Webhooks</a>
     </div>
   </aside>
 
@@ -295,7 +297,7 @@
 
     <section class="doc-section" id="meters">
       <h2 class="section-title">Meters</h2>
-      <p class="section-text">A meter describes what is billable. Meterflow treats model calls, data feeds, MCP tools, media generation, social intelligence, and trading workflows as service routes that can share one accounting model.</p>
+      <p class="section-text">A meter describes what is billable. Meterflow treats hosted APIs, MCP tools, data feeds, and demo AI/trading routes as products that share one accounting model.</p>
       <div class="code-block">POST /v1/meters
 Authorization: Bearer mf_xxxxx
 Content-Type: application/json
@@ -311,6 +313,31 @@ Content-Type: application/json
 }
 
 DELETE /v1/meters/:id</div>
+    </section>
+
+    <section class="doc-section" id="wrap-api">
+      <h2 class="section-title">Wrap Your API In 10 Minutes</h2>
+      <p class="section-text">Hosted gateway meters let providers keep their API on their own infrastructure while Meterflow handles payment requirements, budget checks, receipts, and revenue views.</p>
+      <div class="code-block">POST /v1/meters
+Authorization: Bearer mf_live_xxxxx_secret
+Content-Type: application/json
+
+{
+  "targetUrl": "https://api.example.com",
+  "method": "GET",
+  "unit": "lookup",
+  "priceUsd": 0.01,
+  "providerName": "Example Data API",
+  "status": "test"
+}</div>
+      <p class="section-text">If `route` is omitted, Meterflow generates `/gateway/{meterId}/*`. Callers use `https://meterflow.fun/proxy/gateway/{meterId}/path`. Upstream auth can be attached to the meter, but secret values are never returned by the API.</p>
+      <div class="code-block">POST /v1/meters/:id/test
+
+returns:
+- generated hosted route
+- payment quote preview
+- target host
+- whether the meter is currently billable</div>
     </section>
 
     <section class="doc-section" id="receipts">
@@ -349,7 +376,7 @@ on_new_route: require_operator_approval</div>
 
     <section class="doc-section" id="mcp">
       <h2 class="section-title">MCP Tools</h2>
-      <p class="section-text">MCP tools are treated as meters, so budgets, receipts, revenue views, and exports work the same way as API routes.</p>
+      <p class="section-text">MCP tools are treated as meters, so budgets, receipts, revenue views, settlement metadata, and exports work the same way as API routes. The built-in token-risk tool is a demo; builders can package their own tools.</p>
       <div class="code-block">POST /v1/mcp-tools
 Authorization: Bearer mf_xxxxx
 Content-Type: application/json
@@ -377,7 +404,7 @@ DELETE /v1/mcp-tools/:id</div>
 
     <section class="doc-section" id="routes">
       <h2 class="section-title">Service Routes</h2>
-      <p class="section-text">The current gateway already exposes routes that can be operated through Meterflow as metered services.</p>
+      <p class="section-text">The current AI, token-risk, and trading routes are demos running through Meterflow. They prove the payment and receipt flow, but the core product is infrastructure for third-party paid APIs and MCP tools.</p>
       <div style="overflow-x:auto;">
         <table class="doc-table">
           <thead><tr><th>Route</th><th>Category</th><th>Use</th></tr></thead>
@@ -394,17 +421,32 @@ DELETE /v1/mcp-tools/:id</div>
 
     <section class="doc-section" id="auth">
       <h2 class="section-title">Authentication</h2>
-      <p class="section-text">Operators connect a Solana wallet to create and manage client keys. Agents use issued keys and budget policies for server-to-server calls.</p>
-      <div class="code-block">POST /auth/register
+      <p class="section-text">Operators connect a Solana wallet to create and manage client keys. Registration uses a server-issued nonce so wallet signatures cannot be replayed.</p>
+      <div class="code-block">GET /auth/challenge?wallet=YOUR_SOLANA_ADDRESS
+
+POST /auth/register
 Content-Type: application/json
 
 {
   "walletAddress": "YOUR_SOLANA_ADDRESS",
   "signature": "BASE58_SIGNATURE",
-  "message": "Meterflow Authentication\nWallet: YOUR_SOLANA_ADDRESS\nTimestamp: 1708000000000"
+  "message": "Meterflow Wallet Challenge\nDomain: meterflow.fun\nProduct: Meterflow\nAction: register\nWallet: YOUR_SOLANA_ADDRESS\nNonce: ...\nTimestamp: ..."
 }</div>
       <p class="section-text">Use the returned key as a bearer token.</p>
       <div class="code-block">Authorization: Bearer mf_xxxxx</div>
+    </section>
+
+    <section class="doc-section" id="webhooks">
+      <h2 class="section-title">Provider Revenue And Webhooks</h2>
+      <p class="section-text">Providers can query revenue by meter and subscribe to signed webhook events for receipt creation, verified settlement, payment failure, and budget exhaustion.</p>
+      <div class="code-block">GET /v1/providers/revenue
+GET /v1/webhooks
+POST /v1/webhooks
+
+{
+  "url": "https://provider.example.com/meterflow/events",
+  "events": ["receipt.created", "receipt.verified", "payment.failed"]
+}</div>
     </section>
 
     <section class="doc-section" id="api">

@@ -20,6 +20,7 @@ import mcpRouter from './routes/mcp.js';
 import holderRouter from './routes/holder.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
+import providerGatewayRouter from './routes/provider-gateway.js';
 import { logger } from './lib/logger.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
@@ -117,6 +118,7 @@ app.use(async (req, res, next) => {
   }
 });
 
+app.use('/', providerGatewayRouter);
 app.use('/v1', express.json({ limit: '10mb' }), chatRouter);
 app.use('/v1', multiRouter);
 app.use('/v1', imageRouter);

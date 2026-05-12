@@ -30,6 +30,7 @@ import { DEFAULT_METERS, listBillableMeters, recordReceipt, updateReceipt } from
 const PAYWALL_CONFIG = {
   appName: 'Meterflow',
 };
+const METER_REFRESH_TTL_MS = 20_000;
 
 function normalizeRequestPath(path = '') {
   return path.split('?')[0].replace(/^\/proxy/, '').replace(/\/$/, '') || '/';
@@ -215,9 +216,15 @@ export async function buildX402Middleware() {
 
     logger.info('x402 middleware initialised', { payTo, routes: Object.keys(routes).length, facilitatorProvider });
     return {
-      middleware: paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG),
+      // We initialize resourceServer above so startup failures are handled here.
+      // Disable @x402/express' second eager initializer; it creates an
+      // unawaited promise during middleware construction and can surface as an
+      // unhandled rejection on Vercel cold starts.
+      middleware: paymentMiddleware(routes, resourceServer, PAYWALL_CONFIG, undefined, false),
       meters,
       payTo,
+      refreshedAt: Date.now(),
+      refresh: buildX402Middleware,
     };
   } catch (err) {
     logger.error('x402 middleware init failed', { err: err.message });
@@ -232,20 +239,49 @@ export async function buildX402Middleware() {
  * After successful x402 payment, populate req.meterflow and continue.
  */
 export function createX402Gateway(x402) {
-  const paymentMw = typeof x402 === 'function' ? x402 : x402?.middleware;
+  let paymentMw = typeof x402 === 'function' ? x402 : x402?.middleware;
   if (!paymentMw) {
     return (_req, _res, next) => next();
   }
 
-  const meters = Array.isArray(x402?.meters) ? x402.meters : DEFAULT_METERS;
-  const configuredPayTo = x402?.payTo || '';
+  let meters = Array.isArray(x402?.meters) ? x402.meters : DEFAULT_METERS;
+  let configuredPayTo = x402?.payTo || '';
+  let refreshedAt = x402?.refreshedAt || Date.now();
+  let refreshPromise = null;
+
+  async function refreshGateway(force = false) {
+    if (!force && Date.now() - refreshedAt < METER_REFRESH_TTL_MS) return;
+    if (!x402?.refresh) return;
+    refreshPromise ||= x402.refresh()
+      .then(next => {
+        if (next?.middleware) {
+          x402 = next;
+          paymentMw = next.middleware;
+          meters = Array.isArray(next.meters) ? next.meters : meters;
+          configuredPayTo = next.payTo || configuredPayTo;
+          refreshedAt = next.refreshedAt || Date.now();
+        }
+      })
+      .catch(err => {
+        logger.warn('x402 meter refresh failed', { err: err.message });
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+    await refreshPromise;
+  }
 
   return async (req, res, next) => {
     // Pass through to normal auth if Bearer token present
     if (req.headers.authorization?.startsWith('Bearer ')) return next();
 
     const requestPath = req.path || req.originalUrl || req.url;
-    const meter = findMeterInList(meters, req.method, requestPath);
+    await refreshGateway(false);
+    let meter = findMeterInList(meters, req.method, requestPath);
+    if (!meter) {
+      await refreshGateway(true);
+      meter = findMeterInList(meters, req.method, requestPath);
+    }
     if (!meter) return next();
 
     const payTo = configuredPayTo || process.env.X402_PAY_TO || CONFIG.TREASURY_WALLET;

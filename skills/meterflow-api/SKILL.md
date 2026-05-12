@@ -1,6 +1,6 @@
 ---
 name: meterflow-api
-description: Use Meterflow API keys for metered agent-accessible routes, receipts, budgets, service routes, and x402-style payment workflows on Solana.
+description: Use Meterflow to wrap APIs and MCP tools with Solana USDC x402 payments, meters, receipts, budgets, provider revenue, and webhooks.
 version: 1.0.0
 metadata:
   openclaw:
@@ -17,13 +17,13 @@ metadata:
 
 # Meterflow API
 
-Meterflow is a control plane for x402-style paid API usage on Solana. Providers define metered routes. Operators connect wallets, issue client keys, set agent budgets, and inspect receipts.
+Meterflow is a Solana-native payment and metering control plane for third-party APIs and MCP tools. Providers define hosted gateway meters, agents receive x402-style HTTP 402 payment terms, Solana USDC is the settlement path, and operators inspect receipts, budgets, provider revenue, and webhooks.
 
 ## Core Concepts
 
 - **Wallet:** operator identity and settlement context.
 - **API key:** metered client credential for an agent or server.
-- **Meter:** route, unit, price, asset, owner wallet, and status.
+- **Meter:** route or hosted target URL, unit, price, asset, owner wallet, and status.
 - **Receipt:** quote, payer wallet, payment proof, response state, and accounting record.
 - **Budget:** daily cap, per-call cap, route allowlist, expiration, and revocation policy.
 
@@ -44,15 +44,36 @@ SOLANA_PRIVATE_KEY=<base58_keypair> node scripts/register.js
 Direct request shape:
 
 ```http
+GET https://meterflow.fun/proxy/auth/challenge?wallet=<your-solana-public-key>&action=agent-register
+
 POST https://meterflow.fun/proxy/auth/agent-register
 Content-Type: application/json
 
 {
   "wallet": "<your-solana-public-key>",
   "signature": "<base58-signature-of-message>",
-  "message": "Meterflow Agent Registration\nWallet: <public-key>\nTimestamp: <unix-ms>"
+  "message": "<challenge message returned by /auth/challenge>"
 }
 ```
+
+## Wrap An API
+
+```http
+POST https://meterflow.fun/proxy/v1/meters
+Authorization: Bearer mf_live_<kid>_<secret>
+Content-Type: application/json
+
+{
+  "targetUrl": "https://api.example.com",
+  "method": "GET",
+  "unit": "lookup",
+  "priceUsd": 0.01,
+  "providerName": "Example Data API",
+  "status": "test"
+}
+```
+
+If `route` is omitted, Meterflow generates `/gateway/{meterId}/*`. Test it with `POST /v1/meters/:id/test` to preview the hosted route, target host, quote, and billable state.
 
 ## Use A Metered Route
 
@@ -108,8 +129,10 @@ import { MeterflowClient } from '@meterflow/sdk';
 
 const client = new MeterflowClient({ apiKey: process.env.METERFLOW_API_KEY });
 
-const res = await client.chat({
-  model: 'claude-sonnet-4-6',
-  messages: [{ role: 'user', content: 'Summarize this wallet' }],
+const { meter } = await client.createHostedMeter({
+  targetUrl: 'https://api.example.com',
+  method: 'GET',
+  unit: 'lookup',
+  priceUsd: 0.01,
 });
 ```

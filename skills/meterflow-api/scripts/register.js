@@ -22,8 +22,13 @@ async function register() {
 
   const keypair = Keypair.fromSecretKey(bs58.decode(secretKey));
   const wallet = keypair.publicKey.toBase58();
-  const timestamp = Date.now();
-  const message = `Meterflow Agent Registration\nWallet: ${wallet}\nTimestamp: ${timestamp}`;
+  const challengeResponse = await fetch(`${API_BASE}/auth/challenge?wallet=${encodeURIComponent(wallet)}&action=agent-register`);
+  const challenge = await challengeResponse.json();
+  if (!challengeResponse.ok) {
+    console.error(`Challenge failed (${challengeResponse.status}):`, challenge.message || challenge.error);
+    process.exit(1);
+  }
+  const message = challenge.message;
   const messageBytes = new TextEncoder().encode(message);
   const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
   const signatureB58 = bs58.encode(signature);

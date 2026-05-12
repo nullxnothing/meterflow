@@ -52,7 +52,8 @@ export async function connectWallet(providerObj) {
     const pk = resp?.publicKey ?? provider.publicKey ?? resp;
     if (!pk) throw new Error('Wallet did not return a public key. Try reconnecting.');
     const publicKey = pk.toString();
-    const message = `Meterflow Authentication\nWallet: ${publicKey}\nTimestamp: ${Date.now()}`;
+    const challenge = await api(`/auth/challenge?wallet=${encodeURIComponent(publicKey)}`);
+    const message = challenge.message;
     const encoded = new TextEncoder().encode(message);
     let signatureBytes;
     try {

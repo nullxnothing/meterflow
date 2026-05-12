@@ -1,6 +1,6 @@
 # @meterflow/sdk
 
-SDK for Meterflow, a Solana-native metering gateway for AI agents, APIs, MCP tools, and data feeds.
+SDK for Meterflow, a Solana-native payment, metering, receipt, and budget control plane for third-party APIs, MCP tools, and agent operators.
 
 Zero dependencies. Works in Node.js 18+ and modern browsers.
 
@@ -19,27 +19,20 @@ const client = new MeterflowClient({
   apiKey: 'mf_xxxxx',
 });
 
-const response = await client.chat({
-  model: 'claude-sonnet-4-6',
-  messages: [{ role: 'user', content: 'Explain x402 on Solana' }],
+const { meter } = await client.createHostedMeter({
+  targetUrl: 'https://api.example.com',
+  method: 'GET',
+  unit: 'lookup',
+  priceUsd: 0.01,
+  providerName: 'Example Data API',
+  status: 'test',
 });
 
-const stream = client.chatStream({
-  model: 'gemini-2.5-flash',
-  messages: [{ role: 'user', content: 'Write a haiku' }],
-});
-for await (const event of stream) {
-  if (event.type === 'content_delta') process.stdout.write(event.text);
-}
-
-const multi = await client.multi({
-  models: ['claude-sonnet-4-6', 'gemini-2.5-flash'],
-  messages: [{ role: 'user', content: 'What should agents pay for on Solana?' }],
-});
-multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || ''}`));
+console.log(meter.route);
+console.log(await client.testMeter(meter.id));
 ```
 
-`MeterflowClient` is the canonical client export.
+`MeterflowClient` is the canonical client export. AI and trading methods remain available as demos of Meterflow-protected routes.
 
 ## API
 
@@ -55,7 +48,9 @@ multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || 
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `chat(params)` | `Promise<ChatResponse>` | Single model chat completion |
+| `createHostedMeter(params)` | `Promise<Object>` | Wrap an external API behind a Meterflow hosted gateway |
+| `testMeter(meterId)` | `Promise<Object>` | Preview hosted route, target host, quote, and billable state |
+| `chat(params)` | `Promise<ChatResponse>` | Demo single model chat completion |
 | `chatStream(params)` | `AsyncGenerator<StreamEvent>` | Streaming chat completion |
 | `multi(params)` | `Promise<MultiResponse>` | Parallel multi-model inference |
 | `multiStream(params)` | `AsyncGenerator<MultiStreamEvent>` | Streaming multi-model |
@@ -64,7 +59,7 @@ multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || 
 | `treasury()` | `Promise<TreasuryStatus>` | Settlement wallet context |
 | `providers()` | `Promise<Object>` | Available AI providers |
 | `meters()` | `Promise<Object>` | List metered API/MCP products |
-| `createMeter(params)` | `Promise<Object>` | Create a route-level meter |
+| `createMeter(params)` | `Promise<Object>` | Create a route-level or hosted gateway meter |
 | `deleteMeter(meterId)` | `Promise<Object>` | Delete a custom meter |
 | `receipts(params)` | `Promise<Object>` | List request receipts |
 | `budgets()` | `Promise<Object>` | List agent budget policies |
@@ -78,14 +73,15 @@ multi.responses.forEach(r => console.log(`${r.model}: ${r.content?.[0]?.text || 
 | `deleteWebhook(webhookId)` | `Promise<Object>` | Delete a webhook endpoint |
 | `providerRevenue()` | `Promise<Object>` | Revenue and failure aggregates by meter |
 
-## Control Plane Example
+## Hosted Provider Example
 
 ```js
-const meter = await client.createMeter({
-  route: '/v1/risk-score',
-  method: 'POST',
+const meter = await client.createHostedMeter({
+  targetUrl: 'https://api.example.com',
+  method: 'GET',
   unit: 'request',
-  priceUsd: 0.006,
+  priceUsd: 0.01,
+  providerName: 'Example API',
 });
 
 const budget = await client.createBudget({

@@ -61,9 +61,14 @@ router.get('/meters', authenticateApiKey, async (_req, res) => {
 });
 
 router.post('/meters', authenticateApiKey, async (req, res) => {
-  if (requireRoute(req.body, res) || requirePrice(req.body, res)) return;
-  const meter = await createMeter(req.body, req.meterflow.wallet);
-  res.status(201).json({ meter });
+  if (!req.body.targetUrl && requireRoute(req.body, res)) return;
+  if (requirePrice(req.body, res)) return;
+  try {
+    const meter = await createMeter(req.body, req.meterflow.wallet);
+    res.status(201).json({ meter });
+  } catch (err) {
+    return badRequest(res, err.message || 'Invalid meter');
+  }
 });
 
 router.patch('/meters/:id', authenticateApiKey, async (req, res) => {
@@ -77,7 +82,12 @@ router.patch('/meters/:id', authenticateApiKey, async (req, res) => {
   if ((patch.priceUsd !== undefined || patch.price !== undefined) && requirePrice(patch, res)) return;
   if (patch.method) patch.method = String(patch.method).toUpperCase();
   if (patch.price !== undefined && patch.priceUsd === undefined) patch.priceUsd = Number(patch.price);
-  const meter = await updateMeter(req.params.id, patch);
+  let meter;
+  try {
+    meter = await updateMeter(req.params.id, patch);
+  } catch (err) {
+    return badRequest(res, err.message || 'Invalid meter');
+  }
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
   res.json({ meter });
 });
@@ -100,8 +110,15 @@ router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
   const matched = await findMeterForRequest(meter.method, meter.route);
   const economics = applyProtocolFee(meter.priceUsd, req.meterflow.tier);
+  const hostedRoute = meter.targetUrl ? `/proxy${meter.route.replace(/\*$/, 'path')}` : null;
   res.json({
     meter,
+    hostedGateway: meter.targetUrl ? {
+      route: meter.route,
+      urlTemplate: `https://meterflow.fun${hostedRoute}`,
+      targetHost: meter.targetHost,
+      providerName: meter.providerName || null,
+    } : null,
     quote: {
       amountUsd: economics.totalAmountUsd,
       baseAmountUsd: economics.baseAmountUsd,
@@ -113,6 +130,7 @@ router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {
       expiresInSeconds: 300,
     },
     matched: !!matched,
+    billable: !!matched && ['live', 'test', 'example'].includes(meter.status),
   });
 });
 
