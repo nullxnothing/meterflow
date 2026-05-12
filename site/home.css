@@ -241,15 +241,58 @@ section[id] { scroll-margin-top: 100px; }
 
 .hero-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   margin-bottom: 0;
+  max-width: 620px;
 }
 
 .hero-actions .btn-primary,
 .hero-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 118px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
   white-space: nowrap;
+}
+
+.hero-actions .btn-primary {
+  color: #031121;
+  border-color: rgba(166, 210, 255, 0.72);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.24) inset,
+    0 10px 28px rgba(31, 95, 184, 0.28);
+}
+
+.hero-actions .btn-primary::after {
+  content: "->";
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.hero-actions .btn-secondary {
+  min-width: 108px;
+  color: #c8d8ef;
+  border-color: rgba(70, 103, 145, 0.72);
+  background: rgba(9, 15, 25, 0.72);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.hero-actions .btn-secondary:hover {
+  color: var(--text);
+  border-color: rgba(102, 164, 255, 0.72);
+  background: rgba(79, 156, 255, 0.10);
 }
 
 /* ── Trust strip — bigger, more prominent ── */
@@ -2046,7 +2089,6 @@ section[id] { scroll-margin-top: 100px; }
   .tiers-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-content { grid-template-columns: 1fr; gap: 48px; }
   .hero-headline { max-width: 100%; }
-  .hero-actions { flex-wrap: wrap; }
   .hero-panel { justify-self: start; max-width: 680px; }
 }
 
@@ -2098,6 +2140,17 @@ section[id] { scroll-margin-top: 100px; }
   }
   .tiers-grid { gap: 16px; }
   .btn-primary, .btn-secondary { padding: 12px 24px; }
+  .hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 420px);
+  }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary {
+    width: 100%;
+    min-width: 0;
+    padding: 0 14px;
+  }
   footer { flex-direction: column; gap: 20px; }
   .img-preview-grid { grid-template-columns: repeat(3, 1fr); }
 }
@@ -2125,6 +2178,15 @@ section[id] { scroll-margin-top: 100px; }
   }
   .tiers-grid { gap: 16px; }
   .btn-primary, .btn-secondary { padding: 12px 24px; }
+  .hero-actions {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary {
+    min-height: 42px;
+    font-size: 13px;
+  }
   .hero-ca {
     flex-wrap: wrap;
     gap: 8px;
