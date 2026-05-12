@@ -401,13 +401,13 @@ describe('Site link integrity', () => {
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
 
-  it('product docs position Meterflow as API and MCP payment infrastructure', () => {
+  it('product docs position Meterflow as the control plane for paid agent APIs', () => {
     const readme = readFileSync(resolve(projectRoot, 'README.md'), 'utf-8');
     const home = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
     const docs = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
-    assert.ok(readme.includes('Solana-native payment, metering, receipt, and budget infrastructure'), 'README should lead with infrastructure positioning');
+    assert.ok(readme.includes('The control plane for paid agent-accessible APIs'), 'README should lead with control-plane positioning');
     assert.ok(readme.includes('These routes are examples'), 'README should frame bundled routes as examples');
-    assert.ok(home.includes('Wrap any API or MCP tool'), 'landing page should be provider-focused');
+    assert.ok(home.includes('Paid agent APIs need'), 'landing page should lead with control-plane positioning');
     assert.ok(home.includes('Wrap an API') && home.includes('Create a paid MCP tool'), 'landing page CTAs should be provider-focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('The current AI, token-risk, and trading routes are demos'), 'docs should frame bundled routes as demos');
@@ -585,6 +585,7 @@ describe('Meterflow control plane', () => {
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     const gateway = readFileSync(resolve(root, 'routes', 'provider-gateway.js'), 'utf-8');
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(control.includes('normalizeTargetUrl'), 'should validate targetUrl');
     assert.ok(control.includes('targetHost'), 'should store target host metadata');
     assert.ok(control.includes('upstreamAuthConfigured'), 'meter responses should redact upstream auth secret values');
@@ -593,6 +594,10 @@ describe('Meterflow control plane', () => {
     assert.ok(gateway.includes('HOP_BY_HOP_HEADERS'), 'gateway should filter unsafe caller headers');
     assert.ok(gateway.includes('completeMeteredRequest'), 'gateway should complete Meterflow receipts');
     assert.ok(app.includes("app.use('/', providerGatewayRouter)") && app.indexOf("app.use('/', providerGatewayRouter)") > app.indexOf('const gateway = x402Gateway'), 'hosted gateway should mount after x402 middleware');
+    assert.ok(dashboard.includes('meterTargetUrl'), 'dashboard should let providers create hosted API meters');
+    assert.ok(dashboard.includes('upstreamAuth'), 'dashboard should submit upstream auth for hosted API meters');
+    assert.ok(dashboard.includes('route: targetUrl ? undefined'), 'dashboard should let hosted API meters use generated gateway routes');
+    assert.ok(dashboard.includes('Copy Gateway'), 'dashboard should expose generated hosted gateway URLs');
   });
 
   it('unsafe hosted target URLs are rejected', () => {
@@ -728,5 +733,9 @@ describe('Meterflow control plane', () => {
     assert.ok(profile.includes('geckoterminal.com'), 'should use GeckoTerminal for chart data');
     assert.ok(!page.includes('METERFLOW_TOKEN_CA'), 'public token page should not expose internal env names');
     assert.ok(page.includes('Coming soon') || page.includes('TBA'), 'public token page should use pre-launch language');
+    assert.ok(page.includes('More endpoints. More receipts. More reasons to hold.'), 'token page should explain the holder thesis');
+    assert.ok(page.includes('$MFLOW controls utility'), 'token page should connect utility to holder-facing benefits');
+    assert.ok(page.includes('Meterflow can now meter other people'), 'token page should explain the technical unlock');
+    assert.ok(page.includes('Every new provider adds more routes'), 'token page should connect provider growth to receipt growth');
   });
 });

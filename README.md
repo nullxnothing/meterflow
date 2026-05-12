@@ -4,7 +4,7 @@
 
 # Meterflow
 
-Solana-native payment, metering, receipt, and budget infrastructure for third-party APIs and MCP tools.
+The control plane for paid agent-accessible APIs and MCP tools on Solana.
 
 [Website](https://meterflow.fun) · [Dashboard](https://meterflow.fun/dashboard) · [Docs](https://meterflow.fun/docs) · [GitHub](https://github.com/nullxnothing/meterflow) · [X](https://x.com/meterflowsol) · [Discord](https://discord.gg/tned74z4eN)
 
@@ -16,13 +16,13 @@ The site and backend use `METERFLOW_TOKEN_CA` as the master token address. Set t
 
 ## What It Is
 
-Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. It is a Stripe-like control plane for per-request Solana USDC settlement using x402-style HTTP 402 payments.
+Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. x402 and Solana USDC can move the payment; Meterflow manages the product surface around it: meters, receipts, failed-payment state, provider revenue, agent budgets, payer visibility, and signed webhooks.
 
-Solana moves the money. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, how much was owed, and where the receipt lives.
+Payments alone are not the product. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, what failed, how much was owed, and where the receipt lives.
 
 ## Why It Exists
 
-Agents need paid tools they can call without monthly SaaS accounts, shared credit cards, or unlimited wallet access. API providers need per-request pricing, receipts, budgets, and customer visibility after a payment clears.
+Agents need paid tools they can call without monthly SaaS accounts, shared credit cards, or unlimited wallet access. API providers need per-request pricing, receipts, budgets, revenue views, and customer visibility after a payment clears.
 
 Meterflow is the layer around that request:
 
@@ -61,7 +61,7 @@ const { meter } = await client.createHostedMeter({
 console.log(meter.route); // /gateway/mtr_xxxxx/*
 ```
 
-Meterflow stores the target origin on the meter, generates a hosted route, issues x402 payment requirements for callers, proxies successful requests upstream, and records receipts with upstream status and latency. Upstream auth secrets are stored server-side and never returned in meter API responses.
+Meterflow stores the target origin on the meter, generates a hosted route, issues x402 payment requirements for callers, proxies successful requests upstream, and records receipts with upstream status and latency. The payment handshake is only one part of the product; the rest is pricing, policy, revenue, failed-payment state, and accounting. Upstream auth secrets are stored server-side and never returned in meter API responses.
 
 ## Wrap Your API In 10 Minutes
 

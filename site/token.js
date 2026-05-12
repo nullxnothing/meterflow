@@ -44,6 +44,7 @@ function setStatus(title, detail) {
 }
 
 function setComingSoonState() {
+  setText('tokenHeroSuffix', ' is the utility layer.');
   setText('tokenAddress', 'TBA');
   setText('statusCA', 'TBA');
   setText('statusMarket', 'Coming soon');
@@ -60,7 +61,7 @@ function setComingSoonState() {
   setText('metricDecimals', 'coming soon');
   setText('metricHolders', 'TBA');
   setText('metricTopPct', 'coming soon');
-  setText('tokenDescription', '$MFLOW details are coming soon.');
+  setText('tokenDescription', '$MFLOW utility details are coming soon. The product already models provider verification, fee relief, registry ranking, higher policy limits, and longer receipt retention.');
   setText('detailPair', 'TBA');
   setText('detailFdv', 'TBA');
   setText('detailChanges', 'TBA');

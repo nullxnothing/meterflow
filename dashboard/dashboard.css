@@ -2455,6 +2455,54 @@
 
 .bot-form-row { display: flex; flex-direction: column; gap: 4px; }
 
+.hosted-meter-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  white-space: normal;
+}
+
+.hosted-meter-form #meterTargetUrl,
+.hosted-meter-form #meterProviderName,
+.hosted-meter-form #meterRoute {
+  grid-column: span 2;
+}
+
+.hosted-meter-form #meterAuthValue {
+  grid-column: span 2;
+}
+
+.hosted-meter-form .btn-sm.primary {
+  grid-column: span 6;
+  height: 44px;
+}
+
+@media (max-width: 900px) {
+  .hosted-meter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hosted-meter-form #meterTargetUrl,
+  .hosted-meter-form #meterProviderName,
+  .hosted-meter-form #meterRoute,
+  .hosted-meter-form #meterAuthValue,
+  .hosted-meter-form .btn-sm.primary {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .hosted-meter-form {
+    grid-template-columns: 1fr;
+  }
+  .hosted-meter-form #meterTargetUrl,
+  .hosted-meter-form #meterProviderName,
+  .hosted-meter-form #meterRoute,
+  .hosted-meter-form #meterAuthValue,
+  .hosted-meter-form .btn-sm.primary {
+    grid-column: 1;
+  }
+}
+
 .bot-form-label {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -2538,6 +2586,7 @@ select[multiple] option:checked {
 /* Wide primary action button (Create Meter / Create Budget Policy / Package MCP Tool) */
 .bot-form .btn-sm.primary,
 .cp-form .btn-sm.primary,
+.hosted-meter-form .btn-sm.primary,
 .section .btn-sm.primary[style*="grid-column:span 6"],
 .section .btn-sm.primary[style*="grid-column: span 6"] {
   height: 44px;
@@ -2560,6 +2609,7 @@ select[multiple] option:checked {
 
 .bot-form .btn-sm.primary:hover,
 .cp-form .btn-sm.primary:hover,
+.hosted-meter-form .btn-sm.primary:hover,
 .section .btn-sm.primary[style*="grid-column"]:hover {
   transform: translateY(-1px);
   filter: brightness(1.05);

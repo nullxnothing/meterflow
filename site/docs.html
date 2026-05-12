@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Meterflow documentation - meters, receipts, agent budgets, service routes, wallet settlement, and API keys for x402-style payments on Solana.">
+<meta name="description" content="Meterflow documentation - meters, receipts, provider revenue, agent budgets, service routes, wallet settlement, and webhooks for paid agent APIs on Solana.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/docs">
 <meta property="og:title" content="Meterflow Documentation">
-<meta property="og:description" content="Build and operate metered API routes, receipts, and agent budgets on Solana.">
+<meta property="og:description" content="Build and operate paid agent API routes with meters, receipts, budgets, provider revenue, and webhooks on Solana.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/docs">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -239,7 +239,7 @@
   <div class="site-subpage-hero-inner">
     <div class="site-subpage-label">Documentation</div>
     <h1 class="site-subpage-title">Build with <span class="accent">Meterflow.</span></h1>
-    <p class="site-subpage-sub">Wrap third-party APIs and MCP tools with Solana USDC payments, x402-style quotes, meters, receipts, budgets, provider revenue, and webhooks.</p>
+    <p class="site-subpage-sub">Use x402 and Solana USDC for the payment path, then use Meterflow for the control plane around it: meters, receipts, failed-payment state, agent budgets, provider revenue, and webhooks.</p>
   </div>
 </section>
 
@@ -274,7 +274,7 @@
   <main class="docs-content" id="main">
     <section class="doc-section" id="flow">
       <h2 class="section-title">Payment Flow</h2>
-      <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, and whether the agent stayed inside policy.</p>
+      <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, what failed, and whether the agent stayed inside policy.</p>
       <div class="feature-grid">
         <div class="feature-card"><div class="feature-title">1. Meter</div><p class="feature-desc">A provider registers a route, unit, price, accepted asset, recipient wallet, and customer policy.</p></div>
         <div class="feature-card"><div class="feature-title">2. Quote</div><p class="feature-desc">A caller receives machine-readable payment terms for the requested capability.</p></div>
@@ -317,7 +317,7 @@ DELETE /v1/meters/:id</div>
 
     <section class="doc-section" id="wrap-api">
       <h2 class="section-title">Wrap Your API In 10 Minutes</h2>
-      <p class="section-text">Hosted gateway meters let providers keep their API on their own infrastructure while Meterflow handles payment requirements, budget checks, receipts, and revenue views.</p>
+      <p class="section-text">Hosted gateway meters let providers keep their API on their own infrastructure while Meterflow handles payment requirements, budget checks, receipts, failed-payment state, revenue views, and webhook events.</p>
       <div class="code-block">POST /v1/meters
 Authorization: Bearer mf_live_xxxxx_secret
 Content-Type: application/json
