@@ -4,7 +4,7 @@
 
 # Meterflow
 
-The control plane for paid agent-accessible APIs and MCP tools on Solana.
+The Solana control plane for agent commerce: paid APIs, MCP tools, budgets, receipts, provider revenue, and registry signal.
 
 [Website](https://meterflow.fun) · [Dashboard](https://meterflow.fun/dashboard) · [Docs](https://meterflow.fun/docs) · [GitHub](https://github.com/nullxnothing/meterflow) · [X](https://x.com/meterflowsol) · [Discord](https://discord.gg/tned74z4eN)
 
@@ -16,13 +16,13 @@ The site and backend use `METERFLOW_TOKEN_CA` as the master token address. Set t
 
 ## What It Is
 
-Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. x402 and Solana USDC can move the payment; Meterflow manages the product surface around it: meters, receipts, failed-payment state, provider revenue, agent budgets, payer visibility, and signed webhooks.
+Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. x402 and Solana USDC move the live payment path today; Meterflow manages the product surface around it: hosted gateways, meters, receipts, failed-payment state, provider revenue, agent budgets, payer visibility, registry signal, and signed webhooks. The product model is MPP-ready so future 402-style payment rails can normalize into the same receipt and policy layer.
 
 Payments alone are not the product. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, what failed, how much was owed, and where the receipt lives.
 
 ## Why It Exists
 
-Agents need paid tools they can call without monthly SaaS accounts, shared credit cards, or unlimited wallet access. API providers need per-request pricing, receipts, budgets, revenue views, and customer visibility after a payment clears.
+Agents need paid tools they can call without monthly SaaS accounts, shared credit cards, or unlimited wallet access. API providers need per-request pricing, receipts, budgets, revenue views, registry distribution, and customer visibility after a payment clears.
 
 Meterflow is the layer around that request:
 
@@ -40,6 +40,8 @@ Meterflow is the layer around that request:
 | Receipts | Track quote, payer, proof, amount, route, policy result, and response status |
 | Agent Budgets | Set per-call caps, daily caps, route allowlists, expirations, and revocation |
 | MCP Tools | Package tool calls as priced capabilities agents can reason about |
+| Protocol Adapter | Normalize x402 today and MPP-ready payment flows into one receipt model |
+| Provider Registry | Rank endpoints by verification, price, uptime, latency, receipt volume, and utility tier |
 | API Keys | Issue metered clients for apps, agents, and provider integrations |
 | Settlement Wallet | Inspect wallet context for provider funding and gateway operations |
 | Integrations | Attach Solana, data, model, social, and notification providers |
@@ -63,6 +65,17 @@ console.log(meter.route); // /gateway/mtr_xxxxx/*
 
 Meterflow stores the target origin on the meter, generates a hosted route, issues x402 payment requirements for callers, proxies successful requests upstream, and records receipts with upstream status and latency. The payment handshake is only one part of the product; the rest is pricing, policy, revenue, failed-payment state, and accounting. Upstream auth secrets are stored server-side and never returned in meter API responses.
 
+## Agent Commerce Direction
+
+The market is moving toward many payment handshakes, not one winner. Meterflow should be the control plane above those rails:
+
+1. **x402 today, MPP-ready next.** Keep x402 live while preparing the receipt schema, gateway policy, and dashboard language for MPP and future 402-style rails.
+2. **MCP/API launchpad.** Let providers wrap an existing API or MCP server and receive a hosted paid route, price, budget checks, revenue view, and webhook stream.
+3. **Agent budget vaults.** Give operators wallet-bound limits before an agent spends: daily caps, per-call caps, allowlists, revocation, and receipt exports.
+4. **Provider registry.** Turn useful paid endpoints into a discoverable market with price, uptime, latency, volume, verification, and MFLOW-backed ranking signals.
+5. **Receipt graph.** Treat every paid call as proof: payer, provider, route, amount, payment rail, policy result, response status, latency, and settlement metadata.
+6. **Real-time settlement feed.** Stream receipt, payment, budget, and provider revenue events into dashboards and signed webhooks.
+
 ## Wrap Your API In 10 Minutes
 
 1. Connect a wallet and create a Meterflow API key.
@@ -73,7 +86,7 @@ Meterflow stores the target origin on the meter, generates a hosted route, issue
 
 ## Monetize An MCP Tool
 
-Register an MCP tool with `POST /v1/mcp-tools` or create a hosted meter for your MCP HTTP endpoint. Meterflow handles payment quotes, Solana USDC settlement context, receipts, webhooks, and agent budget enforcement. The built-in `/mcp/token-risk` route is a demo of this pattern.
+Register an MCP tool with `POST /v1/mcp-tools` or create a hosted meter for your MCP HTTP endpoint. Meterflow handles payment quotes, Solana USDC settlement context, receipts, webhooks, registry metadata, and agent budget enforcement. The built-in `/mcp/token-risk` route is a demo of this pattern.
 
 ## Agent Budgets And Spend Caps
 
@@ -81,7 +94,7 @@ Agent operators can create budgets with daily caps, per-call caps, and meter all
 
 ## Receipts, Settlement, Revenue, And Webhooks
 
-Every metered call can produce a receipt with meter id, route, payer, amount, policy result, upstream status, latency, and settlement metadata. Providers can query `/v1/providers/revenue` and subscribe to signed webhooks such as `receipt.created`, `receipt.verified`, and `payment.failed`.
+Every metered call can produce a receipt with meter id, route, provider, payer, amount, payment rail, policy result, upstream status, latency, and settlement metadata. Providers can query `/v1/providers/revenue` and subscribe to signed webhooks such as `receipt.created`, `receipt.verified`, and `payment.failed`.
 
 ## Demo Routes
 

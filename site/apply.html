@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, model route, or agent workflow with Meterflow's agent API control plane.">
+<meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, model route, or agent workflow with Meterflow's Solana agent commerce control plane.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/apply">
-<meta property="og:title" content="Launch a paid agent API on Meterflow">
-<meta property="og:description" content="Meterflow is onboarding early providers that need meters, receipts, budgets, revenue views, and webhooks around paid agent-accessible APIs.">
+<meta property="og:title" content="Launch a paid endpoint on Meterflow">
+<meta property="og:description" content="Meterflow is onboarding early providers that need hosted gateways, meters, receipts, budgets, registry signal, revenue views, and webhooks around paid agent-accessible APIs.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/apply">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -15,7 +15,7 @@
 <meta property="og:image:height" content="941">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
-<title>Launch a paid agent API | Meterflow</title>
+<title>Launch a paid endpoint | Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,8 +66,8 @@
   <section class="site-subpage-hero apply-hero">
     <div class="site-subpage-hero-inner">
       <div class="site-subpage-label">Early Provider Intake</div>
-      <h1 class="site-subpage-title">Launch a <span class="accent">paid agent API</span> with the control plane around it.</h1>
-      <p class="site-subpage-sub">Bring the endpoint. Meterflow handles hosted gateway routes, x402-style payment requirements, Solana USDC settlement context, receipts, failed-payment state, budgets, provider revenue, and webhooks.</p>
+      <h1 class="site-subpage-title">Launch a <span class="accent">paid endpoint</span> into the agent commerce stack.</h1>
+      <p class="site-subpage-sub">Bring the endpoint. Meterflow handles hosted gateway routes, x402 payment requirements, MPP-ready receipt normalization, Solana USDC settlement context, receipts, failed-payment state, budgets, registry signal, provider revenue, and webhooks.</p>
     </div>
   </section>
 
@@ -77,9 +77,9 @@
         <div class="apply-panel">
           <div class="section-label">What fits</div>
           <ul class="apply-list">
-            <li><span>01</span><div><strong>Agent-useful capability</strong><p>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, or anything agents need.</p></div></li>
+            <li><span>01</span><div><strong>Agent-useful capability</strong><p>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, MCP tools, or anything agents need.</p></div></li>
             <li><span>02</span><div><strong>Clear unit economics</strong><p>Per request, lookup, tool call, workflow, generated result, or another metered unit that can settle in USDC.</p></div></li>
-            <li><span>03</span><div><strong>Launch-partner signal</strong><p>We use intake to prioritize integrations, demos, provider pages, and early revenue experiments.</p></div></li>
+            <li><span>03</span><div><strong>Launch-partner signal</strong><p>We use intake to prioritize integrations, demos, provider registry pages, and early revenue experiments.</p></div></li>
           </ul>
           <p class="apply-note">Best fit: builders who already have or are close to shipping a useful endpoint that could charge per lookup, call, workflow, or generated result.</p>
         </div>
@@ -89,7 +89,7 @@
         <div class="apply-card-head">
           <div class="section-label">Provider application</div>
           <h2>Tell us what you want to monetize.</h2>
-          <p>Rough numbers are fine. We are looking for useful endpoints that can become priced agent-accessible products with clear accounting and spend controls.</p>
+          <p>Rough numbers are fine. We are looking for useful endpoints that can become priced agent-accessible products with clear accounting, registry signal, and spend controls.</p>
         </div>
 
         <div class="apply-form-grid">
@@ -129,6 +129,16 @@
               <option>Per tool call</option>
               <option>Per workflow</option>
               <option>Per generated result</option>
+              <option>Not sure yet</option>
+            </select>
+          </div>
+          <div class="apply-field full">
+            <label for="protocolSupport">Payment / tool protocol fit</label>
+            <select id="protocolSupport" name="protocolSupport">
+              <option>x402 paid HTTP route</option>
+              <option>MCP tool or MCP server</option>
+              <option>MPP / Stripe-compatible route</option>
+              <option>Plain API today, needs Meterflow wrapper</option>
               <option>Not sure yet</option>
             </select>
           </div>

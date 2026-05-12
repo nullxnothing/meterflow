@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Meterflow documentation - meters, receipts, provider revenue, agent budgets, service routes, wallet settlement, and webhooks for paid agent APIs on Solana.">
+<meta name="description" content="Meterflow documentation - hosted API gateways, paid MCP tools, x402 flow, MPP-ready adapters, receipts, provider revenue, agent budgets, registry, and webhooks for Solana agent commerce.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/docs">
 <meta property="og:title" content="Meterflow Documentation">
-<meta property="og:description" content="Build and operate paid agent API routes with meters, receipts, budgets, provider revenue, and webhooks on Solana.">
+<meta property="og:description" content="Build and operate paid agent API and MCP routes with meters, receipts, budgets, provider revenue, registry signals, and webhooks on Solana.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/docs">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -239,7 +239,7 @@
   <div class="site-subpage-hero-inner">
     <div class="site-subpage-label">Documentation</div>
     <h1 class="site-subpage-title">Build with <span class="accent">Meterflow.</span></h1>
-    <p class="site-subpage-sub">Use x402 and Solana USDC for the payment path, then use Meterflow for the control plane around it: meters, receipts, failed-payment state, agent budgets, provider revenue, and webhooks.</p>
+    <p class="site-subpage-sub">Use x402 and Solana USDC for the live payment path, then use Meterflow for the control plane around it: hosted gateways, MCP packaging, MPP-ready receipt normalization, failed-payment state, agent budgets, provider revenue, registry signal, and webhooks.</p>
   </div>
 </section>
 
@@ -249,6 +249,7 @@
       <span class="sidebar-title">Concepts</span>
       <a href="#intro" class="sidebar-link active">Introduction</a>
       <a href="#flow" class="sidebar-link">Payment Flow</a>
+      <a href="#protocol-adapter" class="sidebar-link">Protocol Adapter</a>
       <a href="#dashboard" class="sidebar-link">Dashboard</a>
     </div>
     <div class="sidebar-group">
@@ -258,6 +259,7 @@
       <a href="#receipts" class="sidebar-link">Receipts</a>
       <a href="#budgets" class="sidebar-link">Agent Budgets</a>
       <a href="#mcp" class="sidebar-link">MCP Tools</a>
+      <a href="#registry" class="sidebar-link">Provider Registry</a>
       <a href="#mflow" class="sidebar-link">MFLOW Utility</a>
       <a href="#routes" class="sidebar-link">Service Routes</a>
     </div>
@@ -274,7 +276,7 @@
   <main class="docs-content" id="main">
     <section class="doc-section" id="flow">
       <h2 class="section-title">Payment Flow</h2>
-      <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, what failed, and whether the agent stayed inside policy.</p>
+      <p class="section-text">Meterflow separates payment movement from payment operations. Solana moves value; Meterflow explains what happened, who paid, what was served, what failed, which provider earned, and whether the agent stayed inside policy.</p>
       <div class="feature-grid">
         <div class="feature-card"><div class="feature-title">1. Meter</div><p class="feature-desc">A provider registers a route, unit, price, accepted asset, recipient wallet, and customer policy.</p></div>
         <div class="feature-card"><div class="feature-title">2. Quote</div><p class="feature-desc">A caller receives machine-readable payment terms for the requested capability.</p></div>
@@ -283,14 +285,26 @@
       </div>
     </section>
 
+    <section class="doc-section" id="protocol-adapter">
+      <h2 class="section-title">Protocol Adapter</h2>
+      <p class="section-text">The current production path is x402 on Solana. The product model is intentionally protocol-neutral so MPP and future HTTP 402-style payment rails can normalize into the same Meterflow objects: meter, budget decision, receipt, provider revenue row, webhook event, and registry signal.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-title">x402 Today</div><p class="feature-desc">Machine-readable 402 quotes, Solana USDC settlement context, retry with proof, and receipt updates after verification.</p></div>
+        <div class="feature-card"><div class="feature-title">MPP-Ready</div><p class="feature-desc">Planned adapter surface for challenge, credential, and payment receipt headers without changing provider meters or dashboards.</p></div>
+        <div class="feature-card"><div class="feature-title">One Ledger</div><p class="feature-desc">Every rail writes to the same receipt graph with payer, provider, route, amount, policy, response, latency, and settlement metadata.</p></div>
+        <div class="feature-card"><div class="feature-title">One Budget</div><p class="feature-desc">Agent spend caps should apply before any supported rail can spend against a protected route or MCP tool.</p></div>
+      </div>
+    </section>
+
     <section class="doc-section" id="dashboard">
       <h2 class="section-title">Dashboard</h2>
       <p class="section-text">The dashboard is the product surface. It is where providers manage metered products and where agent operators control spend before autonomous workflows run.</p>
       <ul class="doc-list">
-        <li><strong>Meters</strong><span>Define the route, billing unit, price, asset, owner wallet, and route status.</span></li>
+        <li><strong>Meters</strong><span>Define the route, billing unit, price, asset, provider, owner wallet, and route status.</span></li>
         <li><strong>Receipts</strong><span>Visualize successful and failed paid requests with payer wallet, proof, amount, route, and response status.</span></li>
         <li><strong>Agent Budgets</strong><span>Attach limits to a wallet, client key, task, route allowlist, and expiration window.</span></li>
         <li><strong>MCP Tools</strong><span>Package, price, meter, and monitor MCP tools through hosted gateway paths.</span></li>
+        <li><strong>Provider Registry</strong><span>Expose useful endpoints with price, uptime, latency, receipt volume, and utility-driven ranking signals.</span></li>
         <li><strong>Settlement Wallet</strong><span>Inspect wallet context for provider funding, settlement operations, and gateway costs.</span></li>
       </ul>
     </section>
@@ -376,7 +390,7 @@ on_new_route: require_operator_approval</div>
 
     <section class="doc-section" id="mcp">
       <h2 class="section-title">MCP Tools</h2>
-      <p class="section-text">MCP tools are treated as meters, so budgets, receipts, revenue views, settlement metadata, and exports work the same way as API routes. The built-in token-risk tool is a demo; builders can package their own tools.</p>
+      <p class="section-text">MCP tools are treated as meters, so budgets, receipts, revenue views, settlement metadata, registry metadata, and exports work the same way as API routes. The built-in token-risk tool is a demo; builders can package their own tools.</p>
       <div class="code-block">POST /v1/mcp-tools
 Authorization: Bearer mf_xxxxx
 Content-Type: application/json
@@ -391,9 +405,26 @@ Content-Type: application/json
 DELETE /v1/mcp-tools/:id</div>
     </section>
 
+    <section class="doc-section" id="registry">
+      <h2 class="section-title">Provider Registry</h2>
+      <p class="section-text">The registry is the distribution layer for paid agent services. A listed provider should be discoverable by route, category, price, protocol support, latency, receipt volume, uptime, and verification status.</p>
+      <div class="code-block">{
+  "provider": "Example Data API",
+  "category": "wallet-intelligence",
+  "route": "/gateway/mtr_abc123/*",
+  "unit": "lookup",
+  "priceUsd": 0.01,
+  "protocols": ["x402", "mpp-ready"],
+  "receiptVolume24h": 18420,
+  "latencyP50Ms": 142,
+  "verification": "mflow_verified"
+}</div>
+      <p class="section-text">Registry ranking is one of the cleanest MFLOW utility surfaces: holders and bonded providers can unlock verification, fee relief, better listing controls, higher route limits, and longer receipt retention without changing USDC settlement.</p>
+    </section>
+
     <section class="doc-section" id="mflow">
       <h2 class="section-title">MFLOW Utility</h2>
-      <p class="section-text">USDC is the payment asset for request settlement. MFLOW is the utility layer for provider verification, fee relief, registry ranking, higher policy limits, longer receipt retention, and future provider bonding. Non-holders can still use paid Meterflow routes, but their quotes include a protocol fee. Holders can receive reduced or zero protocol fees depending on the configured utility tier.</p>
+      <p class="section-text">USDC is the payment asset for request settlement. MFLOW is the utility layer for provider verification, fee relief, registry ranking, higher policy limits, longer receipt retention, premium analytics, and future provider bonding. Non-holders can still use paid Meterflow routes, but their quotes include a protocol fee. Holders can receive reduced or zero protocol fees depending on the configured utility tier.</p>
       <ul class="doc-list">
         <li><strong>Provider Reputation</strong><span>MFLOW-backed providers can receive dashboard badges and registry preference.</span></li>
         <li><strong>Non-Holder Fee</strong><span>Metered quotes and receipts track base price, protocol fee, and total USDC amount.</span></li>
@@ -404,7 +435,7 @@ DELETE /v1/mcp-tools/:id</div>
 
     <section class="doc-section" id="routes">
       <h2 class="section-title">Service Routes</h2>
-      <p class="section-text">The current AI, token-risk, and trading routes are demos running through Meterflow. They prove the payment and receipt flow, but the core product is infrastructure for third-party paid APIs and MCP tools.</p>
+      <p class="section-text">The current AI, token-risk, and trading routes are demos running through Meterflow. They prove the payment, policy, and receipt flow, but the core product is infrastructure for third-party paid APIs and MCP tools.</p>
       <div style="overflow-x:auto;">
         <table class="doc-table">
           <thead><tr><th>Route</th><th>Category</th><th>Use</th></tr></thead>

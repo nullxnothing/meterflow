@@ -401,15 +401,19 @@ describe('Site link integrity', () => {
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
 
-  it('product docs position Meterflow as the control plane for paid agent APIs', () => {
+  it('product docs position Meterflow as the control plane for agent commerce', () => {
     const readme = readFileSync(resolve(projectRoot, 'README.md'), 'utf-8');
     const home = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
     const docs = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
-    assert.ok(readme.includes('The control plane for paid agent-accessible APIs'), 'README should lead with control-plane positioning');
+    assert.ok(readme.includes('The Solana control plane for agent commerce'), 'README should lead with agent-commerce positioning');
+    assert.ok(readme.includes('x402 today, MPP-ready next'), 'README should explain the protocol-neutral direction');
     assert.ok(readme.includes('These routes are examples'), 'README should frame bundled routes as examples');
-    assert.ok(home.includes('Paid agent APIs need'), 'landing page should lead with control-plane positioning');
+    assert.ok(home.includes('Agent commerce needs'), 'landing page should lead with agent-commerce positioning');
+    assert.ok(home.includes('MPP-ready'), 'landing page should mention MPP-ready payment adapters');
     assert.ok(home.includes('Wrap an API') && home.includes('Create a paid MCP tool'), 'landing page CTAs should be provider-focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
+    assert.ok(docs.includes('Protocol Adapter'), 'docs should explain the x402 and MPP-ready adapter layer');
+    assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
     assert.ok(docs.includes('The current AI, token-risk, and trading routes are demos'), 'docs should frame bundled routes as demos');
   });
 });
@@ -736,6 +740,8 @@ describe('Meterflow control plane', () => {
     assert.ok(page.includes('More endpoints. More receipts. More reasons to hold.'), 'token page should explain the holder thesis');
     assert.ok(page.includes('$MFLOW controls utility'), 'token page should connect utility to holder-facing benefits');
     assert.ok(page.includes('Meterflow can now meter other people'), 'token page should explain the technical unlock');
+    assert.ok(page.includes('x402 today, MPP-ready'), 'token page should connect utility to protocol adapter positioning');
+    assert.ok(page.includes('Provider discovery'), 'token page should connect utility to the provider registry');
     assert.ok(page.includes('Every new provider adds more routes'), 'token page should connect provider growth to receipt growth');
   });
 });
