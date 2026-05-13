@@ -153,7 +153,7 @@ export function renderTrading() {
             <div class="bot-card-title">Wallet</div>
             <div class="bot-wallet-addr" onclick="copyText('${w.publicKey}')" title="Click to copy address" style="cursor:pointer;">
               ${w.publicKey.slice(0, 6)}...${w.publicKey.slice(-4)}
-              <span style="color:var(--accent);font-size:9px;margin-left:4px;">COPY</span>
+              <span class="copy-inline">COPY</span>
             </div>
             <div class="bot-wallet-bal">${(w.solBalance || 0).toFixed(4)} SOL</div>
             <div class="bot-wallet-bal-label">Available Balance</div>

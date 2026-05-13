@@ -413,14 +413,14 @@ export function renderBudgets() {
 
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Create Budget</div>
-      <div class="tool-config-box" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;white-space:normal;">
-        <input id="budgetName" class="bot-form-input" placeholder="market-research-bot" style="grid-column:span 2;">
+      <div class="tool-config-box budget-form-grid">
+        <input id="budgetName" class="bot-form-input cp-span-2" placeholder="market-research-bot">
         <input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">
         <input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">
-        <select id="budgetAllowedMeters" class="bot-form-input" multiple style="grid-column:span 2;min-height:42px;">
+        <select id="budgetAllowedMeters" class="bot-form-input cp-span-2" multiple>
           ${data.meters.map(m => `<option value="${m.id}" ${m.id === 'mtr_mcp_token_risk' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
         </select>
-        <button class="btn-sm primary" onclick="createBudgetFromDashboard()" style="grid-column:span 6;">Create Budget Policy</button>
+        <button class="btn-sm primary cp-span-6" onclick="createBudgetFromDashboard()">Create Budget Policy</button>
       </div>
     </div>
 
@@ -465,12 +465,12 @@ export function renderMcpTools() {
     ${locked ? renderPreviewNotice('MCP tool monetization') : ''}
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Package Tool</div>
-      <div class="tool-config-box" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;white-space:normal;">
-        <input id="mcpName" class="bot-form-input" placeholder="Token Risk Score" style="grid-column:span 2;">
-        <input id="mcpManifest" class="bot-form-input" placeholder="https://example.com/mcp/manifest.json" style="grid-column:span 2;">
+      <div class="tool-config-box mcp-form-grid">
+        <input id="mcpName" class="bot-form-input cp-span-2" placeholder="Token Risk Score">
+        <input id="mcpManifest" class="bot-form-input cp-span-2" placeholder="https://example.com/mcp/manifest.json">
         <input id="mcpPrice" class="bot-form-input" placeholder="0.006">
         <select id="mcpStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
-        <button class="btn-sm primary" onclick="createMcpToolFromDashboard()" style="grid-column:span 6;">Package MCP Tool</button>
+        <button class="btn-sm primary cp-span-6" onclick="createMcpToolFromDashboard()">Package MCP Tool</button>
       </div>
     </div>
     <div class="section">

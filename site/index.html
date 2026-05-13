@@ -27,7 +27,7 @@
 <meta name="color-scheme" content="dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/home.css">
 <script type="application/ld+json">
@@ -91,7 +91,7 @@
     </div>
     <a class="mf-login" href="/dashboard" data-nav="dashboard">
       <svg class="mf-login-wallet" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5A2.5 2.5 0 0 1 4.5 2h7A2.5 2.5 0 0 1 14 4.5V5h-1.5A2.5 2.5 0 0 0 10 7.5v1A2.5 2.5 0 0 0 12.5 11H14v.5A2.5 2.5 0 0 1 11.5 14h-7A2.5 2.5 0 0 1 2 11.5v-7Zm9.5 4.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/></svg>
-      <span>Log in</span>
+      <span>Launch Dashboard</span>
     </a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -307,37 +307,77 @@
       <h2 class="section-title">Six surfaces. <em>One control plane.</em></h2>
       <p class="section-sub">Meters price routes. Receipts prove every paid call. Budgets cap autonomous agents. Registry and gateways make the network discoverable.</p>
     </div>
-    <div class="tools-grid">
-      <a href="/dashboard#meters" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Mt</span><span class="tool-card-name">Meters</span></div>
-        <p class="tool-desc">Create meters for routes, MCP tools, models, and datasets. Set price, asset, recipient, customer rules, and operational state in one place.</p>
-        <span class="tool-link">Open meters <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
-      <a href="/dashboard#receipts" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Rc</span><span class="tool-card-name">Receipts</span></div>
-        <p class="tool-desc">Every paid call links to a quote, a payment proof, and a response status. Export CSV or stream a webhook to your accounting.</p>
-        <span class="tool-link">Open receipts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
-      <a href="/dashboard#budgets" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Bg</span><span class="tool-card-name">Budgets</span></div>
-        <p class="tool-desc">Set per-agent spend limits, endpoint allowlists, daily caps, and kill switches before automation gets expensive.</p>
-        <span class="tool-link">Configure budgets <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
-      <a href="/dashboard#analytics" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Pr</span><span class="tool-card-name">Provider Revenue</span></div>
-        <p class="tool-desc">See which endpoints earn, which agents consume, where payments fail, and what each customer costs to serve.</p>
-        <span class="tool-link">Open analytics <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
-      <a href="/apply" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Lp</span><span class="tool-card-name">Launchpad</span></div>
-        <p class="tool-desc">Turn APIs and MCP tools into paid agent-accessible products with hosted routes, prices, budget rules, and verifiable receipts.</p>
-        <span class="tool-link">Apply as provider <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
-      <a href="/docs" class="tool-card reveal">
-        <div class="tool-card-head"><span class="tool-code">Pa</span><span class="tool-card-name">Payment Adapter</span></div>
-        <p class="tool-desc">Normalize x402, MPP, and future 402 rails into one meter, policy, receipt, and provider-revenue model. One integration covers the rest.</p>
-        <span class="tool-link">Read protocol <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </a>
+    <div class="tools-fan-wrap reveal">
+      <div class="tools-fan-stage" id="toolsFan" tabindex="0" role="region" aria-label="Product surfaces carousel" aria-roledescription="carousel">
+
+        <a class="fan-card" data-fan-idx="0" style="--fc-rgb:79,156,255" href="/dashboard#meters">
+          <img class="fan-card-img" src="../assets/meter.png" alt="Meters" draggable="false">
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Mt</span>
+              <span class="fan-card-badge-name">Meters</span>
+            </header>
+          </div>
+        </a>
+
+        <a class="fan-card" data-fan-idx="1" style="--fc-rgb:34,211,238" href="/dashboard#receipts">
+          <img class="fan-card-img" src="../assets/recipt.png" alt="Receipts" draggable="false">
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Rc</span>
+              <span class="fan-card-badge-name">Receipts</span>
+            </header>
+          </div>
+        </a>
+
+        <div class="fan-card" data-fan-idx="2" style="--fc-rgb:16,185,129">
+          <div class="fan-card-wm" aria-hidden="true">Bg</div>
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Bg</span>
+              <span class="fan-card-badge-name">Budgets</span>
+            </header>
+            <p class="fan-card-desc">Set per-agent spend limits, endpoint allowlists, daily caps, and kill switches before automation gets expensive.</p>
+            <a href="/dashboard#budgets" class="fan-card-cta">Configure budgets <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+
+        <div class="fan-card" data-fan-idx="3" style="--fc-rgb:245,181,68">
+          <div class="fan-card-wm" aria-hidden="true">Pr</div>
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Pr</span>
+              <span class="fan-card-badge-name">Provider Revenue</span>
+            </header>
+            <p class="fan-card-desc">See which endpoints earn, which agents consume, where payments fail, and what each customer costs to serve.</p>
+            <a href="/dashboard#analytics" class="fan-card-cta">Open analytics <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+
+        <div class="fan-card" data-fan-idx="4" style="--fc-rgb:124,199,255">
+          <div class="fan-card-wm" aria-hidden="true">Lp</div>
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Lp</span>
+              <span class="fan-card-badge-name">Launchpad</span>
+            </header>
+            <p class="fan-card-desc">Turn APIs and MCP tools into paid agent-accessible products with hosted routes, prices, budget rules, and verifiable receipts.</p>
+            <a href="/apply" class="fan-card-cta">Apply as provider <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+
+        <a class="fan-card" data-fan-idx="5" style="--fc-rgb:8,145,178" href="/docs">
+          <img class="fan-card-img" src="../assets/paymentadapter.png" alt="Payment Adapter" draggable="false">
+          <div class="fan-card-body">
+            <header class="fan-card-hd">
+              <span class="fan-card-badge-code">Pa</span>
+              <span class="fan-card-badge-name">Payment Adapter</span>
+            </header>
+          </div>
+        </a>
+
+      </div>
+      <div class="tools-fan-nav" id="toolsFanNav" role="tablist" aria-label="Product surfaces navigation"></div>
     </div>
   </div>
 </section>
@@ -506,9 +546,26 @@
       var html = '';
       for (var i = 0; i < points.length; i++) {
         var h = Math.max(4, Math.round((points[i] / max) * 100));
-        html += '<span class="chart-bar" style="height:' + h + '%"></span>';
+        var v = Math.round(points[i]);
+        html += '<span class="chart-bar" style="height:' + h + '%" data-val="' + v + '"></span>';
       }
       target.innerHTML = html;
+
+      /* Shared floating tooltip */
+      var tip = document.createElement('span');
+      tip.className = 'chart-tip';
+      target.appendChild(tip);
+      target.querySelectorAll('.chart-bar').forEach(function(bar) {
+        bar.addEventListener('mouseenter', function() {
+          var br = bar.getBoundingClientRect();
+          var cr = target.getBoundingClientRect();
+          tip.textContent = bar.dataset.val;
+          tip.style.left = (br.left - cr.left + br.width / 2) + 'px';
+          tip.style.bottom = (target.clientHeight - (br.top - cr.top) + 6) + 'px';
+          tip.classList.add('vis');
+        });
+        bar.addEventListener('mouseleave', function() { tip.classList.remove('vis'); });
+      });
     }
     function rng(seed) { var x = Math.sin(seed) * 10000; return x - Math.floor(x); }
     function series(seed, base, spike) {
@@ -592,7 +649,7 @@
         label: '124K', detail: 'receipts verified · last 24h', score: '99.7%',
         html:
           '<div class="showcase-tree" aria-hidden="true">' +
-            '<div class="tree-head"><span class="tree-code" style="color:var(--accent);background:rgba(59,130,246,0.14)">Rc</span><span>receipts/</span><span class="tree-head-meta">last 24h</span></div>' +
+            '<div class="tree-head"><span class="tree-code">Rc</span><span>receipts/</span><span class="tree-head-meta">last 24h</span></div>' +
             '<div class="tree-folder-row open"><span class="tree-chev">▾</span><span class="tree-folder-icon">▣</span>verified<span class="tree-meta dim">118,402</span></div>' +
             '<div class="tree-item nested active"><span class="tree-file"></span><span class="tree-name">rcpt_41bd</span><span class="tree-meta ok">0.006</span></div>' +
             '<div class="tree-item nested"><span class="tree-file"></span><span class="tree-name">rcpt_92a3</span><span class="tree-meta ok">0.004</span></div>' +
@@ -612,7 +669,7 @@
                 '<div class="pane-row"><span class="pr-k mono">rcpt_92a3</span><span class="pr-v">0.004 USDC <span class="check">✓</span></span></div>' +
                 '<div class="pane-row"><span class="pr-k mono">rcpt_44e0</span><span class="pr-v">0.012 USDC <span class="check">✓</span></span></div>' +
                 '<div class="pane-row"><span class="pr-k mono">rcpt_7c21</span><span class="pr-v">0.006 USDC <span class="check">✓</span></span></div>' +
-                '<div class="pane-row"><span class="pr-k mono">rcpt_31fa</span><span class="pr-v" style="color:var(--text-muted)">refunded</span></div>' +
+                '<div class="pane-row"><span class="pr-k mono">rcpt_31fa</span><span class="pr-v is-muted">refunded</span></div>' +
               '</div>' +
             '</div>' +
             '<div class="showcase-pane">' +
@@ -636,12 +693,12 @@
         label: '3', detail: 'agents active · daily spend', score: '84%',
         html:
           '<div class="showcase-tree" aria-hidden="true">' +
-            '<div class="tree-head"><span class="tree-code" style="color:var(--accent);background:rgba(59,130,246,0.14)">Bg</span><span>agents/</span><span class="tree-head-meta">3 active</span></div>' +
+            '<div class="tree-head"><span class="tree-code">Bg</span><span>agents/</span><span class="tree-head-meta">3 active</span></div>' +
             '<div class="tree-item top active"><span class="tree-file"></span><span class="tree-name">ag_research</span><span class="tree-meta ok">62%</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">ag_mintbot</span><span class="tree-meta ok">18%</span></div>' +
             '<div class="tree-item top"><span class="tree-file ctrl"></span><span class="tree-name">ag_indexer</span><span class="tree-meta warn">96%</span></div>' +
             '<div class="tree-section-divider"></div>' +
-            '<div class="tree-head"><span class="tree-code" style="background:rgba(255,255,255,0.06);color:var(--text-dim)">P</span><span>policies/</span></div>' +
+            '<div class="tree-head"><span class="tree-code tree-code-muted">P</span><span>policies/</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">daily.cap</span><span class="tree-meta ok">on</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">route.allowlist</span><span class="tree-meta ok">on</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">kill.switch</span><span class="tree-meta">armed</span></div>' +
@@ -672,14 +729,14 @@
         label: '$1,824', detail: 'revenue · last 24h', score: '+14%',
         html:
           '<div class="showcase-tree" aria-hidden="true">' +
-            '<div class="tree-head"><span class="tree-code" style="color:var(--accent);background:rgba(59,130,246,0.14)">Pr</span><span>routes/</span><span class="tree-head-meta">earning</span></div>' +
+            '<div class="tree-head"><span class="tree-code">Pr</span><span>routes/</span><span class="tree-head-meta">earning</span></div>' +
             '<div class="tree-item top active"><span class="tree-file"></span><span class="tree-name">v1/risk-score</span><span class="tree-meta ok">$842</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">v1/embed</span><span class="tree-meta ok">$412</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">mcp/token-risk</span><span class="tree-meta ok">$308</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">gateway/trace</span><span class="tree-meta ok">$184</span></div>' +
             '<div class="tree-item top dim"><span class="tree-file"></span><span class="tree-name">v1/scrape</span><span class="tree-meta">paused</span></div>' +
             '<div class="tree-section-divider"></div>' +
-            '<div class="tree-head"><span class="tree-code" style="background:rgba(255,255,255,0.06);color:var(--text-dim)">C</span><span>customers/</span></div>' +
+            '<div class="tree-head"><span class="tree-code tree-code-muted">C</span><span>customers/</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">ag_research</span><span class="tree-meta ok">$408</span></div>' +
             '<div class="tree-item top"><span class="tree-file"></span><span class="tree-name">ag_indexer</span><span class="tree-meta ok">$284</span></div>' +
           '</div>' +

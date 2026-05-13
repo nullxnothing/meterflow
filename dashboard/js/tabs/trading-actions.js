@@ -55,7 +55,7 @@ export async function executeSwapForm() {
   if (result) result.textContent = 'Executing...';
   try {
     const res = await api('/v1/trading/swap', { method: 'POST', body: JSON.stringify({ inputMint, outputMint, amount, slippageBps }) });
-    if (result) result.innerHTML = 'Success: <a href="https://solscan.io/tx/' + escapeHtml(res.signature) + '" target="_blank" style="color:var(--accent);">' + escapeHtml(res.signature.slice(0, 16)) + '...</a>';
+    if (result) result.innerHTML = 'Success: <a class="tx-link" href="https://solscan.io/tx/' + escapeHtml(res.signature) + '" target="_blank">' + escapeHtml(res.signature.slice(0, 16)) + '...</a>';
     await fetchTradingState();
   } catch (err) {
     if (result) result.textContent = 'Failed: ' + err.message;

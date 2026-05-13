@@ -1,0 +1,87 @@
+/* ─── Empty state ─── */
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,0.01);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0;
+}
+.empty-state-icon {
+  font-size: 36px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  line-height: 1;
+}
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.empty-state-title em { color: var(--accent); font-style: normal; }
+.empty-state-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  max-width: 380px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* ─── Mobile fixes (override base display:none) ─── */
+@media (max-width: 1024px) {
+  body .mobile-header { display: flex !important; }
+  body .sidebar { display: none !important; }
+  body .app { grid-template-columns: 1fr !important; }
+  /* MFLOW utility panel — single-column on mobile so buttons don't squash */
+  .token-utility-panel {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+  .token-utility-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start !important;
+  }
+  .token-utility-actions .btn-sm {
+    flex: 1 1 auto;
+    min-width: 110px;
+  }
+  /* Stats row — 2-up on tablets, 1-up on phones */
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 18px 16px; }
+  .stat-card .value { font-size: 22px; }
+  /* Form rows stack on mobile */
+  .bot-form, .cp-form { grid-template-columns: 1fr !important; }
+  .bot-form > [style*="grid-column:span"] { grid-column: 1 !important; }
+  /* Page title smaller */
+  .page-title { font-size: 28px !important; }
+  /* Future APIs cards — single column with smaller logo */
+  .api-card { grid-template-columns: 36px 1fr; gap: 12px; padding: 18px; }
+  .api-card-logo { width: 36px; height: 36px; }
+  /* Receipts table horizontal scroll */
+  .treasury-table { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .future-apis-tabs { gap: 6px; }
+  .future-apis-tab { font-size: 10px; padding: 6px 10px; }
+  .api-card-features { gap: 4px; }
+  .api-card-feature { font-size: 9px; padding: 2px 7px; }
+  .receipt-summary-strip { grid-template-columns: 1fr; }
+  .preview-access-notice {
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .preview-access-actions { width: 100%; flex-direction: row; }
+  .preview-access-actions .btn-sm { flex: 1; }
+  .main { padding: 16px !important; }
+  .page-header { margin-bottom: 18px; }
+  .page-sub { font-size: 13px; }
+}

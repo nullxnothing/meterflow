@@ -73,11 +73,11 @@ export function renderDashboard() {
         ${renderNavItems()}
         <div class="mobile-nav-account">
           ${STATE.connected && STATE.isGuest ? `
-            <div class="wallet-info" style="color:var(--accent);">Guest — Free Access</div>
+            <div class="wallet-info wallet-info-accent">Guest — Free Access</div>
             <button class="btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="openWalletConnect()">Connect Wallet to Keep Access</button>
           ` : STATE.connected ? `
             <div class="wallet-info">${STATE.tier ? STATE.tier + ' Tier' : 'Connected'} \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div>
-            <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy" style="color:var(--accent);font-size:10px;">COPY</span></div>
+            <div class="wallet-addr" onclick="copyText('${STATE.wallet}')">${STATE.wallet ? STATE.wallet.slice(0, 6) + '...' + STATE.wallet.slice(-4) : '\u2014'}<span class="copy">COPY</span></div>
             <button class="btn-sm danger" style="width:100%;padding:10px;margin-top:4px;" onclick="disconnectWallet()">Disconnect</button>
           ` : `
             <button class="btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="openWalletConnect()">Connect Wallet</button>
@@ -111,7 +111,7 @@ export function renderDashboard() {
             </div>
             <div class="sidebar-usage-reset">resets ${resetTime}</div>
           </div>
-          <div class="wallet-info" id="sidebarFooterInfo" style="color:var(--accent);">Guest — Free Access</div>
+          <div class="wallet-info wallet-info-accent" id="sidebarFooterInfo">Guest — Free Access</div>
           <div class="sidebar-connect-cta" style="margin-top:8px;">
             <div class="sidebar-connect-text" style="font-size:11px;">Connect wallet or use a paid Meterflow flow to keep access</div>
             <button class="btn-primary sidebar-connect-btn" onclick="openWalletConnect()" style="margin-top:8px;">Connect Wallet</button>
@@ -187,18 +187,18 @@ function renderNavItems() {
   const t = STATE.activeTab;
   return `
     <div class="nav-group-label">Control Plane</div>
-    <div class="nav-item ${t === 'overview' ? 'active' : ''}" data-tab="overview">Overview</div>
-    <div class="nav-item ${t === 'meters' ? 'active' : ''}" data-tab="meters">Meters</div>
-    <div class="nav-item ${t === 'receipts' ? 'active' : ''}" data-tab="receipts">Receipts</div>
-    <div class="nav-item ${t === 'budgets' ? 'active' : ''}" data-tab="budgets">Agent Budgets</div>
-    <div class="nav-item ${t === 'mcp-tools' ? 'active' : ''}" data-tab="mcp-tools">MCP Tools</div>
-    <div class="nav-item ${t === 'webhooks' ? 'active' : ''}" data-tab="webhooks">Webhooks</div>
-    <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
+    <div class="nav-item ${t === 'overview' ? 'active' : ''}" data-tab="overview"><span class="nav-code">Ov</span><span>Overview</span></div>
+    <div class="nav-item ${t === 'meters' ? 'active' : ''}" data-tab="meters"><span class="nav-code">Mt</span><span>Meters</span></div>
+    <div class="nav-item ${t === 'receipts' ? 'active' : ''}" data-tab="receipts"><span class="nav-code">Rc</span><span>Receipts</span></div>
+    <div class="nav-item ${t === 'budgets' ? 'active' : ''}" data-tab="budgets"><span class="nav-code">Bg</span><span>Agent Budgets</span></div>
+    <div class="nav-item ${t === 'mcp-tools' ? 'active' : ''}" data-tab="mcp-tools"><span class="nav-code">Mc</span><span>MCP Tools</span></div>
+    <div class="nav-item ${t === 'webhooks' ? 'active' : ''}" data-tab="webhooks"><span class="nav-code">Wh</span><span>Webhooks</span></div>
+    <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys"><span class="nav-code">Ky</span><span>API Keys</span></div>
 
     <div class="nav-group-label">Operations</div>
-    <div class="nav-item ${t === 'holder-tools' ? 'active' : ''}" data-tab="holder-tools">Agent Checkout</div>
-    <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury">Settlement Wallet</div>
-    <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis">Integrations</div>
+    <div class="nav-item ${t === 'holder-tools' ? 'active' : ''}" data-tab="holder-tools"><span class="nav-code">Ac</span><span>Agent Checkout</span></div>
+    <div class="nav-item ${t === 'treasury' ? 'active' : ''}" data-tab="treasury"><span class="nav-code">Sw</span><span>Settlement Wallet</span></div>
+    <div class="nav-item ${t === 'future-apis' ? 'active' : ''}" data-tab="future-apis"><span class="nav-code">In</span><span>Integrations</span></div>
   `;
 }
 

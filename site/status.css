@@ -2,8 +2,8 @@
   min-height: 100vh;
   padding: 132px 24px 80px;
   background:
-    linear-gradient(rgba(79,156,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79,156,255,0.05) 1px, transparent 1px),
+    linear-gradient(rgba(var(--accent-rgb),0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb),0.05) 1px, transparent 1px),
     var(--bg);
   background-size: 48px 48px;
 }
@@ -47,7 +47,7 @@
   background: var(--text-muted);
 }
 
-.status-dot.ok { background: var(--accent); box-shadow: 0 0 18px rgba(79,156,255,0.8); }
+.status-dot.ok { background: var(--green); box-shadow: 0 0 18px rgba(var(--green-rgb),0.58); }
 .status-dot.warn { background: var(--amber); box-shadow: 0 0 18px rgba(245,181,68,0.45); }
 .status-dot.bad { background: var(--red); box-shadow: 0 0 18px rgba(255,95,87,0.45); }
 

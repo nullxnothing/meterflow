@@ -190,7 +190,7 @@ function renderMultiplierImpact(t) {
   return `
     <div class="section">
       <div class="section-title">Route Limit Impact</div>
-      <p class="treasury-impact-sub">Current multiplier <strong style="color:var(--accent)">${t.multiplier}x</strong> applied to route limits and metered key capacity.</p>
+      <p class="treasury-impact-sub">Current multiplier <strong>${t.multiplier}x</strong> applied to route limits and metered key capacity.</p>
       <div class="treasury-table-wrap">
         <table class="treasury-table">
           <thead><tr><th>Access</th><th>MFLOW Min</th><th>Base Calls</th><th>Effective Calls</th></tr></thead>

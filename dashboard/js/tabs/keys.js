@@ -35,15 +35,15 @@ export function renderKeys() {
     <div class="section">
       <div class="section-title">Quick Start</div>
       <div class="api-key-box">
-        <div class="api-key-hint" style="margin-bottom:16px;">Use your Meterflow key to create hosted meters, inspect receipts, configure budgets, and package MCP tools.</div>
-        <div class="api-key-value" style="font-size:12px;line-height:1.8;white-space:pre-wrap;margin-bottom:16px;padding:20px;">
-<span style="color:var(--text-muted)">// Works with any HTTP client</span>
-<span style="color:var(--blue)">curl</span> ${API_BASE}/v1/meters \\
-  -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'mf_your_key'}"</span> \\
-  -H <span style="color:var(--accent)">"Content-Type: application/json"</span> \\
-  -d <span style="color:var(--accent)">'{"targetUrl":"https://api.example.com","method":"GET","unit":"lookup","priceUsd":0.01}'</span></div>
+        <div class="api-key-hint">Use your Meterflow key to create hosted meters, inspect receipts, configure budgets, and package MCP tools.</div>
+        <div class="api-key-value api-key-snippet">
+<span class="code-muted">// Works with any HTTP client</span>
+<span class="code-command">curl</span> ${API_BASE}/v1/meters \\
+  -H <span class="code-accent">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'mf_your_key'}"</span> \\
+  -H <span class="code-accent">"Content-Type: application/json"</span> \\
+  -d <span class="code-accent">'{"targetUrl":"https://api.example.com","method":"GET","unit":"lookup","priceUsd":0.01}'</span></div>
         <div class="api-key-hint">
-          <strong style="color:var(--text)">Next step:</strong><br>
+          <strong>Next step:</strong><br>
           <code>POST ${API_BASE}/v1/meters/:id/test</code>
         </div>
       </div>

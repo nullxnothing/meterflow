@@ -20,7 +20,7 @@
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
 [id] { scroll-margin-top: 96px; }
@@ -115,7 +115,7 @@
   box-shadow: var(--shadow-card);
   transition: transform 0.3s ease, border-color 0.3s ease;
 }
-.feature-card:hover { border-color: rgba(79, 156, 255, 0.45); transform: translateY(-2px); }
+.feature-card:hover { border-color: rgba(var(--accent-rgb), 0.45); transform: translateY(-2px); }
 .feature-title {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -201,7 +201,7 @@
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
 
-<nav>
+<nav class="mf-nav">
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools" data-nav="tools">Tools</a>

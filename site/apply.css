@@ -14,7 +14,7 @@
   right: 10%;
   top: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.28), transparent);
 }
 
 .apply-shell {
@@ -160,9 +160,9 @@
 .apply-field input:focus-visible,
 .apply-field select:focus-visible,
 .apply-field textarea:focus-visible {
-  border-color: rgba(79, 156, 255, 0.65);
+  border-color: rgba(var(--accent-rgb), 0.65);
   background: rgba(2, 7, 16, 0.92);
-  box-shadow: 0 0 0 3px rgba(79, 156, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
 }
 
 .apply-actions {

@@ -1,0 +1,498 @@
+/* ─── Treasury Page ─── */
+.treasury-fee-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.fee-bar-container { display: flex; flex-direction: column; gap: 20px; }
+
+.fee-bar {
+  display: flex;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.fee-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bg);
+  transition: filter 0.2s;
+}
+
+.fee-segment:hover { filter: brightness(1.15); }
+.treasury-seg { background: var(--accent); }
+.dev-seg { background: var(--text-dim); }
+.community-seg { background: var(--green); }
+
+.fee-legend { display: flex; flex-direction: column; gap: 12px; }
+
+.fee-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.fee-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.fee-legend-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.fee-legend-desc {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.treasury-wallet-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+}
+
+.treasury-wallet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.treasury-wallet-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.treasury-wallet-addr {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  word-break: break-all;
+  transition: border-color 0.2s;
+}
+
+.treasury-wallet-addr:hover { border-color: var(--accent); }
+.treasury-wallet-addr .copy {
+  color: var(--accent);
+  font-size: 10px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.treasury-verify-btn { white-space: nowrap; flex-shrink: 0; }
+
+.treasury-wallet-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.treasury-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.treasury-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.treasury-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.treasury-table td {
+  padding: 12px 16px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+
+.treasury-table td.mono { font-variant-numeric: tabular-nums; }
+.treasury-table td.accent { color: var(--accent); font-weight: 600; }
+
+.treasury-table tbody tr:last-child td { border-bottom: none; }
+.treasury-table tbody tr:hover { background: rgba(var(--accent-rgb), 0.02); }
+
+.receipt-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.receipt-summary-strip div {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.receipt-summary-strip span {
+  display: block;
+  font-size: 17px;
+  color: var(--text);
+  letter-spacing: 0;
+  margin-bottom: 3px;
+}
+
+.receipt-table-wrap {
+  white-space: normal;
+  overflow: auto;
+}
+
+.receipt-ledger-table th,
+.receipt-ledger-table td {
+  vertical-align: top;
+}
+
+.receipt-state {
+  min-width: 160px;
+  display: grid;
+  gap: 5px;
+}
+
+.receipt-state-badge {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.receipt-state-badge.ok {
+  color: #4fdc82;
+  border-color: rgba(79, 220, 130, 0.28);
+  background: rgba(79, 220, 130, 0.07);
+}
+
+.receipt-state-badge.warn {
+  color: #febc2e;
+  border-color: rgba(254, 188, 46, 0.28);
+  background: rgba(254, 188, 46, 0.07);
+}
+
+.receipt-state-badge.bad {
+  color: var(--red);
+  border-color: rgba(255, 95, 87, 0.28);
+  background: rgba(255, 95, 87, 0.07);
+}
+
+.receipt-state-badge.neutral {
+  color: var(--text-dim);
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.receipt-state-detail,
+.receipt-muted {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.receipt-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.receipt-link:hover { text-decoration: underline; }
+
+.x402-route-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
+  border-radius: var(--radius-sm);
+}
+
+.x402-route-kicker,
+.receipt-modal-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.x402-route-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.x402-route-copy {
+  max-width: 740px;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.x402-route-meta {
+  display: grid;
+  gap: 8px;
+}
+
+.x402-route-meta div {
+  min-width: 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+}
+
+.x402-route-meta span,
+.receipt-modal-grid span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.x402-route-meta code,
+.x402-route-meta strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.x402-route-actions,
+.receipt-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+
+.receipt-response {
+  display: inline-flex;
+  min-width: 34px;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  border: 1px solid var(--border);
+}
+
+.receipt-response.ok {
+  color: #4fdc82;
+  border-color: rgba(79, 220, 130, 0.24);
+}
+
+.receipt-response.bad {
+  color: var(--red);
+  border-color: rgba(255, 95, 87, 0.24);
+}
+
+.receipt-row-action {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 9px;
+  cursor: pointer;
+}
+
+.receipt-row-action:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.receipt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.receipt-modal {
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  position: relative;
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.receipt-modal h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  margin-bottom: 18px;
+  color: var(--text);
+}
+
+.receipt-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.receipt-modal-close:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.receipt-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.receipt-modal-grid div {
+  min-width: 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid var(--border);
+}
+
+.receipt-modal-grid strong {
+  display: block;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.webhook-form-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(180px, 1fr) minmax(180px, 1fr) 130px;
+  gap: 10px;
+  white-space: normal;
+}
+
+.webhook-form-grid .btn-sm {
+  grid-column: 1 / -1;
+}
+
+.health-row-active {
+  background: rgba(var(--accent-rgb), 0.04);
+}
+
+.health-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bg);
+}
+
+.health-current {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.tier-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.treasury-impact-sub {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .treasury-wallet-row { flex-direction: column; align-items: stretch; }
+  .treasury-verify-btn { width: 100%; text-align: center; }
+  .fee-bar { height: 28px; }
+  .fee-segment { font-size: 9px; }
+  .treasury-table { font-size: 11px; }
+  .treasury-table th, .treasury-table td { padding: 10px 12px; }
+  .receipt-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .receipt-state { min-width: 130px; }
+  .x402-route-panel,
+  .receipt-modal-grid,
+  .webhook-form-grid { grid-template-columns: 1fr; }
+}

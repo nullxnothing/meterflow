@@ -9,7 +9,7 @@
   /* Accent tokens are owned by shared.css — premium.css only adds easings + shadows. */
   --shadow-soft: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 28px rgba(0,0,0,0.35);
   --shadow-lift: 0 1px 0 rgba(255,255,255,0.06) inset, 0 22px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-glow-accent: 0 24px 48px -16px rgba(59, 130, 246, 0.38);
+  --shadow-glow-accent: 0 24px 48px -16px rgba(var(--accent-rgb), 0.38);
   --surface-elev: #14141a;
   --border-glass: rgba(255, 255, 255, 0.06);
 
@@ -39,7 +39,7 @@ body > nav.scrolled {
 }
 
 .nav-cta {
-  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 52%, #1d4ed8 100%);
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent-deep) 52%, var(--accent-dim) 100%);
   border-color: rgba(180, 210, 255, 0.7);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.32) inset,
@@ -64,7 +64,7 @@ body > nav.scrolled {
   transform: translateY(-1px);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.4) inset,
-    0 16px 36px rgba(59, 130, 246, 0.52);
+    0 16px 36px rgba(var(--accent-rgb), 0.52);
 }
 .nav-cta:hover::after { transform: translateX(100%); }
 
@@ -73,8 +73,8 @@ body > nav.scrolled {
 
 .hero-bg-grid {
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(var(--accent-rgb), 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.07) 1px, transparent 1px);
   background-size: 64px 64px;
   animation: gridDrift 60s linear infinite;
 }
@@ -87,8 +87,8 @@ body > nav.scrolled {
 /* Cooler aurora wash above the grid */
 .hero::before {
   background:
-    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(199, 219, 255, 0.06) 14deg, rgba(255,255,255,0.075) 29deg, rgba(59, 130, 246, 0.07) 48deg, transparent 72deg, transparent 360deg),
-    radial-gradient(circle at 38% 22%, rgba(59, 130, 246, 0.18), transparent 36%),
+    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(199, 219, 255, 0.06) 14deg, rgba(255,255,255,0.075) 29deg, rgba(var(--accent-rgb), 0.07) 48deg, transparent 72deg, transparent 360deg),
+    radial-gradient(circle at 38% 22%, rgba(var(--accent-rgb), 0.18), transparent 36%),
     radial-gradient(circle at 78% 70%, rgba(96, 165, 250, 0.10), transparent 42%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 58%);
 }
@@ -102,7 +102,7 @@ body > nav.scrolled {
   top: -120px;
   right: -120px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0) 60%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0) 60%);
   filter: blur(40px);
   animation: floatOrb 14s ease-in-out infinite;
   pointer-events: none;
@@ -115,16 +115,16 @@ body > nav.scrolled {
 
 /* Hero label premium polish */
 .hero-label {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.04));
   border-color: rgba(120, 160, 240, 0.24);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -10px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -10px rgba(var(--accent-rgb), 0.3);
   transition: transform 0.4s var(--ease-out-expo), border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
 }
 
 .hero-label:hover {
   transform: translateY(-2px);
   border-color: rgba(120, 170, 255, 0.55);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 14px 32px -8px rgba(59, 130, 246, 0.55);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 14px 32px -8px rgba(var(--accent-rgb), 0.55);
 }
 
 /* Headline — subtle shine on the accent */
@@ -135,7 +135,7 @@ body > nav.scrolled {
 }
 
 .hero-headline .accent {
-  background: linear-gradient(180deg, #c7dbff 0%, #3b82f6 45%, #2563eb 100%);
+  background: linear-gradient(180deg, #c7dbff 0%, var(--accent) 45%, var(--accent-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -157,7 +157,7 @@ body > nav.scrolled {
 /* Premium primary button */
 .btn-primary,
 .hero-actions .btn-primary {
-  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 52%, #1d4ed8 100%);
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent-deep) 52%, var(--accent-dim) 100%);
   border: 1px solid rgba(170, 200, 255, 0.78);
   color: #050b18;
   font-weight: 700;
@@ -193,7 +193,7 @@ body > nav.scrolled {
   filter: brightness(1.06);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.4) inset,
-    0 18px 42px rgba(59, 130, 246, 0.55),
+    0 18px 42px rgba(var(--accent-rgb), 0.55),
     0 0 0 1px rgba(170, 200, 255, 0.4);
 }
 
@@ -210,7 +210,7 @@ body > nav.scrolled {
 .hero-actions .btn-secondary:hover {
   transform: translateY(-2px);
   border-color: rgba(120, 170, 255, 0.55);
-  background: rgba(59, 130, 246, 0.10);
+  background: rgba(var(--accent-rgb), 0.10);
   color: var(--text);
 }
 
@@ -232,11 +232,11 @@ body > nav.scrolled {
     0 1px 0 rgba(255,255,255,0.06) inset,
     0 48px 120px -20px rgba(0,0,0,0.78),
     0 0 0 1px rgba(120, 170, 255, 0.15),
-    0 0 60px -20px rgba(59, 130, 246, 0.35);
+    0 0 60px -20px rgba(var(--accent-rgb), 0.35);
 }
 
 .hero-panel::before {
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.85), rgba(96, 165, 250, 0.55), rgba(45, 212, 191, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.85), rgba(96, 165, 250, 0.55), rgba(var(--sky-2-rgb), 0.4), transparent);
   opacity: 0.85;
 }
 
@@ -271,7 +271,7 @@ section + section {
 /* ─── Section labels ─── */
 .section-label,
 .site-subpage-label {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.10), rgba(59, 130, 246, 0.04));
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.04));
   border-color: rgba(120, 160, 240, 0.22);
   letter-spacing: 3px;
   font-size: 10.5px;
@@ -311,7 +311,7 @@ section + section {
   box-shadow:
     0 1px 0 rgba(255,255,255,0.05) inset,
     0 28px 60px -20px rgba(0,0,0,0.55),
-    0 0 50px -18px rgba(59, 130, 246, 0.55);
+    0 0 50px -18px rgba(var(--accent-rgb), 0.55);
   background: linear-gradient(180deg, rgba(16, 24, 38, 0.78), rgba(10, 16, 26, 0.92));
 }
 
@@ -326,7 +326,7 @@ section + section {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), transparent 40%, transparent 60%, rgba(96, 165, 250, 0.4));
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.4), transparent 40%, transparent 60%, rgba(96, 165, 250, 0.4));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -355,7 +355,7 @@ section + section {
 
 /* ─── How steps polish ─── */
 .how-step .step-number {
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 60%, var(--accent-dim) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -378,11 +378,11 @@ section + section {
   position: relative;
 }
 .cta-section .cta-glow {
-  background: radial-gradient(700px 400px at 50% 50%, rgba(59, 130, 246, 0.25), transparent 70%);
+  background: radial-gradient(700px 400px at 50% 50%, rgba(var(--accent-rgb), 0.25), transparent 70%);
 }
 
 .cta-section h2 .accent {
-  background: linear-gradient(180deg, #c7dbff 0%, #3b82f6 45%, #2563eb 100%);
+  background: linear-gradient(180deg, #c7dbff 0%, var(--accent) 45%, var(--accent-deep) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -392,7 +392,7 @@ section + section {
 .site-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(800px 300px at 50% -10%, rgba(59, 130, 246, 0.06), transparent 60%),
+    radial-gradient(800px 300px at 50% -10%, rgba(var(--accent-rgb), 0.06), transparent 60%),
     linear-gradient(180deg, rgba(5, 9, 16, 0.6), rgba(2, 5, 11, 1));
 }
 
@@ -436,12 +436,12 @@ section + section {
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 8px var(--accent), 0 0 0 0 rgba(59, 130, 246, 0.5); }
-  50% { box-shadow: 0 0 14px var(--accent), 0 0 0 6px rgba(59, 130, 246, 0); }
+  0%, 100% { box-shadow: 0 0 8px var(--accent), 0 0 0 0 rgba(var(--accent-rgb), 0.5); }
+  50% { box-shadow: 0 0 14px var(--accent), 0 0 0 6px rgba(var(--accent-rgb), 0); }
 }
 
 /* ─── Selection ─── */
-::selection { background: rgba(59, 130, 246, 0.32); color: #ffffff; }
+::selection { background: rgba(var(--accent-rgb), 0.32); color: #ffffff; }
 
 /* ─── Reduce motion ─── */
 @media (prefers-reduced-motion: reduce) {
@@ -615,7 +615,7 @@ body > nav {
   color: #ffffff;
   border-color: rgba(120, 170, 255, 0.4);
   background: linear-gradient(180deg, rgba(20, 32, 52, 0.78), rgba(10, 18, 32, 0.92));
-  box-shadow: 0 12px 28px -16px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 12px 28px -16px rgba(var(--accent-rgb), 0.5);
 }
 
 .hero-chip-icon {
@@ -625,7 +625,7 @@ body > nav {
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.22), rgba(59, 130, 246, 0.08));
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.08));
   border: 1px solid rgba(120, 170, 255, 0.2);
   color: var(--accent-2);
   flex-shrink: 0;
@@ -676,7 +676,7 @@ body > nav {
   overflow: hidden;
   border-block: 1px solid rgba(255, 255, 255, 0.06);
   background:
-    radial-gradient(700px 200px at 50% 50%, rgba(59, 130, 246, 0.06), transparent 70%),
+    radial-gradient(700px 200px at 50% 50%, rgba(var(--accent-rgb), 0.06), transparent 70%),
     linear-gradient(180deg, rgba(5, 9, 16, 0.6), rgba(3, 6, 13, 0.6));
 }
 
@@ -770,7 +770,7 @@ body > nav {
 }
 
 .hooks-inner .hook-card:hover {
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.06), transparent 60%) !important;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.06), transparent 60%) !important;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -800,7 +800,7 @@ body > nav {
   height: 72px !important;
   padding: 0 !important;
   border-radius: 16px !important;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0.04)) !important;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.04)) !important;
   border: 1px solid rgba(120, 170, 255, 0.2) !important;
   font-size: 11px !important;
   color: var(--accent-2) !important;
@@ -829,7 +829,7 @@ body > nav {
 .hooks-inner .hook-title br { display: none; }
 
 .hooks-inner .hook-title span {
-  background: linear-gradient(180deg, #c7dbff, #2563eb);
+  background: linear-gradient(180deg, #c7dbff, var(--accent-deep));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -849,7 +849,7 @@ body > nav {
   padding: 12px 20px;
   border: 1px solid rgba(120, 170, 255, 0.28);
   border-radius: 10px;
-  background: rgba(59, 130, 246, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
@@ -860,7 +860,7 @@ body > nav {
 }
 
 .hooks-inner .hook-link:hover {
-  background: rgba(59, 130, 246, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
   border-color: rgba(120, 170, 255, 0.55);
   color: #ffffff;
   transform: translateY(-1px);
@@ -878,7 +878,7 @@ body > nav {
   gap: 8px;
   padding: 12px 20px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #60a5fa 0%, #2563eb 52%, #1d4ed8 100%);
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent-deep) 52%, var(--accent-dim) 100%);
   color: #050b18;
   font-family: var(--font-body);
   font-weight: 700;
@@ -906,7 +906,7 @@ body > nav {
   filter: brightness(1.06);
   box-shadow:
     0 1px 0 rgba(255,255,255,0.4) inset,
-    0 22px 50px -12px rgba(59, 130, 246, 0.85),
+    0 22px 50px -12px rgba(var(--accent-rgb), 0.85),
     0 0 0 1px rgba(255,255,255,0.12);
 }
 
@@ -955,4 +955,294 @@ body > nav {
   .hooks-section, .protocol-stats, .how-section, .tools-section,
   .demo-section, .tiers-section, .funded-section, .agent-section,
   .faq-section, .cta-section { padding-block: 64px; }
+}
+
+/* ═══════════════════════════════════════════
+   Public Cohesion Overlay
+   Secondary pages use this final layer so Roadmap, Status, Docs, Legal,
+   Apply, and 404 share the same Meterflow shell as the home page.
+   ═══════════════════════════════════════════ */
+
+body:not(.docs-layout) {
+  background:
+    radial-gradient(1100px 720px at 76% -18%, rgba(var(--accent-rgb), 0.10), transparent 62%),
+    radial-gradient(760px 520px at 8% 105%, rgba(var(--sky-rgb), 0.055), transparent 64%),
+    var(--bg);
+}
+
+body > nav {
+  background: rgba(5, 8, 15, 0.58);
+  border-bottom: 1px solid rgba(156, 184, 220, 0.08);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  backdrop-filter: blur(18px) saturate(130%);
+}
+
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs),
+body > nav .nav-docs {
+  color: rgba(157, 176, 202, 0.82);
+}
+
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs):hover,
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs).active,
+body > nav .nav-docs:hover {
+  color: var(--text);
+}
+
+/* Unified public navigation: all marketing/legal pages share the same
+   text-first shell as the homepage. Decorative route glyphs/icons are removed. */
+body > nav {
+  height: 72px;
+  padding: 0 clamp(20px, 3.4vw, 42px);
+  background: linear-gradient(180deg, rgba(5, 8, 15, 0.84), rgba(5, 8, 15, 0.56));
+  border-bottom: 1px solid rgba(156, 184, 220, 0.10);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.20);
+}
+
+body > nav .nav-logo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 241, 255, 0.86);
+}
+
+body > nav .nav-logo .brand-mark {
+  width: 19px;
+  height: 19px;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.34));
+}
+
+body > nav .nav-links {
+  gap: 6px;
+}
+
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs),
+body > nav .nav-docs {
+  gap: 0;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 550;
+  color: rgba(174, 193, 220, 0.72);
+  background: transparent;
+  transition:
+    color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs):hover,
+body > nav .nav-docs:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(156, 184, 220, 0.10);
+}
+
+body > nav .nav-links a:not(.nav-cta):not(.nav-docs).active,
+body > nav .nav-docs.active {
+  color: #fff;
+  background: rgba(var(--accent-rgb), 0.10);
+  border-color: rgba(var(--accent-rgb), 0.18);
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.08);
+}
+
+body > nav .nav-links a[data-nav]::before,
+body > nav .nav-docs[data-nav]::before,
+body > nav .mobile-menu a[data-nav]::before,
+body > nav .nav-glyph {
+  display: none !important;
+}
+
+.site-subpage-hero,
+.roadmap-hero,
+.status-page,
+.legal,
+.apply-shell,
+main#main {
+  background:
+    radial-gradient(760px 460px at 50% -14%, rgba(var(--accent-rgb), 0.105), transparent 68%),
+    radial-gradient(620px 420px at 92% 8%, rgba(var(--sky-rgb), 0.045), transparent 62%),
+    var(--bg) !important;
+}
+
+.site-subpage-hero,
+.roadmap-hero {
+  padding-top: clamp(132px, 15vh, 170px) !important;
+  padding-bottom: clamp(58px, 8vh, 86px) !important;
+  border-bottom: 1px solid rgba(156, 184, 220, 0.10) !important;
+}
+
+.roadmap-hero {
+  min-height: auto !important;
+  text-align: left !important;
+}
+
+.roadmap-hero-content,
+.site-subpage-hero-inner,
+.status-hero,
+.legal {
+  max-width: 1080px !important;
+}
+
+.hero-label,
+.label-sm,
+.site-subpage-label,
+.section-label,
+.card-label {
+  border-radius: 8px !important;
+  border-color: rgba(var(--accent-rgb), 0.18) !important;
+  background: rgba(var(--accent-rgb), 0.065) !important;
+  color: rgba(157, 176, 202, 0.9) !important;
+  letter-spacing: 0.12em !important;
+}
+
+.roadmap-headline,
+.site-subpage-title,
+.status-hero h1,
+.legal h1,
+.cta-section h2,
+.vision-headline {
+  font-family: var(--font-display) !important;
+  font-weight: 560 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.03 !important;
+  color: var(--text) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #c7dbff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.roadmap-headline .accent,
+.site-subpage-title .accent,
+.vision-headline .accent,
+.cta-section h2 .accent {
+  color: var(--accent) !important;
+  -webkit-text-fill-color: var(--accent) !important;
+  text-shadow: none !important;
+}
+
+.roadmap-sub,
+.site-subpage-sub,
+.status-hero p,
+.legal p,
+.legal li,
+.vision-sub,
+.phase-desc {
+  color: rgba(157, 176, 202, 0.9) !important;
+  font-weight: 400 !important;
+}
+
+.phase-content,
+.phase-item,
+.status-card,
+.status-summary,
+.apply-card,
+.apply-panel,
+.mobile-card,
+.vision-stat,
+.token-panel,
+.holders-panel {
+  border: 1px solid rgba(156, 184, 220, 0.13) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(8, 13, 23, 0.86) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.phase-item,
+.status-summary {
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.progress-track,
+.timeline-line {
+  background: rgba(156, 184, 220, 0.14) !important;
+}
+
+.progress-fill,
+.timeline-line-fill {
+  background: linear-gradient(90deg, var(--accent), var(--sky)) !important;
+}
+
+.phase-dot.active,
+.timeline-phase.completed .phase-dot {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.phase-badge.completed {
+  color: var(--green) !important;
+  background: rgba(var(--green-rgb), 0.085) !important;
+  border-color: rgba(var(--green-rgb), 0.24) !important;
+}
+
+body > nav .nav-cta {
+  height: 36px !important;
+  gap: 8px !important;
+  padding: 0 15px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  transition:
+    color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out) !important;
+}
+
+body > nav .nav-cta::after {
+  display: none !important;
+}
+
+body > nav .nav-cta[data-nav="dashboard"]::before {
+  content: '' !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto !important;
+  opacity: 0.78 !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%238bbcff'><path d='M2 4.5A2.5 2.5 0 0 1 4.5 2h7A2.5 2.5 0 0 1 14 4.5V5h-1.5A2.5 2.5 0 0 0 10 7.5v1A2.5 2.5 0 0 0 12.5 11H14v.5A2.5 2.5 0 0 1 11.5 14h-7A2.5 2.5 0 0 1 2 11.5v-7Zm9.5 4.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'/></svg>") !important;
+}
+
+body > nav .nav-cta:hover {
+  color: #ffffff !important;
+  background: rgba(var(--accent-rgb), 0.08) !important;
+  border-color: rgba(var(--accent-rgb), 0.32) !important;
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.10) !important;
+  filter: none !important;
+  transform: translateY(-1px) !important;
+}
+
+footer,
+.footer {
+  background:
+    radial-gradient(800px 260px at 50% 0%, rgba(var(--accent-rgb), 0.055), transparent 64%),
+    var(--bg-deep) !important;
+  border-top-color: rgba(156, 184, 220, 0.10) !important;
+}
+
+footer::before,
+.footer::before,
+.site-footer::before {
+  opacity: 0.82 !important;
+}
+
+@media (max-width: 768px) {
+  .site-subpage-hero,
+  .roadmap-hero {
+    padding: 104px 20px 54px !important;
+  }
 }
