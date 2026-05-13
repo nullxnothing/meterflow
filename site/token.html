@@ -3,18 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="$MFLOW is the utility layer for Meterflow's Solana agent commerce control plane: provider verification, fee relief, registry ranking, higher limits, premium analytics, and longer receipt retention.">
+<meta name="description" content="$MFLOW is the compact utility layer for Meterflow's Solana agent commerce control plane.">
 <meta name="theme-color" content="#0a0a0c">
 <link rel="canonical" href="https://meterflow.fun/token">
 <meta property="og:title" content="$MFLOW | Meterflow">
-<meta property="og:description" content="$MFLOW aligns holders with Meterflow's agent commerce control plane: more providers, more routes, more receipts, more reasons to hold.">
+<meta property="og:description" content="$MFLOW powers utility around Meterflow: provider verification, fee relief, registry ranking, higher limits, analytics, and receipt retention.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow-ocean.png">
 <meta property="og:url" content="https://meterflow.fun/token">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow-ocean.png">
-<meta property="og:image:width" content="1672">
-<meta property="og:image:height" content="941">
 <title>$MFLOW | Meterflow</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
@@ -29,7 +27,6 @@
 </head>
 <body class="docs-layout">
 
-<!-- Mobile topbar -->
 <header class="docs-topbar">
   <a href="/" class="docs-topbar-logo"><img src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <button class="docs-sidebar-toggle" id="sidebarToggle" aria-label="Open sidebar" aria-expanded="false">
@@ -37,7 +34,6 @@
   </button>
 </header>
 
-<!-- Sidebar nav -->
 <aside class="docs-sidebar" id="docsSidebar">
   <a href="/" class="docs-sidebar-logo">
     <img class="docs-sidebar-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">
@@ -60,7 +56,7 @@
     <a href="/status" class="docs-nav-item"><span class="docs-nav-code">St</span>Status</a>
     <a href="/roadmap" class="docs-nav-item"><span class="docs-nav-code">Rm</span>Roadmap</a>
     <a href="/docs" class="docs-nav-item"><span class="docs-nav-code">Dc</span>Documentation</a>
-    <a href="/token" class="docs-nav-item active" aria-current="page"><span class="docs-nav-code">Mf</span>$MFLOW Contract</a>
+    <a href="/token" class="docs-nav-item active" aria-current="page"><span class="docs-nav-code">Mf</span>$MFLOW</a>
   </nav>
 
   <div class="docs-sidebar-foot">
@@ -79,182 +75,92 @@
 
 <div class="docs-sidebar-scrim" id="sidebarScrim" aria-hidden="true"></div>
 
-<!-- Main content -->
 <div class="docs-main">
   <main class="docs-content">
+    <section class="token-compact-shell" aria-label="$MFLOW token utility">
+      <article class="token-compact-hero">
+        <div class="token-hero-copy">
+          <div class="token-hero-eyebrow"><span class="badge">Mf</span><span>Meterflow Token</span></div>
+          <h1><span id="tokenSymbol">$MFLOW</span><br><em><span id="tokenHeroSuffix">utility layer.</span></em></h1>
+          <p>One clean token page. $MFLOW sits around Meterflow’s agent-commerce network: access, provider reputation, better limits, analytics, and long-term alignment.</p>
+        </div>
 
-    <!-- Hero -->
-    <section class="token-hero">
-      <div class="token-hero-eyebrow"><span class="badge">Mf</span><span>Meterflow Token</span></div>
-      <h1>
-        <span id="tokenSymbol">$MFLOW</span> is the<br><em><span id="tokenHeroSuffix">utility layer.</span></em>
-      </h1>
-      <p>Meterflow is building the Solana control plane for agent commerce. $MFLOW sits around that network &mdash; provider verification, fee relief, registry ranking, higher policy limits, premium analytics, and longer receipt retention.</p>
+        <div class="token-hero-bottom">
+          <div class="token-address">
+            <span id="tokenAddressLabel">Contract address</span>
+            <code id="tokenAddress">TBA</code>
+            <button id="copyTokenAddress" type="button">Copy</button>
+          </div>
 
-      <div class="token-address">
-        <span id="tokenAddressLabel">Contract</span>
-        <code id="tokenAddress">TBA</code>
-        <button id="copyTokenAddress" type="button">Copy</button>
-      </div>
+          <div class="token-mini-links">
+            <a class="token-mini-link" id="swapLink" href="/token">Coming Soon</a>
+            <a class="token-mini-link" id="orbLink" href="/token">Explorer TBA</a>
+            <a class="token-mini-link" id="dexLink" href="/token">Market TBA</a>
+          </div>
 
-      <div class="token-actions">
-        <a class="btn-primary" id="swapLink" href="/token">Coming Soon</a>
-        <a class="btn-secondary" id="orbLink" href="/token">Explorer TBA</a>
-        <a class="btn-secondary" id="dexLink" href="/token">Market TBA</a>
-      </div>
+          <div class="token-status-strip" aria-label="Token status">
+            <article><span>Status</span><strong id="tokenStatus">Preparing</strong></article>
+            <article><span>CA</span><strong id="statusCA">TBA</strong></article>
+            <article><span>Updated</span><strong id="tokenUpdated">TBA</strong></article>
+          </div>
+        </div>
+      </article>
 
-      <aside class="token-status-card">
-        <div class="card-label">Token Status</div>
-        <h2 id="tokenStatus">Utility layer preparing</h2>
-        <p id="tokenStatusDetail">Official market details will appear here after launch. The holder thesis is already visible in the product.</p>
-        <dl>
-          <div><dt>CA</dt><dd id="statusCA">TBA</dd></div>
-          <div><dt>Market</dt><dd id="statusMarket">Coming soon</dd></div>
-          <div><dt>Updated</dt><dd id="tokenUpdated">TBA</dd></div>
-        </dl>
+      <aside class="token-utility-panel">
+        <div>
+          <div class="utility-eyebrow"><span class="badge">Ut</span><span>Core Utility</span></div>
+          <h2>Only the important stuff. <em>No token page bloat.</em></h2>
+        </div>
+
+        <article class="utility-card">
+          <span>01</span>
+          <div><strong>Access + higher limits</strong><p>Holder tiers can unlock stronger agent budgets, more routes, higher automation ceilings, and premium dashboard surfaces.</p></div>
+        </article>
+
+        <article class="utility-card">
+          <span>02</span>
+          <div><strong>Provider reputation</strong><p>Providers can use $MFLOW-aligned signals for verification, registry ranking, trust, and discovery inside the endpoint marketplace.</p></div>
+        </article>
+
+        <article class="utility-card">
+          <span>03</span>
+          <div><strong>Fee relief + retention</strong><p>Useful for reduced protocol friction, longer receipt history, deeper analytics, and cleaner provider accounting.</p></div>
+        </article>
+
+        <article class="utility-card">
+          <span>04</span>
+          <div><strong>Network alignment</strong><p>As more APIs, MCP tools, and paid routes flow through Meterflow, the token becomes the utility layer around that activity.</p></div>
+        </article>
+
+        <p class="token-note" id="tokenStatusDetail"><strong>Launch details are still TBA.</strong> Official contract and market links will appear here when they are ready.</p>
       </aside>
     </section>
 
-    <!-- Holder thesis -->
-    <section class="token-section">
-      <div class="label-sm"><span class="badge" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(59,130,246,0.14);color:var(--accent);border-radius:5px;font-size:10px;font-weight:700;font-family:var(--font-mono)">Ht</span><span>Holder thesis</span></div>
-      <h2>More endpoints. More receipts. <em>More reasons to hold.</em></h2>
-      <p>Agent payments are becoming real. The scarce layer is not another payment button &mdash; it is the operating system around paid usage. Meterflow is where providers price routes, agents stay inside budgets, payment rails normalize into one ledger, and every paid call becomes an auditable receipt.</p>
-      <div class="holder-loop">
-        <article>
-          <span>01</span>
-          <strong>Providers launch paid routes</strong>
-          <p>APIs, MCP tools, data feeds, and provider workflows can become metered products in one registry.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <strong>Agents create usage</strong>
-          <p>Every call produces spend policy checks, payment state, receipt data, revenue attribution, and public provider signal.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <strong>$MFLOW unlocks utility</strong>
-          <p>Holder tiers can unlock fee relief, higher limits, longer retention, premium analytics, and provider reputation benefits as the network expands.</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- Tech unlock -->
-    <section class="token-section">
-      <div class="label-sm"><span class="badge" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(59,130,246,0.14);color:var(--accent);border-radius:5px;font-size:10px;font-weight:700;font-family:var(--font-mono)">Tu</span><span>Tech unlock</span></div>
-      <h2>Meterflow can meter <em>other people's APIs.</em></h2>
-      <p>A provider brings an endpoint. Meterflow creates the meter, hosted route, x402/MPP payment surface, normalized receipt model, budget checks, revenue view, registry listing, and webhook stream.</p>
-      <div class="tech-unlock-grid">
-        <article><span>Gateway</span><strong>Hosted paid routes</strong><p>External APIs become agent-accessible products without moving into Meterflow.</p></article>
-        <article><span>Adapter</span><strong>x402 + MPP</strong><p>Payment rails normalize into the same meter, budget, receipt, and revenue model.</p></article>
-        <article><span>Registry</span><strong>Provider discovery</strong><p>Useful endpoints rank by verification, price, uptime, latency, and receipt volume.</p></article>
-        <article><span>Receipts</span><strong>Usage becomes proof</strong><p>Every paid call links payer, provider, route, amount, policy, response, latency, and tx signature.</p></article>
-        <article><span>Budgets</span><strong>Agent spend limits</strong><p>Operators set daily caps, per-call caps, route allowlists, and revocation.</p></article>
-        <article><span>Providers</span><strong>Revenue infrastructure</strong><p>Providers get revenue views, registry signal, and signed webhooks for payment and receipt events.</p></article>
-      </div>
-      <div class="tech-unlock-line">
-        <strong>Every new provider adds more routes.</strong>
-        <span>Every route produces more receipts. Every receipt strengthens the utility layer around $MFLOW.</span>
-      </div>
-    </section>
-
-    <!-- Metrics -->
-    <section class="token-metrics">
-      <article><span>Price</span><strong id="metricPrice">TBA</strong><em id="metricChange">coming soon</em></article>
-      <article><span>Market Cap</span><strong id="metricMarketCap">TBA</strong><em id="metricMarketCapMeta">coming soon</em></article>
-      <article><span>24h Volume</span><strong id="metricVolume">TBA</strong><em id="metricTxns">coming soon</em></article>
-    </section>
-
-    <!-- Chart + details -->
-    <section class="token-main-grid">
-      <article class="token-panel chart-panel">
-        <div class="panel-head">
-          <div>
-            <div class="card-label">Price chart</div>
-            <h2 id="chartHeading">Chart coming soon</h2>
-          </div>
-          <span id="chartSource">TBA</span>
-        </div>
-        <div class="chart-wrap" id="chartWrap">
-          <svg id="priceChart" viewBox="0 0 720 260" preserveAspectRatio="none" aria-label="$MFLOW price chart"></svg>
-          <div class="chart-empty" id="chartEmpty">Chart appears after launch.</div>
-        </div>
-      </article>
-
-      <article class="token-panel token-details">
-        <div class="card-label">Token details</div>
-        <h2 id="tokenName">Meterflow</h2>
-        <p id="tokenDescription">$MFLOW details are coming soon.</p>
-        <div class="detail-list">
-          <div><span>Pair</span><strong id="detailPair">TBA</strong></div>
-          <div><span>FDV</span><strong id="detailFdv">TBA</strong></div>
-          <div><span>5m / 1h / 6h</span><strong id="detailChanges">TBA</strong></div>
-          <div><span>Data sources</span><strong id="detailSources">Coming soon</strong></div>
-        </div>
-      </article>
-    </section>
-
-    <!-- Holders -->
-    <section class="token-panel holders-panel">
-      <div class="panel-head">
-        <div>
-          <div class="card-label">Holders</div>
-          <h2 id="holdersHeading">Holder data coming soon</h2>
-        </div>
-        <a id="holdersExplorer" href="/token">TBA</a>
-      </div>
-      <div class="holders-table-wrap">
-        <table class="holders-table">
-          <thead><tr><th>#</th><th>Wallet</th><th>Amount</th><th>Supply</th><th>Accounts</th></tr></thead>
-          <tbody id="holdersBody"><tr><td colspan="5">Holder data appears after launch.</td></tr></tbody>
-        </table>
-      </div>
-    </section>
+    <div hidden>
+      <span id="statusMarket">Coming soon</span>
+      <span id="metricPrice">TBA</span>
+      <span id="metricChange">coming soon</span>
+      <span id="metricMarketCap">TBA</span>
+      <span id="metricMarketCapMeta">coming soon</span>
+      <span id="metricVolume">TBA</span>
+      <span id="metricTxns">coming soon</span>
+      <span id="tokenName">Meterflow</span>
+      <span id="tokenDescription">$MFLOW details are coming soon.</span>
+      <span id="detailPair">TBA</span>
+      <span id="detailFdv">TBA</span>
+      <span id="detailChanges">TBA</span>
+      <span id="detailSources">Coming soon</span>
+      <span id="chartHeading">Chart coming soon</span>
+      <span id="chartSource">TBA</span>
+      <span id="holdersHeading">Holder data coming soon</span>
+      <a id="holdersExplorer" href="/token">TBA</a>
+      <div id="chartWrap"><svg id="priceChart" viewBox="0 0 720 260"></svg></div>
+      <table><tbody id="holdersBody"></tbody></table>
+    </div>
   </main>
-
-  <!-- Footer (with topo motion from home.css) -->
-  <footer class="site-footer">
-    <div class="site-footer-wordmark" aria-hidden="true"><em>meterflow</em></div>
-    <div class="site-footer-inner">
-      <div class="site-footer-brand">
-        <a href="/" class="site-footer-logo">
-          <img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">
-          Meterflow
-        </a>
-        <p class="site-footer-tagline">Control plane for agent commerce on Solana. Meter endpoints, track receipts, cap autonomous spend.</p>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Products</div>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/#tools">Surfaces</a>
-        <a href="/token">Token</a>
-        <a href="/how-it-works">How it works</a>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Resources</div>
-        <a href="/docs">Documentation</a>
-        <a href="/roadmap">Roadmap</a>
-        <a href="/status">Status</a>
-        <a href="/apply">Apply as provider</a>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Connect</div>
-        <a href="https://x.com/meterflowsol" target="_blank" rel="noopener">Twitter</a>
-        <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener">Discord</a>
-        <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </div>
-    </div>
-    <div class="site-footer-bottom">
-      <span>&copy; 2026 Meterflow &middot; Built on Solana</span>
-      <span class="site-footer-bottom-meta">Metering &middot; Receipts &middot; Spend control</span>
-    </div>
-  </footer>
 </div>
 
 <script>
-  /* Sidebar drawer toggle */
   (function () {
     var body = document.body;
     var toggle = document.getElementById('sidebarToggle');
