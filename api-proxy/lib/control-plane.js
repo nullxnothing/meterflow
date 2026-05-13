@@ -143,6 +143,12 @@ function normalizePath(path = '') {
   return clean.replace(/\/$/, '') || '/';
 }
 
+function assertZauthObservedMeterRoute(route) {
+  const normalized = normalizePath(route);
+  if (normalized.startsWith('/mcp/') || normalized.startsWith('/gateway/')) return;
+  throw new Error('route must start with /mcp/ or /gateway/ so paid x402 traffic is monitored by Zauth.');
+}
+
 function normalizeProviderName(value) {
   const name = String(value || '').trim();
   return name ? name.slice(0, 80) : null;
@@ -587,6 +593,7 @@ export async function createMeter(input, ownerWallet) {
       ? `/gateway/${meterId}/*`
       : null;
   if (!route) throw new Error('route is required unless targetUrl is provided.');
+  assertZauthObservedMeterRoute(route);
 
   const saved = await setJson(METER_PREFIX, fallbackMeters, {
     id: meterId,
@@ -618,6 +625,10 @@ export async function updateMeter(meterId, patch) {
     const target = normalizeTargetUrl(nextPatch.targetUrl);
     nextPatch.targetUrl = target.targetUrl;
     nextPatch.targetHost = target.targetHost;
+  }
+  if (nextPatch.route) {
+    nextPatch.route = normalizePath(nextPatch.route);
+    assertZauthObservedMeterRoute(nextPatch.route);
   }
   if (nextPatch.upstreamAuth) nextPatch.upstreamAuth = normalizeUpstreamAuth(nextPatch.upstreamAuth);
   if (nextPatch.providerName !== undefined) nextPatch.providerName = normalizeProviderName(nextPatch.providerName);

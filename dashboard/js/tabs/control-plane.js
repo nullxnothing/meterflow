@@ -73,6 +73,13 @@ function statusBadge(status) {
   return `<span class="tool-status">${safe.toUpperCase()}</span>`;
 }
 
+function zauthLabel(meter) {
+  if (meter?.zauthVerified) return 'verified';
+  if (meter?.zauthListed) return 'listed';
+  if (meter?.zauthStatus) return meter.zauthStatus;
+  return meter?.zauthAutoSubmit ? 'pending' : 'queued';
+}
+
 function canDeleteMeter(meter) {
   return meter.source === 'custom' || (meter.ownerWallet && meter.ownerWallet !== 'meterflow');
 }
@@ -235,7 +242,7 @@ export function renderMeters() {
       <div class="tool-config-box hosted-meter-form">
         <input id="meterTargetUrl" class="bot-form-input" placeholder="https://api.example.com">
         <input id="meterProviderName" class="bot-form-input" placeholder="Provider name">
-        <input id="meterRoute" class="bot-form-input" placeholder="/v1/my-route (for local meters)">
+        <input id="meterRoute" class="bot-form-input" placeholder="/mcp/my-route (for local meters)">
         <select id="meterMethod" class="bot-form-input"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select>
         <input id="meterUnit" class="bot-form-input" placeholder="request">
         <input id="meterPrice" class="bot-form-input" placeholder="0.006">
@@ -261,6 +268,7 @@ export function renderMeters() {
                 Unit: ${escapeHtml(meter.unit)}<br>
                 Price: ${money(meter.priceUsd)} ${escapeHtml(meter.asset || 'USDC')}<br>
                 ${gatewayUrl ? `Provider: ${escapeHtml(meter.providerName || meter.targetHost || 'Hosted API')}<br>Gateway: ${escapeHtml(gatewayUrl)}<br>` : ''}
+                Zauth: ${escapeHtml(zauthLabel(meter))}<br>
                 Calls: ${Number(revenue?.calls || 0).toLocaleString()} · Gross: ${money(revenue?.estimatedUsd || 0)}
               </div>
               <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testMeter('${meter.id}')`}">${locked ? 'Unlock' : 'Test Quote'}</div>
@@ -528,7 +536,8 @@ async function createMeterFromDashboard() {
     });
     CP.loaded = false;
     const gatewayUrl = hostedMeterUrl(data.meter);
-    showToast(gatewayUrl ? 'Hosted API meter created' : 'Meter created');
+    const zauth = data.zauth?.status || zauthLabel(data.meter);
+    showToast(`${gatewayUrl ? 'Hosted API meter created' : 'Meter created'} · Zauth ${zauth}`);
     loadControlPlane(true);
   } catch (err) {
     showToast(err.message || 'Meter creation failed', true);

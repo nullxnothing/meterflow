@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { createClient } from '@zauthx402/sdk';
+import { submitEndpointToZauth } from '../api-proxy/lib/zauth.js';
 
 const DEFAULT_ENDPOINT = 'https://www.meterflow.fun/proxy/mcp/token-risk';
 const DEFAULT_ZAUTH_APP = 'https://zauth.inc';
@@ -42,57 +42,30 @@ async function main() {
   const endpoint = canonicalMeterflowEndpoint(clean(process.env.METERFLOW_ZAUTH_ENDPOINT)
     || clean(process.env.METERFLOW_SMOKE_ENDPOINT)
     || DEFAULT_ENDPOINT);
-  const apiEndpoint = clean(process.env.ZAUTH_API_ENDPOINT)
-    || clean(process.env.ZAUTH_BASE_URL);
-
   if (!apiKey) {
     console.error('Missing ZAUTH_API_KEY. Set it in the shell or .env.zauth.local before running this smoke test.');
     process.exit(1);
   }
 
-  const zauthOptions = {
-    apiKey,
-    mode: 'provider',
-    environment: process.env.NODE_ENV || 'development',
-    debug: clean(process.env.ZAUTH_DEBUG).toLowerCase() === 'true',
-    telemetry: {
-      includeRequestBody: false,
-      includeResponseBody: false,
-      redactHeaders: ['authorization', 'cookie', 'x-api-key', 'meterflow-api-key', 'x-meterflow-api-key'],
-      redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth'],
-    },
-    refund: { enabled: false },
-  };
-  if (apiEndpoint) zauthOptions.apiEndpoint = apiEndpoint;
-
-  const zauth = createClient(zauthOptions);
-
   try {
-    await zauth.sendEvent({
-      ...zauth.createEventBase('health_check'),
-      url: endpoint,
-      responsive: true,
-      paymentRequirementsValid: true,
-      paymentRequirements: [],
-      responseTimeMs: 0,
-      metadata: {
-        name: 'Meterflow token risk MCP',
-        displayName: 'Meterflow Token Risk',
-        providerName: 'Meterflow',
-        endpointUrl: endpoint,
-        method: 'GET',
-        priceUsd: 0.006,
-        rail: 'x402',
-        supportedRails: ['x402', 'MPP'],
-        category: 'agent-api',
-        website: 'https://meterflow.fun',
-        description: 'Paid x402 MCP endpoint for Solana token risk checks.',
-      },
+    const result = await submitEndpointToZauth({
+      id: 'mtr_mcp_token_risk_get',
+      name: 'Meterflow token risk MCP',
+      displayName: 'Meterflow Token Risk',
+      providerName: 'Meterflow',
+      publicEndpointUrl: endpoint,
+      method: 'GET',
+      priceUsd: 0.006,
+      rail: 'x402',
+      supportedRails: ['x402', 'MPP'],
+      category: 'agent-api',
+      website: 'https://meterflow.fun',
+      description: 'Paid x402 MCP endpoint for Solana token risk checks.',
     });
-
-    const status = await zauth.checkEndpoint(endpoint);
+    const status = result.status || {};
     const summary = {
       endpoint,
+      submitted: Boolean(result.submitted),
       listed: Boolean(status?.listed ?? status?.working ?? status?.meaningful ?? status?.verified),
       verified: Boolean(status?.verified),
       working: Boolean(status?.working),
@@ -106,8 +79,6 @@ async function main() {
   } catch (err) {
     console.error(`Zauth smoke test failed: ${redact(err?.message || err)}`);
     process.exitCode = 1;
-  } finally {
-    await zauth.shutdown?.();
   }
 }
 
