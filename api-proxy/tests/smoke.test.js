@@ -632,6 +632,9 @@ describe('Meterflow control plane', () => {
     assert.ok(zauth.includes('ZAUTH_INCLUDE_ROUTES'), 'Zauth wrapper should support route filtering');
     assert.ok(zauth.includes('ZAUTH_REFUNDS_ENABLED'), 'Zauth wrapper should keep refunds explicitly opt-in');
     assert.ok(zauth.includes('ZAUTH_BATCH_SIZE') && zauth.includes('maxBatchSize'), 'Zauth telemetry should flush promptly in serverless deployments');
+    assert.ok(zauth.includes('probeZauthEndpoint'), 'Zauth submission should probe the real 402 quote');
+    assert.ok(zauth.includes('decodePaymentRequiredHeader'), 'Zauth submission should parse payment requirements from the x402 header');
+    assert.ok(zauth.includes('paymentRequirements: health.paymentRequirements'), 'Zauth submission should forward probed payment requirements');
     assert.ok(env.includes('ZAUTH_API_KEY') && env.includes('ZAUTH_INCLUDE_ROUTES'), 'env example should document Zauth setup');
     assert.ok(apiPkg.dependencies['@zauthx402/sdk'], 'api-proxy should declare the Zauth SDK dependency');
     assert.ok(rootPkg.dependencies['@zauthx402/sdk'], 'root package should declare the Zauth SDK dependency for Vercel installs');
