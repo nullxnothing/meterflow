@@ -42,18 +42,16 @@ async function main() {
   const endpoint = canonicalMeterflowEndpoint(clean(process.env.METERFLOW_ZAUTH_ENDPOINT)
     || clean(process.env.METERFLOW_SMOKE_ENDPOINT)
     || DEFAULT_ENDPOINT);
-  const apiEndpoint = clean(process.env.ZAUTH_BASE_URL)
-    || clean(process.env.ZAUTH_API_ENDPOINT)
-    || 'https://api.zauth.inc';
+  const apiEndpoint = clean(process.env.ZAUTH_API_ENDPOINT)
+    || clean(process.env.ZAUTH_BASE_URL);
 
   if (!apiKey) {
     console.error('Missing ZAUTH_API_KEY. Set it in the shell or .env.zauth.local before running this smoke test.');
     process.exit(1);
   }
 
-  const zauth = createClient({
+  const zauthOptions = {
     apiKey,
-    apiEndpoint,
     mode: 'provider',
     environment: process.env.NODE_ENV || 'development',
     debug: clean(process.env.ZAUTH_DEBUG).toLowerCase() === 'true',
@@ -64,7 +62,10 @@ async function main() {
       redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth'],
     },
     refund: { enabled: false },
-  });
+  };
+  if (apiEndpoint) zauthOptions.apiEndpoint = apiEndpoint;
+
+  const zauth = createClient(zauthOptions);
 
   try {
     await zauth.sendEvent({
