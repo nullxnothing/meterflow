@@ -32,7 +32,7 @@ console.log(meter.route);
 console.log(await client.testMeter(meter.id));
 ```
 
-`MeterflowClient` is the canonical client export. AI and trading methods remain available as demos of Meterflow-protected routes.
+`MeterflowClient` is the canonical client export. New integrations should use the hosted meter, receipt, budget, MCP tool, provider revenue, and webhook helpers.
 
 ## API
 
@@ -50,11 +50,6 @@ console.log(await client.testMeter(meter.id));
 |--------|---------|-------------|
 | `createHostedMeter(params)` | `Promise<Object>` | Wrap an external API behind a Meterflow hosted gateway |
 | `testMeter(meterId)` | `Promise<Object>` | Preview hosted route, target host, quote, and billable state |
-| `chat(params)` | `Promise<ChatResponse>` | Demo single model chat completion |
-| `chatStream(params)` | `AsyncGenerator<StreamEvent>` | Streaming chat completion |
-| `multi(params)` | `Promise<MultiResponse>` | Parallel multi-model inference |
-| `multiStream(params)` | `AsyncGenerator<MultiStreamEvent>` | Streaming multi-model |
-| `image(params)` | `Promise<Object>` | Image generation |
 | `status()` | `Promise<Object>` | Current key, wallet, usage, and service route access |
 | `treasury()` | `Promise<TreasuryStatus>` | Settlement wallet context |
 | `providers()` | `Promise<Object>` | Available AI providers |
@@ -88,7 +83,7 @@ const budget = await client.createBudget({
   name: 'research-agent',
   dailyCapUsd: 12,
   perCallCapUsd: 0.02,
-  allowedMeterIds: ['mtr_chat', 'mtr_multi'],
+  allowedMeterIds: ['mtr_mcp_token_risk', meter.meter.id],
 });
 
 const tool = await client.createMcpTool({

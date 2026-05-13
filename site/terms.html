@@ -21,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
+<link rel="stylesheet" href="/site/premium.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
@@ -28,7 +29,6 @@
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools" data-nav="tools">Tools</a>
-    <a href="/#tiers" data-nav="surfaces">Surfaces</a>
     <a href="/how-it-works" data-nav="how-it-works">How It Works</a>
     <a href="/token" data-nav="token">Token</a>
     <a href="/status" data-nav="status">Status</a>
@@ -37,6 +37,10 @@
   </div>
   <div class="nav-actions">
     <a class="nav-docs" href="/docs" data-nav="docs">Docs</a>
+        <div class="nav-socials">
+      <a class="nav-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg></a>
+      <a class="nav-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg></a>
+    </div>
     <a class="nav-cta" href="/dashboard" data-nav="dashboard">Launch Dashboard</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -46,7 +50,6 @@
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="/#tools" data-nav="tools" onclick="closeMobile()">Tools</a>
-  <a href="/#tiers" data-nav="surfaces" onclick="closeMobile()">Surfaces</a>
   <a href="/how-it-works" data-nav="how-it-works" onclick="closeMobile()">How It Works</a>
   <a href="/token" data-nav="token" onclick="closeMobile()">Token</a>
   <a href="/status" data-nav="status" onclick="closeMobile()">Status</a>
@@ -109,5 +112,6 @@
 
 <script src="/site/shared.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/site/premium.js"></script>
 </body>
 </html>

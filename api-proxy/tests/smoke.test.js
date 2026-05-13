@@ -87,10 +87,10 @@ describe('CORS configuration', () => {
       'canonical CA env should take precedence over legacy mint env');
   });
 
-  it('exposes x402 payment headers to browser clients', () => {
+  it('exposes x402 and MPP payment headers to browser clients', () => {
     const src = readFileSync(resolve(root, 'app.js'), 'utf-8');
     assert.ok(src.includes('exposedHeaders'), 'should expose payment response headers');
-    for (const header of ['Payment-Required', 'Payment-Response', 'Payment-Signature', 'X-Payment-Response']) {
+    for (const header of ['Payment-Required', 'Payment-Response', 'WWW-Authenticate', 'Payment-Receipt', 'Payment-Signature', 'X-Payment-Response', 'X-Meterflow-Payment-Protocol']) {
       assert.ok(src.includes(header), `should include ${header}`);
     }
   });
@@ -401,16 +401,20 @@ describe('Site link integrity', () => {
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
 
-  it('product docs position Meterflow as API and MCP payment infrastructure', () => {
+  it('product docs position Meterflow as the control plane for agent commerce', () => {
     const readme = readFileSync(resolve(projectRoot, 'README.md'), 'utf-8');
     const home = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
     const docs = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
-    assert.ok(readme.includes('Solana-native payment, metering, receipt, and budget infrastructure'), 'README should lead with infrastructure positioning');
-    assert.ok(readme.includes('These routes are examples'), 'README should frame bundled routes as examples');
-    assert.ok(home.includes('Wrap any API or MCP tool'), 'landing page should be provider-focused');
-    assert.ok(home.includes('Wrap an API') && home.includes('Create a paid MCP tool'), 'landing page CTAs should be provider-focused');
+    assert.ok(readme.includes('The Solana control plane for agent commerce'), 'README should lead with agent-commerce positioning');
+    assert.ok(readme.includes('x402 and MPP, one control plane'), 'README should explain the protocol-neutral direction');
+    assert.ok(readme.includes('default live paid route is intentionally narrow'), 'README should frame the live route surface narrowly');
+    assert.ok(home.includes('The control plane for'), 'landing page should lead with agent-commerce positioning');
+    assert.ok(home.includes('MPP'), 'landing page should mention MPP payment adapters');
+    assert.ok(home.includes('Wrap an API') && home.includes('View dashboard'), 'landing page CTAs should stay focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
-    assert.ok(docs.includes('The current AI, token-risk, and trading routes are demos'), 'docs should frame bundled routes as demos');
+    assert.ok(docs.includes('MPP Payment Rail'), 'docs should explain the MPP adapter layer');
+    assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
+    assert.ok(docs.includes('Meterflow routes are priced product surfaces'), 'docs should frame routes as priced control-plane surfaces');
   });
 });
 
@@ -580,11 +584,31 @@ describe('Meterflow control plane', () => {
     assert.ok(src.includes('x402.refresh()'), 'should rebuild x402 middleware from current billable meters');
   });
 
+  it('MPP is integrated as an additive Solana payment rail', () => {
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const mpp = readFileSync(resolve(root, 'lib', 'mpp.js'), 'utf-8');
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+    assert.ok(app.includes('buildMppMiddleware') && app.includes('mppGatewayReady'), 'app should initialize the MPP gateway before x402');
+    assert.ok(app.indexOf('mppGatewayReady') < app.indexOf('x402GatewayReady'), 'MPP opt-in should get first chance before x402 fallback');
+    assert.ok(mpp.includes("from 'solana-mpp/server'"), 'should use the Solana MPP server SDK');
+    assert.ok(mpp.includes("from 'mppx'"), 'should use MPP receipt/store helpers');
+    assert.ok(mpp.includes('MPP_SECRET_KEY'), 'MPP should require signed challenge configuration');
+    assert.ok(mpp.includes('X-Meterflow-Payment-Protocol'), 'callers should be able to opt into MPP explicitly');
+    assert.ok(mpp.includes('Authorization') && mpp.includes('Payment-Receipt'), 'should support standard MPP auth and receipt headers');
+    assert.ok(mpp.includes("paymentProtocol: 'mpp'"), 'verified MPP calls should tag receipts as MPP');
+    assert.ok(control.includes('paymentProtocol') && control.includes('paymentIntent') && control.includes('paymentReference'), 'receipts should store protocol metadata');
+    assert.ok(routes.includes('paymentProtocol') && routes.includes('paymentReference'), 'receipt exports should include protocol metadata');
+    assert.ok(pkg.dependencies.mppx && pkg.dependencies['solana-mpp'], 'should declare MPP dependencies');
+  });
+
   it('hosted gateway meters store target metadata safely', () => {
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     const gateway = readFileSync(resolve(root, 'routes', 'provider-gateway.js'), 'utf-8');
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(control.includes('normalizeTargetUrl'), 'should validate targetUrl');
     assert.ok(control.includes('targetHost'), 'should store target host metadata');
     assert.ok(control.includes('upstreamAuthConfigured'), 'meter responses should redact upstream auth secret values');
@@ -593,6 +617,10 @@ describe('Meterflow control plane', () => {
     assert.ok(gateway.includes('HOP_BY_HOP_HEADERS'), 'gateway should filter unsafe caller headers');
     assert.ok(gateway.includes('completeMeteredRequest'), 'gateway should complete Meterflow receipts');
     assert.ok(app.includes("app.use('/', providerGatewayRouter)") && app.indexOf("app.use('/', providerGatewayRouter)") > app.indexOf('const gateway = x402Gateway'), 'hosted gateway should mount after x402 middleware');
+    assert.ok(dashboard.includes('meterTargetUrl'), 'dashboard should let providers create hosted API meters');
+    assert.ok(dashboard.includes('upstreamAuth'), 'dashboard should submit upstream auth for hosted API meters');
+    assert.ok(dashboard.includes('route: targetUrl ? undefined'), 'dashboard should let hosted API meters use generated gateway routes');
+    assert.ok(dashboard.includes('Copy Gateway'), 'dashboard should expose generated hosted gateway URLs');
   });
 
   it('unsafe hosted target URLs are rejected', () => {
@@ -696,8 +724,12 @@ describe('Meterflow control plane', () => {
 
   it('payment ledger migration prepares accounting tables', () => {
     const migration = readFileSync(resolve(root, 'db', '002_payment_ledger.sql'), 'utf-8');
+    const protocolMigration = readFileSync(resolve(root, 'db', '003_payment_protocol_metadata.sql'), 'utf-8');
     for (const table of ['meterflow_payment_quotes', 'meterflow_payment_attempts', 'meterflow_settlements', 'meterflow_webhook_deliveries', 'meterflow_provider_balances']) {
       assert.ok(migration.includes(table), `migration should include ${table}`);
+    }
+    for (const column of ['protocol', 'intent', 'payment_method', 'payment_reference']) {
+      assert.ok(protocolMigration.includes(column), `protocol migration should include ${column}`);
     }
   });
 
@@ -728,5 +760,11 @@ describe('Meterflow control plane', () => {
     assert.ok(profile.includes('geckoterminal.com'), 'should use GeckoTerminal for chart data');
     assert.ok(!page.includes('METERFLOW_TOKEN_CA'), 'public token page should not expose internal env names');
     assert.ok(page.includes('Coming soon') || page.includes('TBA'), 'public token page should use pre-launch language');
+    assert.ok(page.includes('More endpoints. More receipts. More reasons to hold.'), 'token page should explain the holder thesis');
+    assert.ok(page.includes('$MFLOW controls utility'), 'token page should connect utility to holder-facing benefits');
+    assert.ok(page.includes('Meterflow can now meter other people'), 'token page should explain the technical unlock');
+    assert.ok(page.includes('x402 + MPP'), 'token page should connect utility to protocol adapter positioning');
+    assert.ok(page.includes('Provider discovery'), 'token page should connect utility to the provider registry');
+    assert.ok(page.includes('Every new provider adds more routes'), 'token page should connect provider growth to receipt growth');
   });
 });

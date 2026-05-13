@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, model route, or agent workflow on Meterflow.">
+<meta name="description" content="Apply to launch a paid endpoint, MCP tool, data feed, or provider workflow with Meterflow's Solana agent commerce control plane.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/apply">
 <meta property="og:title" content="Launch a paid endpoint on Meterflow">
-<meta property="og:description" content="Meterflow is onboarding early providers building agent-accessible APIs, MCP tools, data feeds, model routes, and workflows.">
+<meta property="og:description" content="Meterflow is onboarding early providers that need hosted gateways, meters, receipts, budgets, registry signal, revenue views, and webhooks around paid agent-accessible APIs.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/apply">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -23,6 +23,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/apply.css">
+<link rel="stylesheet" href="/site/subpage.css">
+<link rel="stylesheet" href="/site/premium.css">
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
@@ -31,7 +33,6 @@
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools" data-nav="tools">Tools</a>
-    <a href="/#tiers" data-nav="surfaces">Surfaces</a>
     <a href="/how-it-works" data-nav="how-it-works">How It Works</a>
     <a href="/token" data-nav="token">Token</a>
     <a href="/status" data-nav="status">Status</a>
@@ -40,6 +41,10 @@
   </div>
   <div class="nav-actions">
     <a class="nav-docs" href="/docs" data-nav="docs">Docs</a>
+        <div class="nav-socials">
+      <a class="nav-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg></a>
+      <a class="nav-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg></a>
+    </div>
     <a class="nav-cta" href="/dashboard" data-nav="dashboard">Launch Dashboard</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -49,7 +54,6 @@
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="/#tools" data-nav="tools" onclick="closeMobile()">Tools</a>
-  <a href="/#tiers" data-nav="surfaces" onclick="closeMobile()">Surfaces</a>
   <a href="/how-it-works" data-nav="how-it-works" onclick="closeMobile()">How It Works</a>
   <a href="/token" data-nav="token" onclick="closeMobile()">Token</a>
   <a href="/status" data-nav="status" onclick="closeMobile()">Status</a>
@@ -66,8 +70,8 @@
   <section class="site-subpage-hero apply-hero">
     <div class="site-subpage-hero-inner">
       <div class="site-subpage-label">Early Provider Intake</div>
-      <h1 class="site-subpage-title">Wrap an <span class="accent">API or MCP tool</span> in Solana payments.</h1>
-      <p class="site-subpage-sub">Bring the endpoint. Meterflow handles hosted gateway routes, x402-style payment requirements, Solana USDC settlement context, receipts, budgets, provider revenue, and webhooks.</p>
+      <h1 class="site-subpage-title">Launch a <span class="accent">paid endpoint</span> into the agent commerce stack.</h1>
+      <p class="site-subpage-sub">Bring the endpoint. Meterflow handles hosted gateway routes, x402/MPP payment requirements, normalized Solana USDC receipt context, failed-payment state, budgets, registry signal, provider revenue, and webhooks.</p>
     </div>
   </section>
 
@@ -77,9 +81,9 @@
         <div class="apply-panel">
           <div class="section-label">What fits</div>
           <ul class="apply-list">
-            <li><span>01</span><div><strong>Agent-useful capability</strong><p>Risk scoring, alpha data, wallet analytics, model calls, trading signals, private workflows, or anything agents need.</p></div></li>
+            <li><span>01</span><div><strong>Agent-useful capability</strong><p>Risk scoring, wallet analytics, market data, private workflows, MCP tools, or anything agents need to buy per call.</p></div></li>
             <li><span>02</span><div><strong>Clear unit economics</strong><p>Per request, lookup, tool call, workflow, generated result, or another metered unit that can settle in USDC.</p></div></li>
-            <li><span>03</span><div><strong>Launch-partner signal</strong><p>We use intake to prioritize integrations, demos, provider pages, and early revenue experiments.</p></div></li>
+            <li><span>03</span><div><strong>Launch-partner signal</strong><p>We use intake to prioritize integrations, demos, provider registry pages, and early revenue experiments.</p></div></li>
           </ul>
           <p class="apply-note">Best fit: builders who already have or are close to shipping a useful endpoint that could charge per lookup, call, workflow, or generated result.</p>
         </div>
@@ -89,7 +93,7 @@
         <div class="apply-card-head">
           <div class="section-label">Provider application</div>
           <h2>Tell us what you want to monetize.</h2>
-          <p>Rough numbers are fine. We are looking for useful endpoints that can become priced agent-accessible products.</p>
+          <p>Rough numbers are fine. We are looking for useful endpoints that can become priced agent-accessible products with clear accounting, registry signal, and spend controls.</p>
         </div>
 
         <div class="apply-form-grid">
@@ -129,6 +133,16 @@
               <option>Per tool call</option>
               <option>Per workflow</option>
               <option>Per generated result</option>
+              <option>Not sure yet</option>
+            </select>
+          </div>
+          <div class="apply-field full">
+            <label for="protocolSupport">Payment / tool protocol fit</label>
+            <select id="protocolSupport" name="protocolSupport">
+              <option>x402 paid HTTP route</option>
+              <option>MCP tool or MCP server</option>
+              <option>MPP / Stripe-compatible route</option>
+              <option>Plain API today, needs Meterflow wrapper</option>
               <option>Not sure yet</option>
             </select>
           </div>
@@ -192,5 +206,6 @@
 <script src="/site/shared.js" defer></script>
 <script src="/site/apply.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/site/premium.js"></script>
 </body>
 </html>

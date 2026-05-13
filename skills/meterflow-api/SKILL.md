@@ -78,10 +78,10 @@ If `route` is omitted, Meterflow generates `/gateway/{meterId}/*`. Test it with 
 ## Use A Metered Route
 
 ```bash
-curl -X POST https://meterflow.fun/proxy/v1/chat \
+curl -X POST https://meterflow.fun/proxy/mcp/token-risk \
   -H "Authorization: Bearer mf_xxxxx" \
   -H "Content-Type: application/json" \
-  -d '{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"token":"So11111111111111111111111111111111111111112"}'
 ```
 
 ## Control Plane Endpoints

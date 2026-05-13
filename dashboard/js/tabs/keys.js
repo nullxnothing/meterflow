@@ -15,7 +15,7 @@ export function renderKeys() {
   return `
     <div class="page-header">
       <h1 class="page-title">API Keys</h1>
-      <p class="page-sub">Use keys as metered clients for model routes today and payment-verified endpoints as they ship.</p>
+      <p class="page-sub">Use keys as metered clients for meters, receipts, budgets, MCP tools, and hosted provider routes.</p>
     </div>
     ${locked ? renderPreviewNotice('API keys') : ''}
     <div class="section">
@@ -35,15 +35,16 @@ export function renderKeys() {
     <div class="section">
       <div class="section-title">Quick Start</div>
       <div class="api-key-box">
-        <div class="api-key-hint" style="margin-bottom:16px;">Use your Meterflow key like a model gateway key today. Meterflow records usage so the same client can move to priced endpoints, budgets, and receipts.</div>
+        <div class="api-key-hint" style="margin-bottom:16px;">Use your Meterflow key to create hosted meters, inspect receipts, configure budgets, and package MCP tools.</div>
         <div class="api-key-value" style="font-size:12px;line-height:1.8;white-space:pre-wrap;margin-bottom:16px;padding:20px;">
 <span style="color:var(--text-muted)">// Works with any HTTP client</span>
-<span style="color:var(--blue)">curl</span> ${API_BASE}/v1/chat \\
+<span style="color:var(--blue)">curl</span> ${API_BASE}/v1/meters \\
   -H <span style="color:var(--accent)">"Authorization: Bearer ${STATE.keyVisible ? STATE.apiKeyFull : 'mf_your_key'}"</span> \\
-  -d <span style="color:var(--accent)">'{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"Hello"}]}'</span></div>
+  -H <span style="color:var(--accent)">"Content-Type: application/json"</span> \\
+  -d <span style="color:var(--accent)">'{"targetUrl":"https://api.example.com","method":"GET","unit":"lookup","priceUsd":0.01}'</span></div>
         <div class="api-key-hint">
-          <strong style="color:var(--text)">Compatible client example:</strong><br>
-          <code>client = Anthropic(api_key="your_mf_key", base_url="${API_BASE}")</code>
+          <strong style="color:var(--text)">Next step:</strong><br>
+          <code>POST ${API_BASE}/v1/meters/:id/test</code>
         </div>
       </div>
     </div>

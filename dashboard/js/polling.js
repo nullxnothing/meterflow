@@ -1,5 +1,5 @@
 import {
-  STATE, CHAT,
+  STATE,
   setStatusPollInterval, clearStatusPollInterval,
   setProviderStatusInterval, clearProviderStatusInterval,
 } from './state.js';
@@ -20,7 +20,6 @@ export async function fetchStatus() {
     STATE.isGuest = data.isGuest || STATE.isGuest;
     STATE.freeAccess = data.freeAccess || false;
     STATE.freeAccessEndsAt = data.freeAccessEndsAt || null;
-    if (STATE.models.length && !CHAT.selectedModel) CHAT.selectedModel = STATE.models[0];
     saveSession();
     updateSidebarFooter();
     if (STATE.activeTab === 'overview') updateOverviewStats();
@@ -222,9 +221,6 @@ function updateOverviewStats() {
     const callsSub = cards[1].querySelector('.sub');
     if (callsVal) callsVal.textContent = STATE.usage.today.toLocaleString();
     if (callsSub) callsSub.textContent = `of ${STATE.usage.limit.toLocaleString()} limit`;
-
-    const modelsVal = cards[2].querySelector('.value');
-    if (modelsVal) modelsVal.textContent = STATE.models.length;
 
     const tierVal = cards[3].querySelector('.value');
     const tierSub = cards[3].querySelector('.sub');

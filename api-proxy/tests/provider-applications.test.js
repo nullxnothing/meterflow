@@ -42,6 +42,7 @@ describe('Provider applications intake', () => {
     assert.ok(lib.includes('projectedMonthlyGrossVolumeUsd'));
     assert.ok(lib.includes('estimatedMonthlyProviderRevenueUsd'));
     assert.ok(lib.includes('projectedMonthlyProtocolRevenueUsd'));
+    assert.ok(lib.includes('protocolSupport'));
     assert.ok(lib.includes('CONFIG.PROTOCOL_FEE_BPS'));
   });
 
@@ -51,7 +52,9 @@ describe('Provider applications intake', () => {
     const home = read('site/index.html');
     const docs = read('site/docs.html');
     const vercel = read('vercel.json');
-    assert.ok(apply.includes('Launch a paid endpoint'));
+    assert.ok(apply.includes('paid endpoint'));
+    assert.ok(apply.includes('agent commerce stack'));
+    assert.ok(apply.includes('Payment / tool protocol fit'));
     assert.ok(apply.includes('/proxy/applications/provider'));
     assert.ok(home.includes('href="/apply"'), 'homepage should expose provider application entrypoint');
     assert.ok(docs.includes('href="/apply"'), 'docs should expose provider application entrypoint');

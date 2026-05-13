@@ -2,11 +2,9 @@
 // Meterflow Dashboard - Event Bindings
 // ═══════════════════════════════════════════
 
-import { STATE, CHAT, TRADING } from './state.js';
+import { STATE } from './state.js';
 import { getWalletProviders, connectWallet } from './wallet.js?v=v10-ledger';
 import { setTab } from './actions.js';
-import { sendChatMessage } from './chat.js';
-import { handleImageUpload } from './images.js';
 import { bindCodeCopyButtons, bindCodeToggleButtons } from './tools.js';
 import { render } from './render.js';
 
@@ -24,104 +22,6 @@ export function bindEvents(scope = document) {
       if (providers[idx]) connectWallet(providers[idx].provider);
     });
   });
-
-  // Chat-specific bindings
-  const chatInput = document.getElementById('chatInput');
-  if (chatInput) {
-    chatInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendChatMessage();
-      }
-    });
-    chatInput.addEventListener('input', () => {
-      chatInput.style.height = 'auto';
-      chatInput.style.height = Math.min(chatInput.scrollHeight, 200) + 'px';
-    });
-  }
-
-  const chatSendBtn = document.getElementById('chatSendBtn');
-  if (chatSendBtn) {
-    chatSendBtn.addEventListener('click', () => sendChatMessage());
-  }
-
-  const modelSelect = document.getElementById('chatModelSelect');
-  if (modelSelect) {
-    modelSelect.addEventListener('change', () => { CHAT.selectedModel = modelSelect.value; });
-  }
-
-  const convSelect = document.getElementById('chatConvSelect');
-  if (convSelect) {
-    convSelect.addEventListener('change', () => {
-      CHAT.activeId = convSelect.value;
-      render();
-    });
-  }
-
-  // Tools are always enabled - no toggles needed
-
-  // Upload button + file input
-  const uploadBtn = document.getElementById('chatUploadBtn');
-  const fileInput = document.getElementById('chatFileInput');
-  if (uploadBtn && fileInput) {
-    uploadBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      handleImageUpload(e.target.files);
-      fileInput.value = '';
-    });
-  }
-
-  // Sidebar toggle
-  const sidebarToggle = document.getElementById('sidebarToggle');
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', () => {
-      CHAT.sidebarOpen = !CHAT.sidebarOpen;
-      const wrapper = document.querySelector('.chat-with-sidebar');
-      if (wrapper) wrapper.classList.toggle('sidebar-collapsed', !CHAT.sidebarOpen);
-      sidebarToggle.textContent = CHAT.sidebarOpen ? '\u2759\u2759' : '\u2630';
-      sidebarToggle.title = CHAT.sidebarOpen ? 'Hide sidebar' : 'Show sidebar';
-    });
-  }
-
-  // Connectors button — navigate to connections tab
-  const connectorsBtn = document.getElementById('chatConnectorsBtn');
-  if (connectorsBtn) {
-    connectorsBtn.addEventListener('click', () => {
-      STATE.activeTab = 'connections';
-      render();
-    });
-  }
-
-  // Trading-specific bindings
-  const tradingInput = document.getElementById('tradingInput');
-  if (tradingInput) {
-    tradingInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        import('./tabs/trading.js').then(mod => {
-          if (mod.sendTradingMessage) mod.sendTradingMessage();
-        });
-      }
-    });
-    tradingInput.addEventListener('input', () => {
-      tradingInput.style.height = 'auto';
-      tradingInput.style.height = Math.min(tradingInput.scrollHeight, 200) + 'px';
-    });
-  }
-
-  const tradingSendBtn = document.getElementById('tradingSendBtn');
-  if (tradingSendBtn) {
-    tradingSendBtn.addEventListener('click', () => {
-      import('./tabs/trading.js').then(mod => {
-        if (mod.sendTradingMessage) mod.sendTradingMessage();
-      });
-    });
-  }
-
-  const tradingModelSelect = document.getElementById('tradingModelSelect');
-  if (tradingModelSelect) {
-    tradingModelSelect.addEventListener('change', () => { TRADING.selectedModel = tradingModelSelect.value; });
-  }
 
   const agentWalletInput = document.getElementById('agentWalletInput');
   if (agentWalletInput) {
@@ -191,17 +91,10 @@ export function bindEvents(scope = document) {
 document.addEventListener('keydown', (e) => {
   const isMod = e.metaKey || e.ctrlKey;
 
-  // Cmd/Ctrl+K → focus chat input
+  // Cmd/Ctrl+K is handled by the command palette module.
   if (isMod && e.key === 'k') {
     e.preventDefault();
-    const chatInput = document.getElementById('chatInput') || document.getElementById('tradingInput');
-    if (chatInput) {
-      chatInput.focus();
-    } else {
-      // Switch to chat tab and focus
-      import('./actions.js').then(m => m.setTab('chat'));
-      setTimeout(() => document.getElementById('chatInput')?.focus(), 100);
-    }
+    window.openCommandPalette?.();
   }
 
   // Escape → close mobile nav, notification panels

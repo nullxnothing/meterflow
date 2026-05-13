@@ -1,6 +1,3 @@
-// Mark JS as ready so progressive-enhancement styles activate
-document.documentElement.classList.add('js-ready');
-
 // ═══════════ MOBILE MENU ═══════════
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
@@ -342,21 +339,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ═══════════ SCROLL REVEAL ═══════════
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
-
-document.querySelectorAll('.hooks-section, .protocol-stats, .how-section, .tools-section, .tiers-section, .funded-section, .agent-section, .faq-section, .cta-section, .demo-section').forEach(el => {
-  el.classList.add('scroll-reveal');
-  revealObserver.observe(el);
-});
-
 // ═══════════ NAV SCROLL SPY ═══════════
 const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
 const spySections = document.querySelectorAll('section[id], .protocol-stats[id]');
@@ -374,92 +356,12 @@ const spyObserver = new IntersectionObserver((entries) => {
 
 spySections.forEach(s => spyObserver.observe(s));
 
-// ═══════════ BACKGROUND PARTICLES ═══════════
-const bgCanvas = document.getElementById('bgCanvas');
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (bgCanvas && window.innerWidth > 768 && !reduceMotion) {
-  const ctx = bgCanvas.getContext('2d');
-  const particles = [];
-  const isTablet = window.innerWidth <= 1024;
-  const PARTICLE_COUNT = isTablet ? 20 : 50;
-  let particleRafId = null;
-
-  function resizeBg() {
-    bgCanvas.width = window.innerWidth;
-    bgCanvas.height = window.innerHeight;
-  }
-
-  function initParticles() {
-    particles.length = 0;
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
-        x: Math.random() * bgCanvas.width,
-        y: Math.random() * bgCanvas.height,
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: (Math.random() - 0.5) * 0.15,
-        r: Math.random() * 1.5 + 0.5,
-        a: Math.random() * 0.15 + 0.03,
-      });
-    }
-  }
-
-  function drawParticles() {
-    ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-    particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0) p.x += bgCanvas.width;
-      if (p.x > bgCanvas.width) p.x -= bgCanvas.width;
-      if (p.y < 0) p.y += bgCanvas.height;
-      if (p.y > bgCanvas.height) p.y -= bgCanvas.height;
-      ctx.fillStyle = `rgba(79, 156, 255, ${p.a})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    if (!isTablet) {
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = dx * dx + dy * dy;
-          if (dist < 22500) {
-            ctx.strokeStyle = `rgba(79, 156, 255, ${0.02 * (1 - dist / 22500)})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-    }
-    particleRafId = requestAnimationFrame(drawParticles);
-  }
-
-  resizeBg();
-  initParticles();
-  drawParticles();
-
-  window.addEventListener('resize', () => { resizeBg(); initParticles(); });
-
-  // Pause animation when tab is hidden to save CPU
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      cancelAnimationFrame(particleRafId);
-      particleRafId = null;
-    } else if (!particleRafId) {
-      drawParticles();
-    }
-  });
-}
-
 // ═══════════ LIVE DEMO ═══════════
 const DEMO_DATA = [
   {
     prompt: 'Endpoint revenue',
     claude: `Provider View\n\nEndpoint: /v1/risk-score\nPrice: 0.006 USDC per call\nStatus: Live\n\nToday:\n- 8,421 meter hits\n- 7,904 paid responses\n- 311 failed payments\n- 206 policy rejections\n\nRevenue:\n- Gross: 47.42 USDC\n- Median latency: 412ms\n- Top consumer: agent_7Kp...91a\n\nMeterflow is not just checking payment. It is showing what the endpoint earned, where calls failed, and whether the route is worth scaling.`,
-    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /v1/risk-score\n- /v1/social-scan\n- /v1/token-liquidity\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/v1/risk-score\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
+    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /mcp/token-risk\n- /gateway/mtr_wallet_trace/*\n- /gateway/mtr_risk_feed/*\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/mcp/token-risk\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
   },
   {
     prompt: 'Agent budget',
@@ -468,7 +370,7 @@ const DEMO_DATA = [
   },
   {
     prompt: 'Failed payment',
-    claude: `Provider View\n\nRequest blocked:\n/v1/social-scan\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
+    claude: `Provider View\n\nRequest blocked:\n/gateway/mtr_risk_feed/score\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
     gemini: `Agent View\n\nPayment denied.\n\nWhy:\n- daily budget already spent\n- endpoint not critical to current task\n- operator approval required for further calls\n\nNext action:\nstop workflow or request budget increase\n\nThe agent does not keep retrying blindly, and the operator has a clean audit trail.`
   }
 ];
@@ -535,8 +437,6 @@ function startDemo(index) {
 // Auto-trigger demo on scroll into view
 const demoSection = document.querySelector('.demo-section');
 if (demoSection) {
-  demoSection.classList.add('scroll-reveal');
-  revealObserver.observe(demoSection);
   let demoStarted = false;
   const demoObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {

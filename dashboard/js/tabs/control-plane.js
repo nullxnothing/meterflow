@@ -21,20 +21,20 @@ const CP = {
 };
 
 const PREVIEW_METERS = [
-  { id: 'mtr_chat', route: '/v1/chat', method: 'POST', unit: 'model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live' },
   { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live' },
-  { id: 'mtr_alpha', route: '/v1/alpha/*', method: 'GET', unit: 'alpha request', priceUsd: 0.012, asset: 'USDC', status: 'example', mode: 'test' },
+  { id: 'mtr_wallet_trace', route: '/gateway/mtr_wallet_trace/*', method: 'GET', unit: 'wallet trace', priceUsd: 0.012, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Wallet intelligence provider', targetUrl: 'https://api.example.com/wallet' },
+  { id: 'mtr_risk_feed', route: '/gateway/mtr_risk_feed/*', method: 'GET', unit: 'risk feed request', priceUsd: 0.009, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Risk data provider', targetUrl: 'https://api.example.com/risk' },
 ];
 
 const PREVIEW_RECEIPTS = [
-  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/v1/chat', status: 'verified', paymentState: 'verified', amountUsd: 0.004, baseAmountUsd: 0.004, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 728 },
-  { id: 'fail_preview_002', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'settlement_failed', paymentState: 'settlement_failed', amountUsd: 0, baseAmountUsd: 0.006, asset: 'USDC', policyResult: 'settlement_failed', responseStatus: 402, error: 'facilitator settlement failed' },
-  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/v1/alpha/token', status: 'payment_verification_failed', paymentState: 'verification_failed', amountUsd: 0, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'payment_verification_failed', responseStatus: 402, error: 'invalid payment signature' },
+  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'verified', paymentState: 'verified', paymentProtocol: 'x402', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.006, baseAmountUsd: 0.006, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 228 },
+  { id: 'rcpt_preview_002', createdAt: new Date().toISOString(), route: '/gateway/mtr_wallet_trace/7Kp', status: 'verified', paymentState: 'verified', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.012, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'mpp_verified', responseStatus: 200, latencyMs: 184, txSignature: '4Nzg2CeJHbk8xEYYXSpG1S9x85CL2GVbnpWnNRzqkV5ad2M54kK9K2p6wMR7L9WDqjDL6nFC4VhE77duYoZ6T4Bm' },
+  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/gateway/mtr_risk_feed/score', status: 'payment_verification_failed', paymentState: 'verification_failed', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0, baseAmountUsd: 0.009, asset: 'USDC', policyResult: 'mpp_verification_failed', responseStatus: 402, error: 'invalid payment credential' },
 ];
 
 const PREVIEW_BUDGETS = [
-  { id: 'bdg_preview_001', name: 'market-research-agent', status: 'active', dailyCapUsd: 25, perCallCapUsd: 0.05, spentUsdToday: 4.38, allowedMeterIds: ['mtr_chat', 'mtr_mcp_token_risk'] },
-  { id: 'bdg_preview_002', name: 'support-agent', status: 'revoked', dailyCapUsd: 10, perCallCapUsd: 0.02, spentUsdToday: 0, allowedMeterIds: ['mtr_chat'] },
+  { id: 'bdg_preview_001', name: 'risk-agent-budget', status: 'active', dailyCapUsd: 25, perCallCapUsd: 0.05, spentUsdToday: 4.38, allowedMeterIds: ['mtr_mcp_token_risk', 'mtr_wallet_trace'] },
+  { id: 'bdg_preview_002', name: 'provider-test-budget', status: 'revoked', dailyCapUsd: 10, perCallCapUsd: 0.02, spentUsdToday: 0, allowedMeterIds: ['mtr_mcp_token_risk'] },
 ];
 
 const PREVIEW_MCP_TOOLS = [
@@ -47,9 +47,9 @@ const PREVIEW_WEBHOOKS = [
 ];
 
 const PREVIEW_REVENUE = [
-  { meterId: 'mtr_chat', calls: 1284, estimatedUsd: 5.14 },
   { meterId: 'mtr_mcp_token_risk', calls: 412, estimatedUsd: 2.47 },
-  { meterId: 'mtr_alpha', calls: 203, estimatedUsd: 2.44 },
+  { meterId: 'mtr_wallet_trace', calls: 203, estimatedUsd: 2.44 },
+  { meterId: 'mtr_risk_feed', calls: 166, estimatedUsd: 1.49 },
 ];
 
 function viewData() {
@@ -108,6 +108,18 @@ function shortHash(value, left = 4, right = 4) {
   if (!text) return '—';
   if (text.length <= left + right + 3) return text;
   return `${text.slice(0, left)}…${text.slice(-right)}`;
+}
+
+function jsString(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r?\n/g, ' ');
+}
+
+function hostedMeterUrl(meter) {
+  if (!meter?.targetUrl || !meter?.route) return null;
+  return `https://meterflow.fun/proxy${meter.route.replace(/\*$/, 'path')}`;
 }
 
 function txLink(signature) {
@@ -202,6 +214,7 @@ export function renderMeters() {
   const data = viewData();
   const locked = !canManageMeterflow();
   const active = data.meters.filter(m => m.status !== 'paused').length;
+  const hosted = data.meters.filter(m => m.targetUrl).length;
   const gross = data.revenue.reduce((sum, row) => sum + Number(row.estimatedUsd || 0), 0);
   return `
     <div class="page-header">
@@ -211,20 +224,25 @@ export function renderMeters() {
     ${locked ? renderPreviewNotice('meters') : ''}
     <div class="stats-row">
       <div class="stat-card"><div class="label">Active Meters</div><div class="value accent">${active}</div><div class="sub">${data.meters.length} total configured</div></div>
+      <div class="stat-card"><div class="label">Hosted APIs</div><div class="value accent">${hosted}</div><div class="sub">external endpoints wrapped</div></div>
       <div class="stat-card"><div class="label">Estimated Gross</div><div class="value green">${money(gross)}</div><div class="sub">from metered-key usage</div></div>
       <div class="stat-card"><div class="label">Settlement Asset</div><div class="value accent">USDC</div><div class="sub">MFLOW controls utility</div></div>
-      <div class="stat-card"><div class="label">MCP Tools</div><div class="value">${data.mcpTools.length}</div><div class="sub">packaged tools</div></div>
     </div>
 
     <div class="section ${locked ? 'preview-disabled' : ''}">
-      <div class="section-title">Create Meter</div>
-      <div class="tool-config-box" style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;white-space:normal;">
-        <input id="meterRoute" class="bot-form-input" placeholder="/v1/my-route" style="grid-column:span 2;">
+      <div class="section-title">Create Paid Endpoint</div>
+      <div class="tool-config-box hosted-meter-form">
+        <input id="meterTargetUrl" class="bot-form-input" placeholder="https://api.example.com">
+        <input id="meterProviderName" class="bot-form-input" placeholder="Provider name">
+        <input id="meterRoute" class="bot-form-input" placeholder="/v1/my-route (for local meters)">
         <select id="meterMethod" class="bot-form-input"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select>
         <input id="meterUnit" class="bot-form-input" placeholder="request">
         <input id="meterPrice" class="bot-form-input" placeholder="0.006">
         <select id="meterStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
-        <button class="btn-sm primary" onclick="createMeterFromDashboard()" style="grid-column:span 6;">Create Meter</button>
+        <select id="meterAuthType" class="bot-form-input"><option value="">No upstream auth</option><option value="bearer">Bearer token</option><option value="header">Custom header</option></select>
+        <input id="meterAuthHeader" class="bot-form-input" placeholder="Header name">
+        <input id="meterAuthValue" class="bot-form-input" placeholder="Upstream auth secret">
+        <button class="btn-sm primary" onclick="createMeterFromDashboard()">Create Hosted Meter</button>
       </div>
     </div>
 
@@ -233,16 +251,19 @@ export function renderMeters() {
       <div class="tools-grid">
         ${data.meters.map(meter => {
           const revenue = data.revenue.find(row => row.meterId === meter.id);
+          const gatewayUrl = hostedMeterUrl(meter);
           return `
             <div class="tool-card">
-              <div class="tool-header">${statusBadge(meter.status)}<span class="dim">${escapeHtml(meter.mode || 'test')}</span></div>
+              <div class="tool-header">${statusBadge(meter.status)}<span class="dim">${gatewayUrl ? 'hosted' : escapeHtml(meter.mode || 'test')}</span></div>
               <div class="tool-name">${escapeHtml(meter.route)}</div>
               <div class="tool-desc">
                 Unit: ${escapeHtml(meter.unit)}<br>
                 Price: ${money(meter.priceUsd)} ${escapeHtml(meter.asset || 'USDC')}<br>
+                ${gatewayUrl ? `Provider: ${escapeHtml(meter.providerName || meter.targetHost || 'Hosted API')}<br>Gateway: ${escapeHtml(gatewayUrl)}<br>` : ''}
                 Calls: ${Number(revenue?.calls || 0).toLocaleString()} · Gross: ${money(revenue?.estimatedUsd || 0)}
               </div>
               <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testMeter('${meter.id}')`}">${locked ? 'Unlock' : 'Test Quote'}</div>
+              ${!locked && gatewayUrl ? `<div class="tool-launch" onclick="copyText('${jsString(gatewayUrl)}')">Copy Gateway</div>` : ''}
               ${!locked && canDeleteMeter(meter) ? `<div class="tool-launch danger" onclick="deleteMeterFromDashboard('${meter.id}')">Delete</div>` : ''}
             </div>
           `;
@@ -397,7 +418,7 @@ export function renderBudgets() {
         <input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">
         <input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">
         <select id="budgetAllowedMeters" class="bot-form-input" multiple style="grid-column:span 2;min-height:42px;">
-          ${data.meters.map(m => `<option value="${m.id}" ${m.id.startsWith('mtr_chat') || m.id === 'mtr_multi' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
+          ${data.meters.map(m => `<option value="${m.id}" ${m.id === 'mtr_mcp_token_risk' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
         </select>
         <button class="btn-sm primary" onclick="createBudgetFromDashboard()" style="grid-column:span 6;">Create Budget Policy</button>
       </div>
@@ -474,19 +495,39 @@ export function renderMcpTools() {
 }
 
 async function createMeterFromDashboard() {
+  const targetUrl = document.getElementById('meterTargetUrl')?.value.trim();
+  const route = document.getElementById('meterRoute')?.value.trim();
+  const upstreamAuthValue = document.getElementById('meterAuthValue')?.value.trim();
+  const upstreamAuthType = document.getElementById('meterAuthType')?.value;
+  const upstreamAuthHeader = document.getElementById('meterAuthHeader')?.value.trim();
+  if (!targetUrl && !route) {
+    showToast('Enter a target URL for hosted APIs or a route for local meters', true);
+    return;
+  }
   try {
-    await api('/v1/meters', {
+    const body = {
+      route: targetUrl ? undefined : (route || undefined),
+      targetUrl: targetUrl || undefined,
+      providerName: document.getElementById('meterProviderName')?.value.trim() || undefined,
+      method: document.getElementById('meterMethod')?.value,
+      unit: document.getElementById('meterUnit')?.value.trim() || 'request',
+      priceUsd: Number(document.getElementById('meterPrice')?.value || 0),
+      status: document.getElementById('meterStatus')?.value || 'test',
+    };
+    if (upstreamAuthValue) {
+      body.upstreamAuth = {
+        type: upstreamAuthType || 'bearer',
+        headerName: upstreamAuthHeader || undefined,
+        value: upstreamAuthValue,
+      };
+    }
+    const data = await api('/v1/meters', {
       method: 'POST',
-      body: JSON.stringify({
-        route: document.getElementById('meterRoute')?.value.trim(),
-        method: document.getElementById('meterMethod')?.value,
-        unit: document.getElementById('meterUnit')?.value.trim() || 'request',
-        priceUsd: Number(document.getElementById('meterPrice')?.value || 0),
-        status: document.getElementById('meterStatus')?.value || 'test',
-      }),
+      body: JSON.stringify(body),
     });
     CP.loaded = false;
-    showToast('Meter created');
+    const gatewayUrl = hostedMeterUrl(data.meter);
+    showToast(gatewayUrl ? 'Hosted API meter created' : 'Meter created');
     loadControlPlane(true);
   } catch (err) {
     showToast(err.message || 'Meter creation failed', true);
@@ -496,7 +537,8 @@ async function createMeterFromDashboard() {
 async function testMeter(meterId) {
   try {
     const data = await api(`/v1/meters/${meterId}/test`, { method: 'POST' });
-    showToast(`Quote: ${money(data.quote.amountUsd)} ${data.quote.asset}`);
+    const suffix = data.hostedGateway?.urlTemplate ? ' · hosted gateway ready' : '';
+    showToast(`Quote: ${money(data.quote.amountUsd)} ${data.quote.asset}${suffix}`);
   } catch (err) {
     showToast(err.message || 'Meter test failed', true);
   }
