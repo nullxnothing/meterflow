@@ -15,15 +15,6 @@ function getResetCountdown() {
   return `${hours}h ${mins}m`;
 }
 
-function hasAnyChatProvider() {
-  return STATE.providers.claude || STATE.providers.gemini || STATE.providers.openai;
-}
-
-function isVideoTierAllowed() {
-  const t = (STATE.tier || '').toLowerCase();
-  return t === 'operator' || t === 'architect' || t === 'alpha';
-}
-
 export function renderOverview() {
   const hasKey = isHolder();
 
@@ -44,12 +35,12 @@ export function renderOverview() {
       ${isLoaded ? `
         <div class="stat-card"><div class="label">Metering</div><div class="value accent">Live</div><div class="sub">request-level usage</div></div>
         <div class="stat-card"><div class="label">Calls Today</div><div class="value">${STATE.usage.today.toLocaleString()}</div><div class="sub">of ${STATE.usage.limit.toLocaleString()} limit</div></div>
-        <div class="stat-card"><div class="label">Services</div><div class="value green">${STATE.models.length}</div><div class="sub">bundled AI routes online</div></div>
+        <div class="stat-card"><div class="label">Payment Rails</div><div class="value green">2</div><div class="sub">x402 + MPP-ready</div></div>
         <div class="stat-card"><div class="label">Utility Tier</div><div class="value accent">${STATE.tier || '\u2014'}</div><div class="sub">${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div></div>
       ` : `
         <div class="stat-card skeleton"><div class="label">Your Tier</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
         <div class="stat-card skeleton"><div class="label">Calls Today</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
-        <div class="stat-card skeleton"><div class="label">Models Available</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Payment Rails</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
         <div class="stat-card skeleton"><div class="label">Metering</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
       `}
     </div>
@@ -78,8 +69,8 @@ export function renderOverview() {
         <div class="tool-card" onclick="setTab('budgets')"><div class="tool-header"><span class="tool-status">NEW</span></div><div class="tool-name">Agent Budgets</div><div class="tool-desc">Set route allowlists, per-call caps, daily caps, revocation, and operator approval rules.</div><div class="tool-launch">Control</div></div>
         <div class="tool-card" onclick="setTab('mcp-tools')"><div class="tool-header"><span class="tool-status">NEW</span></div><div class="tool-name">MCP Tools</div><div class="tool-desc">Package, price, meter, and monitor MCP tools through a hosted Meterflow gateway.</div><div class="tool-launch">Package</div></div>
         <div class="tool-card" onclick="setTab('webhooks')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Webhooks</div><div class="tool-desc">Send signed events for receipts, failed payments, budget exhaustion, and test deliveries.</div><div class="tool-launch">Configure</div></div>
-        <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">API Keys</div><div class="tool-desc">Issue developer keys for metered services. Current keys power the bundled AI gateway and upcoming meter clients.</div><div class="tool-launch">View Key</div></div>
-        <div class="tool-card" onclick="setTab('models')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Service Routes</div><div class="tool-desc">Inspect bundled routes that run through the same meter, receipt, and budget model.</div><div class="tool-launch">View</div></div>
+        <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">API Keys</div><div class="tool-desc">Issue developer keys for metered clients that create meters, inspect receipts, and manage budgets.</div><div class="tool-launch">View Key</div></div>
+        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach provider credentials and operational integrations behind hosted Meterflow routes.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('holder-tools')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Agent Checkout</div><div class="tool-desc">Watch an agent buy Helius wallet intelligence, stay inside budget, and return receipts.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Manage provider, data, wallet, and notification integrations that can be attached to meters.</div><div class="tool-launch">Open</div></div>
       </div>
@@ -140,9 +131,9 @@ function renderPublicOverview() {
         <div class="tool-card" onclick="setTab('mcp-tools')"><div class="tool-header"><span class="tool-status">NEW</span></div><div class="tool-name">MCP Tools</div><div class="tool-desc">Turn MCP tools into priced products with receipts and budget enforcement.</div><div class="tool-launch">Package</div></div>
         <div class="tool-card" onclick="setTab('webhooks')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Webhooks</div><div class="tool-desc">Subscribe to signed payment, receipt, and budget events from the gateway.</div><div class="tool-launch">Configure</div></div>
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Developer Keys</div><div class="tool-desc">Create keys that identify metered clients and power the current gateway.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('models')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Service Routes</div><div class="tool-desc">View bundled API, model, data, and workflow routes that can be priced and controlled.</div><div class="tool-launch">View</div></div>
+        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach provider credentials and operational integrations behind hosted Meterflow routes.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('holder-tools')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Agent Checkout</div><div class="tool-desc">Try a no-wallet wallet deep dive that shows priced data calls and receipts.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach Solana infrastructure, data, social, and notification providers to Meterflow routes.</div><div class="tool-launch">Open</div></div>
+        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach Solana infrastructure, payment rails, wallet data, and notification providers to Meterflow routes.</div><div class="tool-launch">Open</div></div>
       </div>
     </div>
     <div class="compliance-notice">

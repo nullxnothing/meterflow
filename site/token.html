@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="$MFLOW is the utility layer for Meterflow: provider verification, fee relief, registry ranking, higher limits, and longer receipt retention for paid agent APIs.">
+<meta name="description" content="$MFLOW is the utility layer for Meterflow's Solana agent commerce control plane: provider verification, fee relief, registry ranking, higher limits, premium analytics, and longer receipt retention.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/token">
 <meta property="og:title" content="$MFLOW | Meterflow">
-<meta property="og:description" content="$MFLOW aligns holders with the control plane for paid agent APIs: more endpoints, more receipts, more reasons to hold.">
+<meta property="og:description" content="$MFLOW aligns holders with Meterflow's agent commerce control plane: more providers, more routes, more receipts, more reasons to hold.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
 <meta property="og:url" content="https://meterflow.fun/token">
@@ -23,13 +23,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/token.css">
+<link rel="stylesheet" href="/site/subpage.css">
+<link rel="stylesheet" href="/site/premium.css">
 </head>
 <body>
 <nav>
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools" data-nav="tools">Tools</a>
-    <a href="/#tiers" data-nav="surfaces">Surfaces</a>
     <a href="/how-it-works" data-nav="how-it-works">How It Works</a>
     <a href="/token" data-nav="token">Token</a>
     <a href="/status" data-nav="status">Status</a>
@@ -38,6 +39,10 @@
   </div>
   <div class="nav-actions">
     <a class="nav-docs" href="/docs" data-nav="docs">Docs</a>
+        <div class="nav-socials">
+      <a class="nav-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg></a>
+      <a class="nav-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg></a>
+    </div>
     <a class="nav-cta" href="/dashboard" data-nav="dashboard">Launch Dashboard</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -47,7 +52,6 @@
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="/#tools" data-nav="tools" onclick="closeMobile()">Tools</a>
-  <a href="/#tiers" data-nav="surfaces" onclick="closeMobile()">Surfaces</a>
   <a href="/how-it-works" data-nav="how-it-works" onclick="closeMobile()">How It Works</a>
   <a href="/token" data-nav="token" onclick="closeMobile()">Token</a>
   <a href="/status" data-nav="status" onclick="closeMobile()">Status</a>
@@ -66,7 +70,7 @@
     <div class="token-hero-grid">
       <div>
         <h1><span id="tokenSymbol">$MFLOW</span><span id="tokenHeroSuffix"> is the utility layer.</span></h1>
-        <p>Meterflow is building the control plane for paid agent APIs. $MFLOW is designed to sit around that network: provider verification, fee relief, registry ranking, higher policy limits, and longer receipt retention.</p>
+        <p>Meterflow is building the Solana control plane for agent commerce. $MFLOW is designed to sit around that network: provider verification, fee relief, registry ranking, higher policy limits, premium analytics, and longer receipt retention.</p>
         <div class="token-address">
           <span id="tokenAddressLabel">Contract address</span>
           <code id="tokenAddress">TBA</code>
@@ -95,23 +99,23 @@
     <div class="holder-thesis-copy">
       <div class="label-sm">HOLDER THESIS</div>
       <h2>More endpoints. More receipts. More reasons to hold.</h2>
-      <p>Agent payments are becoming real. The scarce layer is not another payment button; it is the operating system around paid usage. Meterflow is building the place where providers price routes, agents stay inside budgets, and every paid call becomes an auditable receipt.</p>
+      <p>Agent payments are becoming real. The scarce layer is not another payment button; it is the operating system around paid usage. Meterflow is building the place where providers price routes, agents stay inside budgets, payment rails normalize into one ledger, and every paid call becomes an auditable receipt.</p>
     </div>
     <div class="holder-loop" aria-label="$MFLOW utility flywheel">
       <article>
         <span>01</span>
         <strong>Providers launch paid routes</strong>
-        <p>APIs, MCP tools, model routes, data feeds, and workflows can become metered products.</p>
+        <p>APIs, MCP tools, data feeds, and provider workflows can become metered products in one registry.</p>
       </article>
       <article>
         <span>02</span>
         <strong>Agents create usage</strong>
-        <p>Every call can produce spend policy checks, payment state, receipt data, and revenue attribution.</p>
+        <p>Every call can produce spend policy checks, payment state, receipt data, revenue attribution, and public provider signal.</p>
       </article>
       <article>
         <span>03</span>
         <strong>$MFLOW controls utility</strong>
-        <p>Holder tiers can unlock fee relief, higher limits, longer retention, and provider reputation benefits as the network expands.</p>
+        <p>Holder tiers can unlock fee relief, higher limits, longer retention, premium analytics, and provider reputation benefits as the network expands.</p>
       </article>
     </div>
   </section>
@@ -120,15 +124,15 @@
     <div class="tech-unlock-head">
       <div class="label-sm">TECH UNLOCK</div>
       <h2>Meterflow can now meter other people's APIs.</h2>
-      <p>A provider brings an endpoint. Meterflow creates the meter, hosted route, payment quote, receipt ledger, budget checks, revenue view, and webhook stream.</p>
+      <p>A provider brings an endpoint. Meterflow creates the meter, hosted route, x402/MPP payment surface, normalized receipt model, budget checks, revenue view, registry listing, and webhook stream.</p>
     </div>
     <div class="tech-unlock-grid">
       <article><span>Gateway</span><strong>Hosted paid routes</strong><p>External APIs can become agent-accessible products without moving into Meterflow.</p></article>
-      <article><span>Meters</span><strong>Dynamic pricing</strong><p>Routes carry method, unit, price, status, provider, and target metadata.</p></article>
-      <article><span>x402</span><strong>USDC request payments</strong><p>Agents can receive payment terms, settle, and retry with proof.</p></article>
-      <article><span>Receipts</span><strong>Usage becomes proof</strong><p>Every paid call can link payer, route, amount, policy, response, latency, and tx signature.</p></article>
+      <article><span>Adapter</span><strong>x402 + MPP</strong><p>Payment rails can normalize into the same meter, budget, receipt, and revenue model.</p></article>
+      <article><span>Registry</span><strong>Provider discovery</strong><p>Useful endpoints can rank by verification, price, uptime, latency, and receipt volume.</p></article>
+      <article><span>Receipts</span><strong>Usage becomes proof</strong><p>Every paid call can link payer, provider, route, amount, policy, response, latency, and tx signature.</p></article>
       <article><span>Budgets</span><strong>Agent spend limits</strong><p>Operators can set daily caps, per-call caps, route allowlists, and revocation.</p></article>
-      <article><span>Providers</span><strong>Revenue infrastructure</strong><p>Providers get revenue views and signed webhooks for payment and receipt events.</p></article>
+      <article><span>Providers</span><strong>Revenue infrastructure</strong><p>Providers get revenue views, registry signal, and signed webhooks for payment and receipt events.</p></article>
     </div>
     <div class="tech-unlock-line">
       <strong>Every new provider adds more routes.</strong>
@@ -193,5 +197,6 @@
 <script src="/site/shared.js" defer></script>
 <script src="/site/token.js" defer></script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/site/premium.js"></script>
 </body>
 </html>

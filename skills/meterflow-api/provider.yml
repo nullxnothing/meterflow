@@ -2,15 +2,14 @@ name: meterflow
 subdomain: meterflow
 title: Meterflow
 description: >
-  AI inference (chat, multi-model, streaming), image and video generation, and
-  on-chain alpha signals — metered per-request, paid in USDC on Solana.
-  x402 is handled natively by the API server; no separate gateway process required.
-category: ai_ml
+  Hosted API and MCP tool metering with x402 and MPP-ready Solana USDC
+  payment flows, receipts, budgets, provider revenue, and webhooks.
+category: developer_tools
 version: v1
 
 # This spec is used for pay.sh Skills Registry discoverability.
-# The Vercel API function implements x402 natively via @x402/express + PayAI.
-# Run: pay --sandbox curl https://meterflow.fun/proxy/v1/chat -d '...'
+# The Vercel API function implements payment verification natively.
+# Run: pay --sandbox curl https://meterflow.fun/proxy/mcp/token-risk -d '...'
 
 routing:
   type: proxy
@@ -26,90 +25,6 @@ endpoints:
   - method: GET
     path: health
     description: 'Health check. Free.'
-
-  - method: POST
-    path: v1/chat
-    resource: chat
-    description: 'Single-model chat completion (Claude, GPT-4o, Gemini).'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.004
-
-  - method: POST
-    path: v1/chat/stream
-    resource: chat_stream
-    description: 'Streaming single-model chat completion.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.004
-
-  - method: POST
-    path: v1/multi
-    resource: multi
-    description: 'Parallel multi-model chat — returns all model responses in one call.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.012
-
-  - method: POST
-    path: v1/multi/stream
-    resource: multi_stream
-    description: 'Streaming multi-model chat completion.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.012
-
-  - method: POST
-    path: v1/image
-    resource: image
-    description: 'AI image generation from a text prompt.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.08
-
-  - method: POST
-    path: v1/video/generate
-    resource: video
-    description: 'AI video generation job.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.35
-
-  - method: GET
-    path: v1/alpha/*
-    resource: alpha
-    description: 'On-chain alpha signals and market intelligence.'
-    metering:
-      dimensions:
-        - direction: usage
-          unit: requests
-          scale: 1
-          tiers:
-            - price_usd: 0.012
 
   - method: POST
     path: mcp/token-risk

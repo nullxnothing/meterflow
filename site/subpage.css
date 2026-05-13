@@ -1,0 +1,309 @@
+/* Shared premium shell for secondary marketing pages.
+   Loaded after each page stylesheet so Token, Status, Roadmap, and Apply
+   share the same backdrop, hero rhythm, and card treatment. */
+
+body {
+  background: #02050a;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(198, 216, 241, 0.16) 0 1px, transparent 1.5px);
+  background-size: 52px 52px;
+  opacity: 0.07;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
+}
+
+.token-page,
+.status-page,
+main#main {
+  position: relative;
+  background:
+    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(180, 205, 255, 0.05) 14deg, rgba(255, 255, 255, 0.075) 29deg, rgba(61, 125, 240, 0.05) 48deg, transparent 72deg, transparent 360deg),
+    radial-gradient(circle at 36% 12%, rgba(61, 125, 240, 0.10), transparent 34%),
+    linear-gradient(rgba(80, 110, 180, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 110, 180, 0.032) 1px, transparent 1px),
+    #02050a;
+  background-size: auto, auto, 56px 56px, 56px 56px, auto;
+  background-position: center top;
+}
+
+.token-page,
+.status-page {
+  padding: 150px 40px 88px;
+}
+
+.token-hero,
+.status-hero,
+.roadmap-hero-content,
+.site-subpage-hero-inner {
+  width: 100%;
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.token-hero,
+.status-hero {
+  margin-bottom: 34px;
+}
+
+.site-subpage-hero,
+.roadmap-hero {
+  min-height: auto;
+  padding: 150px 40px 76px;
+  border-bottom: 1px solid rgba(116, 144, 178, 0.11);
+}
+
+.site-subpage-hero {
+  background: transparent;
+}
+
+.site-subpage-hero::before,
+.site-subpage-hero::after,
+.hero-grid-bg,
+.hero-glow {
+  display: none;
+}
+
+.roadmap-hero {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.roadmap-hero-content > *,
+.timeline-phase,
+.scroll-reveal {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  animation: none;
+  transition: none;
+}
+
+.label-sm,
+.site-subpage-label,
+.hero-label,
+.section-label,
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.label-sm,
+.site-subpage-label,
+.hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 22px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgba(115, 158, 215, 0.22);
+  border-radius: var(--radius-pill);
+  background: rgba(8, 13, 22, 0.62);
+  color: rgba(199, 216, 239, 0.72);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.label-sm::before,
+.site-subpage-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
+}
+
+.hero-label::before {
+  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
+}
+
+.token-hero h1,
+.status-hero h1,
+.roadmap-headline,
+.site-subpage-title {
+  max-width: 920px;
+  margin: 0 0 22px;
+  font-family: var(--font-display);
+  font-size: clamp(52px, 6vw, 86px);
+  line-height: 1;
+  letter-spacing: 0;
+  font-weight: 800;
+  background: linear-gradient(180deg, #fff 0%, #c5dafe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.token-hero h1 #tokenSymbol,
+.roadmap-headline .accent,
+.site-subpage-title .accent {
+  background: none;
+  -webkit-text-fill-color: var(--accent);
+  color: var(--accent);
+  text-shadow: 0 0 56px rgba(61, 125, 240, 0.14);
+}
+
+.token-hero p,
+.status-hero p,
+.roadmap-sub,
+.site-subpage-sub,
+.apply-card-head p,
+.apply-list p,
+.apply-note,
+.phase-desc,
+.vision-sub,
+.status-card p {
+  max-width: 720px;
+  color: rgba(147, 168, 196, 0.88);
+  font-size: 16px;
+  line-height: 1.72;
+  font-weight: 400;
+}
+
+.roadmap-sub {
+  margin-bottom: 30px;
+}
+
+.roadmap-progress-bar {
+  max-width: 680px;
+  margin: 0;
+}
+
+.holder-thesis,
+.tech-unlock,
+.token-status-card,
+.token-panel,
+.holders-panel,
+.status-card,
+.apply-panel,
+.apply-card,
+.phase-content,
+.vision-stat,
+.mobile-card {
+  border: 1px solid rgba(116, 144, 178, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(13, 18, 26, 0.88), rgba(5, 8, 14, 0.95));
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.035) inset,
+    0 24px 72px rgba(0,0,0,0.42);
+}
+
+.holder-thesis,
+.tech-unlock,
+.apply-panel,
+.apply-card,
+.phase-content {
+  padding: 28px;
+}
+
+.holder-loop article,
+.tech-unlock-grid article,
+.token-metrics article,
+.detail-list div,
+.apply-list li,
+.phase-item,
+.status-summary {
+  border-color: rgba(126, 154, 190, 0.12);
+  border-radius: 10px;
+  background: rgba(6, 10, 17, 0.54);
+}
+
+.status-summary {
+  padding: 11px 13px;
+}
+
+.status-links a,
+.token-actions .btn-secondary,
+.apply-actions .btn-primary,
+.token-actions .btn-primary {
+  border-radius: 9px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.status-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  color: #c8d8ef;
+  border-color: rgba(70, 103, 145, 0.72);
+  background: rgba(9, 15, 25, 0.72);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.status-links a:hover {
+  color: var(--text);
+  border-color: rgba(102, 164, 255, 0.72);
+  background: rgba(61, 125, 240, 0.10);
+}
+
+.status-card h2,
+.token-status-card h2,
+.token-panel h2,
+.apply-card-head h2,
+.phase-title {
+  letter-spacing: 0;
+}
+
+.phase-marker,
+.phase-dot {
+  border-radius: 999px;
+}
+
+.phase-pulse.active {
+  animation: none;
+}
+
+@media (max-width: 900px) {
+  .token-page,
+  .status-page {
+    padding: 118px 20px 72px;
+  }
+
+  .site-subpage-hero,
+  .roadmap-hero {
+    padding: 118px 20px 56px;
+  }
+}
+
+@media (max-width: 640px) {
+  .token-page,
+  .status-page {
+    padding: 104px 16px 56px;
+  }
+
+  .site-subpage-hero,
+  .roadmap-hero {
+    padding: 104px 16px 44px;
+  }
+
+  .token-hero h1,
+  .status-hero h1,
+  .roadmap-headline,
+  .site-subpage-title {
+    font-size: clamp(38px, 10vw, 50px);
+    line-height: 1.06;
+  }
+
+  .token-hero p,
+  .status-hero p,
+  .roadmap-sub,
+  .site-subpage-sub {
+    font-size: 15px;
+  }
+}

@@ -170,6 +170,7 @@ export function normalizeApplicationInput(input = {}) {
     category: text(input.category, 120),
     endpoint: text(input.endpoint, 260),
     chargingModel: text(input.chargingModel, 120),
+    protocolSupport: text(input.protocolSupport, 160),
     audience: text(input.audience, 500),
     liveStatus: text(input.liveStatus, 120),
     currentBilling: text(input.currentBilling, 300),
@@ -294,7 +295,7 @@ export function getApplicationPipelineMetrics(applications = []) {
 export function applicationsToCsv(applications = []) {
   const cols = [
     'id', 'createdAt', 'updatedAt', 'status', 'priority', 'projectName', 'founderName', 'contact',
-    'email', 'xHandle', 'telegram', 'website', 'category', 'endpoint', 'chargingModel',
+    'email', 'xHandle', 'telegram', 'website', 'category', 'endpoint', 'chargingModel', 'protocolSupport',
     'monthlyVolumeEstimate', 'expectedPriceUsd', 'audience', 'liveStatus', 'currentBilling', 'notes', 'adminNotes'
   ];
   const escape = (value) => {

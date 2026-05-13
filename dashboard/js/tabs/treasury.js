@@ -105,7 +105,7 @@ function renderFeeDistribution() {
               <div class="fee-legend-dot" style="background:var(--accent)"></div>
               <div>
                 <div class="fee-legend-label">Provider Costs</div>
-                <div class="fee-legend-desc">Funds model, data, media, and other upstream service routes</div>
+                <div class="fee-legend-desc">Funds provider routes, gateway verification, and upstream service costs</div>
               </div>
             </div>
             <div class="fee-legend-item">

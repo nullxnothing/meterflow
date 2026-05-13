@@ -25,6 +25,7 @@ import { logger } from './lib/logger.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
 import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
+import { buildMppMiddleware, createMppGateway } from './lib/mpp.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -46,19 +47,26 @@ app.use(cors({
     'Payment-Signature',
     'Payment-Required',
     'Payment-Response',
+    'Accept-Payment',
+    'WWW-Authenticate',
+    'Payment-Receipt',
     'X-Payment',
     'X-Payment-Response',
     'X-Payment-Transaction',
     'X-Payment-Signature',
     'X-Transaction-Signature',
+    'X-Meterflow-Payment-Protocol',
   ],
   exposedHeaders: [
     'Payment-Required',
     'Payment-Response',
+    'WWW-Authenticate',
+    'Payment-Receipt',
     'X-Payment-Response',
     'X-Payment-Transaction',
     'X-Payment-Signature',
     'X-Transaction-Signature',
+    'X-Meterflow-Payment-Protocol',
   ],
   credentials: true,
 }));
@@ -94,6 +102,29 @@ app.use('/auth', authRouter);
 app.use('/', applicationsRouter);
 app.use('/discord', discordRouter);
 app.use('/holder', holderRouter);
+
+let mppGateway = null;
+const mppGatewayReady = buildMppMiddleware()
+  .then(mw => {
+    mppGateway = mw ? createMppGateway(mw) : (_req, _res, next) => next();
+    return mppGateway;
+  })
+  .catch(err => {
+    logger.error('MPP middleware init failed', { err: err.message });
+    mppGateway = (_req, _res, next) => next();
+    return mppGateway;
+  });
+
+app.use(async (req, res, next) => {
+  try {
+    const gateway = mppGateway || await mppGatewayReady;
+    return gateway(req, res, next);
+  } catch (err) {
+    logger.error('MPP gateway error, disabling', { err: err.message });
+    mppGateway = (_req, _res, n) => n();
+    return next();
+  }
+});
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()

@@ -38,13 +38,6 @@ const WEBHOOK_EVENTS = new Set([
 ]);
 
 export const DEFAULT_METERS = [
-  { id: 'mtr_chat', route: '/v1/chat', method: 'POST', unit: 'model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_chat_stream', route: '/v1/chat/stream', method: 'POST', unit: 'streaming model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_multi', route: '/v1/multi', method: 'POST', unit: 'multi-model call', priceUsd: 0.012, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_multi_stream', route: '/v1/multi/stream', method: 'POST', unit: 'multi-model stream', priceUsd: 0.012, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_image', route: '/v1/image', method: 'POST', unit: 'generation', priceUsd: 0.08, asset: 'USDC', status: 'example', mode: 'test', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_video', route: '/v1/video/generate', method: 'POST', unit: 'video job', priceUsd: 0.35, asset: 'USDC', status: 'example', mode: 'test', ownerWallet: 'meterflow', source: 'default' },
-  { id: 'mtr_alpha', route: '/v1/alpha/*', method: 'GET', unit: 'alpha request', priceUsd: 0.012, asset: 'USDC', status: 'example', mode: 'test', ownerWallet: 'meterflow', source: 'default' },
   { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
 ];
 
@@ -128,7 +121,6 @@ export function applyProtocolFee(amountUsd, tier) {
 
 function normalizePath(path = '') {
   const clean = path.split('?')[0].replace(/^\/proxy/, '');
-  if (clean.startsWith('/v1/video/')) return clean;
   return clean.replace(/\/$/, '') || '/';
 }
 
@@ -710,11 +702,15 @@ export async function recordReceipt(input) {
     quoteId: input.quoteId || id('quote'),
     idempotencyKey: input.idempotencyKey || null,
     paymentState: input.paymentState || 'not_required',
+    paymentProtocol: input.paymentProtocol || input.protocol || 'meterflow',
+    paymentIntent: input.paymentIntent || input.intent || null,
+    paymentMethod: input.paymentMethod || input.methodName || null,
     paymentNetwork: input.paymentNetwork || input.network || 'solana-mainnet-beta',
     paymentMint: input.paymentMint || input.mint || null,
     payTo: input.payTo || null,
     payerWallet: input.payerWallet || input.wallet || null,
     txSignature: input.txSignature || input.signature || null,
+    paymentReference: input.paymentReference || input.reference || input.txSignature || input.signature || null,
     quoteExpiresAt: input.quoteExpiresAt || null,
     requestHash: input.requestHash || null,
     policyResult: input.policyResult || 'allowed',
@@ -875,11 +871,15 @@ export async function completeMeteredRequest(req, result = {}) {
     quoteId: result.quoteId || ctx.quoteId,
     idempotencyKey,
     paymentState,
+    paymentProtocol: result.paymentProtocol || ctx.paymentProtocol || (req.meterflow?.paymentVerified ? 'x402' : 'meterflow'),
+    paymentIntent: result.paymentIntent || ctx.paymentIntent || null,
+    paymentMethod: result.paymentMethod || ctx.paymentMethod || null,
     paymentNetwork: result.paymentNetwork || ctx.paymentNetwork || 'solana-mainnet-beta',
     paymentMint: result.paymentMint || ctx.paymentMint,
     payTo: result.payTo || ctx.payTo,
     payerWallet: result.payerWallet || ctx.payerWallet || req.meterflow?.wallet || null,
     txSignature,
+    paymentReference: result.paymentReference || ctx.paymentReference || txSignature,
     quoteExpiresAt: result.quoteExpiresAt || ctx.quoteExpiresAt,
     requestHash: result.requestHash || requestHash(req),
     policyResult: result.policyResult || ctx.policyResult || 'allowed',
