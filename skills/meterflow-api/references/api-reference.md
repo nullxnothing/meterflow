@@ -40,17 +40,11 @@ POST /v1/mcp-tools
 POST /v1/budgets/:id/revoke
 ```
 
-## Service Routes
+## Paid Routes
 
 ```http
-POST /v1/chat
-POST /v1/chat/stream
-POST /v1/multi
-POST /v1/multi/stream
-POST /v1/image
-POST /v1/video/generate
-GET  /v1/alpha/*
-POST /v1/trading/*
+POST /mcp/token-risk
+ANY  /gateway/{meterId}/*
 ```
 
 ## Error Codes

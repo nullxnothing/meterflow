@@ -149,7 +149,7 @@ router.get('/receipts', authenticateApiKey, async (req, res) => {
 
 router.get('/receipts/export.csv', authenticateApiKey, async (req, res) => {
   const receipts = await listReceiptsForPrincipal({ apiKey: req.meterflow.apiKey, wallet: req.meterflow.wallet, limit: 500 });
-  const columns = ['id', 'createdAt', 'route', 'status', 'baseAmountUsd', 'protocolFeeUsd', 'protocolFeeBps', 'amountUsd', 'asset', 'paymentState', 'paymentNetwork', 'paymentMint', 'payerWallet', 'payTo', 'txSignature', 'quoteId', 'idempotencyKey', 'policyResult', 'responseStatus', 'latencyMs', 'wallet'];
+  const columns = ['id', 'createdAt', 'route', 'status', 'baseAmountUsd', 'protocolFeeUsd', 'protocolFeeBps', 'amountUsd', 'asset', 'paymentState', 'paymentProtocol', 'paymentIntent', 'paymentMethod', 'paymentNetwork', 'paymentMint', 'payerWallet', 'payTo', 'txSignature', 'paymentReference', 'quoteId', 'idempotencyKey', 'policyResult', 'responseStatus', 'latencyMs', 'wallet'];
   const rows = [
     columns.join(','),
     ...receipts.map(receipt => columns.map(col => csvEscape(receipt[col])).join(',')),

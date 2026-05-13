@@ -21,20 +21,20 @@ const CP = {
 };
 
 const PREVIEW_METERS = [
-  { id: 'mtr_chat', route: '/v1/chat', method: 'POST', unit: 'model call', priceUsd: 0.004, asset: 'USDC', status: 'live', mode: 'live' },
   { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live' },
-  { id: 'mtr_alpha', route: '/v1/alpha/*', method: 'GET', unit: 'alpha request', priceUsd: 0.012, asset: 'USDC', status: 'example', mode: 'test' },
+  { id: 'mtr_wallet_trace', route: '/gateway/mtr_wallet_trace/*', method: 'GET', unit: 'wallet trace', priceUsd: 0.012, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Wallet intelligence provider', targetUrl: 'https://api.example.com/wallet' },
+  { id: 'mtr_risk_feed', route: '/gateway/mtr_risk_feed/*', method: 'GET', unit: 'risk feed request', priceUsd: 0.009, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Risk data provider', targetUrl: 'https://api.example.com/risk' },
 ];
 
 const PREVIEW_RECEIPTS = [
-  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/v1/chat', status: 'verified', paymentState: 'verified', amountUsd: 0.004, baseAmountUsd: 0.004, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 728 },
-  { id: 'fail_preview_002', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'settlement_failed', paymentState: 'settlement_failed', amountUsd: 0, baseAmountUsd: 0.006, asset: 'USDC', policyResult: 'settlement_failed', responseStatus: 402, error: 'facilitator settlement failed' },
-  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/v1/alpha/token', status: 'payment_verification_failed', paymentState: 'verification_failed', amountUsd: 0, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'payment_verification_failed', responseStatus: 402, error: 'invalid payment signature' },
+  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'verified', paymentState: 'verified', paymentProtocol: 'x402', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.006, baseAmountUsd: 0.006, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 228 },
+  { id: 'rcpt_preview_002', createdAt: new Date().toISOString(), route: '/gateway/mtr_wallet_trace/7Kp', status: 'verified', paymentState: 'verified', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.012, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'mpp_verified', responseStatus: 200, latencyMs: 184, txSignature: '4Nzg2CeJHbk8xEYYXSpG1S9x85CL2GVbnpWnNRzqkV5ad2M54kK9K2p6wMR7L9WDqjDL6nFC4VhE77duYoZ6T4Bm' },
+  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/gateway/mtr_risk_feed/score', status: 'payment_verification_failed', paymentState: 'verification_failed', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0, baseAmountUsd: 0.009, asset: 'USDC', policyResult: 'mpp_verification_failed', responseStatus: 402, error: 'invalid payment credential' },
 ];
 
 const PREVIEW_BUDGETS = [
-  { id: 'bdg_preview_001', name: 'market-research-agent', status: 'active', dailyCapUsd: 25, perCallCapUsd: 0.05, spentUsdToday: 4.38, allowedMeterIds: ['mtr_chat', 'mtr_mcp_token_risk'] },
-  { id: 'bdg_preview_002', name: 'support-agent', status: 'revoked', dailyCapUsd: 10, perCallCapUsd: 0.02, spentUsdToday: 0, allowedMeterIds: ['mtr_chat'] },
+  { id: 'bdg_preview_001', name: 'risk-agent-budget', status: 'active', dailyCapUsd: 25, perCallCapUsd: 0.05, spentUsdToday: 4.38, allowedMeterIds: ['mtr_mcp_token_risk', 'mtr_wallet_trace'] },
+  { id: 'bdg_preview_002', name: 'provider-test-budget', status: 'revoked', dailyCapUsd: 10, perCallCapUsd: 0.02, spentUsdToday: 0, allowedMeterIds: ['mtr_mcp_token_risk'] },
 ];
 
 const PREVIEW_MCP_TOOLS = [
@@ -47,9 +47,9 @@ const PREVIEW_WEBHOOKS = [
 ];
 
 const PREVIEW_REVENUE = [
-  { meterId: 'mtr_chat', calls: 1284, estimatedUsd: 5.14 },
   { meterId: 'mtr_mcp_token_risk', calls: 412, estimatedUsd: 2.47 },
-  { meterId: 'mtr_alpha', calls: 203, estimatedUsd: 2.44 },
+  { meterId: 'mtr_wallet_trace', calls: 203, estimatedUsd: 2.44 },
+  { meterId: 'mtr_risk_feed', calls: 166, estimatedUsd: 1.49 },
 ];
 
 function viewData() {
@@ -418,7 +418,7 @@ export function renderBudgets() {
         <input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">
         <input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">
         <select id="budgetAllowedMeters" class="bot-form-input" multiple style="grid-column:span 2;min-height:42px;">
-          ${data.meters.map(m => `<option value="${m.id}" ${m.id.startsWith('mtr_chat') || m.id === 'mtr_multi' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
+          ${data.meters.map(m => `<option value="${m.id}" ${m.id === 'mtr_mcp_token_risk' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
         </select>
         <button class="btn-sm primary" onclick="createBudgetFromDashboard()" style="grid-column:span 6;">Create Budget Policy</button>
       </div>

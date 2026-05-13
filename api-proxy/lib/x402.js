@@ -76,11 +76,15 @@ async function recordX402Failure({ req, meters, requirements, status, paymentSta
     agent: req.headers['x-payment-wallet'] || payerWallet || 'x402_payer',
     quoteId: req.headers['x-payment-id'] || req.headers['x-request-id'] || null,
     paymentState,
+    paymentProtocol: 'x402',
+    paymentIntent: 'charge',
+    paymentMethod: 'solana',
     paymentNetwork: requirements?.network || SOLANA_MAINNET_CAIP2,
     paymentMint: requirements?.asset || USDC_MAINNET_ADDRESS,
     payTo: requirements?.payTo || req.meterflowControl?.payTo || null,
     payerWallet: payerWallet || req.headers['x-payment-wallet'] || null,
     txSignature: req.headers['x-payment-transaction'] || req.headers['x-transaction-signature'] || null,
+    paymentReference: req.headers['x-payment-transaction'] || req.headers['x-transaction-signature'] || null,
     policyResult,
     responseStatus,
     error: errorMessage(error),
@@ -185,8 +189,12 @@ export async function buildX402Middleware() {
       await updateReceipt(receiptId, {
         status: 'verified',
         paymentState: 'verified',
+        paymentProtocol: 'x402',
+        paymentIntent: 'charge',
+        paymentMethod: 'solana',
         payerWallet: result.payer || req.meterflowControl.payerWallet,
         txSignature,
+        paymentReference: txSignature,
       });
     });
     resourceServer.onSettleFailure(async ({ error, requirements, transportContext }) => {
@@ -304,6 +312,9 @@ export function createX402Gateway(x402) {
         budget: null,
         policyResult: 'x402_verified',
         paymentState: 'verified',
+        paymentProtocol: 'x402',
+        paymentIntent: 'charge',
+        paymentMethod: 'solana',
         economics: meter ? {
           baseAmountUsd: Number(meter.priceUsd || 0),
           protocolFeeBps: 0,
@@ -315,6 +326,7 @@ export function createX402Gateway(x402) {
         payTo,
         payerWallet: req.headers['x-payment-wallet'] || 'x402_payer',
         txSignature: req.headers['x-payment-transaction'] || req.headers['x-payment-signature'] || null,
+        paymentReference: req.headers['x-payment-transaction'] || req.headers['x-payment-signature'] || null,
         quoteId: req.headers['x-payment-id'] || req.headers['x-request-id'] || null,
       };
 
@@ -328,6 +340,7 @@ export function createX402Gateway(x402) {
 
             if (txSignature) {
               req.meterflowControl.txSignature = txSignature;
+              req.meterflowControl.paymentReference = txSignature;
               originalSetHeader('X-Payment-Transaction', txSignature);
             }
             if (payerWallet) {

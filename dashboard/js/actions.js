@@ -2,12 +2,16 @@
 // Meterflow Dashboard - Actions
 // ═══════════════════════════════════════════
 
-import { STATE, TRADING } from './state.js';
-import { stopLiveTrades } from './tabs/live-trades.js';
+import { STATE } from './state.js';
 import { api } from './api.js';
 import { maskKey } from './utils.js';
 import { saveSession, clearSession } from './session.js';
 import { render, switchTabInPlace } from './render.js';
+
+const DASHBOARD_TABS = new Set([
+  'overview', 'meters', 'receipts', 'budgets', 'mcp-tools', 'webhooks',
+  'keys', 'holder-tools', 'treasury', 'future-apis',
+]);
 
 // ─── API Key Actions ───
 
@@ -60,12 +64,7 @@ export function toggleKeyVisibility() {
 // ─── Navigation ───
 
 export function setTab(tab) {
-  if (STATE.activeTab === 'trading' && tab !== 'trading') {
-    stopBotPolling();
-  }
-  if (STATE.activeTab === 'live-trades' && tab !== 'live-trades') {
-    stopLiveTrades();
-  }
+  if (!DASHBOARD_TABS.has(tab)) tab = 'overview';
   // Sync URL hash for deep-linking, refresh persistence, and back-button support
   if (typeof history !== 'undefined' && location.hash !== '#' + tab) {
     history.pushState({ tab }, '', '#' + tab);
@@ -75,15 +74,6 @@ export function setTab(tab) {
   // Fallback: full re-render
   STATE.activeTab = tab;
   render();
-}
-
-// ─── Bot Polling Control ───
-
-export function stopBotPolling() {
-  if (TRADING.pollInterval) {
-    clearInterval(TRADING.pollInterval);
-    TRADING.pollInterval = null;
-  }
 }
 
 // ─── Clipboard & Toast ───

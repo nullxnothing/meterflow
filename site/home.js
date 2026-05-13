@@ -361,7 +361,7 @@ const DEMO_DATA = [
   {
     prompt: 'Endpoint revenue',
     claude: `Provider View\n\nEndpoint: /v1/risk-score\nPrice: 0.006 USDC per call\nStatus: Live\n\nToday:\n- 8,421 meter hits\n- 7,904 paid responses\n- 311 failed payments\n- 206 policy rejections\n\nRevenue:\n- Gross: 47.42 USDC\n- Median latency: 412ms\n- Top consumer: agent_7Kp...91a\n\nMeterflow is not just checking payment. It is showing what the endpoint earned, where calls failed, and whether the route is worth scaling.`,
-    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /v1/risk-score\n- /v1/social-scan\n- /v1/token-liquidity\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/v1/risk-score\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
+    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /mcp/token-risk\n- /gateway/mtr_wallet_trace/*\n- /gateway/mtr_risk_feed/*\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/mcp/token-risk\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
   },
   {
     prompt: 'Agent budget',
@@ -370,7 +370,7 @@ const DEMO_DATA = [
   },
   {
     prompt: 'Failed payment',
-    claude: `Provider View\n\nRequest blocked:\n/v1/social-scan\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
+    claude: `Provider View\n\nRequest blocked:\n/gateway/mtr_risk_feed/score\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
     gemini: `Agent View\n\nPayment denied.\n\nWhy:\n- daily budget already spent\n- endpoint not critical to current task\n- operator approval required for further calls\n\nNext action:\nstop workflow or request budget increase\n\nThe agent does not keep retrying blindly, and the operator has a clean audit trail.`
   }
 ];

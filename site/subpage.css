@@ -24,10 +24,10 @@ body::after {
 main#main {
   position: relative;
   background:
-    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(180, 205, 255, 0.05) 14deg, rgba(255, 255, 255, 0.075) 29deg, rgba(79, 156, 255, 0.05) 48deg, transparent 72deg, transparent 360deg),
-    radial-gradient(circle at 36% 12%, rgba(79, 156, 255, 0.10), transparent 34%),
-    linear-gradient(rgba(86, 128, 184, 0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(86, 128, 184, 0.032) 1px, transparent 1px),
+    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(180, 205, 255, 0.05) 14deg, rgba(255, 255, 255, 0.075) 29deg, rgba(61, 125, 240, 0.05) 48deg, transparent 72deg, transparent 360deg),
+    radial-gradient(circle at 36% 12%, rgba(61, 125, 240, 0.10), transparent 34%),
+    linear-gradient(rgba(80, 110, 180, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 110, 180, 0.032) 1px, transparent 1px),
     #02050a;
   background-size: auto, auto, 56px 56px, 56px 56px, auto;
   background-position: center top;
@@ -121,11 +121,11 @@ main#main {
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 10px rgba(79, 156, 255, 0.82);
+  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
 }
 
 .hero-label::before {
-  box-shadow: 0 0 10px rgba(79, 156, 255, 0.82);
+  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
 }
 
 .token-hero h1,
@@ -152,7 +152,7 @@ main#main {
   background: none;
   -webkit-text-fill-color: var(--accent);
   color: var(--accent);
-  text-shadow: 0 0 56px rgba(79, 156, 255, 0.14);
+  text-shadow: 0 0 56px rgba(61, 125, 240, 0.14);
 }
 
 .token-hero p,
@@ -249,7 +249,7 @@ main#main {
 .status-links a:hover {
   color: var(--text);
   border-color: rgba(102, 164, 255, 0.72);
-  background: rgba(79, 156, 255, 0.10);
+  background: rgba(61, 125, 240, 0.10);
 }
 
 .status-card h2,

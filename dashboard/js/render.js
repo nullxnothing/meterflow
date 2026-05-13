@@ -11,16 +11,9 @@ import { bindEvents } from './events.js';
 import { renderOverview } from './tabs/overview.js?v=v12-onboard';
 import { renderMeters, renderReceipts, renderBudgets, renderMcpTools, renderWebhooks } from './tabs/control-plane.js?v=v11-acceptance';
 import { renderKeys } from './tabs/keys.js?v=v5-clean-mflow';
-import { renderModels } from './tabs/models.js?v=v5-clean-mflow';
-import { renderConnections } from './tabs/connections.js?v=logos';
-import { renderChat } from './tabs/chat.js';
-import { renderImages } from './tabs/images.js';
-import { renderVideo } from './tabs/video.js';
-import { renderTrading } from './tabs/trading.js';
 import { renderFutureApis } from './tabs/future-apis.js?v=logos-3';
 import { renderHolderTools } from './tabs/holder-tools.js?v=agent-checkout-1';
 import { renderTreasury } from './tabs/treasury.js?v=v5-clean-mflow';
-import { renderLiveTrades } from './tabs/live-trades.js';
 
 export function render() {
   const app = document.getElementById('app');
@@ -38,7 +31,7 @@ export function renderConnectScreen() {
       <div class="connect-box">
         <div class="logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt=""></div>
         <h1>Meterflow Dashboard</h1>
-        <p>Connect your wallet to manage meters, receipts, agent budgets, service routes, and API keys.</p>
+        <p>Connect your wallet to manage meters, receipts, agent budgets, MCP tools, webhooks, and API keys.</p>
         ${STATE.error ? `<div class="connect-error">${escapeHtml(STATE.error)}</div>` : ''}
         <div class="connect-wallets">
           ${STATE.connecting ? `<button class="connect-btn btn-loading" disabled style="min-height:52px;">Connecting...</button>` : hasWallet ? providers.map((p, i) => `
@@ -57,7 +50,7 @@ export function renderConnectScreen() {
 }
 
 export function renderDashboard() {
-  const isChat = STATE.activeTab === 'chat' || STATE.activeTab === 'trading';
+  const isChat = false;
   const hasKey = !!STATE.apiKeyFull;
   const usagePct = STATE.usage.limit > 0 ? Math.min((STATE.usage.today / STATE.usage.limit) * 100, 100) : 0;
   const usageBarClass = usagePct > 90 ? 'danger' : usagePct > 70 ? 'warning' : '';
@@ -201,8 +194,6 @@ function renderNavItems() {
     <div class="nav-item ${t === 'mcp-tools' ? 'active' : ''}" data-tab="mcp-tools">MCP Tools</div>
     <div class="nav-item ${t === 'webhooks' ? 'active' : ''}" data-tab="webhooks">Webhooks</div>
     <div class="nav-item ${t === 'keys' ? 'active' : ''}" data-tab="keys">API Keys</div>
-    <div class="nav-item ${t === 'models' ? 'active' : ''}" data-tab="models">Service Routes</div>
-    <div class="nav-item ${t === 'connections' ? 'active' : ''}" data-tab="connections">Connections</div>
 
     <div class="nav-group-label">Operations</div>
     <div class="nav-item ${t === 'holder-tools' ? 'active' : ''}" data-tab="holder-tools">Agent Checkout</div>
@@ -230,13 +221,6 @@ export function renderTab() {
       case 'mcp-tools': return renderMcpTools();
       case 'webhooks': return renderWebhooks();
       case 'keys': return renderKeys();
-      case 'models': return renderModels();
-      case 'connections': return renderConnections();
-      case 'chat': return renderChat();
-      case 'images': return renderImages();
-      case 'video': return renderVideo();
-      case 'live-trades': return renderLiveTrades();
-      case 'trading': return renderTrading();
       case 'future-apis': return renderFutureApis();
       case 'holder-tools': return renderHolderTools();
       case 'treasury': return renderTreasury();
@@ -264,8 +248,7 @@ export function switchTabInPlace(tab) {
   STATE.activeTab = tab;
 
   // Update main content
-  const isChat = tab === 'chat' || tab === 'trading';
-  mainEl.className = 'main' + (isChat ? ' chat-mode' : '');
+  mainEl.className = 'main';
   mainEl.innerHTML = renderStatusBanner() + renderTab();
 
   // Update nav active states (sidebar + mobile drawer)

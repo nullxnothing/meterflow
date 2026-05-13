@@ -16,7 +16,7 @@ The site and backend use `METERFLOW_TOKEN_CA` as the master token address. Set t
 
 ## What It Is
 
-Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. x402 and Solana USDC move the live payment path today; Meterflow manages the product surface around it: hosted gateways, meters, receipts, failed-payment state, provider revenue, agent budgets, payer visibility, registry signal, and signed webhooks. The product model is MPP-ready so future 402-style payment rails can normalize into the same receipt and policy layer.
+Meterflow helps API providers, MCP tool builders, data vendors, and agent operators turn paid requests into observable products. x402 and MPP can move the live payment path; Meterflow manages the product surface around them: hosted gateways, meters, receipts, failed-payment state, provider revenue, agent budgets, payer visibility, registry signal, and signed webhooks. The product model stays protocol-neutral so future 402-style payment rails can normalize into the same receipt and policy layer.
 
 Payments alone are not the product. Meterflow tracks what was sold, who paid, which agent called it, whether policy allowed it, what failed, how much was owed, and where the receipt lives.
 
@@ -26,7 +26,7 @@ Agents need paid tools they can call without monthly SaaS accounts, shared credi
 
 Meterflow is the layer around that request:
 
-1. Create a meter for an API route, MCP tool, model call, data feed, or workflow.
+1. Create a meter for an API route, MCP tool, data endpoint, or provider workflow.
 2. Connect a Solana wallet for identity, settlement, and admin control.
 3. Issue metered client keys or wallet-bound agent budgets.
 4. Let agents call paid routes through the gateway.
@@ -40,11 +40,11 @@ Meterflow is the layer around that request:
 | Receipts | Track quote, payer, proof, amount, route, policy result, and response status |
 | Agent Budgets | Set per-call caps, daily caps, route allowlists, expirations, and revocation |
 | MCP Tools | Package tool calls as priced capabilities agents can reason about |
-| Protocol Adapter | Normalize x402 today and MPP-ready payment flows into one receipt model |
+| Protocol Adapter | Normalize x402 and MPP payment flows into one receipt model |
 | Provider Registry | Rank endpoints by verification, price, uptime, latency, receipt volume, and utility tier |
 | API Keys | Issue metered clients for apps, agents, and provider integrations |
 | Settlement Wallet | Inspect wallet context for provider funding and gateway operations |
-| Integrations | Attach Solana, data, model, social, and notification providers |
+| Integrations | Attach Solana, payment, wallet, data, webhook, and notification providers |
 
 ## Hosted Provider Gateway
 
@@ -69,7 +69,7 @@ Meterflow stores the target origin on the meter, generates a hosted route, issue
 
 The market is moving toward many payment handshakes, not one winner. Meterflow should be the control plane above those rails:
 
-1. **x402 today, MPP-ready next.** Keep x402 live while preparing the receipt schema, gateway policy, and dashboard language for MPP and future 402-style rails.
+1. **x402 and MPP, one control plane.** Keep x402 live while MPP opt-in calls normalize into the same receipt schema, gateway policy, and dashboard language.
 2. **MCP/API launchpad.** Let providers wrap an existing API or MCP server and receive a hosted paid route, price, budget checks, revenue view, and webhook stream.
 3. **Agent budget vaults.** Give operators wallet-bound limits before an agent spends: daily caps, per-call caps, allowlists, revocation, and receipt exports.
 4. **Provider registry.** Turn useful paid endpoints into a discoverable market with price, uptime, latency, volume, verification, and MFLOW-backed ranking signals.
@@ -96,20 +96,28 @@ Agent operators can create budgets with daily caps, per-call caps, and meter all
 
 Every metered call can produce a receipt with meter id, route, provider, payer, amount, payment rail, policy result, upstream status, latency, and settlement metadata. Providers can query `/v1/providers/revenue` and subscribe to signed webhooks such as `receipt.created`, `receipt.verified`, and `payment.failed`.
 
-## Demo Routes
+## MPP Payment Rail
 
-The current gateway includes AI, token-risk, and trading routes that demonstrate Meterflow running real paid capabilities:
+MPP is mounted as an additive HTTP 402 rail beside x402. Providers do not create separate meters for MPP; any billable Meterflow route can accept an MPP caller when the gateway is configured with `MPP_SECRET_KEY` and a Solana USDC recipient.
 
-- `POST /v1/chat`
-- `POST /v1/chat/stream`
-- `POST /v1/multi`
-- `POST /v1/multi/stream`
-- `POST /v1/image`
-- `POST /v1/video/generate`
-- `GET /v1/alpha/*`
+Callers opt into MPP with one of:
+
+- `X-Meterflow-Payment-Protocol: mpp`
+- `Accept-Payment: mpp`
+- `paymentProtocol=mpp`
+- `Authorization: Payment ...` on the paid retry
+
+The current MPP adapter supports the `charge` intent for Solana USDC. An unpaid opt-in request receives an MPP payment challenge. The client pays and retries with `Authorization: Payment ...`. On success, Meterflow forwards the request and returns `Payment-Receipt`, `X-Meterflow-Payment-Protocol: mpp`, and `X-Payment-Transaction` when a Solana reference is available.
+
+MPP receipts are first-class Meterflow receipts. They include `paymentProtocol: "mpp"`, `paymentIntent: "charge"`, `paymentMethod`, `paymentReference`, payer context when provided, route, meter id, amount, policy result, response status, and latency.
+
+## Live Metered Route
+
+The default live paid route is intentionally narrow:
+
 - `POST /mcp/token-risk`
 
-These routes are examples. The product is the metering, receipt, budget, webhook, provider revenue, and settlement layer around any paid endpoint.
+Historical service-route experiments may still exist in the repository, but they are not the Meterflow thesis and are no longer part of the default control-plane surface. The product is the metering, receipt, budget, webhook, provider revenue, MPP/x402 adapter, and settlement layer around provider-owned paid endpoints.
 
 ## Repository Layout
 
@@ -185,6 +193,16 @@ x402 variables:
 - PayAI hosted facilitator is used by default
 - `PAYAI_API_KEY_ID` and `PAYAI_API_KEY_SECRET` optional, for paid PayAI merchant capacity beyond the free tier
 - `X402_FACILITATOR_PRIVATE_KEY` or `SETTLEMENT_WALLET_PRIVATE_KEY` optional, only if running an inline facilitator instead of PayAI
+
+MPP variables:
+
+- `MPP_SECRET_KEY` enables MPP challenge signing and verification
+- `MPP_PAY_TO` optional, falls back to `X402_PAY_TO` or `SETTLEMENT_WALLET`
+- `MPP_SOLANA_NETWORK` defaults to `mainnet-beta`
+- `MPP_SOLANA_RPC_URL` optional, falls back to `HELIUS_RPC_URL`
+- `METERFLOW_DEFAULT_PAYMENT_PROTOCOL` defaults to `x402`; set to `mpp` only when first 402 challenges should prefer MPP
+
+MPP callers can opt into the MPP rail without changing provider meters by sending `X-Meterflow-Payment-Protocol: mpp`, `Accept-Payment: mpp`, `paymentProtocol=mpp`, or an `Authorization: Payment ...` retry. Verified MPP calls write into the same Meterflow receipts, provider revenue, and webhook model as x402 calls.
 
 ## Deployment
 
