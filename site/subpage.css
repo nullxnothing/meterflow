@@ -269,6 +269,180 @@ main#main {
   animation: none;
 }
 
+/* Token page polish */
+.token-page {
+  padding-top: 136px;
+}
+
+.token-hero {
+  margin-bottom: 26px;
+}
+
+.token-hero-grid {
+  grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.68fr);
+  align-items: start;
+  gap: 46px;
+}
+
+.token-hero h1 {
+  max-width: 820px;
+}
+
+.token-address {
+  min-height: 44px;
+  border-radius: 10px;
+  background: rgba(6, 10, 17, 0.62);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.token-address button {
+  min-height: 30px;
+  border-radius: 8px;
+}
+
+.token-status-card {
+  padding: 24px;
+}
+
+.token-status-card dl {
+  gap: 0;
+}
+
+.token-status-card dl div {
+  align-items: baseline;
+  min-height: 44px;
+}
+
+.holder-thesis {
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.holder-thesis-copy {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.55fr) minmax(0, 0.78fr);
+  gap: 30px;
+  align-items: end;
+}
+
+.holder-thesis-copy .label-sm {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.holder-thesis-copy h2 {
+  margin: 0;
+  font-size: clamp(34px, 3.6vw, 48px);
+  line-height: 1.06;
+}
+
+.holder-thesis-copy p {
+  margin: 0 0 4px;
+}
+
+.holder-loop article {
+  min-height: 0;
+  padding: 18px;
+}
+
+.holder-loop span {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 16px;
+}
+
+.tech-unlock {
+  margin-bottom: 18px;
+}
+
+.tech-unlock-head {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.58fr) minmax(0, 0.76fr);
+  gap: 30px;
+  max-width: none;
+  margin-bottom: 24px;
+  align-items: end;
+}
+
+.tech-unlock-head .label-sm {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.tech-unlock-head h2 {
+  margin: 0;
+  font-size: clamp(32px, 3.2vw, 44px);
+  line-height: 1.07;
+}
+
+.tech-unlock-head p {
+  margin: 0 0 4px;
+}
+
+.tech-unlock-grid article {
+  min-height: 142px;
+  padding: 18px;
+}
+
+.tech-unlock-line {
+  margin-top: 12px;
+}
+
+.token-metrics {
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.token-metrics article {
+  min-width: 0;
+  min-height: 116px;
+  padding: 18px;
+  border-radius: 12px;
+}
+
+.token-metrics strong {
+  margin: 16px 0 6px;
+  font-size: clamp(19px, 1.45vw, 26px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-metrics em {
+  display: block;
+  min-height: 16px;
+  color: rgba(147, 168, 196, 0.82);
+  line-height: 1.35;
+}
+
+.token-main-grid {
+  align-items: start;
+  grid-template-columns: minmax(0, 1.24fr) minmax(340px, 0.76fr);
+}
+
+.token-panel {
+  border-radius: 12px;
+}
+
+.token-details {
+  align-self: start;
+}
+
+.chart-wrap.has-iframe {
+  height: 420px;
+  min-height: 420px;
+}
+
+.detail-list div {
+  min-height: 44px;
+  align-items: baseline;
+}
+
+.holders-panel h2 {
+  margin-bottom: 0;
+}
+
 @media (max-width: 900px) {
   .token-page,
   .status-page {
@@ -278,6 +452,17 @@ main#main {
   .site-subpage-hero,
   .roadmap-hero {
     padding: 118px 20px 56px;
+  }
+
+  .token-hero-grid,
+  .holder-thesis-copy,
+  .tech-unlock-head,
+  .token-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .token-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -305,5 +490,24 @@ main#main {
   .roadmap-sub,
   .site-subpage-sub {
     font-size: 15px;
+  }
+
+  .holder-thesis,
+  .tech-unlock,
+  .token-status-card,
+  .token-panel,
+  .holders-panel {
+    padding: 20px;
+  }
+
+  .holder-loop,
+  .tech-unlock-grid,
+  .token-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-wrap.has-iframe {
+    height: 360px;
+    min-height: 360px;
   }
 }

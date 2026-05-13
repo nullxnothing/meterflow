@@ -1,15 +1,20 @@
 const $ = id => document.getElementById(id);
 
+function isKnownNumber(value) {
+  if (value === null || value === undefined || value === '') return false;
+  return Number.isFinite(Number(value));
+}
+
 function formatUsd(value, maxDigits = 2) {
+  if (!isKnownNumber(value)) return '--';
   const n = Number(value);
-  if (!Number.isFinite(n)) return '--';
   if (n > 0 && n < 0.01) return '$' + n.toPrecision(3);
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: maxDigits }).format(n);
 }
 
 function formatCompact(value) {
+  if (!isKnownNumber(value)) return '--';
   const n = Number(value);
-  if (!Number.isFinite(n)) return '--';
   return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(n);
 }
 
@@ -53,6 +58,7 @@ function setComingSoonState() {
   setText('metricPrice', 'TBA');
   setText('metricChange', 'coming soon');
   setText('metricMarketCap', 'TBA');
+  setText('metricMarketCapMeta', 'coming soon');
   setText('metricLiquidity', 'TBA');
   setText('metricDex', 'coming soon');
   setText('metricVolume', 'TBA');
@@ -68,6 +74,7 @@ function setComingSoonState() {
   setText('detailSources', 'Coming soon');
   setText('chartHeading', 'Chart coming soon');
   setText('chartSource', 'TBA');
+  setText('holdersHeading', 'Holder data coming soon');
   setText('swapLink', 'Coming Soon');
   setText('orbLink', 'Explorer TBA');
   setText('dexLink', 'Market TBA');
@@ -136,7 +143,7 @@ function renderHolders(holders) {
     const row = body.insertRow();
     const cell = row.insertCell();
     cell.colSpan = 5;
-    cell.textContent = 'Holder data appears after launch.';
+    cell.textContent = 'Holder distribution is not available yet.';
     return;
   }
   holders.forEach(holder => {
@@ -182,32 +189,38 @@ function applySummary(data) {
   setText('orbLink', 'View on Orb');
   setText('dexLink', 'DEX Screener');
   setText('holdersExplorer', 'Open token');
-  setStatus(market?.priceUsd ? 'Market data available' : 'Token details available', market?.priceUsd ? 'Public token data is updating.' : 'Market data is coming soon.');
+  const hasPrice = isKnownNumber(market.priceUsd);
+  const hasMarketCap = isKnownNumber(market.marketCap);
+  const hasFdv = isKnownNumber(market.fdv);
+  const hasLiquidity = isKnownNumber(market.liquidityUsd) && Number(market.liquidityUsd) > 0;
+  setStatus(hasPrice ? 'Market data available' : 'Token details available', hasPrice ? 'Public token data is updating.' : 'Market data is still indexing.');
   setText('statusCA', cfg.mint ? shortAddress(cfg.mint) : 'TBA');
-  setText('statusMarket', market?.priceUsd ? formatUsd(market.priceUsd, 6) : (cfg.mint ? 'Fetching...' : 'Coming soon'));
+  setText('statusMarket', hasPrice ? formatUsd(market.priceUsd, 6) : (cfg.mint ? 'Indexing' : 'Coming soon'));
   setText('tokenName', asset.name || cfg.name || 'Meterflow');
   setText('tokenDescription', asset.description || '$MFLOW token details are available on Solana.');
   setText('tokenUpdated', data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString() : '--');
 
   setText('metricPrice', formatUsd(market.priceUsd, 8));
-  setText('metricChange', Number.isFinite(market.priceChange?.h24) ? `${market.priceChange.h24.toFixed(2)}% 24h` : '--');
-  setText('metricMarketCap', formatUsd(market.marketCap || market.fdv, 0));
-  setText('metricLiquidity', formatUsd(market.liquidityUsd, 0));
-  setText('metricDex', market.dexId || '--');
+  setText('metricChange', isKnownNumber(market.priceChange?.h24) ? `${Number(market.priceChange.h24).toFixed(2)}% 24h` : 'indexing');
+  setText('metricMarketCap', hasMarketCap ? formatUsd(market.marketCap, 0) : formatUsd(market.fdv, 0));
+  setText('metricMarketCapMeta', hasMarketCap ? 'live market cap' : hasFdv ? 'FDV fallback' : 'indexing');
+  setText('metricLiquidity', hasLiquidity ? formatUsd(market.liquidityUsd, 0) : '--');
+  setText('metricDex', hasLiquidity ? (market.dexId || 'DEX liquidity') : market.dexId ? `${market.dexId} not reported` : 'not reported');
   setText('metricVolume', formatUsd(market.volume24h, 0));
-  setText('metricTxns', Number.isFinite(market.txns24h?.buys) ? `${market.txns24h.buys + market.txns24h.sells} txns` : '--');
+  setText('metricTxns', isKnownNumber(market.txns24h?.buys) && isKnownNumber(market.txns24h?.sells) ? `${Number(market.txns24h.buys) + Number(market.txns24h.sells)} txns` : '--');
   setText('metricSupply', formatCompact(supply.circulating || supply.uiAmount));
-  setText('metricDecimals', Number.isFinite(asset.decimals) ? `${asset.decimals} decimals` : '--');
-  setText('metricHolders', Number.isFinite(data.holderCount) ? formatCompact(data.holderCount) : (topHolder ? shortAddress(topHolder.owner) : '--'));
-  setText('metricTopPct', Number.isFinite(topHolder?.pctSupply) ? `top ${topHolder.pctSupply.toFixed(2)}%` : '--');
+  setText('metricDecimals', isKnownNumber(asset.decimals) ? `${asset.decimals} decimals` : 'indexing');
+  setText('metricHolders', isKnownNumber(data.holderCount) ? formatCompact(data.holderCount) : (topHolder ? shortAddress(topHolder.owner) : '--'));
+  setText('metricTopPct', isKnownNumber(topHolder?.pctSupply) ? `top ${Number(topHolder.pctSupply).toFixed(2)}%` : 'indexing');
 
   setText('detailPair', market.pairAddress ? shortAddress(market.pairAddress) : '--');
   setText('detailFdv', formatUsd(market.fdv, 0));
   const changes = market.priceChange
-    ? [market.priceChange.m5, market.priceChange.h1, market.priceChange.h6].map(v => Number.isFinite(v) ? `${v.toFixed(1)}%` : '--').join(' / ')
+    ? [market.priceChange.m5, market.priceChange.h1, market.priceChange.h6].map(v => isKnownNumber(v) ? `${Number(v).toFixed(1)}%` : '--').join(' / ')
     : '--';
   setText('detailChanges', changes);
   setText('detailSources', (data.sources || []).join(', ') || '--');
+  setText('holdersHeading', data.holders?.length ? 'Top holders' : 'Holder distribution indexing');
   const hasCandles = (data.chart?.candles || []).length >= 2;
   const hasDexEmbed = !!data.chart?.dexEmbedUrl;
   setText('chartHeading', hasCandles ? `$${(cfg.symbol || 'MFLOW').replace(/^\$/, '')} / USD` : hasDexEmbed ? `$${(cfg.symbol || 'MFLOW').replace(/^\$/, '')} / USD` : 'Awaiting liquidity');
