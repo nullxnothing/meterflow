@@ -21,6 +21,7 @@ import holderRouter from './routes/holder.js';
 import openaiCompatRouter from './routes/openai-compat.js';
 import controlPlaneRouter from './routes/control-plane.js';
 import providerGatewayRouter from './routes/provider-gateway.js';
+import zauthRouter from './routes/zauth.js';
 import { logger } from './lib/logger.js';
 import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
@@ -163,6 +164,7 @@ app.use('/v1', tradesRouter);
 app.use('/v1', alphaRouter);
 app.use('/mcp', mcpRouter);
 app.use('/v1', controlPlaneRouter);
+app.use('/v1', zauthRouter);
 app.use('/v1', tokenRouter);
 app.use('/v1', openaiCompatRouter);
 
