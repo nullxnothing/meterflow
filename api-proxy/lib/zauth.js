@@ -1,6 +1,5 @@
 import { logger } from './logger.js';
 
-const DEFAULT_ZAUTH_BASE_URL = 'https://api.zauth.inc';
 const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauth.inc';
 const DEFAULT_INCLUDE_ROUTES = ['^/mcp/.*', '^/gateway/.*'];
 const DEFAULT_EXCLUDE_ROUTES = ['^/health$', '^/auth/.*', '^/oauth/.*', '^/discord/.*', '^/holder/.*'];
@@ -38,8 +37,14 @@ function zauthApiKey() {
   return cleanEnv(process.env.ZAUTH_API_KEY);
 }
 
-function zauthBaseUrl() {
-  return (process.env.ZAUTH_BASE_URL || process.env.ZAUTH_API_ENDPOINT || DEFAULT_ZAUTH_BASE_URL).replace(/\/$/, '');
+function zauthApiEndpoint() {
+  return (cleanEnv(process.env.ZAUTH_API_ENDPOINT) || cleanEnv(process.env.ZAUTH_BASE_URL)).replace(/\/$/, '');
+}
+
+function withZauthApiEndpoint(options) {
+  const apiEndpoint = zauthApiEndpoint();
+  if (!apiEndpoint) return options;
+  return { ...options, apiEndpoint, baseUrl: apiEndpoint };
 }
 
 function shortError(err) {
@@ -101,9 +106,7 @@ function buildRefundConfig() {
 }
 
 function buildProviderMiddlewareOptions() {
-  return {
-    apiEndpoint: zauthBaseUrl(),
-    baseUrl: zauthBaseUrl(),
+  return withZauthApiEndpoint({
     includeRoutes: listEnv('ZAUTH_INCLUDE_ROUTES', DEFAULT_INCLUDE_ROUTES),
     excludeRoutes: listEnv('ZAUTH_EXCLUDE_ROUTES', DEFAULT_EXCLUDE_ROUTES),
     skipHealthChecks: true,
@@ -138,7 +141,7 @@ function buildProviderMiddlewareOptions() {
     },
     refund: buildRefundConfig(),
     debug: boolEnv('ZAUTH_DEBUG', false),
-  };
+  });
 }
 
 function normalizeStatus(status = {}) {
@@ -171,9 +174,8 @@ async function client() {
   const sdk = await loadZauthSdk();
   if (!sdk?.createClient) return null;
 
-  cachedClient = sdk.createClient({
+  cachedClient = sdk.createClient(withZauthApiEndpoint({
     apiKey,
-    apiEndpoint: zauthBaseUrl(),
     mode: 'provider',
     environment: process.env.NODE_ENV || 'production',
     debug: boolEnv('ZAUTH_DEBUG', false),
@@ -184,7 +186,7 @@ async function client() {
       redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth'],
     },
     refund: { enabled: false },
-  });
+  }));
   return cachedClient;
 }
 

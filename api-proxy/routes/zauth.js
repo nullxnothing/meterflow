@@ -141,7 +141,7 @@ async function submitMeter(req, res, meter, { autoSubmit = false } = {}) {
     }).catch(() => meter);
     return res.status(502).json({
       error: 'zauth_submit_failed',
-      message: 'Zauth submission failed. Check ZAUTH_API_KEY/ZAUTH_BASE_URL and try again.',
+      message: 'Zauth submission failed. Check ZAUTH_API_KEY/ZAUTH_API_ENDPOINT and try again.',
       zauth: meterZauthStatus(updated),
     });
   }
