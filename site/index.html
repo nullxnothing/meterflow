@@ -114,6 +114,7 @@
 
 <!-- HERO -->
 <section class="hero">
+  <canvas class="hero-particles" id="heroParticles" aria-hidden="true"></canvas>
   <div class="hero-content">
     <a href="/roadmap" class="hero-label reveal">
       <span class="dot"></span>
@@ -391,21 +392,79 @@ latency: <span class="str">12ms</span></div>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 </a>
 
-<!-- Inline JS: bar charts + scroll reveal + float CTA visibility. Other site behavior loaded from shared.js + home.js -->
+<!-- Inline FX: particles, charts, scroll reveal, count-up gate, float CTA -->
 <script>
-  // Bar chart bars — seeded deterministic data points per dataset
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ─── Hero particle field ─── */
+  (function particles() {
+    var canvas = document.getElementById('heroParticles');
+    if (!canvas || REDUCED) return;
+    var ctx = canvas.getContext('2d');
+    var w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var N = 0, parts = [];
+    function resize() {
+      w = canvas.offsetWidth;
+      h = canvas.offsetHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      N = Math.min(120, Math.round((w * h) / 14000));
+      parts = [];
+      for (var i = 0; i < N; i++) {
+        parts.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: 0.5 + Math.random() * 1.4,
+          vx: (Math.random() - 0.5) * 0.06,
+          vy: 0.015 + Math.random() * 0.05,
+          alpha: 0.18 + Math.random() * 0.55,
+          tw: Math.random() * Math.PI * 2,
+          ts: 0.012 + Math.random() * 0.02
+        });
+      }
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    var running = true;
+    document.addEventListener('visibilitychange', function () {
+      running = document.visibilityState === 'visible';
+      if (running) requestAnimationFrame(frame);
+    });
+    function frame() {
+      if (!running) return;
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.tw += p.ts;
+        if (p.y > h + 2) { p.y = -2; p.x = Math.random() * w; }
+        if (p.x < -2) p.x = w + 2;
+        else if (p.x > w + 2) p.x = -2;
+        var a = p.alpha * (0.45 + 0.55 * (0.5 + 0.5 * Math.sin(p.tw)));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(180, 200, 240,' + a.toFixed(3) + ')';
+        ctx.fill();
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  /* ─── Seeded last-30-days bar data ─── */
   (function renderCharts() {
     function buildBars(target, points) {
-      const max = Math.max.apply(null, points);
-      target.innerHTML = points.map(function (v) {
-        var h = Math.max(4, Math.round((v / max) * 100));
-        return '<span class="chart-bar" style="height:' + h + '%"></span>';
-      }).join('');
+      var max = Math.max.apply(null, points);
+      var html = '';
+      for (var i = 0; i < points.length; i++) {
+        var h = Math.max(4, Math.round((points[i] / max) * 100));
+        html += '<span class="chart-bar" style="height:' + h + '%"></span>';
+      }
+      target.innerHTML = html;
     }
-    function rng(seed) {
-      var x = Math.sin(seed) * 10000;
-      return x - Math.floor(x);
-    }
+    function rng(seed) { var x = Math.sin(seed) * 10000; return x - Math.floor(x); }
     function series(seed, base, spike) {
       var out = [];
       for (var i = 0; i < 30; i++) {
@@ -418,17 +477,20 @@ latency: <span class="str">12ms</span></div>
     }
     document.querySelectorAll('.chart').forEach(function (el) {
       var kind = el.getAttribute('data-chart');
-      var data = kind === 'sky' ? series(7, 42, 90) : series(3, 30, 80);
+      var data = kind === 'sky' ? series(11, 42, 92) : series(3, 28, 80);
       buildBars(el, data);
     });
   })();
 
-  // Scroll reveal
+  /* ─── Scroll reveal + chart bar fly-up + stats count-up gate ─── */
   (function reveal() {
-    if (typeof IntersectionObserver === 'undefined') {
+    function showAll() {
       document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
-      return;
+      document.querySelectorAll('.chart').forEach(function (el) { el.classList.add('in'); });
+      window.__statsInView = true;
+      if (typeof window.populateProtocolStats === 'function') window.populateProtocolStats();
     }
+    if (typeof IntersectionObserver === 'undefined' || REDUCED) { showAll(); return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (e.isIntersecting) {
@@ -436,11 +498,39 @@ latency: <span class="str">12ms</span></div>
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
     document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+    var chartIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          chartIo.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.25 });
+    document.querySelectorAll('.chart').forEach(function (el) { chartIo.observe(el); });
+
+    /* Gate the count-up: tell home.js to (re)run animation when stats enter view */
+    var statsSection = document.getElementById('stats');
+    if (statsSection) {
+      var statsIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && !window.__statsInView) {
+            window.__statsInView = true;
+            if (typeof window.populateProtocolStats === 'function') {
+              window.__forceStatsAnimate = true;
+              window.populateProtocolStats();
+            }
+            statsIo.disconnect();
+          }
+        });
+      }, { threshold: 0.25, rootMargin: '0px 0px -10% 0px' });
+      statsIo.observe(statsSection);
+    }
   })();
 
-  // Float CTA — appears after scrolling past hero
+  /* ─── Float CTA visibility ─── */
   (function floatCta() {
     var fab = document.getElementById('floatCta');
     if (!fab) return;

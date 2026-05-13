@@ -34,31 +34,31 @@
   --text: #f5f5f7;
   --text-dim: #a1a1aa;
   --text-muted: #57575e;
-  /* Primary: emerald — single signature accent */
-  --accent: #10b981;
-  --accent-2: #34d399;
-  --accent-deep: #059669;
-  --accent-dim: #047857;
-  --accent-glow: rgba(16, 185, 129, 0.10);
-  --accent-soft: rgba(16, 185, 129, 0.06);
-  /* Secondary: sky — reserved for stats secondary dataset */
-  --sky: #38bdf8;
-  --sky-2: #7dd3fc;
-  --sky-deep: #0284c7;
-  --sky-glow: rgba(56, 189, 248, 0.10);
+  /* Primary: refined sky-tinted blue — single signature accent */
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --accent-deep: #1d4ed8;
+  --accent-dim: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.12);
+  --accent-soft: rgba(59, 130, 246, 0.06);
+  /* Secondary: emerald — reserved for second stats dataset */
+  --sky: #10b981;
+  --sky-2: #34d399;
+  --sky-deep: #047857;
+  --sky-glow: rgba(16, 185, 129, 0.10);
   /* Legacy aliases for sub-pages — quietly remap to new system */
   --amber: #f5b544;
   --amber-2: #ffc964;
   --amber-deep: #b07c1c;
   --amber-glow: rgba(245, 181, 68, 0.1);
-  --teal: #10b981;
-  --teal-2: #34d399;
-  --teal-deep: #059669;
-  --teal-glow: rgba(16, 185, 129, 0.10);
+  --teal: #3b82f6;
+  --teal-2: #60a5fa;
+  --teal-deep: #1d4ed8;
+  --teal-glow: rgba(59, 130, 246, 0.12);
   /* Status semantic */
   --green: #10b981;
   --red: #ef4444;
-  --blue: #38bdf8;
+  --blue: #3b82f6;
   --warm: #f59e0b;
   --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
@@ -371,7 +371,7 @@ body > nav::before {
   line-height: 1;
   white-space: nowrap;
   background: var(--accent);
-  color: #04140d;
+  color: #f8fafc;
   border: 1px solid var(--accent);
   border-radius: 999px;
   text-decoration: none;
@@ -500,7 +500,7 @@ body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
 }
 
 .mobile-menu a.mobile-menu-cta.primary {
-  color: #04140d;
+  color: #f8fafc;
   border-color: var(--accent);
   background: var(--accent);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.28);
@@ -526,7 +526,7 @@ body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
   text-transform: none;
   padding: 13px 26px;
   background: var(--accent);
-  color: #04140d;
+  color: #f8fafc;
   border: 1px solid var(--accent);
   border-radius: 999px;
   cursor: pointer;

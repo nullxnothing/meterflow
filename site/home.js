@@ -129,6 +129,8 @@ function formatUsd(amount) {
 
 let statsAnimated = false;
 
+window.populateProtocolStats = populateProtocolStats;
+
 function populateProtocolStats() {
   const el = (id) => document.getElementById(id);
 
@@ -149,12 +151,23 @@ function populateProtocolStats() {
   // Money saved calculation
   const moneySaved = allTimeTokens * BLENDED_COST_PER_TOKEN;
 
-  // Hero stats with count-up on first load
-  const isFirstAnimation = !statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0);
-  if (isFirstAnimation) {
+  // Count-up is gated by IntersectionObserver in index.html; it re-calls this with __forceStatsAnimate.
+  const inView = !!window.__statsInView;
+  const force = !!window.__forceStatsAnimate;
+  const shouldAnimate = !statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0) && (inView || force);
+  if (shouldAnimate) {
+    el('ps-alltime-calls').textContent = '0';
+    el('ps-alltime-tokens').textContent = '0';
     animateCountUp('ps-alltime-calls', allTimeCalls, '', 2200);
     animateCountUp('ps-alltime-tokens', allTimeTokens, '', 2200);
     statsAnimated = true;
+    window.__forceStatsAnimate = false;
+  } else if (statsAnimated) {
+    el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
+    el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
+  } else if (!inView) {
+    el('ps-alltime-calls').textContent = '0';
+    el('ps-alltime-tokens').textContent = '0';
   } else {
     el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
     el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
@@ -163,7 +176,7 @@ function populateProtocolStats() {
   // Money saved — animate alongside the hero stats
   const savedEl = el('ps-money-saved');
   if (savedEl) {
-    if (moneySaved > 0 && isFirstAnimation) {
+    if (moneySaved > 0 && shouldAnimate) {
       const savedStart = performance.now();
       function tickSaved(now) {
         const progress = Math.min((now - savedStart) / 2200, 1);
@@ -172,8 +185,10 @@ function populateProtocolStats() {
         if (progress < 1) requestAnimationFrame(tickSaved);
       }
       requestAnimationFrame(tickSaved);
-    } else {
+    } else if (statsAnimated || inView) {
       savedEl.textContent = moneySaved > 0 ? formatUsd(moneySaved) : '--';
+    } else {
+      savedEl.textContent = '$0.00';
     }
   }
 
