@@ -178,6 +178,7 @@ Core API variables:
 - `ZAUTH_API_KEY` optional, enables Zauth x402 provider monitoring before the x402 middleware
 - `ZAUTH_INCLUDE_ROUTES` optional, defaults to `^/mcp/.*,^/gateway/.*`
 - `ZAUTH_EXCLUDE_ROUTES` optional, defaults to health/auth/OAuth/Discord/holder routes
+- `ZAUTH_BATCH_SIZE=1` and `ZAUTH_BATCH_WAIT_MS=100` keep telemetry flushing promptly on serverless deployments
 - `ZAUTH_REFUNDS_ENABLED=false` by default; set `ZAUTH_SOLANA_PRIVATE_KEY` only if refunds are intentionally enabled
 
 Token and settlement variables:
