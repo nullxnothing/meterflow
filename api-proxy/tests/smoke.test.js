@@ -509,10 +509,12 @@ describe('Meterflow control plane', () => {
   it('app.js mounts the default MCP gateway route', () => {
     const server = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const route = readFileSync(resolve(root, 'routes', 'mcp.js'), 'utf-8');
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     assert.ok(server.includes('mcpRouter'), 'should import MCP router');
     assert.ok(server.includes("app.use('/mcp', mcpRouter)"), 'should mount MCP routes under /mcp');
-    assert.ok(route.includes("router.get('/token-risk'"), 'should expose GET metadata for browser and registry probes');
+    assert.ok(route.includes("router.get('/token-risk'"), 'should expose GET metadata after x402 payment');
     assert.ok(route.includes("router.post('/token-risk'"), 'should implement /mcp/token-risk');
+    assert.ok(control.includes("id: 'mtr_mcp_token_risk_get'") && control.includes("method: 'GET'"), 'GET /mcp/token-risk should be an x402-protected link for registry probes');
     assert.ok(route.includes('completeMeteredRequest'), 'MCP route should write receipts');
   });
 

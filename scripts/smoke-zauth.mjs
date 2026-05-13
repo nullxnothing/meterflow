@@ -80,7 +80,7 @@ async function main() {
         displayName: 'Meterflow Token Risk',
         providerName: 'Meterflow',
         endpointUrl: endpoint,
-        method: 'POST',
+        method: 'GET',
         priceUsd: 0.006,
         rail: 'x402',
         supportedRails: ['x402', 'MPP'],
