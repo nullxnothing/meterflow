@@ -615,6 +615,7 @@ describe('Meterflow control plane', () => {
     assert.ok(app.includes('createZauthProviderMiddleware'), 'app should import Zauth middleware factory');
     assert.ok(app.includes('zauthMiddlewareReady'), 'app should initialize Zauth middleware lazily');
     assert.ok(app.indexOf('zauthMiddlewareReady') < app.indexOf('const x402GatewayReady'), 'Zauth should observe requests before x402 handles payment');
+    assert.ok(app.includes('flushZauthBeforeEnd') && app.includes('middleware.shutdown()'), 'Vercel should flush queued Zauth telemetry before the response ends');
     assert.ok(zauth.includes("import('@zauthx402/sdk/middleware')"), 'Zauth wrapper should use the official SDK middleware export');
     assert.ok(zauth.includes('ZAUTH_API_KEY'), 'Zauth wrapper should be env-gated');
     assert.ok(zauth.includes('ZAUTH_INCLUDE_ROUTES'), 'Zauth wrapper should support route filtering');

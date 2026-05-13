@@ -1,7 +1,7 @@
 import { logger } from './logger.js';
 
-const DEFAULT_ZAUTH_BASE_URL = 'https://back.zauthx402.com';
-const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauthx402.com';
+const DEFAULT_ZAUTH_BASE_URL = 'https://api.zauth.inc';
+const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauth.inc';
 const DEFAULT_INCLUDE_ROUTES = ['^/mcp/.*', '^/gateway/.*'];
 const DEFAULT_EXCLUDE_ROUTES = ['^/health$', '^/auth/.*', '^/oauth/.*', '^/discord/.*', '^/holder/.*'];
 
@@ -131,7 +131,7 @@ function buildProviderMiddlewareOptions() {
       sampleRate: numberEnv('ZAUTH_SAMPLE_RATE', 1),
     },
     batching: {
-      maxBatchSize: numberEnv('ZAUTH_BATCH_SIZE', 1),
+      maxBatchSize: numberEnv('ZAUTH_BATCH_SIZE', 10),
       maxBatchWaitMs: numberEnv('ZAUTH_BATCH_WAIT_MS', 100),
       retry: true,
       maxRetries: numberEnv('ZAUTH_BATCH_MAX_RETRIES', 3),

@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createClient } from '@zauthx402/sdk';
 
-const DEFAULT_ENDPOINT = 'https://meterflow.fun/proxy/mcp/token-risk';
-const DEFAULT_ZAUTH_APP = 'https://zauthx402.com';
+const DEFAULT_ENDPOINT = 'https://www.meterflow.fun/proxy/mcp/token-risk';
+const DEFAULT_ZAUTH_APP = 'https://zauth.inc';
 
 function loadEnvFiles() {
   for (const file of ['.env.zauth.local', '.env.local', '.env.production.local']) {
@@ -20,6 +20,10 @@ function clean(value) {
   return String(value || '').trim();
 }
 
+function canonicalMeterflowEndpoint(value) {
+  return clean(value).replace(/^https:\/\/meterflow\.fun(?=\/|$)/, 'https://www.meterflow.fun');
+}
+
 function redact(value) {
   return String(value || '')
     .replace(/zauth_sk_[A-Za-z0-9_-]+/g, 'zauth_sk_[redacted]')
@@ -35,12 +39,12 @@ async function main() {
   loadEnvFiles();
 
   const apiKey = clean(process.env.ZAUTH_API_KEY);
-  const endpoint = clean(process.env.METERFLOW_ZAUTH_ENDPOINT)
+  const endpoint = canonicalMeterflowEndpoint(clean(process.env.METERFLOW_ZAUTH_ENDPOINT)
     || clean(process.env.METERFLOW_SMOKE_ENDPOINT)
-    || DEFAULT_ENDPOINT;
+    || DEFAULT_ENDPOINT);
   const apiEndpoint = clean(process.env.ZAUTH_BASE_URL)
     || clean(process.env.ZAUTH_API_ENDPOINT)
-    || undefined;
+    || 'https://api.zauth.inc';
 
   if (!apiKey) {
     console.error('Missing ZAUTH_API_KEY. Set it in the shell or .env.zauth.local before running this smoke test.');

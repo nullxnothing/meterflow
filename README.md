@@ -176,6 +176,9 @@ Core API variables:
 - `ERROR_ALERT_WEBHOOK` optional, for production error notifications
 - `SENTRY_DSN` optional, for stack traces and grouped production errors
 - `ZAUTH_API_KEY` optional, enables Zauth x402 provider monitoring before the x402 middleware
+- `ZAUTH_BASE_URL` optional, defaults to `https://api.zauth.inc`
+- `ZAUTH_PUBLIC_APP_URL` optional, defaults to `https://zauth.inc`
+- `METERFLOW_PUBLIC_URL` optional, defaults to `https://www.meterflow.fun` for registry/Zauth public endpoint URLs
 - `ZAUTH_INCLUDE_ROUTES` optional, defaults to `^/mcp/.*,^/gateway/.*`
 - `ZAUTH_EXCLUDE_ROUTES` optional, defaults to health/auth/OAuth/Discord/holder routes
 - `ZAUTH_BATCH_SIZE=1` and `ZAUTH_BATCH_WAIT_MS=100` keep telemetry flushing promptly on serverless deployments
@@ -236,7 +239,7 @@ npm run smoke:paid
 
 The paid smoke uses the local Solana CLI keypair at `~/.config/solana/id.json` by default. You can override it with `METERFLOW_PAYER_PRIVATE_KEY`, `X402_PAYER_PRIVATE_KEY`, or `SVM_PRIVATE_KEY` using a base58 secret key or JSON-array keypair. Optional overrides include `METERFLOW_SMOKE_BASE_URL`, `METERFLOW_PAID_ROUTE`, `METERFLOW_PAID_TOKEN`, `SOLANA_RPC_URL`, and `HELIUS_RPC_URL`.
 
-`npm run smoke:zauth` validates the Zauth SDK key and endpoint registration path without making a payment. Set `ZAUTH_API_KEY` in the shell or `.env.zauth.local`; optionally set `METERFLOW_ZAUTH_ENDPOINT` to test a non-default public endpoint. The default endpoint is `https://meterflow.fun/proxy/mcp/token-risk`.
+`npm run smoke:zauth` validates the Zauth SDK key and endpoint registration path without making a payment. Set `ZAUTH_API_KEY` in the shell or `.env.zauth.local`; optionally set `METERFLOW_ZAUTH_ENDPOINT` to test a non-default public endpoint. The default endpoint is `https://www.meterflow.fun/proxy/mcp/token-risk`.
 
 ## License
 
