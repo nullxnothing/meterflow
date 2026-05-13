@@ -71,8 +71,9 @@ router.get('/token-risk', (req, res) => {
     id: 'mtr_mcp_token_risk',
     name: 'Meterflow Token Risk MCP Tool',
     status: 'live',
-    method: 'POST',
+    method: 'GET',
     endpoint: publicUrl,
+    postEndpoint: publicUrl,
     payment: {
       rail: 'x402',
       asset: 'USDC',
@@ -87,7 +88,7 @@ router.get('/token-risk', (req, res) => {
         address: 'So11111111111111111111111111111111111111112',
       },
     },
-    message: 'Send a POST request with a Solana token address to receive the x402 payment challenge and run the paid risk lookup.',
+    message: 'This URL is x402-protected. GET returns paid endpoint metadata after payment; POST with a Solana token address runs the paid risk lookup.',
   });
 });
 

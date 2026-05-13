@@ -39,6 +39,7 @@ const WEBHOOK_EVENTS = new Set([
 
 export const DEFAULT_METERS = [
   { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
+  { id: 'mtr_mcp_token_risk_get', route: '/mcp/token-risk', method: 'GET', unit: 'MCP tool metadata', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
 ];
 
 function nowIso() {

@@ -17,7 +17,7 @@ const router = Router();
 const PUBLIC_ORIGIN = (process.env.METERFLOW_PUBLIC_URL || 'https://www.meterflow.fun')
   .replace(/^https:\/\/meterflow\.fun(?=\/|$)/, 'https://www.meterflow.fun')
   .replace(/\/$/, '');
-const DEFAULT_ZAUTH_METER_ID = 'mtr_mcp_token_risk';
+const DEFAULT_ZAUTH_METER_ID = 'mtr_mcp_token_risk_get';
 
 function publicEndpointUrl(meter, tail = '') {
   if (!meter?.route) return null;
