@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="description" content="Meterflow is the Solana control plane for agent commerce. Wrap APIs and MCP tools, meter paid calls, track receipts and revenue, and cap autonomous spend.">
-<meta name="theme-color" content="#05080f">
+<meta name="theme-color" content="#0a0a0c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta property="og:title" content="Meterflow: Control plane for agent commerce">
 <meta property="og:description" content="Hosted API gateways, paid MCP tools, agent budgets, provider revenue, receipt graphs, and Solana settlement context for agent commerce.">
@@ -23,12 +23,13 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="Meterflow">
 <meta name="application-name" content="Meterflow">
-<meta name="msapplication-TileColor" content="#03060c">
+<meta name="msapplication-TileColor" content="#0a0a0c">
 <meta name="color-scheme" content="dark">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <link rel="stylesheet" href="/site/home.css">
-<link rel="stylesheet" href="/site/home-hero.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -58,7 +59,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/site/premium.css">
 </head>
 <body>
 <!-- FREE ACCESS BANNER -->
@@ -114,573 +114,215 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg" aria-hidden="true">
-    <div class="hero-bg-grid"></div>
-    <div class="hero-dots"></div>
-  </div>
-
   <div class="hero-content">
-    <div class="hero-text">
-      <a href="/roadmap" class="hero-label">
-        <span class="dot"></span>
-        <span>Meterflow / agent commerce</span>
-        <span class="arrow">&rarr;</span>
+    <a href="/roadmap" class="hero-label reveal">
+      <span class="dot"></span>
+      <span>Meterflow / agent commerce</span>
+      <span class="arrow">&rarr;</span>
+    </a>
+    <h1 class="hero-headline reveal">
+      The control plane for<br><em>agent commerce.</em>
+    </h1>
+    <p class="hero-sub reveal">
+      Wrap APIs and MCP tools into paid services agents can call. Track receipts, attribute provider revenue, and cap autonomous spend &mdash; settled on Solana.
+    </p>
+    <div class="hero-actions reveal">
+      <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
+      <a href="/docs" class="btn-secondary">Read Docs</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT SHOWCASE -->
+<section class="showcase reveal">
+  <div class="showcase-frame">
+    <div class="showcase-bar">
+      <div class="showcase-status"><span class="dot"></span>Live &mdash; metering enabled</div>
+      <div class="showcase-score">meter score<strong>96</strong></div>
+    </div>
+    <div class="showcase-progress" aria-hidden="true"></div>
+    <div class="showcase-body">
+      <div class="showcase-tree" aria-hidden="true">
+        <div class="showcase-tree-head"><span class="tree-folder">Mr</span> meters/</div>
+        <div class="tree-item"><span><span class="tree-folder">/</span>v1/risk-score</span><span class="tree-pct">96%</span></div>
+        <div class="tree-item nested"><span class="tree-folder">/</span>v1/embed <span class="tree-pct">82%</span></div>
+        <div class="tree-item nested"><span class="tree-folder">/</span>v1/scrape <span class="tree-pct dim">paused</span></div>
+        <div class="tree-item active"><span><span class="tree-folder">/</span>mcp/token-risk</span><span class="tree-pct">live</span></div>
+        <div class="tree-item nested"><span class="tree-folder">/</span>gateway/trace <span class="tree-pct">71%</span></div>
+        <div class="tree-item nested-2">policy.allowlist <span class="tree-pct">ok</span></div>
+        <div class="tree-item nested-2">budget.cap <span class="tree-pct warn">98%</span></div>
+      </div>
+      <div class="showcase-detail">
+        <div>
+          <div class="showcase-col-head">request<span class="match">quote.issued</span></div>
+<div class="code-block"><span class="kw">export async function</span> <span class="fn">meter</span>(req) <span class="punct">{</span>
+  <span class="kw">const</span> q = <span class="kw">await</span> quote(<span class="str">'/risk'</span>);
+  <span class="kw">return</span> pay(q, agent);
+<span class="punct">}</span></div>
+        </div>
+        <div>
+          <div class="showcase-col-head">receipt<span class="match">verified</span></div>
+<div class="code-block">rcpt_41bd
+<span class="str">0.006 USDC</span>
+mcp/token-risk
+<span class="kw">solana</span>: confirmed
+latency: <span class="str">12ms</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUSTED BY / BUILT ON -->
+<section class="trusted reveal">
+  <div class="trusted-inner">
+    <span class="trusted-label">Built on</span>
+    <div class="trusted-items">
+      <span class="trusted-item">Solana</span>
+      <span class="trusted-item">USDC</span>
+      <span class="trusted-item">x402</span>
+      <span class="trusted-item">MPP</span>
+      <span class="trusted-item">MCP</span>
+      <span class="trusted-item">Helius</span>
+      <span class="trusted-item">Phantom</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS — by the numbers -->
+<section class="stats" id="stats">
+  <div class="stats-inner">
+    <div class="section-header reveal">
+      <div class="section-eyebrow"><span class="section-eyebrow-code">Mt</span> Meterflow Protocol</div>
+      <h2 class="section-title">By the <em>numbers.</em></h2>
+      <p class="section-sub">Live counters from the Meterflow control plane &mdash; meters created, calls metered, and USDC settled across paid agent traffic.</p>
+    </div>
+
+    <div class="stats-group reveal">
+      <div class="stats-group-head"><span class="badge emerald">Mt</span> Meter activity</div>
+      <div class="stat-row">
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-alltime-calls">---</div>
+          <div class="stat-label">Metered calls tracked</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-alltime-tokens">---</div>
+          <div class="stat-label">Billable units processed</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-money-saved">---</div>
+          <div class="stat-label">Estimated compute value</div>
+        </div>
+      </div>
+      <div class="chart-label">Calls per day &mdash; last 30 days</div>
+      <div class="chart" data-chart="emerald" aria-hidden="true"></div>
+      <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
+    </div>
+
+    <div class="stats-group sky-group reveal">
+      <div class="stats-group-head"><span class="badge sky">Rc</span> Receipts &amp; settlement</div>
+      <div class="stat-row">
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-active-keys">---</div>
+          <div class="stat-label">Developer keys issued</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-models">---</div>
+          <div class="stat-label">Services online <span id="ps-providers" style="display:none"></span></div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-number" id="ps-uptime">---</div>
+          <div class="stat-label">Session uptime <span id="ps-uptime-pct" style="display:none"></span><span id="ps-tokens-today" style="display:none"></span></div>
+        </div>
+      </div>
+      <div class="chart-label">Settled receipts per day &mdash; last 30 days</div>
+      <div class="chart" data-chart="sky" aria-hidden="true"></div>
+      <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
+    </div>
+
+    <div style="display:none">
+      <span id="ps-calls-today"></span><span id="ps-treasury"></span><span id="ps-treasury-usd"></span><span id="ps-runway"></span><span id="ps-health"></span>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS / SURFACES -->
+<section class="tools" id="tools">
+  <div class="tools-inner">
+    <div class="section-header reveal">
+      <div class="section-eyebrow"><span class="section-eyebrow-code">Sf</span> Surfaces</div>
+      <h2 class="section-title">Six surfaces. <em>One control plane.</em></h2>
+      <p class="section-sub">Meters price routes. Receipts prove every paid call. Budgets cap autonomous agents. Registry and gateways make the network discoverable.</p>
+    </div>
+    <div class="tools-grid">
+      <a href="/dashboard#meters" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Mt</span><span class="tool-card-name">Meters</span></div>
+        <p class="tool-desc">Create meters for routes, MCP tools, models, and datasets. Set price, asset, recipient, customer rules, and operational state in one place.</p>
+        <span class="tool-link">Open meters <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
-      <h1 class="hero-headline">
-        The control plane for <span class="accent">agent commerce.</span>
-      </h1>
-      <p class="hero-sub">
-        Wrap APIs and MCP tools into paid services agents can call with budgets, receipts, provider revenue, and Solana settlement context.
-      </p>
-      <div class="hero-actions">
-        <a href="/dashboard#meters" class="btn-primary">Wrap an API</a>
-        <a href="/dashboard" class="btn-secondary">View dashboard</a>
-      </div>
-      <div class="hero-chips">
-        <a href="/dashboard#meters" class="hero-chip">
-          <span class="hero-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v6M4.93 4.93l4.24 4.24M2 12h6M4.93 19.07l4.24-4.24M12 22v-6M19.07 19.07l-4.24-4.24M22 12h-6M19.07 4.93l-4.24 4.24"/></svg></span>
-          <span>Meters</span>
-          <span class="hero-chip-arrow">&rarr;</span>
-        </a>
-        <a href="/dashboard#receipts" class="hero-chip">
-          <span class="hero-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v17l2-1.5 2 1.5 2-1.5 2 1.5 2-1.5 2 1.5 2-1.5V4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
-          <span>Receipts</span>
-          <span class="hero-chip-arrow">&rarr;</span>
-        </a>
-        <a href="/dashboard#budgets" class="hero-chip">
-          <span class="hero-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M8 15h3"/></svg></span>
-          <span>Budgets</span>
-          <span class="hero-chip-arrow">&rarr;</span>
-        </a>
-        <a href="/#tools" class="hero-chip">
-          <span class="hero-chip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-          <span>Integrations</span>
-          <span class="hero-chip-arrow">&rarr;</span>
-        </a>
-      </div>
-      <div class="hero-trust">
-        <span class="trust-label">Built on</span>
-        <span class="trust-item">Solana</span>
-        <span class="trust-item">USDC</span>
-        <span class="trust-item">x402</span>
-        <span class="trust-item">MPP</span>
-        <span class="trust-item">MCP</span>
-      </div>
-    </div>
-
-    <div class="hero-panel" aria-hidden="true">
-      <div class="hero-panel-chrome">
-        <div class="chrome-dots">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="chrome-title">meterflow / endpoint /v1/risk-score</div>
-        <div class="chrome-status"><span class="dot"></span>live</div>
-      </div>
-      <div class="hero-panel-body">
-        <div class="panel-flow">
-          <div class="panel-node active">
-            <div class="node-head"><span>01</span><em>meter</em></div>
-            <div class="node-detail">/v1/risk-score</div>
-          </div>
-          <div class="panel-rail"></div>
-          <div class="panel-node">
-            <div class="node-head"><span>02</span><em>budget</em></div>
-            <div class="node-detail">cap $12/day</div>
-          </div>
-          <div class="panel-rail"></div>
-          <div class="panel-node">
-            <div class="node-head"><span>03</span><em>receipt</em></div>
-            <div class="node-detail">mf_rcpt_92a</div>
-          </div>
-        </div>
-
-        <div class="panel-stats">
-          <div class="panel-stat"><span>price</span><strong>$0.006 <em>USDC</em></strong></div>
-          <div class="panel-stat"><span>policy</span><strong>allowlist + cap</strong></div>
-          <div class="panel-stat"><span>revenue 24h</span><strong>$184.20</strong></div>
-          <div class="panel-stat"><span>calls 24h</span><strong>30,704</strong></div>
-        </div>
-
-        <div class="panel-log">
-          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">meter.hit</span><span class="log-path">endpoint=/v1/risk-score</span><span class="log-time">12ms</span></div>
-          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">quote.issued</span><span class="log-path">price=0.006 USDC</span><span class="log-time">8ms</span></div>
-          <div class="log-line"><span class="log-tag ok">200</span><span class="log-method">receipt.verified</span><span class="log-path">id=rcpt_41bd</span><span class="log-time">22ms</span></div>
-          <div class="log-line"><span class="log-tag warn">402</span><span class="log-method">budget.cap</span><span class="log-path">agent=ag_7c2 daily limit reached</span><span class="log-time">3ms</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- VALUE HOOKS -->
-<section class="hooks-section">
-  <div class="hooks-inner">
-    <div class="hook-card">
-      <div class="hook-pill">METER</div>
-      <div class="hook-content">
-        <h3 class="hook-title">Price every <span>endpoint call.</span></h3>
-        <p class="hook-desc">Define route-level prices, accepted assets, customer rules, and usage limits for APIs, MCP tools, models, and data feeds.</p>
-      </div>
-      <a href="/docs" class="hook-link">Read the meter API <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-    <div class="hook-card">
-      <div class="hook-pill">CONTROL</div>
-      <div class="hook-content">
-        <h3 class="hook-title">Limit what <span>agents can spend.</span></h3>
-        <p class="hook-desc">Give each agent a budget, endpoint allowlist, daily cap, and revocation path so automation does not mean unlimited wallet risk.</p>
-      </div>
-      <a href="#agents" class="hook-link">Configure budgets <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-    <div class="hook-card">
-      <div class="hook-pill">RECEIPTS</div>
-      <div class="hook-content">
-        <h3 class="hook-title">Make usage <span>accountable.</span></h3>
-        <p class="hook-desc">Connect payments to request logs, revenue views, failed-payment reasons, and exportable receipts for builders and agent operators.</p>
-      </div>
-      <a href="#tiers" class="hook-link">Open the dashboard <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-  </div>
-</section>
-
-<!-- LIVE PROTOCOL STATS -->
-<section class="protocol-stats" id="stats">
-  <div class="protocol-stats-inner">
-    <div class="protocol-stats-header">
-      <h2>Metering dashboard</h2>
-      <div class="live-badge"><span class="pulse"></span> Live</div>
-    </div>
-    <div class="stats-hero-row triple">
-      <div class="stats-hero-block">
-        <div class="stats-hero-number" id="ps-alltime-calls">--</div>
-        <div class="stats-hero-label">Metered calls tracked</div>
-      </div>
-      <div class="stats-hero-block">
-        <div class="stats-hero-number" id="ps-alltime-tokens">--</div>
-        <div class="stats-hero-label">Billable units processed</div>
-      </div>
-      <div class="stats-hero-block saved">
-        <div class="stats-hero-number" id="ps-money-saved">--</div>
-        <div class="stats-hero-label">Est. compute value</div>
-      </div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-calls-today">--</div>
-        <div class="stat-label">Meter Hits Today</div>
-        <div class="stat-sub" id="ps-tokens-today"></div>
-      </div>
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-active-keys">--</div>
-        <div class="stat-label">Developer Keys</div>
-        <div class="stat-sub">meter clients</div>
-      </div>
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-treasury">--</div>
-        <div class="stat-label">Treasury Balance</div>
-        <div class="stat-sub" id="ps-treasury-usd"></div>
-      </div>
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-runway">--</div>
-        <div class="stat-label">Ops Runway</div>
-        <div class="stat-sub" id="ps-health"></div>
-      </div>
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-models">--</div>
-        <div class="stat-label">Services Online</div>
-        <div class="stat-sub" id="ps-providers"></div>
-      </div>
-      <div class="stat-block">
-        <span class="stat-icon">//</span>
-        <div class="stat-number" id="ps-uptime">--</div>
-        <div class="stat-label">Uptime</div>
-        <div class="stat-sub" id="ps-uptime-pct"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- MARQUEE -->
-<section class="marquee-section" aria-label="Built on">
-  <div class="marquee-label">Built for the agent commerce stack</div>
-  <div class="marquee">
-    <div class="marquee-track">
-      <span class="marquee-item">Solana<span class="dot"></span></span>
-      <span class="marquee-item">USDC<span class="dot"></span></span>
-      <span class="marquee-item">x402<span class="dot"></span></span>
-      <span class="marquee-item">MCP<span class="dot"></span></span>
-      <span class="marquee-item">Helius<span class="dot"></span></span>
-      <span class="marquee-item">Phantom<span class="dot"></span></span>
-      <span class="marquee-item">Jito<span class="dot"></span></span>
-      <span class="marquee-item">MPP<span class="dot"></span></span>
-      <span class="marquee-item">Anchor<span class="dot"></span></span>
-      <span class="marquee-item">Switchboard<span class="dot"></span></span>
-    </div>
-    <div class="marquee-track" aria-hidden="true">
-      <span class="marquee-item">Solana<span class="dot"></span></span>
-      <span class="marquee-item">USDC<span class="dot"></span></span>
-      <span class="marquee-item">x402<span class="dot"></span></span>
-      <span class="marquee-item">MCP<span class="dot"></span></span>
-      <span class="marquee-item">Helius<span class="dot"></span></span>
-      <span class="marquee-item">Phantom<span class="dot"></span></span>
-      <span class="marquee-item">Jito<span class="dot"></span></span>
-      <span class="marquee-item">MPP<span class="dot"></span></span>
-      <span class="marquee-item">Anchor<span class="dot"></span></span>
-      <span class="marquee-item">Switchboard<span class="dot"></span></span>
+      <a href="/dashboard#receipts" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Rc</span><span class="tool-card-name">Receipts</span></div>
+        <p class="tool-desc">Every paid call links to a quote, a payment proof, and a response status. Export CSV or stream a webhook to your accounting.</p>
+        <span class="tool-link">Open receipts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="/dashboard#budgets" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Bg</span><span class="tool-card-name">Budgets</span></div>
+        <p class="tool-desc">Set per-agent spend limits, endpoint allowlists, daily caps, and kill switches before automation gets expensive.</p>
+        <span class="tool-link">Configure budgets <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="/dashboard#analytics" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Pr</span><span class="tool-card-name">Provider Revenue</span></div>
+        <p class="tool-desc">See which endpoints earn, which agents consume, where payments fail, and what each customer costs to serve.</p>
+        <span class="tool-link">Open analytics <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="/apply" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Lp</span><span class="tool-card-name">Launchpad</span></div>
+        <p class="tool-desc">Turn APIs and MCP tools into paid agent-accessible products with hosted routes, prices, budget rules, and verifiable receipts.</p>
+        <span class="tool-link">Apply as provider <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+      <a href="/docs" class="tool-card reveal">
+        <div class="tool-card-head"><span class="tool-code">Pa</span><span class="tool-card-name">Payment Adapter</span></div>
+        <p class="tool-desc">Normalize x402, MPP, and future 402 rails into one meter, policy, receipt, and provider-revenue model. One integration covers the rest.</p>
+        <span class="tool-link">Read protocol <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
     </div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="how-section" id="how">
-    <div class="section-label">How It Works</div>
-  <h2 class="how-headline">Meter. Control. Account.</h2>
-  <div class="how-steps">
-    <div class="how-step">
-      <div class="step-number">01</div>
-      <h3 class="step-title">Create a meter</h3>
-      <p class="step-desc">Choose a route, MCP tool, data endpoint, or provider workflow. Set price, unit, customer rules, and allowed payment assets.</p>
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="section-header reveal">
+      <div class="section-eyebrow"><span class="section-eyebrow-code">Hw</span> How it works</div>
+      <h2 class="section-title">Meter. Control. <em>Account.</em></h2>
+      <p class="section-sub">Three steps to turn an endpoint, MCP tool, or data feed into a paid agent-accessible product with built-in spend controls.</p>
     </div>
-    <div class="how-step">
-      <div class="step-number">02</div>
-      <h3 class="step-title">Attach policies</h3>
-      <p class="step-desc">Agent operators connect a wallet, issue a metered client key, and define spend caps, allowlists, expiration windows, and revocation rules before automation can pay.</p>
-    </div>
-    <div class="how-step">
-      <div class="step-number">03</div>
-      <h3 class="step-title">Record every receipt</h3>
-      <p class="step-desc">Meterflow connects payment proof to the request, updates usage analytics, attributes revenue, and exports receipts.</p>
-    </div>
-  </div>
-</section>
-
-<!-- TOOLS -->
-<section class="tools-section" id="tools">
-  <div class="tools-inner">
-    <div class="section-label">Tools</div>
-    <h2 class="tools-headline">The stack around every paid agent call.</h2>
-    <p class="tools-sub">Payment protocols are becoming table stakes. Meterflow focuses on the control layer providers and agent operators need once APIs, tools, and agents can transact.</p>
-    <div class="tools-grid">
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-        <div class="tool-preview-label">Route-level pricing</div>
-        </div>
-        <div class="tool-tag">Meters</div>
-        <h3 class="tool-name">Endpoint Catalog</h3>
-        <p class="tool-desc">Create meters for routes, tools, models, and datasets. Track price, owner, policy, and current state in one place.</p>
+    <div class="how-steps">
+      <div class="how-step reveal">
+        <div class="how-step-num">01</div>
+        <h3 class="how-step-title">Create a meter</h3>
+        <p class="how-step-desc">Choose a route, MCP tool, or data feed. Set price, unit, customer rules, and allowed payment assets.</p>
       </div>
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-          <div class="tool-preview-label">Spend policy engine</div>
-        </div>
-        <div class="tool-tag">Budgets</div>
-        <h3 class="tool-name">Agent Budget Vaults</h3>
-        <p class="tool-desc">Set per-agent spend limits, route allowlists, emergency stops, and budget windows before an agent starts calling tools.</p>
+      <div class="how-step reveal">
+        <div class="how-step-num">02</div>
+        <h3 class="how-step-title">Attach policies</h3>
+        <p class="how-step-desc">Operators connect a wallet, issue a metered client key, and define spend caps, allowlists, and expiration windows.</p>
       </div>
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-        <div class="tool-preview-label">Auditable usage</div>
-        </div>
-        <div class="tool-tag">Receipts</div>
-        <h3 class="tool-name">Receipt Graph</h3>
-        <p class="tool-desc">Tie every successful or failed paid request to a quote, payment proof, payer, route, response status, latency, and exportable receipt.</p>
-      </div>
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-        <div class="tool-preview-label">Revenue attribution</div>
-        </div>
-        <div class="tool-tag">Analytics</div>
-        <h3 class="tool-name">Provider Revenue</h3>
-        <p class="tool-desc">See which endpoints earn, which agents consume, where payments fail, and what each customer costs to serve.</p>
-      </div>
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-          <div class="tool-preview-label">Monetized capabilities</div>
-        </div>
-        <div class="tool-tag">Launchpad</div>
-        <h3 class="tool-name">MCP/API Packaging</h3>
-        <p class="tool-desc">Turn APIs and MCP tools into paid capabilities with hosted routes, clear prices, budget rules, and receipts an agent can reason about.</p>
-      </div>
-      <div class="tool-card">
-        <div class="tool-preview">
-          <div class="tool-preview-icon">Active</div>
-        <div class="tool-preview-label">First metered service</div>
-        </div>
-        <div class="tool-tag">Protocol</div>
-        <h3 class="tool-name">Payment Adapter</h3>
-        <p class="tool-desc">Normalize x402, MPP, and future 402 rails into one meter, policy, receipt, and provider revenue model.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- LIVE DEMO -->
-<section class="demo-section" id="demo">
-  <div class="demo-inner">
-    <div class="section-label">Dashboard Preview</div>
-    <h2 class="demo-headline">One control plane. <span class="accent">Two sides.</span></h2>
-    <p class="demo-sub">Providers see endpoint revenue and receipts. Agent operators see wallet-linked payment activity, budget usage, and failures before automation gets expensive.</p>
-    <div class="demo-prompts">
-      <button class="demo-chip active" onclick="startDemo(0)">Endpoint revenue</button>
-      <button class="demo-chip" onclick="startDemo(1)">Agent budget</button>
-      <button class="demo-chip" onclick="startDemo(2)">Failed payment</button>
-    </div>
-    <div class="demo-grid">
-      <div class="demo-pane">
-        <div class="demo-pane-header">
-          <div class="demo-model"><span class="demo-dot claude"></span>Provider View</div>
-          <span class="demo-timer" id="demoTimerClaude">0.0s</span>
-        </div>
-        <div class="demo-response" id="demoResponseClaude"></div>
-      </div>
-      <div class="demo-pane">
-        <div class="demo-pane-header">
-          <div class="demo-model"><span class="demo-dot gemini"></span>Agent View</div>
-          <span class="demo-timer" id="demoTimerGemini">0.0s</span>
-        </div>
-        <div class="demo-response" id="demoResponseGemini"></div>
-      </div>
-    </div>
-    <div style="text-align: center; margin-top: 48px;">
-      <a href="/dashboard" class="btn-primary">Open the dashboard &rarr;</a>
-    </div>
-  </div>
-</section>
-
-<!-- PRODUCT SURFACES -->
-<section class="tiers-section" id="tiers">
-  <div class="tiers-inner">
-    <div class="section-label">Surfaces</div>
-    <h2 class="tiers-headline">Six surfaces. One control plane.</h2>
-    <p class="tiers-sub">Meters price routes. Gateways expose provider APIs. Receipts prove every paid call. Budgets cap autonomous agents. Registry and integrations make the network discoverable.</p>
-    <div class="tiers-grid">
-
-      <a href="/dashboard" class="tier-card">
-        <div class="tier-card-head">
-          <div class="tier-name">Meters</div>
-          <span class="tier-tag">Provider</span>
-        </div>
-        <div class="tier-card-mock">
-          <div class="mock-row"><span class="mock-dot ok"></span><span class="mock-mono">/v1/risk-score</span><span class="mock-pill">$0.006</span></div>
-          <div class="mock-row"><span class="mock-dot ok"></span><span class="mock-mono">/v1/embed</span><span class="mock-pill">$0.0004</span></div>
-          <div class="mock-row"><span class="mock-dot pause"></span><span class="mock-mono">/v1/scrape</span><span class="mock-pill muted">paused</span></div>
-        </div>
-        <p class="tier-desc">Price every endpoint. Pick asset, recipient, and customer rules. Pause or test routes without redeploying.</p>
-        <span class="tier-link">Open meters &rarr;</span>
-      </a>
-
-      <a href="/dashboard" class="tier-card featured">
-        <div class="tier-card-head">
-          <div class="tier-name">Receipts</div>
-          <span class="tier-tag">Auditable</span>
-        </div>
-        <div class="tier-card-mock">
-          <div class="mock-row"><span class="mock-tag ok">200</span><span class="mock-mono">rcpt_41bd</span><span class="mock-pill">verified</span></div>
-          <div class="mock-row"><span class="mock-tag ok">200</span><span class="mock-mono">rcpt_92a</span><span class="mock-pill">verified</span></div>
-          <div class="mock-row"><span class="mock-tag warn">402</span><span class="mock-mono">rcpt_44e</span><span class="mock-pill muted">cap</span></div>
-        </div>
-        <p class="tier-desc">Every paid call links to a quote, a payment proof, and a response status. Export CSV or stream a webhook.</p>
-        <span class="tier-link">Open receipts &rarr;</span>
-      </a>
-
-      <a href="/dashboard" class="tier-card">
-        <div class="tier-card-head">
-          <div class="tier-name">Budgets</div>
-          <span class="tier-tag">Operator</span>
-        </div>
-        <div class="tier-card-mock">
-          <div class="mock-row"><span class="mock-mono">ag_research</span><span class="mock-bar"><span style="width:62%"></span></span><span class="mock-pill">$7.4 / $12</span></div>
-          <div class="mock-row"><span class="mock-mono">ag_mintbot</span><span class="mock-bar"><span style="width:18%"></span></span><span class="mock-pill">$1.8 / $10</span></div>
-          <div class="mock-row"><span class="mock-mono">ag_indexer</span><span class="mock-bar"><span style="width:96%"></span></span><span class="mock-pill warn">$28.8 / $30</span></div>
-        </div>
-        <p class="tier-desc">Daily caps, route allowlists, kill switches. Agents can pay, with limits you set.</p>
-        <span class="tier-link">Open budgets &rarr;</span>
-      </a>
-
-      <a href="/dashboard" class="tier-card">
-        <div class="tier-card-head">
-          <div class="tier-name">Integrations</div>
-          <span class="tier-tag">Plug-in</span>
-        </div>
-        <div class="tier-card-mock">
-          <div class="mock-row"><span class="mock-chip">x402</span><span class="mock-chip">MPP</span></div>
-          <div class="mock-row"><span class="mock-chip">MCP</span><span class="mock-chip">Helius</span></div>
-          <div class="mock-row"><span class="mock-chip">Registry</span><span class="mock-chip">Webhooks</span></div>
-        </div>
-        <p class="tier-desc">Wire payment rails, wallets, RPC, alerts, and dashboards. The Solana stack stays composable around Meterflow.</p>
-        <span class="tier-link">Open integrations &rarr;</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT'S FUNDED -->
-<section class="funded-section" id="funded">
-  <div class="funded-inner">
-    <div class="section-label">Agent Commerce</div>
-    <h2 class="funded-headline">Payment rails are not the moat. The control plane is.</h2>
-    <p class="funded-sub">x402 and MPP make machine payments easier. Meterflow makes them usable in production: quote integrity, usage records, revenue attribution, wallet-linked receipts, registry trust, and agent-safe limits.</p>
-
-    <div class="funded-flow">
-      <div class="funded-step">
-        <span class="funded-step-icon">01</span>
-        <div class="funded-step-label">Meter</div>
-        <h3>The provider defines the product</h3>
-        <p>Every protected route gets a unit, price, recipient, customer policy, and operational state.</p>
-      </div>
-      <div class="funded-step">
-        <span class="funded-step-icon">02</span>
-        <div class="funded-step-label">Policy</div>
-        <h3>The agent stays inside limits</h3>
-        <p>Budgets, allowlists, and revocation rules decide whether an autonomous caller is allowed to spend.</p>
-      </div>
-      <div class="funded-step">
-        <span class="funded-step-icon">03</span>
-        <div class="funded-step-label">Accounting</div>
-        <h3>The dashboard records the truth</h3>
-        <p>Successful and failed requests become searchable receipts, revenue analytics, and exportable logs.</p>
-      </div>
-    </div>
-
-    <p class="funded-note">
-      The dashboard records wallet context, metered usage, budgets, and receipts for paid API routes. USDC settles usage. MFLOW powers provider verification, fee discounts, registry ranking, higher limits, and receipt retention.<br>
-      <a href="https://solscan.io" target="_blank" rel="noopener" id="treasurySolscan">View wallet on Solscan</a>
-    </p>
-  </div>
-</section>
-
-<!-- AGENT ACCESS -->
-<section class="agent-section" id="agents">
-  <div class="agent-inner">
-    <div class="section-label">Get Started</div>
-    <h2 class="agent-headline">Start with a meter or a budget.</h2>
-    <p class="agent-sub">Providers monetize endpoints. Operators give agents controlled spending power.</p>
-
-    <div class="agent-toggle">
-      <button class="agent-toggle-btn active" id="btnHuman" onclick="showTab('human')">I'm a Builder</button>
-      <button class="agent-toggle-btn" id="btnAgent" onclick="showTab('agent')">I'm an Operator</button>
-    </div>
-
-    <!-- Human tab -->
-    <div class="agent-tab active" id="tabHuman">
-      <div class="agent-card">
-        <h3>Provider setup</h3>
-        <div class="agent-step-list">
-          <div class="agent-step-item"><span class="agent-step-num">1</span> Choose the endpoint, MCP tool, data feed, or provider workflow to meter</div>
-          <div class="agent-step-item"><span class="agent-step-num">2</span> Set price, asset, recipient wallet, customer rules, and test mode</div>
-          <div class="agent-step-item"><span class="agent-step-num">3</span> Watch calls, revenue, failures, and receipts in the dashboard</div>
-        </div>
-        <div class="agent-actions">
-          <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-          <a href="/docs" class="btn-secondary">Read Docs</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Agent tab -->
-    <div class="agent-tab" id="tabAgent">
-      <div class="agent-card">
-        <h3>Agent operator setup</h3>
-        <div class="agent-skill-url">
-          <span class="agent-skill-label">Read</span>
-          <code id="skillUrl">https://meterflow.fun/skill.md</code>
-          <span class="agent-skill-label">for wallet registration, metered keys, and budgeted agent calls</span>
-        </div>
-        <div class="agent-step-list">
-          <div class="agent-step-item"><span class="agent-step-num">1</span> Connect the wallet that controls settlement, identity, and budget approval</div>
-          <div class="agent-step-item"><span class="agent-step-num">2</span> Issue a metered client key for the agent, task, max spend, and approved endpoints</div>
-          <div class="agent-step-item"><span class="agent-step-num">3</span> Review receipts and revoke access when the job is done</div>
-        </div>
-        <p class="agent-note">Don't have an AI agent? <a href="/dashboard">Use the dashboard instead &rarr;</a></p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="faq-section" id="faq">
-  <div class="faq-inner">
-    <div class="section-label">Common Questions</div>
-    <h2 class="faq-headline">FAQ</h2>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>How does the dashboard tie into the idea?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>The dashboard is the main product surface. Providers create meters and inspect revenue. Operators connect a wallet, issue agent keys, visualize x402-style payments, export receipts, and set budgets before agents spend.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Is this just another x402 payment app?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>No. x402 and MPP are payment rails. The differentiation is the metering, accounting, observability, registry, and spend-control layer around paid API usage.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>What is the first live paid route?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>The built-in token-risk route demonstrates the paid MCP pattern. The larger product is hosted metering for any useful provider API or MCP tool.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Who is Meterflow for?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>API providers, MCP tool builders, data vendors, AI service operators, and teams running agents that need controlled access to paid tools.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>Why pay per request instead of subscriptions?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>Agents need to buy small units of data, compute, and model output without creating accounts or managing monthly plans. Per-request payment makes paid APIs composable, but it still needs metering and receipts.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span>How is this different from another AI wrapper?</span>
-        <span class="faq-toggle">+</span>
-      </button>
-      <div class="faq-answer">
-        <p>Most wrappers resell access to one capability. Meterflow is building the usage-based billing, receipt, and spend-control layer around provider-owned APIs and MCP tools.</p>
+      <div class="how-step reveal">
+        <div class="how-step-num">03</div>
+        <h3 class="how-step-title">Record every receipt</h3>
+        <p class="how-step-desc">Meterflow ties payment proof to the request, updates analytics, attributes provider revenue, and exports receipts.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section class="cta-section" id="buy">
-  <div class="cta-glow"></div>
-  <div class="cta-inner">
-    <h2>Launch paid agent services.<br><span class="accent">Control the flow.</span></h2>
-    <p class="cta-sub">Meterflow turns APIs and MCP tools into priced agent-accessible products with receipts, revenue views, failed-payment state, registry signal, and budget controls.</p>
-    <div class="cta-links">
+<section class="cta" id="buy">
+  <div class="cta-inner reveal">
+    <h2 class="cta-title">Become one with <em>Meterflow.</em></h2>
+    <p class="cta-sub">Join the providers and operators building the metering, receipt, and spend-control layer for agent commerce on Solana.</p>
+    <div class="cta-actions">
       <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
       <a href="/apply" class="btn-secondary">Apply as Provider</a>
       <a class="btn-secondary" id="ctaBuyLink" href="/docs">Read Docs</a>
@@ -690,6 +332,7 @@
 
 <!-- FOOTER -->
 <footer class="site-footer">
+  <div class="site-footer-wordmark" aria-hidden="true"><em>meterflow</em></div>
   <div class="site-footer-inner">
     <div class="site-footer-brand">
       <a href="/" class="site-footer-logo">
@@ -703,47 +346,42 @@
       </a>
     </div>
 
-    <div class="site-footer-cols">
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Product</div>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/#tools">Platform</a>
-        <a href="/token">Token</a>
-        <a href="/how-it-works">How it works</a>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Resources</div>
-        <a href="/docs">Documentation</a>
-        <a href="/roadmap">Roadmap</a>
-        <a href="/status">Status</a>
-        <a href="/apply">Apply as provider</a>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Legal</div>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </div>
-      <div class="site-footer-col">
-        <div class="site-footer-col-title">Community</div>
-        <div class="site-footer-socials">
-          <a class="site-footer-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="Meterflow on X">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg>
-          </a>
-          <a class="site-footer-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg>
-          </a>
-          <a class="site-footer-social" href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" aria-label="GitHub">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.16c-3.22.7-3.9-1.37-3.9-1.37-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.3-5.27-1.29-5.27-5.72 0-1.27.45-2.3 1.2-3.11-.12-.3-.52-1.48.11-3.07 0 0 .98-.31 3.18 1.19A10.92 10.92 0 0 1 12 6.23c.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.64 1.59.24 2.78.12 3.07.75.82 1.19 1.85 1.19 3.11 0 4.45-2.7 5.42-5.28 5.7.42.37.79 1.08.79 2.18v3.24c0 .31.2.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
-          </a>
-        </div>
-        <a href="/dashboard" class="site-footer-cta">Launch dashboard &rarr;</a>
-      </div>
+    <div class="site-footer-col">
+      <div class="site-footer-col-title">Products</div>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/#tools">Surfaces</a>
+      <a href="/token">Token</a>
+      <a href="/how-it-works">How it works</a>
+    </div>
+    <div class="site-footer-col">
+      <div class="site-footer-col-title">Resources</div>
+      <a href="/docs">Documentation</a>
+      <a href="/roadmap">Roadmap</a>
+      <a href="/status">Status</a>
+      <a href="/apply">Apply as provider</a>
+    </div>
+    <div class="site-footer-col">
+      <div class="site-footer-col-title">Connect</div>
+      <a href="https://x.com/meterflowsol" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg>
+        Twitter
+      </a>
+      <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg>
+        Discord
+      </a>
+      <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.16c-3.22.7-3.9-1.37-3.9-1.37-.53-1.33-1.29-1.68-1.29-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.73-1.55-2.57-.3-5.27-1.29-5.27-5.72 0-1.27.45-2.3 1.2-3.11-.12-.3-.52-1.48.11-3.07 0 0 .98-.31 3.18 1.19A10.92 10.92 0 0 1 12 6.23c.98 0 1.96.13 2.88.39 2.2-1.5 3.17-1.19 3.17-1.19.64 1.59.24 2.78.12 3.07.75.82 1.19 1.85 1.19 3.11 0 4.45-2.7 5.42-5.28 5.7.42.37.79 1.08.79 2.18v3.24c0 .31.2.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+        GitHub
+      </a>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
     </div>
   </div>
 
   <div class="site-footer-bottom">
-    <span>&copy; 2026 Meterflow. Built on Solana.</span>
-    <span class="site-footer-bottom-meta">Usage metering &middot; Receipts &middot; Spend control</span>
+    <span>&copy; 2026 Meterflow &middot; Built on Solana</span>
+    <span class="site-footer-bottom-meta">Metering &middot; Receipts &middot; Spend control</span>
   </div>
 </footer>
 
@@ -753,9 +391,73 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 </a>
 
+<!-- Inline JS: bar charts + scroll reveal + float CTA visibility. Other site behavior loaded from shared.js + home.js -->
+<script>
+  // Bar chart bars — seeded deterministic data points per dataset
+  (function renderCharts() {
+    function buildBars(target, points) {
+      const max = Math.max.apply(null, points);
+      target.innerHTML = points.map(function (v) {
+        var h = Math.max(4, Math.round((v / max) * 100));
+        return '<span class="chart-bar" style="height:' + h + '%"></span>';
+      }).join('');
+    }
+    function rng(seed) {
+      var x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+    function series(seed, base, spike) {
+      var out = [];
+      for (var i = 0; i < 30; i++) {
+        var trend = base * (0.5 + i / 60);
+        var noise = rng(seed + i) * base * 0.7;
+        var pop = (i > 18 && i < 24) ? spike * rng(seed + i + 99) : 0;
+        out.push(Math.max(base * 0.15, trend + noise + pop));
+      }
+      return out;
+    }
+    document.querySelectorAll('.chart').forEach(function (el) {
+      var kind = el.getAttribute('data-chart');
+      var data = kind === 'sky' ? series(7, 42, 90) : series(3, 30, 80);
+      buildBars(el, data);
+    });
+  })();
+
+  // Scroll reveal
+  (function reveal() {
+    if (typeof IntersectionObserver === 'undefined') {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  })();
+
+  // Float CTA — appears after scrolling past hero
+  (function floatCta() {
+    var fab = document.getElementById('floatCta');
+    if (!fab) return;
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    function check() {
+      var threshold = hero.offsetTop + hero.offsetHeight;
+      if (window.scrollY > threshold) fab.classList.add('visible');
+      else fab.classList.remove('visible');
+    }
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  })();
+</script>
+
+<script src="/site/shared.js"></script>
 <script src="/site/home.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
-
-<script defer src="/site/premium.js"></script>
 </body>
 </html>
