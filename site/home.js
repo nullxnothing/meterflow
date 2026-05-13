@@ -1,466 +1,341 @@
-// ═══════════ MOBILE MENU ═══════════
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
+// Meterflow home interactions + UI polish
+// Keeps the static landing page resilient: every section is optional and guarded.
 
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('active');
-  mobileMenu.classList.toggle('open');
-});
+(function () {
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
-function closeMobile() {
-  hamburger.classList.remove('active');
-  mobileMenu.classList.remove('open');
-}
-
-// ═══════════ PAYMENT CONFIG ═══════════
-const PAYMENT_FLOW = 'meter -> quote -> pay -> receipt -> analytics';
-
-// ═══════════ LIVE DATA ═══════════
-const PROXY_BASE = '/proxy';
-
-// ═══════════ FREE ACCESS BANNER ═══════════
-(async function initFreeAccessBar() {
-  try {
-    const res = await fetch(`${PROXY_BASE}/status/aggregate`);
-    const data = await res.json();
-    const endsAt = data.freeAccessEndsAt;
-    if (!endsAt) return;
-
-    const endTime = new Date(endsAt).getTime();
-    if (Date.now() >= endTime) return;
-
-    const bar = document.getElementById('freeAccessBar');
-    const countdown = document.getElementById('freeCountdown');
-    if (!bar || !countdown) return;
-
-    document.body.classList.add('free-access-active');
-    bar.style.display = 'flex';
-
-    let countdownTimer = null;
-    function tick() {
-      const remaining = endTime - Date.now();
-      if (remaining <= 0) {
-        bar.style.display = 'none';
-        document.body.classList.remove('free-access-active');
-        if (countdownTimer) clearInterval(countdownTimer);
-        return;
-      }
-      const h = Math.floor(remaining / 3_600_000);
-      const m = Math.floor((remaining % 3_600_000) / 60_000);
-      const s = Math.floor((remaining % 60_000) / 1_000);
-      countdown.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-    }
-    tick();
-    countdownTimer = setInterval(tick, 1_000);
-  } catch { /* silent */ }
-})();
-
-let liveStats = { totalCallsToday: 0, activeKeys: 0 };
-let liveTreasury = { runwayDays: 0, treasuryBalanceUsd: 0 };
-let fetchFailed = false;
-
-async function fetchLiveData() {
-  try {
-    const [statsRes, treasuryRes] = await Promise.allSettled([
-      fetch(`${PROXY_BASE}/stats`).then(r => r.json()),
-      fetch(`${PROXY_BASE}/treasury`).then(r => r.json()),
-    ]);
-    if (statsRes.status === 'fulfilled') liveStats = statsRes.value;
-    if (treasuryRes.status === 'fulfilled') liveTreasury = treasuryRes.value;
-    fetchFailed = (statsRes.status !== 'fulfilled' && treasuryRes.status !== 'fulfilled');
-  } catch (err) {
-    console.warn('[Meterflow] Failed to fetch live data:', err);
-    fetchFailed = true;
-  }
-}
-
-function formatCompact(n) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return n.toLocaleString();
-}
-
-// Count-up animation for numbers
-const countUpTargets = new Map();
-let countUpRaf = null;
-
-function animateCountUp(elementId, target, suffix, duration) {
-  if (!suffix) suffix = '';
-  if (!duration) duration = 1800;
-  const el = document.getElementById(elementId);
-  if (!el || target <= 0) return;
-  countUpTargets.set(elementId, { el, target, suffix, duration, start: performance.now(), current: 0 });
-  if (!countUpRaf) tickCountUp();
-}
-
-function tickCountUp() {
-  const now = performance.now();
-  let hasActive = false;
-  countUpTargets.forEach((cfg, id) => {
-    const elapsed = now - cfg.start;
-    const progress = Math.min(elapsed / cfg.duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const value = Math.floor(cfg.target * eased);
-    if (value !== cfg.current) {
-      cfg.current = value;
-      cfg.el.textContent = formatCompact(value) + cfg.suffix;
-    }
-    if (progress < 1) hasActive = true;
-    else countUpTargets.delete(id);
+  // Mobile menu
+  const hamburger = $('#hamburger');
+  const mobileMenu = $('#mobileMenu');
+  window.closeMobile = function closeMobile() {
+    hamburger?.classList.remove('active');
+    mobileMenu?.classList.remove('open');
+  };
+  hamburger?.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    mobileMenu?.classList.toggle('open');
   });
-  if (hasActive) countUpRaf = requestAnimationFrame(tickCountUp);
-  else countUpRaf = null;
-}
 
-function formatUptime(ms) {
-  const hours = Math.floor(ms / 3_600_000);
-  if (hours >= 24) return Math.floor(hours / 24) + 'd ' + (hours % 24) + 'h';
-  return hours + 'h ' + Math.floor((ms % 3_600_000) / 60_000) + 'm';
-}
+  // Inject UI fixes requested on the design branch.
+  const style = document.createElement('style');
+  style.textContent = `
+    .hero-actions,
+    .cta-actions {
+      display: none !important;
+    }
 
-// Blended value proxy across bundled metered services.
-const BLENDED_COST_PER_TOKEN = 5.5 / 1_000_000;
+    .hero {
+      padding-bottom: clamp(52px, 8vh, 92px) !important;
+    }
 
-function formatUsd(amount) {
-  if (amount >= 1000) return '$' + (amount / 1000).toFixed(1) + 'K';
-  if (amount >= 1) return '$' + amount.toFixed(2);
-  return '$' + amount.toFixed(2);
-}
+    .hero-sub {
+      margin-bottom: 0 !important;
+    }
 
-let statsAnimated = false;
+    .integration-logo-marquee {
+      position: relative;
+      overflow: hidden;
+      padding: 46px 0 56px;
+      border-top: 1px solid rgba(255,255,255,.045);
+      border-bottom: 1px solid rgba(255,255,255,.045);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(59,130,246,.08), transparent 42%),
+        linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.006));
+    }
 
-window.populateProtocolStats = populateProtocolStats;
+    .integration-logo-marquee::before,
+    .integration-logo-marquee::after {
+      content: '';
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      bottom: 0;
+      width: min(18vw, 220px);
+      pointer-events: none;
+    }
 
-function populateProtocolStats() {
-  const el = (id) => document.getElementById(id);
+    .integration-logo-marquee::before {
+      left: 0;
+      background: linear-gradient(90deg, var(--bg, #08090b), transparent);
+    }
 
-  const callsToday = liveStats.totalCallsToday || 0;
-  const tokensToday = liveStats.totalTokensToday || 0;
-  const allTimeCalls = liveStats.allTimeCalls || 0;
-  const allTimeTokens = liveStats.allTimeTokens || 0;
-  const keys = liveStats.totalKeysIssued || 0;
-  const activeProviders = liveStats.activeProviders || 0;
-  const providers = liveStats.providers || {};
-  const uptimeMs = liveStats.uptimeMs || 0;
+    .integration-logo-marquee::after {
+      right: 0;
+      background: linear-gradient(270deg, var(--bg, #08090b), transparent);
+    }
 
-  const balSol = liveTreasury.treasuryBalanceSol || 0;
-  const balUsd = liveTreasury.treasuryBalanceUsd || 0;
-  const runway = liveTreasury.runwayDays || 0;
-  const health = liveTreasury.healthStatus || 'unknown';
+    .integration-marquee-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 0 24px 26px;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-muted, #7b8190);
+    }
 
-  // Money saved calculation
-  const moneySaved = allTimeTokens * BLENDED_COST_PER_TOKEN;
+    .integration-marquee-label span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      color: #4ade80;
+      background: rgba(74,222,128,.12);
+      border: 1px solid rgba(74,222,128,.18);
+      letter-spacing: 0;
+      font-weight: 800;
+    }
 
-  // Count-up is gated by IntersectionObserver in index.html; it re-calls this with __forceStatsAnimate.
-  const inView = !!window.__statsInView;
-  const force = !!window.__forceStatsAnimate;
-  const shouldAnimate = !statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0) && (inView || force);
-  if (shouldAnimate) {
-    el('ps-alltime-calls').textContent = '0';
-    el('ps-alltime-tokens').textContent = '0';
-    animateCountUp('ps-alltime-calls', allTimeCalls, '', 2200);
-    animateCountUp('ps-alltime-tokens', allTimeTokens, '', 2200);
-    statsAnimated = true;
-    window.__forceStatsAnimate = false;
-  } else if (statsAnimated) {
-    el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
-    el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
-  } else if (!inView) {
-    el('ps-alltime-calls').textContent = '0';
-    el('ps-alltime-tokens').textContent = '0';
-  } else {
-    el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
-    el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
+    .integration-marquee-viewport {
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .integration-marquee-track {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      width: max-content;
+      animation: meterflowIntegrationMarquee 34s linear infinite;
+      will-change: transform;
+    }
+
+    .integration-logo-marquee:hover .integration-marquee-track {
+      animation-play-state: paused;
+    }
+
+    .integration-tile {
+      width: 154px;
+      min-width: 154px;
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      opacity: .72;
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    .integration-tile:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    .integration-icon-shell {
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+        #15161b;
+      border: 1px solid rgba(255,255,255,.075);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.055),
+        0 20px 48px rgba(0,0,0,.32);
+    }
+
+    .integration-icon-shell img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 12px;
+      filter: saturate(1.08) contrast(1.05);
+    }
+
+    .integration-name {
+      max-width: 154px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--font-body, sans-serif);
+      font-size: 13px;
+      color: var(--text-muted, #7b8190);
+      letter-spacing: -.01em;
+    }
+
+    @keyframes meterflowIntegrationMarquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 760px) {
+      .integration-logo-marquee { padding: 34px 0 42px; }
+      .integration-marquee-track { gap: 20px; animation-duration: 26s; }
+      .integration-tile { width: 122px; min-width: 122px; gap: 11px; }
+      .integration-icon-shell { width: 62px; height: 62px; border-radius: 18px; }
+      .integration-icon-shell img { width: 36px; height: 36px; }
+      .integration-name { max-width: 122px; font-size: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .integration-marquee-track { animation: none; flex-wrap: wrap; justify-content: center; width: 100%; }
+      .integration-logo-marquee::before,
+      .integration-logo-marquee::after { display: none; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  function favicon(domain) {
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
   }
 
-  // Money saved — animate alongside the hero stats
-  const savedEl = el('ps-money-saved');
-  if (savedEl) {
-    if (moneySaved > 0 && shouldAnimate) {
-      const savedStart = performance.now();
-      function tickSaved(now) {
-        const progress = Math.min((now - savedStart) / 2200, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        savedEl.textContent = formatUsd(moneySaved * eased);
-        if (progress < 1) requestAnimationFrame(tickSaved);
-      }
-      requestAnimationFrame(tickSaved);
-    } else if (statsAnimated || inView) {
-      savedEl.textContent = moneySaved > 0 ? formatUsd(moneySaved) : '--';
+  const integrations = [
+    { name: 'payai.cash', domain: 'payai.cash', url: 'https://payai.cash' },
+    { name: 'heurist.xyz', domain: 'heurist.xyz', url: 'https://heurist.xyz' },
+    { name: 'silverbackdefi.app', domain: 'silverbackdefi.app', url: 'https://silverbackdefi.app' },
+    { name: 'minifetch.com', domain: 'minifetch.com', url: 'https://minifetch.com' },
+    { name: 'kodaoracle.com', domain: 'kodaoracle.com', url: 'https://kodaoracle.com' },
+    { name: 'x402.org', domain: 'x402.org', url: 'https://x402.org' },
+    { name: 'solana.com', domain: 'solana.com', url: 'https://solana.com' },
+    { name: 'phantom.com', domain: 'phantom.com', url: 'https://phantom.com' }
+  ];
+
+  function makeTile(item) {
+    const tile = document.createElement('a');
+    tile.className = 'integration-tile';
+    tile.href = item.url;
+    tile.target = '_blank';
+    tile.rel = 'noopener';
+    tile.innerHTML = `
+      <span class="integration-icon-shell">
+        <img src="${favicon(item.domain)}" alt="${item.name} logo" loading="lazy">
+      </span>
+      <span class="integration-name">${item.name}</span>
+    `;
+    const img = tile.querySelector('img');
+    img.addEventListener('error', () => {
+      const fallback = document.createElement('span');
+      fallback.textContent = item.name.slice(0, 2).toUpperCase();
+      fallback.style.cssText = 'font-family:var(--font-mono,monospace);font-size:18px;font-weight:800;color:#e5e7eb;';
+      img.replaceWith(fallback);
+    }, { once: true });
+    return tile;
+  }
+
+  function buildIntegrationMarquee() {
+    const existing = $('.integration-logo-marquee');
+    if (existing) return;
+
+    const section = document.createElement('section');
+    section.className = 'integration-logo-marquee reveal';
+    section.setAttribute('aria-label', 'Meterflow integration ecosystem');
+    section.innerHTML = `
+      <div class="integration-marquee-label"><span>In</span> Integration ecosystem</div>
+      <div class="integration-marquee-viewport" aria-live="off">
+        <div class="integration-marquee-track"></div>
+      </div>
+    `;
+
+    const track = $('.integration-marquee-track', section);
+    integrations.concat(integrations).forEach((item) => track.appendChild(makeTile(item)));
+
+    const anchor = $('.trusted') || $('.showcase') || $('.stats');
+    if (anchor?.parentNode) {
+      anchor.parentNode.replaceChild(section, anchor);
     } else {
-      savedEl.textContent = '$0.00';
+      document.body.appendChild(section);
     }
   }
 
-  el('ps-calls-today').textContent = formatCompact(callsToday);
-  el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' units' : 'billable units';
-  el('ps-active-keys').textContent = formatCompact(keys);
-  el('ps-treasury').textContent = balSol > 0 ? balSol.toFixed(2) + ' SOL' : '--';
-  el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
-  el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
-  el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
-  updateStatusIndicator(fetchFailed ? 'offline' : health);
+  buildIntegrationMarquee();
 
-  // Services online
-  const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
-  el('ps-models').textContent = activeProviders > 0 ? activeProviders : '--';
-  el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(', ') : (fetchFailed ? 'offline' : 'loading...');
+  // Showcase tab polish: update labels/status so clicking tabs feels alive.
+  const tabCopy = {
+    meters: ['metering active', 'Mt', 'meters/', '8 active'],
+    receipts: ['receipts verified', 'Rc', 'receipts/', 'live ledger'],
+    budgets: ['budget policy live', 'Bg', 'budgets/', 'caps set'],
+    provider: ['provider revenue live', 'Pr', 'providers/', 'online']
+  };
 
-  // Uptime
-  el('ps-uptime').textContent = uptimeMs > 0 ? formatUptime(uptimeMs) : '--';
-  el('ps-uptime-pct').textContent = uptimeMs > 0 ? 'current session' : (fetchFailed ? 'offline' : 'loading...');
-}
-
-function updateStatusIndicator(status) {
-  const indicator = document.getElementById('statusIndicator');
-  if (!indicator) return;
-  const text = indicator.querySelector('.status-indicator-text');
-  const normalized = String(status || 'unknown').toLowerCase();
-  indicator.classList.remove('degraded', 'offline');
-  if (normalized === 'offline') {
-    indicator.classList.add('offline');
-    if (text) text.textContent = 'API status unavailable';
-    return;
-  }
-  if (['cautious', 'degraded', 'warning'].includes(normalized)) {
-    indicator.classList.add('degraded');
-    if (text) text.textContent = 'API operating with warnings';
-    return;
-  }
-  if (text) text.textContent = 'All systems operational';
-}
-
-// ═══════════ FAQ ═══════════
-function toggleFaq(btn) {
-  const item = btn.parentElement;
-  const answer = item.querySelector('.faq-answer');
-  const isOpen = item.classList.contains('active');
-
-  document.querySelectorAll('.faq-item').forEach(el => {
-    el.classList.remove('active');
-    el.querySelector('.faq-answer').classList.remove('open');
-  });
-
-  if (!isOpen) {
-    item.classList.add('active');
-    answer.classList.add('open');
-  }
-}
-
-// ═══════════ COPY CA ═══════════
-function copyCA() {
-  const address = document.getElementById('caAddress').textContent;
-  if (address.includes('imminent') || address.includes('TBD')) return;
-  navigator.clipboard.writeText(address).then(() => {
-    const btn = document.getElementById('caCopy');
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-  });
-}
-
-// ═══════════ PAYMENT FLOW SUMMARY ═══════════
-function populateToken() {
-  const mint = liveStats.tokenMint;
-
-  const heroCa = document.querySelector('.hero-ca');
-  if (heroCa) heroCa.classList.remove('pending');
-
-  const caEl = document.getElementById('caAddress');
-  const buyLink = document.getElementById('buyLink');
-  const ctaBuyLink = document.getElementById('ctaBuyLink');
-  const footerDex = document.getElementById('footerDex');
-  const treasuryLink = document.getElementById('treasurySolscan');
-
-  if (caEl) caEl.textContent = PAYMENT_FLOW;
-
-  if (buyLink) {
-    buyLink.href = '/docs';
-    buyLink.removeAttribute('target');
-    buyLink.removeAttribute('rel');
-  }
-
-  if (ctaBuyLink) {
-    ctaBuyLink.href = '/docs';
-    ctaBuyLink.removeAttribute('target');
-    ctaBuyLink.removeAttribute('rel');
-    ctaBuyLink.classList.remove('disabled');
-  }
-
-  if (footerDex && mint) {
-    footerDex.href = `https://dexscreener.com/solana/${mint}`;
-  }
-
-  if (treasuryLink && liveTreasury.wallet) {
-    treasuryLink.href = `https://solscan.io/account/${liveTreasury.wallet}`;
-  }
-
-  document.querySelectorAll('.tier-btn').forEach(btn => {
-    btn.onclick = () => window.location.href = btn.textContent.includes('Docs') ? '/docs' : '/dashboard';
-  });
-}
-
-// ═══════════ INIT ═══════════
-// Set loading state immediately so stats don't show -- before data arrives
-(function setLoadingState() {
-  const loading = ['ps-alltime-calls', 'ps-alltime-tokens', 'ps-money-saved',
-    'ps-calls-today', 'ps-active-keys', 'ps-treasury', 'ps-runway', 'ps-models', 'ps-uptime'];
-  loading.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '···';
-  });
-})();
-
-fetchLiveData().then(() => {
-  clearTimeout(dataTimeout);
-  populateToken();
-  populateProtocolStats();
-});
-
-// Show placeholder values if data doesn't arrive in time
-const dataTimeout = setTimeout(() => {
-  if (!liveStats.totalCallsToday && !liveTreasury.treasuryBalanceSol) {
-    fetchFailed = true;
-    populateProtocolStats();
-  }
-}, 8_000);
-
-setInterval(async () => {
-  await fetchLiveData();
-  populateProtocolStats();
-}, 30_000);
-
-// ═══════════ AGENT TABS ═══════════
-function showTab(tab) {
-  document.getElementById('tabHuman').classList.toggle('active', tab === 'human');
-  document.getElementById('tabAgent').classList.toggle('active', tab === 'agent');
-  document.getElementById('btnHuman').classList.toggle('active', tab === 'human');
-  document.getElementById('btnAgent').classList.toggle('active', tab === 'agent');
-}
-
-// ═══════════ ANCHOR SCROLL ═══════════
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href === '#' || href.length < 2) return;
-    const target = document.querySelector(href);
-    if (!target) return;
-    e.preventDefault();
-    target.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
-    history.replaceState(null, '', href);
-    closeMobile();
-  });
-});
-
-// ═══════════ NAV SCROLL SPY ═══════════
-const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-const spySections = document.querySelectorAll('section[id], .protocol-stats[id]');
-
-const spyObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navLinks.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+  $$('.showcase-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      $$('.showcase-tab').forEach((btn) => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
       });
-    }
-  });
-}, { threshold: 0.2, rootMargin: '-80px 0px -40% 0px' });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
 
-spySections.forEach(s => spyObserver.observe(s));
-
-// ═══════════ LIVE DEMO ═══════════
-const DEMO_DATA = [
-  {
-    prompt: 'Endpoint revenue',
-    claude: `Provider View\n\nEndpoint: /v1/risk-score\nPrice: 0.006 USDC per call\nStatus: Live\n\nToday:\n- 8,421 meter hits\n- 7,904 paid responses\n- 311 failed payments\n- 206 policy rejections\n\nRevenue:\n- Gross: 47.42 USDC\n- Median latency: 412ms\n- Top consumer: agent_7Kp...91a\n\nMeterflow is not just checking payment. It is showing what the endpoint earned, where calls failed, and whether the route is worth scaling.`,
-    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /mcp/token-risk\n- /gateway/mtr_wallet_trace/*\n- /gateway/mtr_risk_feed/*\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/mcp/token-risk\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
-  },
-  {
-    prompt: 'Agent budget',
-    claude: `Provider View\n\nBudget policy matched:\npolicy_agent_research_v2\n\nThis request is allowed because:\n- endpoint is approved\n- agent has 8.16 USDC remaining\n- requested price is below per-call cap\n- wallet is not revoked\n\nQuote issued:\nqt_8f21\nexpires in 90 seconds\nprice: 0.006 USDC`,
-    gemini: `Agent View\n\nBefore payment:\nTask budget: 12.00 USDC\nEndpoint cap: 0.02 USDC per call\nDaily request cap: 2,000\n\nDecision:\nPay 0.006 USDC for /v1/risk-score\nExpected utility: high\nRemaining after call: 8.154 USDC\n\nMeterflow gives the agent enough context to spend intentionally, not blindly.`
-  },
-  {
-    prompt: 'Failed payment',
-    claude: `Provider View\n\nRequest blocked:\n/gateway/mtr_risk_feed/score\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
-    gemini: `Agent View\n\nPayment denied.\n\nWhy:\n- daily budget already spent\n- endpoint not critical to current task\n- operator approval required for further calls\n\nNext action:\nstop workflow or request budget increase\n\nThe agent does not keep retrying blindly, and the operator has a clean audit trail.`
-  }
-];
-
-let demoAnimationId = null;
-
-function startDemo(index) {
-  document.querySelectorAll('.demo-chip').forEach((c, i) => {
-    c.classList.toggle('active', i === index);
-  });
-
-  const data = DEMO_DATA[index];
-  const claudeEl = document.getElementById('demoResponseClaude');
-  const geminiEl = document.getElementById('demoResponseGemini');
-  const timerClaude = document.getElementById('demoTimerClaude');
-  const timerGemini = document.getElementById('demoTimerGemini');
-
-  claudeEl.textContent = '';
-  geminiEl.textContent = '';
-  timerClaude.textContent = '0.0s';
-  timerGemini.textContent = '0.0s';
-
-  if (demoAnimationId) cancelAnimationFrame(demoAnimationId);
-
-  const startTime = performance.now();
-  let claudeIdx = 0;
-  let geminiIdx = 0;
-  let claudeDone = false;
-  let geminiDone = false;
-  let lastClaudeTime = 0;
-  let lastGeminiTime = 0;
-  let claudeInterval = 28 + Math.random() * 18;
-  let geminiInterval = 24 + Math.random() * 16;
-
-  function tick(now) {
-    const elapsed = now - startTime;
-
-    if (!claudeDone && elapsed - lastClaudeTime > claudeInterval) {
-      claudeIdx = Math.min(claudeIdx + 4, data.claude.length);
-      claudeEl.textContent = data.claude.slice(0, claudeIdx);
-      lastClaudeTime = elapsed;
-      claudeInterval = 28 + Math.random() * 24;
-      timerClaude.textContent = (elapsed / 1000).toFixed(1) + 's';
-      if (claudeIdx >= data.claude.length) claudeDone = true;
-    }
-
-    if (!geminiDone && elapsed - lastGeminiTime > geminiInterval) {
-      geminiIdx = Math.min(geminiIdx + 4, data.gemini.length);
-      geminiEl.textContent = data.gemini.slice(0, geminiIdx);
-      lastGeminiTime = elapsed;
-      geminiInterval = 24 + Math.random() * 20;
-      timerGemini.textContent = (elapsed / 1000).toFixed(1) + 's';
-      if (geminiIdx >= data.gemini.length) geminiDone = true;
-    }
-
-    if (!claudeDone || !geminiDone) {
-      demoAnimationId = requestAnimationFrame(tick);
-    }
-  }
-
-  demoAnimationId = requestAnimationFrame(tick);
-}
-
-// Auto-trigger demo on scroll into view
-const demoSection = document.querySelector('.demo-section');
-if (demoSection) {
-  let demoStarted = false;
-  const demoObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !demoStarted) {
-        demoStarted = true;
-        startDemo(0);
-        demoObserver.disconnect();
-      }
+      const key = tab.dataset.stab || 'meters';
+      const copy = tabCopy[key] || tabCopy.meters;
+      const detail = $('.status-detail');
+      const treeCode = $('.tree-head .tree-code');
+      const treeTitle = $('.tree-head span:nth-child(2)');
+      const treeMeta = $('.tree-head-meta');
+      if (detail) detail.textContent = copy[0];
+      if (treeCode) treeCode.textContent = copy[1];
+      if (treeTitle) treeTitle.textContent = copy[2];
+      if (treeMeta) treeMeta.textContent = copy[3];
     });
-  }, { threshold: 0.2 });
-  demoObserver.observe(demoSection);
-}
+  });
+
+  // Scroll reveal
+  const revealEls = $$('.reveal, .showcase, .chart');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    revealEls.forEach((el) => observer.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add('in'));
+  }
+
+  // Simple static stat fallbacks so the page does not show raw dashes if the API is cold.
+  const statFallbacks = {
+    'ps-alltime-calls': 'Preview',
+    'ps-alltime-tokens': 'USDC',
+    'ps-money-saved': 'Live',
+    'ps-active-keys': 'Keys',
+    'ps-models': 'Routes',
+    'ps-uptime': 'Online'
+  };
+  Object.entries(statFallbacks).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el && (!el.textContent || el.textContent.trim() === '---')) el.textContent = value;
+  });
+
+  // Free access banner is optional. Try to populate it without blocking UI.
+  (async function initFreeAccessBar() {
+    try {
+      const bar = $('#freeAccessBar');
+      const countdown = $('#freeCountdown');
+      if (!bar || !countdown) return;
+      const res = await fetch('/proxy/status/aggregate');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.freeAccessEndsAt) return;
+      const end = new Date(data.freeAccessEndsAt).getTime();
+      if (!Number.isFinite(end) || Date.now() >= end) return;
+      document.body.classList.add('free-access-active');
+      bar.style.display = 'flex';
+      const tick = () => {
+        const remaining = end - Date.now();
+        if (remaining <= 0) {
+          bar.style.display = 'none';
+          document.body.classList.remove('free-access-active');
+          clearInterval(timer);
+          return;
+        }
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        countdown.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+      };
+      const timer = setInterval(tick, 1000);
+      tick();
+    } catch (_) {}
+  })();
+})();
