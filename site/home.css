@@ -282,6 +282,7 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   white-space: nowrap;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   scroll-snap-align: center;
+  position: relative;
 }
 .showcase-tab .stab-code {
   font-family: var(--font-mono);
@@ -294,6 +295,16 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   background: rgba(var(--accent-rgb), 0.08);
   border-color: rgba(var(--accent-rgb), 0.18);
   color: var(--text);
+}
+.showcase-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -7px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.88), transparent);
+  opacity: 0.86;
 }
 .showcase-tab.active .stab-code { color: var(--accent); }
 .showcase-tab:hover { color: var(--text); }
@@ -371,6 +382,23 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   transition: transform 1.4s var(--ease-out-expo);
 }
 .showcase.in .showcase-progress .bar { transform: scaleX(1); }
+.showcase-frame.is-cycling .showcase-progress .bar {
+  animation: showcaseCycleBar 3.8s linear infinite;
+  transition: none;
+}
+.showcase-frame.is-updating .showcase-progress .bar {
+  animation: none;
+  transform: scaleX(1);
+}
+.showcase-frame.is-updating .showcase-status .dot {
+  animation: showcaseStatusPing 0.68s ease-out;
+}
+.showcase-frame.is-updating .showcase-pane {
+  animation: showcasePaneSwap 0.56s var(--ease-out-expo);
+}
+.showcase-frame.is-updating .tree-item.active {
+  animation: showcaseActivePulse 0.72s ease-out;
+}
 
 /* Body grid */
 .showcase-body {
@@ -599,6 +627,50 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   white-space: nowrap;
 }
 
+@keyframes showcaseCycleBar {
+  from { transform: scaleX(0.04); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes showcasePaneSwap {
+  0% {
+    opacity: 0.34;
+    transform: translateY(8px);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes showcaseActivePulse {
+  0% {
+    background: rgba(var(--accent-rgb), 0.18);
+    box-shadow: inset 2px 0 0 var(--accent), 0 0 0 0 rgba(var(--accent-rgb), 0.24);
+  }
+  100% {
+    background: rgba(var(--accent-rgb), 0.08);
+    box-shadow: inset 2px 0 0 var(--accent), 0 0 0 12px rgba(var(--accent-rgb), 0);
+  }
+}
+
+@keyframes showcaseStatusPing {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+  }
+  45% {
+    transform: scale(1.8);
+    box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.95);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+  }
+}
+
 /* ── Mobile layout ── */
 @media (max-width: 880px) {
   .showcase-tabs { justify-content: flex-start; padding: 0 16px 22px; }
@@ -627,6 +699,14 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   .pane-code { padding: 12px 12px 12px 6px; font-size: 10.5px; }
   .pane-code .ln { width: 14px; margin-right: 8px; }
   .pane-rows { font-size: 11px; padding: 6px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-frame.is-cycling .showcase-progress .bar,
+  .showcase-frame.is-updating .showcase-status .dot,
+  .showcase-frame.is-updating .showcase-pane,
+  .showcase-frame.is-updating .tree-item.active {
+    animation: none;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1030,6 +1110,17 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   color: inherit;
 }
 
+.fan-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-120%) skewX(-16deg);
+  background: linear-gradient(105deg, transparent 16%, rgba(255, 255, 255, 0.12) 48%, transparent 76%);
+  mix-blend-mode: screen;
+}
+
 .fan-card--active {
   border-color: rgba(var(--fc-rgb), 0.32);
   box-shadow:
@@ -1038,6 +1129,10 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
     0 32px 80px rgba(0, 0, 0, 0.56),
     0 0 52px rgba(var(--fc-rgb), 0.09);
   cursor: grab;
+}
+
+.fan-card--active::after {
+  animation: fanCardSheen 4.8s ease-in-out infinite;
 }
 
 .fan-card--active:active { cursor: grabbing; }
@@ -1059,6 +1154,12 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
+  opacity: 0.9;
+  transition: opacity 0.34s ease, color 0.34s ease;
+}
+
+.fan-card--active .fan-card-wm {
+  animation: fanWatermarkPulse 5.2s ease-in-out infinite;
 }
 
 .fan-card-body {
@@ -1161,6 +1262,31 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 }
 .fan-dot:hover:not(.active) { background: rgba(255, 255, 255, 0.36); }
 
+@keyframes fanCardSheen {
+  0%, 54% {
+    opacity: 0;
+    transform: translateX(-120%) skewX(-16deg);
+  }
+  68% {
+    opacity: 0.34;
+  }
+  84%, 100% {
+    opacity: 0;
+    transform: translateX(120%) skewX(-16deg);
+  }
+}
+
+@keyframes fanWatermarkPulse {
+  0%, 100% {
+    opacity: 0.76;
+    color: rgba(var(--fc-rgb), 0.052);
+  }
+  50% {
+    opacity: 1;
+    color: rgba(var(--fc-rgb), 0.078);
+  }
+}
+
 @media (max-width: 900px) {
   :root { --fan-card-w: 340px; --fan-card-h: 268px; }
 }
@@ -1171,6 +1297,10 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .fan-card { transition: opacity 0.2s ease; }
+  .fan-card::after,
+  .fan-card--active .fan-card-wm {
+    animation: none;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1367,10 +1497,11 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--text);
   text-decoration: none;
 }

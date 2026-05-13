@@ -1879,3 +1879,340 @@ body {
     min-height: 0 !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Final Dashboard Cohesion Pass
+   Keep behavior intact; align the app shell, forms, tables, and mobile
+   surfaces with the public landing system.
+   ═══════════════════════════════════════════════════════════════ */
+
+body {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+.sidebar-logo,
+.mobile-logo {
+  font-family: var(--font-serif) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.sidebar-logo {
+  font-size: 25px !important;
+  line-height: 1 !important;
+}
+
+.mobile-logo {
+  color: rgba(244, 248, 255, 0.94);
+  font-size: 23px;
+}
+
+.sidebar-logo .brand-mark,
+.mobile-logo .brand-mark {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.page-header::before,
+.nav-group-label,
+.section-title,
+.stat-card .label,
+.stat-card .stat-label,
+.tool-status,
+.api-card-feature,
+.receipt-state-badge,
+.tier-pill,
+.token-fee-chip,
+.sidebar-usage-label,
+.compliance-badge {
+  letter-spacing: 0 !important;
+}
+
+.page-title,
+.section-title,
+.tool-name,
+.api-card-name,
+.connection-name,
+.bot-card-title,
+.onboarding-hero-title {
+  letter-spacing: 0 !important;
+}
+
+.page-title {
+  font-weight: 540 !important;
+}
+
+.section-title {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+.section-title::before {
+  background: linear-gradient(90deg, var(--accent), rgba(var(--accent-rgb), 0));
+}
+
+.main {
+  background:
+    radial-gradient(980px 540px at 50% -18%, rgba(var(--accent-rgb), 0.085), transparent 70%),
+    radial-gradient(740px 480px at 8% 108%, rgba(var(--sky-rgb), 0.045), transparent 68%) !important;
+}
+
+.main::before {
+  background-image:
+    linear-gradient(rgba(156, 184, 220, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(156, 184, 220, 0.032) 1px, transparent 1px);
+  opacity: 0.28;
+}
+
+.stats-row,
+.tools-grid,
+.connections-grid,
+.future-apis-grid {
+  min-width: 0;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.stat-card,
+.tool-card,
+.api-card,
+.connection-card,
+.tool-config-box,
+.usage-bar-container,
+.api-key-box,
+.preview-access-notice,
+.compliance-notice,
+.x402-route-panel,
+.treasury-fee-card,
+.treasury-wallet-card,
+.treasury-table-wrap,
+.receipt-table-wrap,
+.receipt-modal,
+.wallet-modal,
+.cmdk-panel,
+.onboarding-hero {
+  border-color: rgba(156, 184, 220, 0.14) !important;
+  border-radius: var(--radius-lg) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.048), rgba(255, 255, 255, 0.014)),
+    rgba(8, 13, 23, 0.86) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.stat-card:hover,
+.tool-card:hover,
+.api-card:hover,
+.connection-card:hover,
+.tool-config-box:hover,
+.usage-bar-container:hover,
+.api-key-box:hover,
+.preview-access-notice:hover,
+.x402-route-panel:hover {
+  border-color: rgba(var(--accent-rgb), 0.30) !important;
+  box-shadow: var(--shadow-elev) !important;
+}
+
+.tool-card {
+  min-height: 190px;
+}
+
+.tool-header,
+.api-card-header,
+.connection-action,
+.usage-header,
+.receipt-summary-strip,
+.treasury-wallet-head,
+.bot-card-head {
+  min-width: 0;
+}
+
+.tool-name,
+.api-card-name,
+.connection-name {
+  overflow-wrap: anywhere;
+}
+
+.tool-desc,
+.api-card-desc,
+.connection-desc,
+.compliance-notice-text,
+.page-sub {
+  color: rgba(157, 176, 202, 0.90) !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-sm,
+.connect-btn,
+.receipt-row-action,
+.api-card-link,
+.token-address button,
+.token-mini-link,
+.sidebar-connect-btn {
+  font-family: var(--font-body) !important;
+  letter-spacing: 0 !important;
+  border-radius: 10px !important;
+}
+
+.btn-sm,
+.receipt-row-action,
+.api-card-link,
+.token-mini-link {
+  min-height: 36px;
+  padding: 0 13px !important;
+}
+
+input,
+select,
+textarea,
+.bot-form-input,
+.bot-input,
+.cp-input,
+.cp-select,
+.api-key-value,
+.wallet-addr,
+.cmdk-input {
+  min-width: 0;
+  font-family: var(--font-body) !important;
+  letter-spacing: 0 !important;
+}
+
+.api-key-value,
+.api-key-snippet,
+.wallet-addr,
+.token-mint-row code,
+.treasury-wallet-addr,
+.receipt-link,
+.mono {
+  font-family: var(--font-mono) !important;
+  overflow-wrap: anywhere;
+}
+
+.tool-config-box,
+.hosted-meter-form,
+.budget-form-grid,
+.mcp-form-grid,
+.webhook-form-grid {
+  gap: 12px;
+}
+
+.hosted-meter-form,
+.budget-form-grid,
+.mcp-form-grid,
+.webhook-form-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.hosted-meter-form > *,
+.budget-form-grid > *,
+.mcp-form-grid > *,
+.webhook-form-grid > * {
+  min-width: 0;
+}
+
+.receipt-table-wrap,
+.treasury-table-wrap,
+.holders-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.receipt-ledger-table,
+.treasury-table {
+  min-width: 900px;
+}
+
+.receipt-ledger-table th,
+.receipt-ledger-table td,
+.treasury-table th,
+.treasury-table td {
+  padding: 13px 14px;
+}
+
+.receipt-state {
+  min-width: 150px;
+}
+
+.empty-state,
+.loading-state,
+.error-state,
+.bot-empty,
+.chat-empty {
+  border-radius: var(--radius-lg) !important;
+  background: var(--panel-bg) !important;
+}
+
+.mobile-header {
+  min-height: 64px;
+  padding: 0 18px;
+}
+
+.mobile-hamburger,
+.mobile-nav-close {
+  border: 1px solid rgba(156, 184, 220, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+}
+
+.mobile-nav-drawer {
+  max-width: min(390px, 100vw);
+}
+
+@media (max-width: 820px) {
+  .hosted-meter-form,
+  .budget-form-grid,
+  .mcp-form-grid,
+  .webhook-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cp-span-2,
+  .cp-span-6 {
+    grid-column: auto !important;
+  }
+
+  .tools-grid,
+  .future-apis-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 16px !important;
+  }
+
+  .mobile-header {
+    min-height: 60px;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stat-card {
+    min-height: 112px;
+  }
+
+  .page-header::before {
+    margin-bottom: 14px;
+  }
+
+  .page-header::after {
+    margin-top: 18px;
+  }
+
+  .receipt-ledger-table,
+  .treasury-table {
+    min-width: 760px;
+  }
+}
