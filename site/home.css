@@ -163,9 +163,9 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 .hero-headline {
   font-family: var(--font-display);
   font-size: clamp(34px, 6.8vw, 88px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.04;
-  letter-spacing: -0.028em;
+  letter-spacing: -0.02em;
   color: var(--text);
   margin: 0 0 24px;
   max-width: 820px;
@@ -437,9 +437,9 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(30px, 4.2vw, 52px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.06;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.018em;
   color: var(--text);
   margin: 0 0 18px;
   text-wrap: balance;
@@ -794,9 +794,9 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 .cta-title {
   font-family: var(--font-display);
   font-size: clamp(30px, 4vw, 44px);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.08;
-  letter-spacing: -0.022em;
+  letter-spacing: -0.018em;
   color: var(--text);
   margin: 0 0 16px;
   max-width: 640px;
