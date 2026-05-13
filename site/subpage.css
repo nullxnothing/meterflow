@@ -3,7 +3,7 @@
    share the same backdrop, hero rhythm, and card treatment. */
 
 body {
-  background: #02050a;
+  background: var(--bg);
 }
 
 body::after {
@@ -12,11 +12,11 @@ body::after {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  background-image: radial-gradient(circle, rgba(198, 216, 241, 0.16) 0 1px, transparent 1.5px);
-  background-size: 52px 52px;
-  opacity: 0.07;
-  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
+  background-image: radial-gradient(circle, rgba(74, 139, 255, 0.08) 0 1px, transparent 1.5px);
+  background-size: 56px 56px;
+  opacity: 0.05;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
 }
 
 .token-page,
@@ -24,18 +24,17 @@ body::after {
 main#main {
   position: relative;
   background:
-    conic-gradient(from 130deg at 16% -8%, transparent 0deg, rgba(180, 205, 255, 0.05) 14deg, rgba(255, 255, 255, 0.075) 29deg, rgba(61, 125, 240, 0.05) 48deg, transparent 72deg, transparent 360deg),
-    radial-gradient(circle at 36% 12%, rgba(61, 125, 240, 0.10), transparent 34%),
-    linear-gradient(rgba(80, 110, 180, 0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(80, 110, 180, 0.032) 1px, transparent 1px),
-    #02050a;
-  background-size: auto, auto, 56px 56px, 56px 56px, auto;
+    radial-gradient(circle at 30% 10%, rgba(74, 139, 255, 0.04), transparent 40%),
+    linear-gradient(rgba(74, 139, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74, 139, 255, 0.02) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, 64px 64px, 64px 64px, auto;
   background-position: center top;
 }
 
 .token-page,
 .status-page {
-  padding: 150px 40px 88px;
+  padding: 140px 32px 80px;
 }
 
 .token-hero,
@@ -43,21 +42,21 @@ main#main {
 .roadmap-hero-content,
 .site-subpage-hero-inner {
   width: 100%;
-  max-width: 1120px;
+  max-width: var(--container);
   margin-left: auto;
   margin-right: auto;
 }
 
 .token-hero,
 .status-hero {
-  margin-bottom: 34px;
+  margin-bottom: 32px;
 }
 
 .site-subpage-hero,
 .roadmap-hero {
   min-height: auto;
-  padding: 150px 40px 76px;
-  border-bottom: 1px solid rgba(116, 144, 178, 0.11);
+  padding: 140px 32px 72px;
+  border-bottom: 1px solid var(--border);
 }
 
 .site-subpage-hero {
@@ -93,8 +92,8 @@ main#main {
 .card-label {
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
@@ -105,54 +104,46 @@ main#main {
   align-items: center;
   gap: 10px;
   width: fit-content;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   padding: 6px 14px 6px 10px;
-  border: 1px solid rgba(115, 158, 215, 0.22);
+  border: 1px solid rgba(74, 139, 255, 0.15);
   border-radius: var(--radius-pill);
-  background: rgba(8, 13, 22, 0.62);
-  color: rgba(199, 216, 239, 0.72);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset;
+  background: rgba(74, 139, 255, 0.04);
+  color: var(--text-dim);
 }
 
 .label-sm::before,
 .site-subpage-label::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 .hero-label::before {
-  box-shadow: 0 0 10px rgba(61, 125, 240, 0.82);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 .token-hero h1,
 .status-hero h1,
 .roadmap-headline,
 .site-subpage-title {
-  max-width: 920px;
-  margin: 0 0 22px;
+  max-width: 860px;
+  margin: 0 0 20px;
   font-family: var(--font-display);
-  font-size: clamp(52px, 6vw, 86px);
-  line-height: 1;
-  letter-spacing: 0;
-  font-weight: 800;
-  background: linear-gradient(180deg, #fff 0%, #c5dafe 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  font-size: clamp(44px, 5.5vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .token-hero h1 #tokenSymbol,
 .roadmap-headline .accent,
 .site-subpage-title .accent {
-  background: none;
-  -webkit-text-fill-color: var(--accent);
   color: var(--accent);
-  text-shadow: 0 0 56px rgba(61, 125, 240, 0.14);
 }
 
 .token-hero p,
@@ -165,10 +156,10 @@ main#main {
 .phase-desc,
 .vision-sub,
 .status-card p {
-  max-width: 720px;
-  color: rgba(147, 168, 196, 0.88);
-  font-size: 16px;
-  line-height: 1.72;
+  max-width: 640px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.7;
   font-weight: 400;
 }
 
@@ -192,12 +183,9 @@ main#main {
 .phase-content,
 .vision-stat,
 .mobile-card {
-  border: 1px solid rgba(116, 144, 178, 0.16);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(13, 18, 26, 0.88), rgba(5, 8, 14, 0.95));
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.035) inset,
-    0 24px 72px rgba(0,0,0,0.42);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
 
 .holder-thesis,
@@ -205,7 +193,7 @@ main#main {
 .apply-panel,
 .apply-card,
 .phase-content {
-  padding: 28px;
+  padding: 24px;
 }
 
 .holder-loop article,
@@ -215,20 +203,20 @@ main#main {
 .apply-list li,
 .phase-item,
 .status-summary {
-  border-color: rgba(126, 154, 190, 0.12);
-  border-radius: 10px;
-  background: rgba(6, 10, 17, 0.54);
+  border-color: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
 }
 
 .status-summary {
-  padding: 11px 13px;
+  padding: 10px 12px;
 }
 
 .status-links a,
 .token-actions .btn-secondary,
 .apply-actions .btn-primary,
 .token-actions .btn-primary {
-  border-radius: 9px;
+  border-radius: var(--radius-md);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -237,19 +225,19 @@ main#main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
+  min-height: 40px;
   padding: 0 16px;
-  color: #c8d8ef;
-  border-color: rgba(70, 103, 145, 0.72);
-  background: rgba(9, 15, 25, 0.72);
+  color: var(--text-dim);
+  border-color: var(--border-light);
+  background: transparent;
   font-family: var(--font-body);
   font-size: 14px;
 }
 
 .status-links a:hover {
   color: var(--text);
-  border-color: rgba(102, 164, 255, 0.72);
-  background: rgba(61, 125, 240, 0.10);
+  border-color: rgba(74, 139, 255, 0.3);
+  background: rgba(74, 139, 255, 0.04);
 }
 
 .status-card h2,
