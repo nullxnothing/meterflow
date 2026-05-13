@@ -16,37 +16,36 @@
       #hamburger{position:relative;z-index:10001}
       #mobileMenu.mobile-menu.open,body.mobile-menu-open #mobileMenu.mobile-menu{display:flex!important;position:fixed!important;top:60px!important;left:0!important;right:0!important;z-index:10000!important;max-height:calc(100vh - 60px);overflow-y:auto;background:rgba(6,7,10,.98)!important;border-bottom:1px solid rgba(255,255,255,.08)!important;box-shadow:0 30px 80px rgba(0,0,0,.48)}
 
-      /* ─── Refined zauth-style nav ─── */
-      body > nav.mf-nav{padding:14px clamp(20px,3.4vw,40px) 12px!important;display:flex;align-items:center;gap:18px;justify-content:space-between;background:rgba(8,9,12,.78)!important;backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid rgba(255,255,255,.05)}
-      body > nav.mf-nav .nav-logo{font-family:var(--font-display);font-size:15px;letter-spacing:-.012em;font-weight:600;color:#fff;display:inline-flex;align-items:center;gap:8px;text-decoration:none;opacity:.95;transition:opacity .2s ease}
-      body > nav.mf-nav .nav-logo:hover{opacity:1}
-      body > nav.mf-nav .nav-logo .brand-mark{width:22px;height:22px;display:block;filter:drop-shadow(0 0 8px rgba(59,130,246,.35))}
-      body > nav.mf-nav .nav-links{display:flex;align-items:center;gap:4px;justify-content:center;flex:1;padding:0 12px}
-      body > nav.mf-nav .nav-links a{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:9px;font-size:13.25px;line-height:1;font-weight:500;color:rgba(225,228,236,.7);text-decoration:none;transition:color .18s ease,background .18s ease}
+      /* ─── Minimal zauth-style nav: transparent, thin, no chrome ─── */
+      body > nav.mf-nav{padding:18px clamp(20px,3.4vw,40px)!important;display:flex;align-items:center;gap:18px;justify-content:space-between;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-bottom:0!important;box-shadow:none!important;position:absolute;top:0;left:0;right:0;z-index:50}
+      body.mf-nav-scrolled > nav.mf-nav{position:fixed;background:rgba(8,9,12,.6)!important;backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid rgba(255,255,255,.04)!important;transition:background .25s ease,border-color .25s ease}
+      body > nav.mf-nav .nav-logo{font-family:var(--font-serif,Georgia,'Times New Roman',serif);font-style:italic;font-size:18px;letter-spacing:-.01em;font-weight:500;color:rgba(225,228,236,.72);display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:color .2s ease}
+      body > nav.mf-nav .nav-logo:hover{color:#fff}
+      body > nav.mf-nav .nav-logo .brand-mark{width:18px;height:18px;display:block;opacity:.7;filter:none}
+      body > nav.mf-nav .nav-links{display:flex;align-items:center;gap:2px;justify-content:center;flex:1;padding:0 12px}
+      body > nav.mf-nav .nav-links a{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;font-size:13px;line-height:1;font-weight:400;color:rgba(225,228,236,.62);text-decoration:none;transition:color .18s ease,background .18s ease}
       body > nav.mf-nav .nav-links a::after{display:none!important}
-      body > nav.mf-nav .nav-links a:hover{color:#fff;background:rgba(255,255,255,.045)}
-      body > nav.mf-nav .nav-links a.active{color:#fff;background:rgba(255,255,255,.06)}
-      body > nav.mf-nav .nav-glyph{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.02em;color:var(--accent,#3b82f6);background:rgba(59,130,246,.12);border-radius:6px;border:1px solid rgba(59,130,246,.18)}
-      body > nav.mf-nav .nav-links a:hover .nav-glyph,body > nav.mf-nav .nav-links a.active .nav-glyph{background:rgba(59,130,246,.22);border-color:rgba(59,130,246,.32)}
-      body > nav.mf-nav .nav-actions{display:flex;align-items:center;gap:14px}
-      body > nav.mf-nav .nav-socials{display:inline-flex;align-items:center;gap:4px}
-      body > nav.mf-nav .nav-social{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:rgba(225,228,236,.62);transition:color .18s ease,background .18s ease}
-      body > nav.mf-nav .nav-social:hover{color:#fff;background:rgba(255,255,255,.05)}
-      body > nav.mf-nav .nav-social svg{width:15px;height:15px}
+      body > nav.mf-nav .nav-links a:hover{color:#fff;background:rgba(255,255,255,.035)}
+      body > nav.mf-nav .nav-links a.active{color:#fff;background:rgba(255,255,255,.05)}
+      body > nav.mf-nav .nav-glyph{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9.5px;font-weight:500;letter-spacing:.01em;color:rgba(225,228,236,.5);background:transparent;border-radius:0;border:0}
+      body > nav.mf-nav .nav-links a:hover .nav-glyph,body > nav.mf-nav .nav-links a.active .nav-glyph{color:rgba(255,255,255,.85)}
+      body > nav.mf-nav .nav-actions{display:flex;align-items:center;gap:10px}
+      body > nav.mf-nav .nav-socials{display:inline-flex;align-items:center;gap:2px}
+      body > nav.mf-nav .nav-social{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:rgba(225,228,236,.5);transition:color .18s ease,background .18s ease}
+      body > nav.mf-nav .nav-social:hover{color:#fff;background:rgba(255,255,255,.04)}
+      body > nav.mf-nav .nav-social svg{width:14px;height:14px}
 
-      /* ─── Prominent Launch Dashboard CTA ─── */
-      .mf-launch{position:relative;display:inline-flex!important;align-items:center;gap:8px;padding:9px 16px 9px 18px!important;border-radius:11px!important;font-family:var(--font-display);font-size:13.25px!important;font-weight:600;letter-spacing:-.005em;color:#0a0b0e!important;text-decoration:none;background:linear-gradient(180deg,#fafbff 0%,#dfe5f3 100%)!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 0 0 1px rgba(0,0,0,.18),0 10px 26px -8px rgba(59,130,246,.45),0 4px 10px rgba(0,0,0,.32)!important;transition:transform .22s cubic-bezier(.2,.65,.3,1),box-shadow .22s cubic-bezier(.2,.65,.3,1),filter .22s ease!important;overflow:hidden}
-      .mf-launch::before{content:'';position:absolute;inset:1px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0) 60%);opacity:.55;pointer-events:none}
-      .mf-launch-glow{position:absolute;inset:-2px;border-radius:14px;background:radial-gradient(60% 90% at 50% 0%,rgba(120,170,255,.55),transparent 70%),radial-gradient(80% 120% at 50% 120%,rgba(59,130,246,.42),transparent 70%);filter:blur(10px);opacity:.7;z-index:-1;animation:mfLaunchPulse 5.6s ease-in-out infinite}
-      .mf-launch-label{position:relative;z-index:1}
-      .mf-launch-arrow{position:relative;z-index:1;width:14px;height:14px;transition:transform .26s cubic-bezier(.2,.65,.3,1)}
-      .mf-launch:hover{transform:translateY(-1px);filter:brightness(1.04);box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 0 0 1px rgba(0,0,0,.22),0 16px 36px -8px rgba(59,130,246,.6),0 6px 16px rgba(0,0,0,.4)!important}
-      .mf-launch:hover .mf-launch-arrow{transform:translateX(3px)}
-      .mf-launch:active{transform:translateY(0)}
-      @keyframes mfLaunchPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.85;transform:scale(1.04)}}
+      /* ─── Tiny zauth-style "Log in" button ─── */
+      .mf-login{display:inline-flex;align-items:center;gap:7px;padding:7px 13px 7px 11px;border-radius:8px;font-family:var(--font-sans),system-ui,sans-serif;font-size:13px;font-weight:500;letter-spacing:-.003em;color:rgba(225,228,236,.78);text-decoration:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);transition:color .18s ease,background .18s ease,border-color .18s ease}
+      .mf-login:hover{color:#fff;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14)}
+      .mf-login-wallet{width:14px;height:14px;opacity:.7;display:block}
+      .mf-login:hover .mf-login-wallet{opacity:1}
+
+      /* Hero needs top padding now that the nav is absolutely positioned */
+      section.hero{padding-top:clamp(120px,14vh,170px)!important}
 
       @media(max-width:980px){body > nav.mf-nav .nav-links{display:none!important}body > nav.mf-nav .nav-socials{display:none!important}}
-      @media(max-width:560px){.mf-launch{padding:9px 12px 9px 14px!important;font-size:12.5px!important}.mf-launch-arrow{width:12px;height:12px}}
+      @media(max-width:560px){.mf-login{padding:6px 10px 6px 10px;font-size:12.5px}}
 
       /* ─── Section polish ─── */
       .hero-headline,.section-title,.cta-title{letter-spacing:-.035em}
@@ -82,10 +81,8 @@
 
       /* ─── Six-surfaces footer (zauth-inspired) ─── */
       .zauth-footer-cta,.mf-six-footer{position:relative;overflow:hidden}
-      .zauth-footer-cta{padding:clamp(82px,10vw,128px) 24px 72px;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(59,130,246,.06),transparent 70%),linear-gradient(180deg,#08090b 0%,#0c0d11 100%)}
-      .zauth-footer-cta::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 50% 60% at 50% 50%,#000 20%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse 50% 60% at 50% 50%,#000 20%,transparent 75%);pointer-events:none;z-index:0}
-      .zauth-footer-cta-card{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:clamp(34px,5.4vw,68px);border-radius:30px;background:radial-gradient(circle at 88% 0%,rgba(59,130,246,.32),transparent 50%),radial-gradient(circle at 6% 100%,rgba(120,170,255,.14),transparent 55%),linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.022)),#15171c;border:1px solid rgba(255,255,255,.14);box-shadow:0 60px 120px -30px rgba(0,0,0,.65),0 0 0 1px rgba(59,130,246,.12),inset 0 1px 0 rgba(255,255,255,.08)}
-      .zauth-footer-cta-card::after{content:'';position:absolute;inset:-1px;border-radius:30px;background:linear-gradient(135deg,rgba(59,130,246,.4),transparent 35%,transparent 70%,rgba(120,170,255,.25));z-index:-1;opacity:.55;filter:blur(20px)}
+      .zauth-footer-cta{padding:clamp(82px,10vw,128px) 24px 72px;background:linear-gradient(180deg,#08090b 0%,#0a0b0e 100%)}
+      .zauth-footer-cta-card{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:clamp(34px,5.4vw,68px);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.005)),#0d0e12;border:1px solid rgba(255,255,255,.07);box-shadow:0 40px 80px -30px rgba(0,0,0,.5)}
       .zauth-footer-cta-card h2{margin:0;color:#fff;font-family:var(--font-display);font-size:clamp(34px,4.6vw,60px);line-height:1.02;font-weight:500;letter-spacing:-.03em}
       .zauth-footer-cta-card h2 em{font-family:var(--font-serif);font-style:italic;font-weight:400;color:#fff}
       .zauth-footer-cta-card p{max-width:760px;margin:22px 0 0;color:rgba(225,228,236,.65);font-size:clamp(15px,1.6vw,19px);line-height:1.62}
@@ -468,11 +465,24 @@
       Object.entries(data).forEach(([id, value]) => { const el = document.getElementById(id); if (el && (!el.textContent || el.textContent.trim() === '---')) el.textContent = value; });
     }
 
+    function initNavScroll() {
+      let raf = 0;
+      const update = () => {
+        document.body.classList.toggle('mf-nav-scrolled', window.scrollY > 12);
+        raf = 0;
+      };
+      window.addEventListener('scroll', () => {
+        if (!raf) raf = requestAnimationFrame(update);
+      }, { passive: true });
+      update();
+    }
+
     buildIntegrationMarquee();
     buildTextReveal();
     buildFooter();
     initMotion();
     initGSAPReveal();
+    initNavScroll();
     statFallbacks();
   });
 })();
