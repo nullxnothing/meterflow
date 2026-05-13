@@ -59,14 +59,8 @@ function setComingSoonState() {
   setText('metricChange', 'coming soon');
   setText('metricMarketCap', 'TBA');
   setText('metricMarketCapMeta', 'coming soon');
-  setText('metricLiquidity', 'TBA');
-  setText('metricDex', 'coming soon');
   setText('metricVolume', 'TBA');
   setText('metricTxns', 'coming soon');
-  setText('metricSupply', 'TBA');
-  setText('metricDecimals', 'coming soon');
-  setText('metricHolders', 'TBA');
-  setText('metricTopPct', 'coming soon');
   setText('tokenDescription', '$MFLOW utility details are coming soon. The product already models provider verification, fee relief, registry ranking, higher policy limits, premium analytics, and longer receipt retention.');
   setText('detailPair', 'TBA');
   setText('detailFdv', 'TBA');
@@ -182,8 +176,6 @@ function applySummary(data) {
 
   const asset = data.asset || {};
   const market = data.market || {};
-  const supply = data.supply || {};
-  const topHolder = data.holders?.[0];
 
   setText('swapLink', 'Trade');
   setText('orbLink', 'View on Orb');
@@ -192,7 +184,6 @@ function applySummary(data) {
   const hasPrice = isKnownNumber(market.priceUsd);
   const hasMarketCap = isKnownNumber(market.marketCap);
   const hasFdv = isKnownNumber(market.fdv);
-  const hasLiquidity = isKnownNumber(market.liquidityUsd) && Number(market.liquidityUsd) > 0;
   setStatus(hasPrice ? 'Market data available' : 'Token details available', hasPrice ? 'Public token data is updating.' : 'Market data is still indexing.');
   setText('statusCA', cfg.mint ? shortAddress(cfg.mint) : 'TBA');
   setText('statusMarket', hasPrice ? formatUsd(market.priceUsd, 6) : (cfg.mint ? 'Indexing' : 'Coming soon'));
@@ -204,14 +195,8 @@ function applySummary(data) {
   setText('metricChange', isKnownNumber(market.priceChange?.h24) ? `${Number(market.priceChange.h24).toFixed(2)}% 24h` : 'indexing');
   setText('metricMarketCap', hasMarketCap ? formatUsd(market.marketCap, 0) : formatUsd(market.fdv, 0));
   setText('metricMarketCapMeta', hasMarketCap ? 'live market cap' : hasFdv ? 'FDV fallback' : 'indexing');
-  setText('metricLiquidity', hasLiquidity ? formatUsd(market.liquidityUsd, 0) : '--');
-  setText('metricDex', hasLiquidity ? (market.dexId || 'DEX liquidity') : market.dexId ? `${market.dexId} not reported` : 'not reported');
   setText('metricVolume', formatUsd(market.volume24h, 0));
   setText('metricTxns', isKnownNumber(market.txns24h?.buys) && isKnownNumber(market.txns24h?.sells) ? `${Number(market.txns24h.buys) + Number(market.txns24h.sells)} txns` : '--');
-  setText('metricSupply', formatCompact(supply.circulating || supply.uiAmount));
-  setText('metricDecimals', isKnownNumber(asset.decimals) ? `${asset.decimals} decimals` : 'indexing');
-  setText('metricHolders', isKnownNumber(data.holderCount) ? formatCompact(data.holderCount) : (topHolder ? shortAddress(topHolder.owner) : '--'));
-  setText('metricTopPct', isKnownNumber(topHolder?.pctSupply) ? `top ${Number(topHolder.pctSupply).toFixed(2)}%` : 'indexing');
 
   setText('detailPair', market.pairAddress ? shortAddress(market.pairAddress) : '--');
   setText('detailFdv', formatUsd(market.fdv, 0));
