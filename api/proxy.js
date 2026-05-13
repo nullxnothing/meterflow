@@ -14,5 +14,13 @@ export default function handler(req, res) {
     req.url = req.url.replace(/^\/(?:api\/proxy|api|proxy)(?=\/|$)/, '') || '/';
   }
 
+  if (req.url === '/registry' || req.url.startsWith('/registry?')) {
+    req.url = req.url.replace(/^\/registry/, '/v1/registry');
+  }
+
+  if (req.url === '/admin/zauth/submit-default' || req.url.startsWith('/admin/zauth/submit-default?')) {
+    req.url = req.url.replace(/^\/admin\/zauth\/submit-default/, '/v1/admin/zauth/submit-default');
+  }
+
   return app(req, res);
 }

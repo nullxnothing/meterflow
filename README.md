@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/og-meterflow.png" alt="Meterflow" width="100%">
+  <img src="assets/brand/og-meterflow-ocean.png" alt="Meterflow" width="100%">
 </p>
 
 # Meterflow
@@ -7,6 +7,8 @@
 The Solana control plane for agent commerce: paid APIs, MCP tools, budgets, receipts, provider revenue, and registry signal.
 
 [Website](https://meterflow.fun) · [Dashboard](https://meterflow.fun/dashboard) · [Docs](https://meterflow.fun/docs) · [GitHub](https://github.com/nullxnothing/meterflow) · [X](https://x.com/meterflowsol) · [Discord](https://discord.gg/tned74z4eN)
+
+<!-- deployment trigger: zauth-registry -->
 
 ## $MFLOW
 
