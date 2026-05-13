@@ -62,6 +62,35 @@ export function pickSolanaPair(pairs = []) {
     .sort((a, b) => Number(b?.liquidity?.usd || 0) - Number(a?.liquidity?.usd || 0))[0] || null;
 }
 
+router.get('/token-risk', (req, res) => {
+  const protocol = req.protocol || 'https';
+  const host = req.get('host') || 'www.meterflow.fun';
+  const publicUrl = `${protocol}://${host}${req.originalUrl || '/mcp/token-risk'}`;
+
+  res.json({
+    id: 'mtr_mcp_token_risk',
+    name: 'Meterflow Token Risk MCP Tool',
+    status: 'live',
+    method: 'POST',
+    endpoint: publicUrl,
+    payment: {
+      rail: 'x402',
+      asset: 'USDC',
+      priceUsd: 0.006,
+    },
+    input: {
+      contentType: 'application/json',
+      schema: {
+        address: 'Solana token mint address',
+      },
+      example: {
+        address: 'So11111111111111111111111111111111111111112',
+      },
+    },
+    message: 'Send a POST request with a Solana token address to receive the x402 payment challenge and run the paid risk lookup.',
+  });
+});
+
 router.post('/token-risk', authenticateApiKey, async (req, res) => {
   const startedAt = Date.now();
   const address = String(req.body?.address || req.body?.mint || '').trim();
