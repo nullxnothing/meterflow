@@ -78,6 +78,15 @@ function maskSecret(secret = '') {
   return secret ? `${secret.slice(0, 10)}...${secret.slice(-4)}` : null;
 }
 
+function isFailureReceiptStatus(status = '') {
+  const normalized = String(status || '').toLowerCase();
+  return normalized.includes('failed')
+    || normalized.includes('denied')
+    || normalized.includes('exhausted')
+    || normalized.includes('exceeded')
+    || normalized.includes('error');
+}
+
 function sanitizeWebhook(webhook, exposeSecret = false) {
   if (!webhook) return null;
   const { secret, ...safe } = webhook;
@@ -694,7 +703,7 @@ export async function recordReceipt(input) {
 
   const ts = nowIso();
   const receipt = {
-    id: input.id || id(input.status?.startsWith('fail') || input.status?.includes('denied') ? 'fail' : 'rcpt'),
+    id: input.id || id(isFailureReceiptStatus(input.status) ? 'fail' : 'rcpt'),
     meterId: input.meterId || null,
     route: input.route || null,
     method: input.method || null,
@@ -742,7 +751,7 @@ export async function recordReceipt(input) {
       logger.warn('Payment webhook dispatch failed', { receiptId: saved.id, err: err.message });
     });
   }
-  if (saved.status !== 'metered_key' && saved.status !== 'verified') {
+  if (isFailureReceiptStatus(saved.status)) {
     dispatchWebhookEvent(saved.apiKey, 'payment.failed', { receipt: saved }).catch(err => {
       logger.warn('Payment failure webhook dispatch failed', { receiptId: saved.id, err: err.message });
     });
