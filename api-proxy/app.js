@@ -128,19 +128,28 @@ app.use(async (req, res, next) => {
   }
 });
 
-if (isZauthConfigured()) {
-  const zauthMiddleware = createZauthProviderMiddleware();
-  if (zauthMiddleware) {
-    app.use((req, res, next) => {
-      try {
-        return zauthMiddleware(req, res, next);
-      } catch (err) {
-        logger.warn('Zauth provider middleware error, continuing', { err: err.message });
-        return next();
-      }
-    });
+let zauthMiddleware = null;
+const zauthMiddlewareReady = isZauthConfigured()
+  ? createZauthProviderMiddleware().then(mw => {
+      zauthMiddleware = mw;
+      return mw;
+    }).catch(err => {
+      logger.warn('Zauth provider middleware init failed', { err: err.message });
+      zauthMiddleware = null;
+      return null;
+    })
+  : Promise.resolve(null);
+
+app.use(async (req, res, next) => {
+  try {
+    const middleware = zauthMiddleware || await zauthMiddlewareReady;
+    if (!middleware) return next();
+    return middleware(req, res, next);
+  } catch (err) {
+    logger.warn('Zauth provider middleware error, continuing', { err: err.message });
+    return next();
   }
-}
+});
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()

@@ -1,10 +1,9 @@
-import { createClient } from '@zauthx402/sdk';
-import { zauthProvider } from '@zauthx402/sdk/middleware';
 import { logger } from './logger.js';
 
 const DEFAULT_ZAUTH_BASE_URL = 'https://back.zauthx402.com';
 const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauthx402.com';
 
+let sdkPromise = null;
 let cachedClient = null;
 let cachedProviderMiddleware = null;
 
@@ -29,6 +28,22 @@ function shortError(err) {
     .slice(0, 180);
 }
 
+async function loadZauthSdk() {
+  if (!sdkPromise) {
+    sdkPromise = Promise.all([
+      import('@zauthx402/sdk'),
+      import('@zauthx402/sdk/middleware'),
+    ]).then(([sdk, middleware]) => ({
+      createClient: sdk.createClient,
+      zauthProvider: middleware.zauthProvider,
+    })).catch(err => {
+      logger.warn('Zauth SDK unavailable', { err: shortError(err) });
+      return null;
+    });
+  }
+  return sdkPromise;
+}
+
 function normalizeStatus(status = {}) {
   const rawStatus = String(status.status || '').toLowerCase();
   if (rawStatus) return rawStatus;
@@ -51,25 +66,28 @@ function publicZauthUrl(status = {}, url) {
   return `${ZAUTH_PUBLIC_APP_URL.replace(/\/$/, '')}/provider-hub?endpoint=${encodeURIComponent(url)}`;
 }
 
-function client() {
+async function client() {
   const apiKey = zauthApiKey();
   if (!apiKey) return null;
-  if (!cachedClient) {
-    cachedClient = createClient({
-      apiKey,
-      apiEndpoint: zauthBaseUrl(),
-      mode: 'provider',
-      environment: process.env.NODE_ENV || 'production',
-      debug: false,
-      telemetry: {
-        includeRequestBody: false,
-        includeResponseBody: false,
-        redactHeaders: ['authorization', 'cookie', 'x-api-key', 'meterflow-api-key', 'x-meterflow-api-key'],
-        redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth'],
-      },
-      refund: { enabled: false },
-    });
-  }
+  if (cachedClient) return cachedClient;
+
+  const sdk = await loadZauthSdk();
+  if (!sdk?.createClient) return null;
+
+  cachedClient = sdk.createClient({
+    apiKey,
+    apiEndpoint: zauthBaseUrl(),
+    mode: 'provider',
+    environment: process.env.NODE_ENV || 'production',
+    debug: false,
+    telemetry: {
+      includeRequestBody: false,
+      includeResponseBody: false,
+      redactHeaders: ['authorization', 'cookie', 'x-api-key', 'meterflow-api-key', 'x-meterflow-api-key'],
+      redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth'],
+    },
+    refund: { enabled: false },
+  });
   return cachedClient;
 }
 
@@ -77,15 +95,15 @@ export function isZauthConfigured() {
   return Boolean(zauthApiKey());
 }
 
-export function createZauthProviderMiddleware() {
+export async function createZauthProviderMiddleware() {
   const apiKey = zauthApiKey();
   if (!apiKey) return null;
   if (cachedProviderMiddleware) return cachedProviderMiddleware;
 
   try {
-    // The SDK middleware is intentionally backend-only and must run before x402.
-    // Keep the key env-only: never pass a literal token here.
-    cachedProviderMiddleware = zauthProvider(apiKey, {
+    const sdk = await loadZauthSdk();
+    if (!sdk?.zauthProvider) return null;
+    cachedProviderMiddleware = sdk.zauthProvider(apiKey, {
       apiEndpoint: zauthBaseUrl(),
       baseUrl: zauthBaseUrl(),
       debug: false,
@@ -120,7 +138,7 @@ export function sanitizeZauthListingStatus(status = {}) {
 }
 
 export async function getZauthEndpointStatus(zauthIdOrUrl) {
-  const zauth = client();
+  const zauth = await client();
   if (!zauth) return { configured: false, status: sanitizeZauthListingStatus(null) };
   if (!zauthIdOrUrl) return { configured: true, status: sanitizeZauthListingStatus(null) };
 
@@ -147,7 +165,7 @@ export async function getZauthEndpointStatus(zauthIdOrUrl) {
 }
 
 export async function submitEndpointToZauth(meter = {}) {
-  const zauth = client();
+  const zauth = await client();
   const endpointUrl = meter.zauthEndpointUrl || meter.publicEndpointUrl || meter.endpointUrl || meter.url;
   if (!zauth) {
     return {
@@ -176,8 +194,6 @@ export async function submitEndpointToZauth(meter = {}) {
   };
 
   try {
-    // Provider Hub listing signal comes from SDK/provider telemetry. This emits
-    // safe endpoint metadata, then reads back the known endpoint status.
     await zauth.sendEvent({
       ...zauth.createEventBase('health_check'),
       url: endpointUrl,
