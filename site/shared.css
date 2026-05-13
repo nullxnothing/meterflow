@@ -436,7 +436,6 @@ body > nav::before {
   gap: 5px;
   cursor: pointer;
   padding: 4px;
-  margin-left: auto;
   background: none;
   border: none;
 }
@@ -507,9 +506,11 @@ body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
 }
 
 @media (max-width: 1180px) {
-  body > nav { height: 64px; padding: 0 20px; gap: 16px; }
+  body > nav { height: 64px; padding: 0 20px; gap: 16px; justify-content: space-between; }
   body > nav .nav-links { display: none; }
   body > nav .hamburger { display: flex; }
+  /* Mobile: all desktop nav-actions hide; the slide-out menu owns these links */
+  body > nav .nav-actions { display: none; }
   .mobile-menu { top: 64px; padding: 20px; }
 }
 

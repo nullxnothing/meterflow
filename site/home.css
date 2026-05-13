@@ -162,13 +162,14 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 /* The signature headline */
 .hero-headline {
   font-family: var(--font-display);
-  font-size: clamp(46px, 7vw, 92px);
+  font-size: clamp(34px, 6.8vw, 88px);
   font-weight: 600;
-  line-height: 1.0;
+  line-height: 1.04;
   letter-spacing: -0.028em;
   color: var(--text);
-  margin: 0 0 28px;
+  margin: 0 0 24px;
   max-width: 820px;
+  text-wrap: balance;
 }
 
 .hero-headline .accent,
@@ -435,12 +436,13 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 }
 .section-title {
   font-family: var(--font-display);
-  font-size: clamp(34px, 4.4vw, 54px);
+  font-size: clamp(30px, 4.2vw, 52px);
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.06;
   letter-spacing: -0.025em;
   color: var(--text);
   margin: 0 0 18px;
+  text-wrap: balance;
 }
 .section-title em {
   font-family: var(--font-serif);
@@ -1058,8 +1060,26 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
    Mobile refinements
    ════════════════════════════════════════════════════════════════ */
 @media (max-width: 720px) {
-  .hero-headline { font-size: clamp(38px, 11vw, 56px); }
+  .hero { padding: clamp(112px, 14vh, 152px) 22px clamp(64px, 9vh, 96px); }
+  .hero-headline {
+    font-size: clamp(32px, 8.6vw, 48px);
+    line-height: 1.06;
+    margin-bottom: 20px;
+  }
+  .hero-sub { font-size: 16px; margin-bottom: 32px; }
+  .hero-actions { gap: 8px; margin-bottom: 0; }
+  .hero-label { margin-bottom: 28px; font-size: 10.5px; }
   .section-title { font-size: clamp(28px, 7vw, 38px); }
-  .hero-actions { gap: 8px; }
+  .section-header { margin-bottom: 36px; }
   .btn-primary, .btn-secondary { padding: 12px 22px; font-size: 13.5px; }
+  .stats-group { margin-bottom: 56px; }
+  .stat-row { gap: 36px; margin-bottom: 36px; }
+  .stat-number { font-size: clamp(40px, 11vw, 56px); }
+  .how-step-num { font-size: 44px; }
+}
+
+@media (max-width: 440px) {
+  .hero-headline { font-size: clamp(28px, 9vw, 40px); }
+  .hero-sub { font-size: 15px; }
+  .stat-number { font-size: clamp(36px, 12vw, 48px); }
 }
