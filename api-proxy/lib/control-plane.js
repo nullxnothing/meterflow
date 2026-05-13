@@ -101,15 +101,24 @@ function normalizeWebhookUrl(rawUrl) {
   return url.toString();
 }
 
-function getProtocolFeeBps(tier) {
-  return tier && tier !== 'trial'
+function hasProtocolFeeRelief(access) {
+  if (access && typeof access === 'object') {
+    const minSignal = CONFIG.TIERS.signal?.min || 0;
+    return Number(access.balance || 0) >= minSignal
+      || (!access.guest && access.wallet && CONFIG.WHITELISTED_WALLETS.has(access.wallet));
+  }
+  return !!access && String(access).toLowerCase() !== 'trial';
+}
+
+function getProtocolFeeBps(access) {
+  return hasProtocolFeeRelief(access)
     ? Number(CONFIG.HOLDER_PROTOCOL_FEE_BPS || 0)
     : Number(CONFIG.PROTOCOL_FEE_BPS || 0);
 }
 
-export function applyProtocolFee(amountUsd, tier) {
+export function applyProtocolFee(amountUsd, access) {
   const baseAmountUsd = Number(amountUsd || 0);
-  const protocolFeeBps = getProtocolFeeBps(tier);
+  const protocolFeeBps = getProtocolFeeBps(access);
   const protocolFeeUsd = +(baseAmountUsd * protocolFeeBps / 10_000).toFixed(6);
   return {
     baseAmountUsd,
@@ -812,7 +821,7 @@ export async function authorizeMeteredRequest(req) {
   if (!meter) return { allowed: true, meter: null, budget: null, policyResult: 'unmetered' };
 
   const budget = await getActiveBudgetForApiKey(req.meterflow.apiKey);
-  const economics = applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
+  const economics = applyProtocolFee(meter.priceUsd, req.meterflow);
   if (!budget) return { allowed: true, meter, budget: null, policyResult: 'allowed_no_budget', economics };
 
   const date = todayKey();
@@ -846,7 +855,7 @@ export async function completeMeteredRequest(req, result = {}) {
   const paymentState = isVerified && status !== 'verified' && status !== 'metered_key'
     ? 'verified_unsettled'
     : initialPaymentState;
-  const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow?.tier);
+  const economics = result.economics || ctx.economics || applyProtocolFee(meter.priceUsd, req.meterflow);
   const isBillable = status === 'metered_key' || status === 'verified';
   const amountUsd = result.amountUsd ?? (isBillable ? economics.totalAmountUsd : 0);
   const idempotencyKey = result.idempotencyKey || header(req, 'idempotency-key') || header(req, 'x-request-id') || null;

@@ -273,6 +273,14 @@ describe('Request timeouts', () => {
       'should have fetch timeout mechanism');
   });
 
+  it('balance.js sums MFLOW accounts and falls back through SPL token programs', () => {
+    const src = readFileSync(resolve(root, 'lib', 'balance.js'), 'utf-8');
+    assert.ok(src.includes('TOKEN_PROGRAM_IDS'), 'should know both SPL token program ids');
+    assert.ok(src.includes('uiAmountString'), 'should parse precise UI token amounts');
+    assert.ok(src.includes('sumTokenAccounts'), 'should sum all matching token accounts');
+    assert.ok(src.includes('{ programId }'), 'should fall back to owner/program scans for Token-2022 edge cases');
+  });
+
   it('providers have API timeout constants', () => {
     for (const provider of ['anthropic.js', 'gemini.js', 'openai.js']) {
       const src = readFileSync(resolve(root, 'providers', provider), 'utf-8');
@@ -645,6 +653,26 @@ describe('Meterflow control plane', () => {
     assert.ok(dashboard.includes('upstreamAuth'), 'dashboard should submit upstream auth for hosted API meters');
     assert.ok(dashboard.includes('route: targetUrl ? undefined'), 'dashboard should let hosted API meters use generated gateway routes');
     assert.ok(dashboard.includes('Copy Gateway'), 'dashboard should expose generated hosted gateway URLs');
+  });
+
+  it('dashboard lets wallet-authenticated non-holders create paid endpoints', () => {
+    const gate = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'gate.js'), 'utf-8');
+    const overview = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'overview.js'), 'utf-8');
+    const manageFn = gate.match(/export function canManageMeterflow\(\) \{([\s\S]*?)\n\}/)?.[1] || '';
+    assert.ok(manageFn.includes('hasMeterflowSession()'), 'control-plane management should require a wallet key session');
+    assert.ok(!manageFn.includes("STATE.tier !== 'Trial'"), 'control-plane management should not be holder-tier gated');
+    assert.ok(gate.includes('non-holder usage includes the protocol fee'), 'trial copy should explain paid-flow protocol fees');
+    assert.ok(overview.includes('hasMeterflowSession'), 'overview should render a live wallet session even before holder fee relief');
+  });
+
+  it('protocol fee relief is based on actual MFLOW balance, not access tier labels', () => {
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    assert.ok(control.includes('hasProtocolFeeRelief'), 'control-plane should centralize fee-relief decisions');
+    assert.ok(control.includes('Number(access.balance || 0) >= minSignal'), 'fee relief should require actual token balance');
+    assert.ok(control.includes('CONFIG.WHITELISTED_WALLETS.has(access.wallet)'), 'whitelisted operators should retain fee relief');
+    assert.ok(control.includes('applyProtocolFee(meter.priceUsd, req.meterflow)'), 'metered requests should pass full auth context to fee calculation');
+    assert.ok(auth.includes('const feeRelief ='), 'auth responses should report current fee state from holder balance');
   });
 
   it('unsafe hosted target URLs are rejected', () => {

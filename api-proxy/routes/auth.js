@@ -88,9 +88,9 @@ function validateChallengeMessage(message, wallet) {
   return { ok: true, nonce: fields.nonce };
 }
 
-function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
-  const isHolder = tier && tier !== 'trial';
+function buildTokenAccess({ balance = 0, feeRelief } = {}) {
   const minSignal = CONFIG.TIERS.signal?.min || 0;
+  const isHolder = feeRelief ?? Number(balance || 0) >= minSignal;
   const purchaseUrl = CONFIG.TOKEN_SWAP_URL || (CONFIG.TOKEN_MINT ? `https://jup.ag/swap/SOL-${CONFIG.TOKEN_MINT}` : null);
   const usdcPurchaseUrl = CONFIG.TOKEN_MINT ? `https://jup.ag/swap/${USDC_MINT}-${CONFIG.TOKEN_MINT}` : null;
   const protocolFeeBps = isHolder ? CONFIG.HOLDER_PROTOCOL_FEE_BPS : CONFIG.PROTOCOL_FEE_BPS;
@@ -177,6 +177,7 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
   const effectiveTier = tier || 'trial';
   const tierConfig = effectiveTier === 'trial' ? TRIAL_CONFIG : CONFIG.TIERS[effectiveTier];
   const freeAccess = !isWhitelisted && balance < (CONFIG.TIERS.signal?.min || 10000) && isFreeAccessActive();
+  const feeRelief = isWhitelisted || balance >= (CONFIG.TIERS.signal?.min || 10000);
 
   let apiKey = await getKeyForWallet(wallet);
   if (apiKey) {
@@ -195,7 +196,7 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
           models: tierConfig.models.filter(isModelAvailable),
           comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
           isTrial: effectiveTier === 'trial',
-          token: buildTokenAccess({ tier: effectiveTier, balance }),
+          token: buildTokenAccess({ tier: effectiveTier, balance, feeRelief }),
           freeAccess,
           freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
           message: freeAccess
@@ -227,7 +228,7 @@ async function registerWallet({ wallet, signature, message }, opts = {}) {
       models: tierConfig.models.filter(isModelAvailable),
       comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
       isTrial: effectiveTier === 'trial',
-      token: buildTokenAccess({ tier: effectiveTier, balance }),
+      token: buildTokenAccess({ tier: effectiveTier, balance, feeRelief }),
       freeAccess,
       freeAccessEndsAt: freeAccess ? getFreeAccessEndsAt() : undefined,
       message: freeAccess
@@ -284,6 +285,7 @@ router.get('/status', authenticateApiKey, (req, res) => {
   const isGuest = !!req.meterflow.guest || wallet?.startsWith('guest_');
   const freeActive = isFreeAccessActive();
   const isFreeUser = isGuest || (freeActive && balance < (CONFIG.TIERS.signal?.min || 10000) && tier !== 'trial');
+  const feeRelief = !isGuest && (CONFIG.WHITELISTED_WALLETS.has(wallet) || balance >= (CONFIG.TIERS.signal?.min || 10000));
   res.json({
     wallet: isGuest ? null : wallet,
     tier: tierConfig.label,
@@ -291,7 +293,7 @@ router.get('/status', authenticateApiKey, (req, res) => {
     usage: { today: usage.count, limit: tierConfig.dailyLimit, remaining: tierConfig.dailyLimit - usage.count },
     models: tierConfig.models.filter(isModelAvailable),
     comingSoon: tierConfig.models.filter(m => !isModelAvailable(m)),
-    token: buildTokenAccess({ tier, balance }),
+    token: buildTokenAccess({ tier, balance, feeRelief }),
     isGuest,
     freeAccess: isFreeUser,
     freeAccessEndsAt: isFreeUser ? getFreeAccessEndsAt() : undefined,

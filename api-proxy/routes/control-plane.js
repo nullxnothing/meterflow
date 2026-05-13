@@ -109,7 +109,7 @@ router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {
   const meter = await getMeter(req.params.id);
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
   const matched = await findMeterForRequest(meter.method, meter.route);
-  const economics = applyProtocolFee(meter.priceUsd, req.meterflow.tier);
+  const economics = applyProtocolFee(meter.priceUsd, req.meterflow);
   const hostedRoute = meter.targetUrl ? `/proxy${meter.route.replace(/\*$/, 'path')}` : null;
   res.json({
     meter,

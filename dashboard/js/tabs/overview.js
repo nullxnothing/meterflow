@@ -4,7 +4,7 @@
 
 import { STATE } from '../state.js';
 import { escapeHtml } from '../utils.js';
-import { isHolder, renderTokenUtilityPanel } from '../gate.js?v=preview-link-2';
+import { hasMeterflowSession, renderTokenUtilityPanel } from '../gate.js?v=preview-link-2';
 
 function getResetCountdown() {
   const now = new Date();
@@ -16,7 +16,7 @@ function getResetCountdown() {
 }
 
 export function renderOverview() {
-  const hasKey = isHolder();
+  const hasKey = hasMeterflowSession();
 
   if (!hasKey) {
     return renderPublicOverview();
