@@ -19,7 +19,7 @@
       /* ─── Unified Meterflow nav: dark glass, text-first, no route-code chips ─── */
       body > nav.mf-nav{height:72px;padding:0 clamp(20px,3.4vw,42px)!important;display:flex;align-items:center;gap:18px;justify-content:space-between;background:linear-gradient(180deg,rgba(5,8,15,.84),rgba(5,8,15,.56))!important;backdrop-filter:saturate(145%) blur(18px);-webkit-backdrop-filter:saturate(145%) blur(18px);border-bottom:1px solid rgba(156,184,220,.1)!important;box-shadow:0 18px 70px rgba(0,0,0,.2)!important;position:fixed;top:0;left:0;right:0;z-index:50}
       body.mf-nav-scrolled > nav.mf-nav{background:linear-gradient(180deg,rgba(5,8,15,.92),rgba(5,8,15,.7))!important;border-bottom-color:rgba(156,184,220,.14)!important;transition:background .25s ease,border-color .25s ease,box-shadow .25s ease}
-      body > nav.mf-nav .nav-logo{font-family:var(--font-display,var(--font-sans),system-ui,sans-serif);font-style:normal;font-size:15px;letter-spacing:.08em;text-transform:uppercase;font-weight:650;color:rgba(232,241,255,.86);display:inline-flex;align-items:center;gap:9px;text-decoration:none;transition:color .2s ease}
+      body > nav.mf-nav .nav-logo{font-family:var(--font-serif,'Instrument Serif',Georgia,serif);font-style:italic;font-size:25px;line-height:1;letter-spacing:-.02em;text-transform:none;font-weight:400;color:rgba(244,248,255,.92);display:inline-flex;align-items:center;gap:9px;text-decoration:none;transition:color .2s ease}
       body > nav.mf-nav .nav-logo:hover{color:#fff}
       body > nav.mf-nav .nav-logo .brand-mark{width:19px;height:19px;display:block;opacity:.9;filter:drop-shadow(0 0 14px rgba(var(--accent-rgb),.34))}
       body > nav.mf-nav .nav-links{display:flex;align-items:center;gap:6px;justify-content:center;flex:1;padding:0 12px}
@@ -494,11 +494,6 @@
       layout();
     }
 
-    function statFallbacks() {
-      const data = { 'ps-alltime-calls':'Preview','ps-alltime-tokens':'USDC','ps-money-saved':'Live','ps-active-keys':'Keys','ps-models':'Routes','ps-uptime':'Online' };
-      Object.entries(data).forEach(([id, value]) => { const el = document.getElementById(id); if (el && (!el.textContent || el.textContent.trim() === '---')) el.textContent = value; });
-    }
-
     function initNavScroll() {
       let raf = 0;
       const update = () => {
@@ -519,6 +514,5 @@
     initFanStack();
     initGSAPReveal();
     initNavScroll();
-    statFallbacks();
   });
 })();

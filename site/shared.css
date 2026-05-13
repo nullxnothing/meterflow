@@ -296,12 +296,14 @@ body > nav {
 body > nav > * { pointer-events: auto; }
 
 .nav-logo {
-  font-family: var(--font-display);
-  font-weight: 650;
-  font-size: 15px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(232, 241, 255, 0.86);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: rgba(244, 248, 255, 0.92);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -1213,7 +1215,7 @@ footer:not(.site-footer),
 
 @media (max-width: 600px) {
   .nav { padding: 12px 16px; }
-  .nav-logo { font-size: 13px; letter-spacing: 0; }
+  .nav-logo { font-size: 22px; letter-spacing: -0.02em; }
   .nav-cta { font-size: 13px; padding: 8px 16px; }
   .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
   .stat-card { padding: 16px; }
