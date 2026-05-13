@@ -96,6 +96,7 @@ function receiptStateMeta(receipt) {
   const state = receipt.paymentState || receipt.status || 'unknown';
   const normalized = String(state).toLowerCase();
   if (normalized === 'verified') return { label: 'Settled', tone: 'ok', detail: 'USDC settled on Solana' };
+  if (normalized === 'test_quote') return { label: 'Test Quote', tone: 'neutral', detail: 'Dashboard quote recorded; no payment settled' };
   if (normalized === 'legacy_key_metered') return { label: 'Key Metered', tone: 'neutral', detail: 'API key usage record' };
   if (normalized === 'verified_unsettled') return { label: 'Paid / Upstream Failed', tone: 'warn', detail: 'Payment verified before provider failure' };
   if (normalized === 'settlement_failed') return { label: 'Settlement Failed', tone: 'bad', detail: 'Facilitator could not settle payment' };
@@ -538,7 +539,10 @@ async function testMeter(meterId) {
   try {
     const data = await api(`/v1/meters/${meterId}/test`, { method: 'POST' });
     const suffix = data.hostedGateway?.urlTemplate ? ' · hosted gateway ready' : '';
-    showToast(`Quote: ${money(data.quote.amountUsd)} ${data.quote.asset}${suffix}`);
+    CP.loaded = false;
+    loadControlPlane(true);
+    const receipt = data.receipt?.id ? ` · receipt ${shortHash(data.receipt.id, 6, 4)}` : '';
+    showToast(`Test quote recorded: ${money(data.quote.amountUsd)} ${data.quote.asset}${suffix}${receipt}`);
   } catch (err) {
     showToast(err.message || 'Meter test failed', true);
   }

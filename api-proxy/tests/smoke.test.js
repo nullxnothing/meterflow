@@ -655,6 +655,19 @@ describe('Meterflow control plane', () => {
     assert.ok(dashboard.includes('Copy Gateway'), 'dashboard should expose generated hosted gateway URLs');
   });
 
+  it('dashboard meter tests create visible quote receipts without marking payment failed', () => {
+    const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
+    const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
+    assert.ok(routes.includes('recordReceipt'), 'meter test route should record a receipt');
+    assert.ok(routes.includes("status: 'test_quote'"), 'meter test receipts should use a neutral quote status');
+    assert.ok(routes.includes("paymentMethod: 'dashboard_test'"), 'meter test receipts should identify dashboard origin');
+    assert.ok(control.includes('isFailureReceiptStatus'), 'receipt failure dispatch should be explicit');
+    assert.ok(!control.includes("saved.status !== 'metered_key' && saved.status !== 'verified'"), 'neutral receipts should not trigger payment.failed webhooks');
+    assert.ok(dashboard.includes("normalized === 'test_quote'"), 'dashboard should label test quote receipts');
+    assert.ok(dashboard.includes('loadControlPlane(true)'), 'dashboard should refresh receipts after testing a meter');
+  });
+
   it('dashboard lets wallet-authenticated non-holders create paid endpoints', () => {
     const gate = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'gate.js'), 'utf-8');
     const overview = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'overview.js'), 'utf-8');

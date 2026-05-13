@@ -27,6 +27,7 @@ import {
   deleteWebhook,
   sendWebhookTest,
   applyProtocolFee,
+  recordReceipt,
 } from '../lib/control-plane.js';
 
 const router = Router();
@@ -106,13 +107,39 @@ router.delete('/meters/:id', authenticateApiKey, async (req, res) => {
 });
 
 router.post('/meters/:id/test', authenticateApiKey, async (req, res) => {
+  const startedAt = Date.now();
   const meter = await getMeter(req.params.id);
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
   const matched = await findMeterForRequest(meter.method, meter.route);
   const economics = applyProtocolFee(meter.priceUsd, req.meterflow);
   const hostedRoute = meter.targetUrl ? `/proxy${meter.route.replace(/\*$/, 'path')}` : null;
+  const receipt = await recordReceipt({
+    meterId: meter.id,
+    route: meter.route,
+    method: meter.method,
+    status: 'test_quote',
+    amountUsd: economics.totalAmountUsd,
+    baseAmountUsd: economics.baseAmountUsd,
+    protocolFeeUsd: economics.protocolFeeUsd,
+    protocolFeeBps: economics.protocolFeeBps,
+    asset: meter.asset,
+    wallet: req.meterflow.wallet,
+    apiKey: req.meterflow.apiKey,
+    agent: req.meterflow.wallet,
+    paymentState: 'test_quote',
+    paymentProtocol: 'meterflow',
+    paymentIntent: 'quote',
+    paymentMethod: 'dashboard_test',
+    paymentNetwork: 'solana-mainnet-beta',
+    payerWallet: req.meterflow.wallet,
+    policyResult: matched ? 'test_quote_issued' : 'route_not_matched',
+    responseStatus: 200,
+    latencyMs: Date.now() - startedAt,
+    error: matched ? null : 'Meter route is not currently matched by the paid gateway.',
+  });
   res.json({
     meter,
+    receipt,
     hostedGateway: meter.targetUrl ? {
       route: meter.route,
       urlTemplate: `https://meterflow.fun${hostedRoute}`,
