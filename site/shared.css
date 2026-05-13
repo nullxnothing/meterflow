@@ -508,31 +508,31 @@ body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
   .mobile-menu { top: 60px; }
 }
 
-/* ─── Buttons — pill style, single accent ─── */
+/* ─── Buttons — pill style, single accent, no heavy glow ─── */
 .btn-primary {
   font-family: var(--font-body);
   font-size: 14px;
   letter-spacing: -0.005em;
   text-transform: none;
-  padding: 13px 26px;
+  padding: 11px 22px;
   background: var(--accent);
   color: #f8fafc;
   border: 1px solid var(--accent);
   border-radius: 999px;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  font-weight: 500;
+  transition: background 0.18s ease, border-color 0.18s ease;
   text-decoration: none;
   display: inline-block;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.16) inset, 0 8px 24px rgba(16, 185, 129, 0.22);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
   background: var(--accent-2);
   border-color: var(--accent-2);
-  transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 14px 32px rgba(16, 185, 129, 0.34);
+  box-shadow: none;
   filter: none;
+  transform: none;
 }
 
 .btn-secondary {
@@ -540,23 +540,22 @@ body > nav .nav-links a.active:not(.nav-cta):not(.nav-docs)::after,
   font-size: 14px;
   letter-spacing: -0.005em;
   text-transform: none;
-  padding: 13px 26px;
+  padding: 11px 22px;
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   cursor: pointer;
   font-weight: 500;
-  transition: border-color 0.22s ease, color 0.22s ease, background 0.22s ease, transform 0.22s ease;
+  transition: border-color 0.18s ease, background 0.18s ease;
   text-decoration: none;
   display: inline-block;
 }
 
 .btn-secondary:hover {
-  border-color: rgba(245, 245, 247, 0.6);
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
-  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+  transform: none;
 }
 
 .btn-primary.disabled,
