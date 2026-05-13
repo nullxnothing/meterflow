@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateApiKey } from '../middleware.js';
+import { authenticateAdmin, authenticateApiKey } from '../middleware.js';
 import {
   canManageResource,
   getMeter,
@@ -15,6 +15,7 @@ import {
 
 const router = Router();
 const PUBLIC_ORIGIN = (process.env.METERFLOW_PUBLIC_URL || 'https://meterflow.fun').replace(/\/$/, '');
+const DEFAULT_ZAUTH_METER_ID = 'mtr_mcp_token_risk';
 
 function publicEndpointUrl(meter, tail = '') {
   if (!meter?.route) return null;
@@ -74,22 +75,40 @@ function publicRegistryMeter(meter) {
   };
 }
 
-async function requireManageableMeter(req, res) {
-  const meter = await getMeter(req.params.id);
-  if (!meter) {
-    res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
-    return null;
-  }
-  if (!canManageResource(meter, req.meterflow.wallet, req.meterflow.apiKey)) {
-    res.status(403).json({ error: 'forbidden', message: 'You do not control this meter.' });
-    return null;
-  }
-  return meter;
+function buildSubmissionMeter(meter, body = {}) {
+  const endpointUrl = publicEndpointUrl(meter, body?.path || '');
+  return {
+    ...meter,
+    publicEndpointUrl: endpointUrl,
+    name: body?.name || meter.name || meter.id,
+    displayName: body?.displayName || meter.displayName || meter.name || meter.id,
+    providerName: body?.providerName || meter.providerName || 'Meterflow',
+    category: body?.category || meter.category || 'agent-api',
+    docsUrl: body?.docsUrl || meter.docsUrl || null,
+    description: body?.description || meter.description || meter.unit || null,
+    examplePrompt: body?.examplePrompt || meter.examplePrompt || null,
+    contact: body?.contact || meter.contact || null,
+    website: body?.website || meter.website || 'https://meterflow.fun',
+  };
 }
 
-router.post('/meters/:id/zauth/submit', authenticateApiKey, async (req, res) => {
-  const meter = await requireManageableMeter(req, res);
-  if (!meter) return;
+async function persistSubmitResult(meter, result, endpointUrl, autoSubmit = false) {
+  const status = result.status;
+  return updateMeter(meter.id, {
+    zauthListingId: status.listingId || meter.zauthListingId || endpointUrl,
+    zauthListed: Boolean(status.listed),
+    zauthVerified: Boolean(status.verified),
+    zauthStatus: status.status || 'pending',
+    zauthScore: status.score,
+    zauthLastCheckedAt: status.lastCheckedAt || new Date().toISOString(),
+    zauthSubmittedAt: meter.zauthSubmittedAt || new Date().toISOString(),
+    zauthError: result.configured ? null : 'ZAUTH_API_KEY is not configured.',
+    zauthUrl: status.url,
+    zauthAutoSubmit: Boolean(meter.zauthAutoSubmit || autoSubmit),
+  });
+}
+
+async function submitMeter(req, res, meter, { autoSubmit = false } = {}) {
   if (!isBillablePublicMeter(meter)) {
     return res.status(400).json({
       error: 'meter_not_public_billable',
@@ -97,36 +116,11 @@ router.post('/meters/:id/zauth/submit', authenticateApiKey, async (req, res) => 
     });
   }
 
-  const endpointUrl = publicEndpointUrl(meter, req.body?.path || '');
-  const submissionMeter = {
-    ...meter,
-    publicEndpointUrl: endpointUrl,
-    name: req.body?.name || meter.name || meter.id,
-    displayName: req.body?.displayName || meter.displayName || meter.name || meter.id,
-    providerName: req.body?.providerName || meter.providerName || 'Meterflow',
-    category: req.body?.category || meter.category || 'agent-api',
-    docsUrl: req.body?.docsUrl || meter.docsUrl || null,
-    description: req.body?.description || meter.description || meter.unit || null,
-    examplePrompt: req.body?.examplePrompt || meter.examplePrompt || null,
-    contact: req.body?.contact || meter.contact || null,
-    website: req.body?.website || meter.website || 'https://meterflow.fun',
-  };
+  const submissionMeter = buildSubmissionMeter(meter, req.body || {});
 
   try {
     const result = await submitEndpointToZauth(submissionMeter);
-    const status = result.status;
-    const updated = await updateMeter(meter.id, {
-      zauthListingId: status.listingId || meter.zauthListingId || endpointUrl,
-      zauthListed: Boolean(status.listed),
-      zauthVerified: Boolean(status.verified),
-      zauthStatus: status.status || 'pending',
-      zauthScore: status.score,
-      zauthLastCheckedAt: status.lastCheckedAt || new Date().toISOString(),
-      zauthSubmittedAt: meter.zauthSubmittedAt || new Date().toISOString(),
-      zauthError: result.configured ? null : 'ZAUTH_API_KEY is not configured.',
-      zauthUrl: status.url,
-      zauthAutoSubmit: Boolean(meter.zauthAutoSubmit || req.body?.zauthAutoSubmit),
-    });
+    const updated = await persistSubmitResult(meter, result, submissionMeter.publicEndpointUrl, autoSubmit || req.body?.zauthAutoSubmit);
 
     if (!result.configured) {
       return res.status(202).json({
@@ -149,6 +143,31 @@ router.post('/meters/:id/zauth/submit', authenticateApiKey, async (req, res) => 
       zauth: meterZauthStatus(updated),
     });
   }
+}
+
+async function requireManageableMeter(req, res) {
+  const meter = await getMeter(req.params.id);
+  if (!meter) {
+    res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
+    return null;
+  }
+  if (!canManageResource(meter, req.meterflow.wallet, req.meterflow.apiKey)) {
+    res.status(403).json({ error: 'forbidden', message: 'You do not control this meter.' });
+    return null;
+  }
+  return meter;
+}
+
+router.post('/meters/:id/zauth/submit', authenticateApiKey, async (req, res) => {
+  const meter = await requireManageableMeter(req, res);
+  if (!meter) return;
+  return submitMeter(req, res, meter);
+});
+
+router.post('/admin/zauth/submit-default', authenticateAdmin, async (req, res) => {
+  const meter = await getMeter(req.body?.meterId || DEFAULT_ZAUTH_METER_ID);
+  if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
+  return submitMeter(req, res, meter, { autoSubmit: true });
 });
 
 router.post('/meters/:id/zauth/refresh', authenticateApiKey, async (req, res) => {
