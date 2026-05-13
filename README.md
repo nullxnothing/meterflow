@@ -176,12 +176,12 @@ Core API variables:
 - `ERROR_ALERT_WEBHOOK` optional, for production error notifications
 - `SENTRY_DSN` optional, for stack traces and grouped production errors
 - `ZAUTH_API_KEY` optional, enables Zauth x402 provider monitoring before the x402 middleware
-- `ZAUTH_BASE_URL` optional, defaults to `https://api.zauth.inc`
+- `ZAUTH_API_ENDPOINT` optional SDK backend override; leave unset to use `@zauthx402/sdk` defaults
 - `ZAUTH_PUBLIC_APP_URL` optional, defaults to `https://zauth.inc`
 - `METERFLOW_PUBLIC_URL` optional, defaults to `https://www.meterflow.fun` for registry/Zauth public endpoint URLs
 - `ZAUTH_INCLUDE_ROUTES` optional, defaults to `^/mcp/.*,^/gateway/.*`
 - `ZAUTH_EXCLUDE_ROUTES` optional, defaults to health/auth/OAuth/Discord/holder routes
-- `ZAUTH_BATCH_SIZE=1` and `ZAUTH_BATCH_WAIT_MS=100` keep telemetry flushing promptly on serverless deployments
+- `ZAUTH_BATCH_SIZE=10` and `ZAUTH_BATCH_WAIT_MS=100` keep telemetry flushing promptly on serverless deployments
 - `ZAUTH_REFUNDS_ENABLED=false` by default; set `ZAUTH_SOLANA_PRIVATE_KEY` only if refunds are intentionally enabled
 
 Token and settlement variables:
