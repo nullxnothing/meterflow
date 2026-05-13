@@ -5,6 +5,10 @@ import { fetchWithRetry } from './retry.js';
 
 const FETCH_TIMEOUT = 10_000;
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const TOKEN_PROGRAM_IDS = [
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+];
 
 function getRpcUrl() {
   const rpcUrl = CONFIG.HELIUS_RPC_URL?.trim();
@@ -14,16 +18,31 @@ function getRpcUrl() {
   return 'https://api.mainnet-beta.solana.com';
 }
 
-async function fetchBalanceFromRPC(walletAddress) {
+function tokenAccountAmount(account) {
+  const tokenAmount = account?.account?.data?.parsed?.info?.tokenAmount;
+  const amount = tokenAmount?.uiAmountString ?? tokenAmount?.uiAmount ?? 0;
+  const parsed = Number(amount);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function tokenAccountMint(account) {
+  return account?.account?.data?.parsed?.info?.mint || null;
+}
+
+function sumTokenAccounts(accounts = []) {
+  return accounts.reduce((sum, account) => sum + tokenAccountAmount(account), 0);
+}
+
+async function fetchTokenAccounts(walletAddress, filter, id) {
   const response = await fetchWithRetry(
     () => fetch(getRpcUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
-        id: 'meterflow-balance-check',
+        id,
         method: 'getTokenAccountsByOwner',
-        params: [walletAddress, { mint: CONFIG.TOKEN_MINT }, { encoding: 'jsonParsed' }],
+        params: [walletAddress, filter, { encoding: 'jsonParsed' }],
       }),
       signal: AbortSignal.timeout(FETCH_TIMEOUT),
     }),
@@ -32,10 +51,34 @@ async function fetchBalanceFromRPC(walletAddress) {
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message || 'RPC error');
+  return Array.isArray(data.result?.value) ? data.result.value : [];
+}
 
-  if (data.result?.value?.length > 0) {
-    return data.result.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+async function fetchBalanceFromRPC(walletAddress) {
+  let primaryError = null;
+  try {
+    const accounts = await fetchTokenAccounts(
+      walletAddress,
+      { mint: CONFIG.TOKEN_MINT },
+      'meterflow-balance-check'
+    );
+    if (accounts.length > 0) return sumTokenAccounts(accounts);
+  } catch (err) {
+    primaryError = err;
+    logger.warn('Mint balance lookup failed, trying token program fallback', { wallet: walletAddress.slice(0, 8), err: err.message });
   }
+
+  const fallbackResults = await Promise.allSettled(
+    TOKEN_PROGRAM_IDS.map(programId =>
+      fetchTokenAccounts(walletAddress, { programId }, `meterflow-balance-check-${programId.slice(0, 6)}`)
+    )
+  );
+  const fallbackAccounts = fallbackResults
+    .filter(result => result.status === 'fulfilled')
+    .flatMap(result => result.value)
+    .filter(account => tokenAccountMint(account) === CONFIG.TOKEN_MINT);
+  if (fallbackAccounts.length > 0) return sumTokenAccounts(fallbackAccounts);
+  if (primaryError && fallbackResults.every(result => result.status === 'rejected')) throw primaryError;
   return 0;
 }
 

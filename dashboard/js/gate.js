@@ -8,8 +8,12 @@ export function isHolder() {
   return STATE.connected && !!STATE.apiKeyFull && (STATE.tier !== 'Trial' || STATE.isGuest);
 }
 
+export function hasMeterflowSession() {
+  return STATE.connected && !!STATE.apiKeyFull && !STATE.isGuest;
+}
+
 export function canManageMeterflow() {
-  return STATE.connected && !!STATE.apiKeyFull && !STATE.isGuest && STATE.tier !== 'Trial';
+  return hasMeterflowSession();
 }
 
 export function isAlphaTier() {
@@ -65,7 +69,7 @@ export function renderTrialBanner() {
     <div class="trial-banner">
       <span class="trial-banner-label">Free Trial</span>
       <span class="trial-banner-count">${remaining} of ${limit} calls remaining today</span>
-      <span class="trial-banner-hint">Connect a wallet to configure meters and budgets</span>
+      <span class="trial-banner-hint">Paid endpoints stay available; non-holder usage includes the protocol fee</span>
     </div>
   `;
 }
@@ -198,7 +202,7 @@ export function renderHolderGate(featureName = 'this feature') {
         ${needsWallet
           ? `Connect your wallet to unlock ${featureName}.`
           : trialUser
-            ? `Connect a wallet to manage meters, receipts, budgets, and service routes.`
+            ? `${featureName} requires Meterflow utility access. Paid endpoint management remains available with the non-holder protocol fee.`
             : `Your wallet does not currently unlock ${featureName}.`
         }
       </p>
