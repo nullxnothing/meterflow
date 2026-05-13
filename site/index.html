@@ -248,7 +248,7 @@
     <div class="section-header reveal">
       <div class="section-eyebrow"><span class="section-eyebrow-code">Mt</span> Meterflow Protocol</div>
       <h2 class="section-title">By the <em>numbers.</em></h2>
-      <p class="section-sub">Production telemetry will appear here once live meters, receipts, and settlement feeds are connected to the Meterflow control plane.</p>
+      <p class="section-sub" id="statsSummary">Live telemetry from meters, receipts, test quotes, and verified settlement flows through the Meterflow control plane.</p>
     </div>
 
     <div class="stats-group reveal">
@@ -260,14 +260,14 @@
         </div>
         <div class="stat-cell">
           <div class="stat-number" id="ps-alltime-tokens">—</div>
-          <div class="stat-label">Billable units processed</div>
+          <div class="stat-label">Meters configured</div>
         </div>
         <div class="stat-cell">
           <div class="stat-number" id="ps-money-saved">—</div>
-          <div class="stat-label">Estimated compute value</div>
+          <div class="stat-label">Dashboard test quotes</div>
         </div>
       </div>
-      <div class="chart-label">Calls per day &mdash; production feed</div>
+      <div class="chart-label">Receipt events per day &mdash; control-plane feed</div>
       <div class="chart chart-empty" data-chart="emerald" data-empty-label="Awaiting production telemetry" aria-hidden="true"></div>
       <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
     </div>
@@ -281,14 +281,14 @@
         </div>
         <div class="stat-cell">
           <div class="stat-number" id="ps-models">—</div>
-          <div class="stat-label">Services online <span id="ps-providers" style="display:none"></span></div>
+          <div class="stat-label">Verified paid receipts <span id="ps-providers" style="display:none"></span></div>
         </div>
         <div class="stat-cell">
           <div class="stat-number" id="ps-uptime">—</div>
-          <div class="stat-label">Session uptime <span id="ps-uptime-pct" style="display:none"></span><span id="ps-tokens-today" style="display:none"></span></div>
+          <div class="stat-label">Verified settlement volume <span id="ps-uptime-pct" style="display:none"></span><span id="ps-tokens-today" style="display:none"></span></div>
         </div>
       </div>
-      <div class="chart-label">Settled receipts per day &mdash; production feed</div>
+      <div class="chart-label">Verified paid receipts per day &mdash; settlement feed</div>
       <div class="chart chart-empty" data-chart="sky" data-empty-label="Awaiting settlement events" aria-hidden="true"></div>
       <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
     </div>

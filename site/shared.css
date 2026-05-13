@@ -2079,3 +2079,101 @@ tbody tr:hover {
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════
+   Final Public Shell Cohesion
+   Shared JS normalizes public nav markup; these rules keep every page on
+   the landing-page shell even when page-specific CSS loads later.
+   ═══════════════════════════════════════════ */
+
+body > nav.mf-nav,
+body > nav {
+  z-index: var(--z-nav);
+}
+
+.mf-page-particles {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.74;
+  mix-blend-mode: screen;
+}
+
+body.has-page-particles {
+  isolation: isolate;
+}
+
+body.has-page-particles > main,
+body.has-page-particles > section,
+body.has-page-particles > footer,
+body.has-page-particles > .site-subpage-hero,
+body.has-page-particles > .status-page,
+body.has-page-particles > .legal {
+  position: relative;
+  z-index: 1;
+}
+
+body.has-page-particles > nav {
+  z-index: var(--z-nav);
+}
+
+body > nav .nav-actions {
+  min-width: 0;
+}
+
+body > nav .nav-links a[data-nav],
+body > nav .nav-docs,
+body > nav .mf-login {
+  letter-spacing: 0;
+}
+
+body > nav .mf-login,
+body > nav .nav-cta[data-nav="dashboard"] {
+  min-height: 36px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+}
+
+body > nav .mf-login.active,
+body > nav .nav-cta.active {
+  border-color: rgba(var(--accent-rgb), 0.32);
+  background: rgba(var(--accent-rgb), 0.08);
+  color: var(--text);
+}
+
+.mobile-menu {
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.48);
+}
+
+.mobile-menu a {
+  min-height: 42px;
+}
+
+.site-footer {
+  color: var(--text);
+}
+
+.site-footer-logo,
+.site-footer-col-title,
+.site-footer-bottom {
+  letter-spacing: 0;
+}
+
+.site-footer-logo {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 24px;
+}
+
+.site-footer-col a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.site-footer--auto {
+  margin-top: 0;
+}

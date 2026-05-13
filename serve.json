@@ -6,6 +6,8 @@
     { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
     { "source": "/docs", "destination": "/site/docs.html" },
     { "source": "/docs.html", "destination": "/site/docs.html" },
+    { "source": "/proxy/stats", "destination": "/site/dev-stats.json" },
+    { "source": "/proxy/v1/token", "destination": "/site/dev-token.json" },
     { "source": "/status", "destination": "/site/status.html" },
     { "source": "/roadmap", "destination": "/site/roadmap.html" },
     { "source": "/token", "destination": "/site/token.html" },
