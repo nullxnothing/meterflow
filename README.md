@@ -8,6 +8,8 @@ The Solana control plane for agent commerce: paid APIs, MCP tools, budgets, rece
 
 [Website](https://meterflow.fun) · [Dashboard](https://meterflow.fun/dashboard) · [Docs](https://meterflow.fun/docs) · [GitHub](https://github.com/nullxnothing/meterflow) · [X](https://x.com/meterflowsol) · [Discord](https://discord.gg/tned74z4eN)
 
+<!-- deployment trigger: zauth-registry -->
+
 ## $MFLOW
 
 Official contract address: `TBA`
