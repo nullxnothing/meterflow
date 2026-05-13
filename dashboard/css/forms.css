@@ -1,0 +1,211 @@
+/* ─── Dashboard Form Inputs (control-plane forms) ─── */
+.bot-form,
+.cp-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.bot-form-row { display: flex; flex-direction: column; gap: 4px; }
+
+.hosted-meter-form {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  white-space: normal;
+}
+
+.budget-form-grid,
+.mcp-form-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  white-space: normal;
+}
+
+.cp-span-2 { grid-column: span 2; }
+.cp-span-6 { grid-column: 1 / -1; }
+
+.hosted-meter-form #meterTargetUrl,
+.hosted-meter-form #meterProviderName,
+.hosted-meter-form #meterRoute {
+  grid-column: span 2;
+}
+
+.hosted-meter-form #meterAuthValue {
+  grid-column: span 2;
+}
+
+.hosted-meter-form .btn-sm.primary {
+  grid-column: span 6;
+  height: 44px;
+}
+
+@media (max-width: 900px) {
+  .hosted-meter-form,
+  .budget-form-grid,
+  .mcp-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hosted-meter-form #meterTargetUrl,
+  .hosted-meter-form #meterProviderName,
+  .hosted-meter-form #meterRoute,
+  .hosted-meter-form #meterAuthValue,
+  .hosted-meter-form .btn-sm.primary,
+  .cp-span-2,
+  .cp-span-6 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .hosted-meter-form,
+  .budget-form-grid,
+  .mcp-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .hosted-meter-form #meterTargetUrl,
+  .hosted-meter-form #meterProviderName,
+  .hosted-meter-form #meterRoute,
+  .hosted-meter-form #meterAuthValue,
+  .hosted-meter-form .btn-sm.primary,
+  .cp-span-2,
+  .cp-span-6 {
+    grid-column: 1;
+  }
+}
+
+.bot-form-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.bot-form-input,
+.cp-input,
+.cp-select,
+.section input[type="text"]:not(.btn),
+.section input[type="number"]:not(.btn),
+.section select:not(.btn),
+.section textarea:not(.btn) {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.bot-form-input::placeholder,
+.cp-input::placeholder,
+.section input::placeholder,
+.section textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.bot-form-input:hover,
+.cp-input:hover,
+.cp-select:hover,
+.section input:hover:not([disabled]),
+.section select:hover:not([disabled]),
+.section textarea:hover:not([disabled]) {
+  border-color: var(--border-light);
+  background: var(--surface-2);
+}
+
+.bot-form-input:focus-visible,
+.cp-input:focus-visible,
+.cp-select:focus-visible,
+.section input:focus-visible,
+.section select:focus-visible,
+.section textarea:focus-visible {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+.bot-form-input[multiple],
+select[multiple].bot-form-input,
+select[multiple].cp-select {
+  padding: 8px;
+  min-height: 84px;
+}
+
+.bot-form-input[multiple] option,
+select[multiple] option {
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.bot-form-input[multiple] option:checked,
+select[multiple] option:checked {
+  background: linear-gradient(0deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.18)) var(--surface-2);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Wide primary action button (Create Meter / Create Budget Policy / Package MCP Tool) */
+.bot-form .btn-sm.primary,
+.cp-form .btn-sm.primary,
+.hosted-meter-form .btn-sm.primary,
+.section .btn-sm.primary[style*="grid-column:span 6"],
+.section .btn-sm.primary[style*="grid-column: span 6"] {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%);
+  color: #02060d;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px rgba(var(--accent-rgb), 0.25);
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bot-form .btn-sm.primary:hover,
+.cp-form .btn-sm.primary:hover,
+.hosted-meter-form .btn-sm.primary:hover,
+.section .btn-sm.primary[style*="grid-column"]:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 10px 28px rgba(var(--accent-rgb), 0.4);
+}
+
+/* Section title lift */
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+.section-title::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+}

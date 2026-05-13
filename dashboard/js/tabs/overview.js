@@ -72,7 +72,6 @@ export function renderOverview() {
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">API Keys</div><div class="tool-desc">Issue developer keys for metered clients that create meters, inspect receipts, and manage budgets.</div><div class="tool-launch">View Key</div></div>
         <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach provider credentials and operational integrations behind hosted Meterflow routes.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('holder-tools')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Agent Checkout</div><div class="tool-desc">Watch an agent buy Helius wallet intelligence, stay inside budget, and return receipts.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Manage provider, data, wallet, and notification integrations that can be attached to meters.</div><div class="tool-launch">Open</div></div>
       </div>
     </div>
     <div class="compliance-notice">
@@ -133,7 +132,6 @@ function renderPublicOverview() {
         <div class="tool-card" onclick="setTab('keys')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Developer Keys</div><div class="tool-desc">Create keys that identify metered clients and power the current gateway.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach provider credentials and operational integrations behind hosted Meterflow routes.</div><div class="tool-launch">Open</div></div>
         <div class="tool-card" onclick="setTab('holder-tools')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Agent Checkout</div><div class="tool-desc">Try a no-wallet wallet deep dive that shows priced data calls and receipts.</div><div class="tool-launch">Open</div></div>
-        <div class="tool-card" onclick="setTab('future-apis')"><div class="tool-header"><span class="tool-status">LIVE</span></div><div class="tool-name">Integrations</div><div class="tool-desc">Attach Solana infrastructure, payment rails, wallet data, and notification providers to Meterflow routes.</div><div class="tool-launch">Open</div></div>
       </div>
     </div>
     <div class="compliance-notice">

@@ -56,7 +56,7 @@ export function renderFutureApis() {
       <div class="stat-card"><div class="label">Alerts</div><div class="value">On</div><div class="sub">operator notifications</div></div>
     </div>
     <div class="future-apis-note">
-      <strong style="color:var(--accent)">How integrations work:</strong> attach a provider to a service route, set the billing unit and wallet policy, then use receipts to audit every paid call.
+      <strong>How integrations work:</strong> attach a provider to a service route, set the billing unit and wallet policy, then use receipts to audit every paid call.
     </div>
     <div class="future-apis-tabs">
       ${CATEGORIES.map(cat => `

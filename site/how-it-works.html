@@ -20,7 +20,7 @@
 <link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site/shared.css">
 <style>
 body { line-height: 1.7; }
@@ -30,7 +30,7 @@ body { line-height: 1.7; }
   content: ''; position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
   width: 720px; height: 600px;
   background:
-    radial-gradient(closest-side at 30% 40%, rgba(79, 156, 255, 0.18), transparent 70%),
+    radial-gradient(closest-side at 30% 40%, rgba(var(--accent-rgb), 0.18), transparent 70%),
     radial-gradient(closest-side at 70% 60%, rgba(31, 95, 184, 0.22), transparent 70%);
   filter: blur(60px); opacity: 0.7; pointer-events: none;
 }
@@ -39,9 +39,9 @@ body { line-height: 1.7; }
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 2.4px; text-transform: uppercase;
   color: var(--text-dim);
   padding: 6px 14px 6px 12px;
-  border: 1px solid rgba(79, 156, 255, 0.22);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
   border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, rgba(79, 156, 255, 0.10), rgba(79, 156, 255, 0.04));
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.04));
   margin-bottom: 24px;
 }
 .hero-label::before {
@@ -53,9 +53,9 @@ body { line-height: 1.7; }
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 3.4px; text-transform: uppercase;
   color: var(--accent);
   padding: 6px 14px 6px 12px;
-  border: 1px solid rgba(79, 156, 255, 0.18);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
   border-radius: var(--radius-pill);
-  background: rgba(79, 156, 255, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
   margin-bottom: 22px;
 }
 .section-label::before {
@@ -72,7 +72,7 @@ body { line-height: 1.7; }
 section { padding: var(--section-pad) 0; position: relative; }
 section::before {
   content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.3), transparent);
 }
 .hero::before, .hero { } /* keep hero clean */
 .section-title {
@@ -98,7 +98,7 @@ section::before {
   box-shadow: var(--shadow-card);
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.card:hover { border-color: rgba(79, 156, 255, 0.45); transform: translateY(-3px); box-shadow: var(--shadow-elev); }
+.card:hover { border-color: rgba(var(--accent-rgb), 0.45); transform: translateY(-3px); box-shadow: var(--shadow-elev); }
 .card h3 {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px;
   color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
@@ -138,7 +138,7 @@ footer .links a:hover { color: var(--accent); }
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to content</a>
-<nav>
+<nav class="mf-nav">
   <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
   <div class="nav-links">
     <a href="/#tools" data-nav="tools">Tools</a>

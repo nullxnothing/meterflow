@@ -1,0 +1,270 @@
+/* ─── Holder Gate ─── */
+
+.holder-gate {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.holder-gate-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.holder-gate-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.holder-gate-tiers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.holder-gate-tier {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px 12px;
+  transition: border-color 0.2s;
+}
+
+.holder-gate-tier.accent {
+  border-color: var(--accent);
+}
+
+.holder-gate-tier-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.holder-gate-tier-req {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.holder-gate-tier-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.holder-gate-btn {
+  margin-top: 4px;
+}
+
+.holder-gate-balance {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ─── Trial Banner ─── */
+
+.trial-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.10));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.trial-banner-label {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a78bfa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.trial-banner-count {
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.trial-banner .btn-sm {
+  white-space: nowrap;
+}
+
+/* ─── Free Access Banner ─── */
+
+.free-access-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), rgba(var(--accent-rgb), 0.04));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  animation: freeAccessPulse 3s ease-in-out infinite;
+}
+
+@keyframes freeAccessPulse {
+  0%, 100% { border-color: rgba(var(--accent-rgb), 0.3); }
+  50% { border-color: rgba(var(--accent-rgb), 0.6); }
+}
+
+.free-access-banner-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.free-access-banner-text {
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.free-access-banner-text strong {
+  color: var(--accent);
+}
+
+.free-access-banner-hint {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.free-access-banner-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.free-access-banner-btn:hover { background: #fff; }
+
+@media (max-width: 768px) {
+  .free-access-banner { flex-wrap: wrap; gap: 8px; }
+  .free-access-banner-hint { display: none; }
+  .free-access-banner-btn { width: 100%; text-align: center; }
+}
+
+/* ─── Wallet Connect Modal ─── */
+
+.wallet-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+.wallet-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  animation: slideUp 0.25s;
+}
+
+.wallet-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.wallet-modal-close:hover {
+  color: var(--text);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Sidebar Connect CTA ─── */
+
+.sidebar-connect-cta {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.sidebar-connect-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.sidebar-connect-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 11px;
+}
+
+.mobile-connect-btn {
+  font-size: 11px;
+  padding: 6px 14px;
+}
+
+/* ─── Holder Gate Responsive ─── */
+
+@media (max-width: 600px) {
+  .preview-access-notice,
+  .token-utility-panel {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .preview-access-actions,
+  .token-utility-actions {
+    justify-content: stretch;
+  }
+  .preview-access-actions .btn-sm,
+  .token-utility-actions .btn-sm {
+    flex: 1;
+  }
+  .holder-gate { padding: 40px 20px; }
+  .holder-gate-tiers { grid-template-columns: 1fr; gap: 8px; }
+  .holder-gate-tier { padding: 12px; }
+  .wallet-modal { padding: 28px 20px; }
+  .trial-banner { flex-wrap: wrap; gap: 8px; }
+  .trial-banner .btn-sm { width: 100%; text-align: center; }
+}
