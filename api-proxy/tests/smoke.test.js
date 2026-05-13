@@ -603,6 +603,25 @@ describe('Meterflow control plane', () => {
     assert.ok(pkg.dependencies.mppx && pkg.dependencies['solana-mpp'], 'should declare MPP dependencies');
   });
 
+  it('Zauth provider monitoring is wired before x402', () => {
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const zauth = readFileSync(resolve(root, 'lib', 'zauth.js'), 'utf-8');
+    const env = readFileSync(resolve(root, '.env.example'), 'utf-8');
+    const apiPkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+    const rootPkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
+
+    assert.ok(app.includes('createMeterflowZauthMiddleware'), 'app should import Zauth middleware factory');
+    assert.ok(app.includes('app.use(createMeterflowZauthMiddleware())'), 'app should mount Zauth middleware');
+    assert.ok(app.indexOf('app.use(createMeterflowZauthMiddleware())') < app.indexOf('const x402GatewayReady'), 'Zauth should observe requests before x402 handles payment');
+    assert.ok(zauth.includes("from '@zauthx402/sdk/middleware'"), 'Zauth wrapper should use the official SDK middleware export');
+    assert.ok(zauth.includes('ZAUTH_API_KEY'), 'Zauth wrapper should be env-gated');
+    assert.ok(zauth.includes('ZAUTH_INCLUDE_ROUTES'), 'Zauth wrapper should support route filtering');
+    assert.ok(zauth.includes('ZAUTH_REFUNDS_ENABLED'), 'Zauth wrapper should keep refunds explicitly opt-in');
+    assert.ok(env.includes('ZAUTH_API_KEY') && env.includes('ZAUTH_INCLUDE_ROUTES'), 'env example should document Zauth setup');
+    assert.ok(apiPkg.dependencies['@zauthx402/sdk'], 'api-proxy should declare the Zauth SDK dependency');
+    assert.ok(rootPkg.dependencies['@zauthx402/sdk'], 'root package should declare the Zauth SDK dependency for Vercel installs');
+  });
+
   it('hosted gateway meters store target metadata safely', () => {
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');

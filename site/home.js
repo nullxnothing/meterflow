@@ -17,9 +17,7 @@
       .mf-load{opacity:0;transform:translateY(18px) scale(.985);filter:blur(10px);transition:opacity .9s cubic-bezier(.2,.65,.3,1),transform .9s cubic-bezier(.2,.65,.3,1),filter .9s cubic-bezier(.2,.65,.3,1)}.mf-load.mf-in{opacity:1;transform:none;filter:blur(0)}
       .hero-headline,.section-title,.cta-title{letter-spacing:-.035em}.hero-sub,.section-sub{color:rgba(225,228,236,.62)!important}
 
-      .integration-logo-marquee{position:relative;overflow:hidden;padding:46px 0 56px;border-top:1px solid rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.045);background:radial-gradient(circle at 50% 0%,rgba(59,130,246,.08),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.006))}.integration-logo-marquee:before,.integration-logo-marquee:after{content:'';position:absolute;z-index:2;top:0;bottom:0;width:min(18vw,220px);pointer-events:none}.integration-logo-marquee:before{left:0;background:linear-gradient(90deg,var(--bg,#08090b),transparent)}.integration-logo-marquee:after{right:0;background:linear-gradient(270deg,var(--bg,#08090b),transparent)}.integration-marquee-label{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 24px 26px;font-family:var(--font-mono,monospace);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted,#7b8190)}.integration-marquee-label span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.18);font-weight:800;letter-spacing:0}.integration-marquee-viewport{overflow:hidden;width:100%}.integration-marquee-track{display:flex;align-items:center;gap:28px;width:max-content;animation:meterflowIntegrationMarquee 34s linear infinite;will-change:transform}.integration-logo-marquee:hover .integration-marquee-track{animation-play-state:paused}.integration-tile{width:154px;min-width:154px;display:grid;justify-items:center;gap:14px;text-decoration:none;color:inherit;opacity:.72;transition:opacity .22s ease,transform .22s ease}.integration-tile:hover{opacity:1;transform:translateY(-2px)}.integration-icon-shell{width:74px;height:74px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018)),#15161b;border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 20px 48px rgba(0,0,0,.32)}.integration-icon-shell img{width:42px;height:42px;object-fit:contain;border-radius:12px;filter:saturate(1.08) contrast(1.05)}.integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text-muted,#7b8190);letter-spacing:-.01em}@keyframes meterflowIntegrationMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-      .mf-plan-demo{position:relative;padding:clamp(84px,12vw,150px) 20px;background:radial-gradient(circle at 50% 0%,rgba(59,130,246,.08),transparent 38%),#0b0c10;overflow:hidden}.mf-plan-demo:before{content:'';position:absolute;inset:0;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(circle at 50% 40%,black,transparent 72%)}.mf-plan-wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;display:grid;grid-template-columns:minmax(0,.85fr) minmax(420px,1.15fr);gap:clamp(26px,5vw,64px);align-items:center}.mf-plan-copy .eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}.mf-plan-copy .eyebrow span{display:grid;place-items:center;width:25px;height:25px;border-radius:7px;color:var(--accent);background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.18);letter-spacing:0;font-weight:800}.mf-plan-copy h2{margin:0;color:var(--text);font-family:var(--font-display);font-size:clamp(34px,5vw,66px);line-height:1.02;font-weight:500;letter-spacing:-.035em}.mf-plan-copy h2 em{font-family:var(--font-serif);font-style:italic;font-weight:400}.mf-plan-copy p{margin:20px 0 0;max-width:470px;color:rgba(225,228,236,.62);font-size:17px;line-height:1.65}.mf-plan-card{border-radius:22px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.048),rgba(255,255,255,.018)),#111217;border:1px solid rgba(255,255,255,.08);box-shadow:0 40px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}.mf-plan-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--text-muted);font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.mf-plan-card-head strong{color:var(--text);font-family:var(--font-body);font-size:13px;letter-spacing:0;text-transform:none}.mf-plan-list{list-style:none;margin:0;padding:12px}.mf-task{border-radius:14px;overflow:hidden}.mf-task-row,.mf-sub-row{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--text);text-align:left;border-radius:12px;padding:10px 12px;cursor:pointer;transition:background .18s ease}.mf-task-row:hover,.mf-sub-row:hover{background:rgba(255,255,255,.04)}.mf-task-title,.mf-sub-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.mf-sub-title{font-size:13px;color:rgba(225,228,236,.78)}.mf-status-dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;flex:0 0 auto}.mf-status-dot:after{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9}.mf-status-dot.completed{color:#34d399}.mf-status-dot.in-progress{color:#60a5fa}.mf-status-dot.need-help{color:#fbbf24}.mf-status-dot.failed{color:#f87171}.mf-status-dot.pending{color:#71717a}.mf-badge{font-family:var(--font-mono);font-size:10px;border-radius:999px;padding:4px 7px;background:rgba(255,255,255,.055);color:var(--text-muted);white-space:nowrap}.mf-badge.high{color:#fca5a5;background:rgba(248,113,113,.1)}.mf-badge.medium{color:#93c5fd;background:rgba(96,165,250,.1)}.mf-subtasks{position:relative;margin:0 10px 8px 20px;padding:0 0 0 18px;list-style:none;max-height:0;opacity:0;overflow:hidden;transition:max-height .36s cubic-bezier(.2,.65,.3,1),opacity .3s ease}.mf-subtasks:before{content:'';position:absolute;left:0;top:0;bottom:0;border-left:1px dashed rgba(255,255,255,.16)}.mf-task.open .mf-subtasks{max-height:340px;opacity:1}.mf-sub-detail{margin:-2px 0 8px 28px;padding-left:12px;border-left:1px dashed rgba(255,255,255,.14);color:var(--text-muted);font-size:12px;line-height:1.5;display:none}.mf-sub.open .mf-sub-detail{display:block}.mf-tool-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.mf-tool{border-radius:999px;padding:3px 7px;background:rgba(59,130,246,.1);color:#93c5fd;font-family:var(--font-mono);font-size:10px}
+      .integration-logo-marquee{position:relative;overflow:hidden;padding:46px 0 56px;border-top:1px solid rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.045);background:radial-gradient(circle at 50% 0%,rgba(59,130,246,.08),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.006))}.integration-logo-marquee:before,.integration-logo-marquee:after{content:'';position:absolute;z-index:2;top:0;bottom:0;width:min(18vw,220px);pointer-events:none}.integration-logo-marquee:before{left:0;background:linear-gradient(90deg,var(--bg,#08090b),transparent)}.integration-logo-marquee:after{right:0;background:linear-gradient(270deg,var(--bg,#08090b),transparent)}.integration-marquee-viewport{overflow:hidden;width:100%}.integration-marquee-track{display:flex;align-items:center;gap:28px;width:max-content;animation:meterflowIntegrationMarquee 34s linear infinite;will-change:transform}.integration-logo-marquee:hover .integration-marquee-track{animation-play-state:paused}.integration-tile{width:154px;min-width:154px;display:grid;justify-items:center;gap:14px;text-decoration:none;color:inherit;opacity:.72;transition:opacity .22s ease,transform .22s ease}.integration-tile:hover{opacity:1;transform:translateY(-2px)}.integration-icon-shell{width:74px;height:74px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018)),#15161b;border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 20px 48px rgba(0,0,0,.32)}.integration-icon-shell img{width:42px;height:42px;object-fit:contain;border-radius:12px;filter:saturate(1.08) contrast(1.05)}.integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text-muted,#7b8190);letter-spacing:-.01em}@keyframes meterflowIntegrationMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
       .mf-text-reveal{position:relative;height:190vh;background:#0a0a0c}.mf-text-reveal-sticky{position:sticky;top:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:9vh 20px}.mf-reveal-words{max-width:990px;margin:0 auto;text-align:left;font-family:var(--font-display);font-size:clamp(30px,5.2vw,70px);line-height:1.08;font-weight:600;letter-spacing:-.04em}.mf-word{position:relative;display:inline-block;margin:.08em .12em;color:rgba(255,255,255,.16)}.mf-word span{position:absolute;inset:0;color:#fff;opacity:0;will-change:opacity}.mf-word em{font-family:var(--font-serif);font-style:italic;font-weight:400;color:inherit}
 
@@ -66,7 +64,7 @@
       const section = document.createElement('section');
       section.className = 'integration-logo-marquee reveal';
       section.setAttribute('aria-label', 'Meterflow integration ecosystem');
-      section.innerHTML = `<div class="integration-marquee-label"><span>In</span> Integration ecosystem</div><div class="integration-marquee-viewport" aria-live="off"><div class="integration-marquee-track"></div></div>`;
+      section.innerHTML = `<div class="integration-marquee-viewport" aria-live="off"><div class="integration-marquee-track"></div></div>`;
       const track = $('.integration-marquee-track', section);
       integrations.concat(integrations).forEach(([name, domain]) => {
         const tile = document.createElement('a');
@@ -79,52 +77,6 @@
       });
       const anchor = $('.trusted') || $('.showcase') || $('.stats');
       if (anchor?.parentNode) anchor.parentNode.replaceChild(section, anchor);
-    }
-
-    const planTasks = [
-      { id:'1', title:'Meter endpoint request', status:'in-progress', priority:'high', deps:[], subtasks:[['1.1','Issue quote','completed','Return x402 price and route metadata',['gateway','quote-engine']],['1.2','Verify payment','in-progress','Confirm USDC settlement before response release',['solana-rpc','receipt-writer']],['1.3','Attach receipt','need-help','Write request, payer, route, amount, and latency proof',['receipt-graph']]] },
-      { id:'2', title:'Apply agent budget policy', status:'in-progress', priority:'high', deps:[], subtasks:[['2.1','Check daily cap','pending','Confirm the agent is inside daily spend limits',['policy-engine']],['2.2','Match route allowlist','pending','Verify the requested endpoint is approved for this wallet',['allowlist','wallet-link']],['2.3','Handle failed policy','pending','Return clean failure state instead of burning calls',['failure-router']]] },
-      { id:'3', title:'Provider revenue sync', status:'pending', priority:'medium', deps:['1','2'], subtasks:[['3.1','Attribute revenue','pending','Group receipts by endpoint and provider',['analytics']],['3.2','Emit webhook','pending','Notify provider systems when a paid call settles',['webhooks']],['3.3','Update registry signal','pending','Feed uptime, price, and volume back into discovery',['registry']]] }
-    ];
-
-    function statusDot(status) { return `<span class="mf-status-dot ${status}"></span>`; }
-    function buildPlanDemo() {
-      const oldTabs = $('.showcase-tabs');
-      const oldShowcase = $('.showcase');
-      if (!oldShowcase || $('.mf-plan-demo')) return;
-      const section = document.createElement('section');
-      section.className = 'mf-plan-demo mf-load';
-      section.innerHTML = `
-        <div class="mf-plan-wrap">
-          <div class="mf-plan-copy">
-            <div class="eyebrow"><span>Dm</span> Live payment workflow</div>
-            <h2>A cleaner demo for <em>agent tasks.</em></h2>
-            <p>Instead of a generic dashboard mock, Meterflow now shows the work an agent payment system actually performs: quote, verify, budget, receipt, and provider sync.</p>
-          </div>
-          <div class="mf-plan-card" role="region" aria-label="Meterflow agent payment task plan">
-            <div class="mf-plan-card-head"><strong>Agent payment run</strong><span>live preview</span></div>
-            <ul class="mf-plan-list"></ul>
-          </div>
-        </div>`;
-      const list = $('.mf-plan-list', section);
-      planTasks.forEach((task, index) => {
-        const item = document.createElement('li');
-        item.className = `mf-task ${index === 0 ? 'open' : ''}`;
-        item.innerHTML = `<button class="mf-task-row" type="button">${statusDot(task.status)}<span class="mf-task-title">${task.title}</span>${task.deps.length ? `<span class="mf-badge">dep ${task.deps.join(',')}</span>` : ''}<span class="mf-badge ${task.priority}">${task.priority}</span></button><ul class="mf-subtasks"></ul>`;
-        const subs = $('.mf-subtasks', item);
-        task.subtasks.forEach((sub, subIndex) => {
-          const [id, title, status, desc, tools] = sub;
-          const subItem = document.createElement('li');
-          subItem.className = `mf-sub ${index === 0 && subIndex === 1 ? 'open' : ''}`;
-          subItem.innerHTML = `<button class="mf-sub-row" type="button">${statusDot(status)}<span class="mf-sub-title">${title}</span><span class="mf-badge">${status}</span></button><div class="mf-sub-detail"><p>${desc}</p><div class="mf-tool-row">${tools.map((tool) => `<span class="mf-tool">${tool}</span>`).join('')}</div></div>`;
-          subs.appendChild(subItem);
-        });
-        list.appendChild(item);
-      });
-      oldTabs?.remove();
-      oldShowcase.replaceWith(section);
-      $$('.mf-task-row', section).forEach((btn) => btn.addEventListener('click', () => btn.closest('.mf-task')?.classList.toggle('open')));
-      $$('.mf-sub-row', section).forEach((btn) => btn.addEventListener('click', (e) => { e.stopPropagation(); btn.closest('.mf-sub')?.classList.toggle('open'); }));
     }
 
     function buildTextReveal() {
@@ -148,7 +100,7 @@
     }
 
     function initMotion() {
-      const targets = ['nav','.hero-headline','.hero-sub','.integration-logo-marquee','.mf-plan-demo','.section-header','.tools-grid','.how-step','.zauth-footer-cta-card','.zauth-footer-brand','.zauth-footer-grid'].flatMap((selector) => $$(selector));
+      const targets = ['nav','.hero-headline','.hero-sub','.integration-logo-marquee','.section-header','.tools-grid','.how-step','.zauth-footer-cta-card','.zauth-footer-brand','.zauth-footer-grid'].flatMap((selector) => $$(selector));
       targets.forEach((el, i) => {
         el.classList.add('mf-load');
         el.style.transitionDelay = `${Math.min(i * 45, 360)}ms`;
@@ -194,7 +146,6 @@
     }
 
     buildIntegrationMarquee();
-    buildPlanDemo();
     buildTextReveal();
     buildFooter();
     initMotion();

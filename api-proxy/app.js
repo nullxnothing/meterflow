@@ -26,6 +26,7 @@ import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
 import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
 import { buildMppMiddleware, createMppGateway } from './lib/mpp.js';
+import { createMeterflowZauthMiddleware } from './lib/zauth.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -125,6 +126,8 @@ app.use(async (req, res, next) => {
     return next();
   }
 });
+
+app.use(createMeterflowZauthMiddleware());
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()

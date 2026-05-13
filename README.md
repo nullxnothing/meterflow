@@ -173,6 +173,8 @@ Core API variables:
 - `REDIS_URL`
 - `ERROR_ALERT_WEBHOOK` optional, for production error notifications
 - `SENTRY_DSN` optional, for stack traces and grouped production errors
+- `ZAUTH_API_KEY` optional, enables Zauth x402 provider monitoring before the x402 middleware
+- `ZAUTH_INCLUDE_ROUTES` optional, defaults to `^/mcp/.*,^/gateway/.*`
 
 Token and settlement variables:
 
