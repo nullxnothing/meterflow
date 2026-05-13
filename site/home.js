@@ -1,451 +1,155 @@
-// ═══════════ MOBILE MENU ═══════════
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
+// Meterflow landing polish: mobile menu, zauth-style motion, cleaner demo, scroll text reveal, integration slider, and footer.
+(function () {
+  const ready = (fn) => document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', fn, { once: true })
+    : fn();
 
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('active');
-  mobileMenu.classList.toggle('open');
-});
+  ready(() => {
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function closeMobile() {
-  hamburger.classList.remove('active');
-  mobileMenu.classList.remove('open');
-}
+    const style = document.createElement('style');
+    style.textContent = `
+      .hero-actions,.nav-cta,.mobile-menu-cta.primary,.free-access-topbar-btn,a[href='/dashboard'].btn-primary,a[href='/dashboard'].nav-cta{display:none!important}
+      .hero{padding-bottom:clamp(52px,8vh,92px)!important}.hero-sub{margin-bottom:0!important}body.mobile-menu-open{overflow:hidden}
+      #hamburger{position:relative;z-index:10001}#mobileMenu.mobile-menu.open,body.mobile-menu-open #mobileMenu.mobile-menu{display:flex!important;position:fixed!important;top:60px!important;left:0!important;right:0!important;z-index:10000!important;max-height:calc(100vh - 60px);overflow-y:auto;background:rgba(6,7,10,.98)!important;border-bottom:1px solid rgba(255,255,255,.08)!important;box-shadow:0 30px 80px rgba(0,0,0,.48)}
+      .mf-load{opacity:0;transform:translateY(18px) scale(.985);filter:blur(10px);transition:opacity .9s cubic-bezier(.2,.65,.3,1),transform .9s cubic-bezier(.2,.65,.3,1),filter .9s cubic-bezier(.2,.65,.3,1)}.mf-load.mf-in{opacity:1;transform:none;filter:blur(0)}
+      .hero-headline,.section-title,.cta-title{letter-spacing:-.035em}.hero-sub,.section-sub{color:rgba(225,228,236,.62)!important}
 
-// ═══════════ PAYMENT CONFIG ═══════════
-const PAYMENT_FLOW = 'meter -> quote -> pay -> receipt -> analytics';
+      .integration-logo-marquee{position:relative;overflow:hidden;padding:46px 0 56px;border-top:1px solid rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.045);background:radial-gradient(circle at 50% 0%,rgba(59,130,246,.08),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.006))}.integration-logo-marquee:before,.integration-logo-marquee:after{content:'';position:absolute;z-index:2;top:0;bottom:0;width:min(18vw,220px);pointer-events:none}.integration-logo-marquee:before{left:0;background:linear-gradient(90deg,var(--bg,#08090b),transparent)}.integration-logo-marquee:after{right:0;background:linear-gradient(270deg,var(--bg,#08090b),transparent)}.integration-marquee-viewport{overflow:hidden;width:100%}.integration-marquee-track{display:flex;align-items:center;gap:28px;width:max-content;animation:meterflowIntegrationMarquee 34s linear infinite;will-change:transform}.integration-logo-marquee:hover .integration-marquee-track{animation-play-state:paused}.integration-tile{width:154px;min-width:154px;display:grid;justify-items:center;gap:14px;text-decoration:none;color:inherit;opacity:.72;transition:opacity .22s ease,transform .22s ease}.integration-tile:hover{opacity:1;transform:translateY(-2px)}.integration-icon-shell{width:74px;height:74px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018)),#15161b;border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 20px 48px rgba(0,0,0,.32)}.integration-icon-shell img{width:42px;height:42px;object-fit:contain;border-radius:12px;filter:saturate(1.08) contrast(1.05)}.integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text-muted,#7b8190);letter-spacing:-.01em}@keyframes meterflowIntegrationMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-// ═══════════ LIVE DATA ═══════════
-const PROXY_BASE = '/proxy';
+      .mf-text-reveal{position:relative;height:190vh;background:#0a0a0c}.mf-text-reveal-sticky{position:sticky;top:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:9vh 20px}.mf-reveal-words{max-width:990px;margin:0 auto;text-align:left;font-family:var(--font-display);font-size:clamp(30px,5.2vw,70px);line-height:1.08;font-weight:600;letter-spacing:-.04em}.mf-word{position:relative;display:inline-block;margin:.08em .12em;color:rgba(255,255,255,.16)}.mf-word span{position:absolute;inset:0;color:#fff;opacity:0;will-change:opacity}.mf-word em{font-family:var(--font-serif);font-style:italic;font-weight:400;color:inherit}
 
-// ═══════════ FREE ACCESS BANNER ═══════════
-(async function initFreeAccessBar() {
-  try {
-    const res = await fetch(`${PROXY_BASE}/status/aggregate`);
-    const data = await res.json();
-    const endsAt = data.freeAccessEndsAt;
-    if (!endsAt) return;
+      .zauth-footer-cta,.zauth-footer{position:relative;overflow:hidden;background:#17171b!important}.zauth-footer-cta{padding:clamp(74px,9vw,116px) 24px 64px}.zauth-footer-cta:before,.zauth-footer:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.42;background-image:url("data:image/svg+xml,%3Csvg width='900' height='520' viewBox='0 0 900 520' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23383d45' stroke-width='1.2' opacity='.72'%3E%3Cpath d='M-80 88 C120 58 210 150 365 158 C535 167 650 72 980 60'/%3E%3Cpath d='M-70 128 C130 98 225 195 382 202 C548 210 660 118 980 104'/%3E%3Cpath d='M-90 180 C122 138 235 230 405 238 C575 246 690 160 980 148'/%3E%3Cpath d='M-90 236 C130 188 245 270 430 282 C606 294 720 205 990 195'/%3E%3Cpath d='M-70 300 C160 242 285 330 470 342 C660 355 745 260 990 248'/%3E%3Cpath d='M-90 365 C162 302 315 383 500 392 C695 402 780 320 990 310'/%3E%3Cpath d='M-80 430 C145 385 335 450 540 455 C720 460 820 392 990 386'/%3E%3C/g%3E%3C/svg%3E");background-size:980px 560px;background-position:center}.zauth-footer-cta-card{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:clamp(28px,5vw,58px);border-radius:28px;background:radial-gradient(circle at 88% 14%,rgba(59,130,246,.08),transparent 38%),linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015)),#16171a;border:1px solid rgba(255,255,255,.09);box-shadow:0 30px 90px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.055)}.zauth-footer-cta-card h2{margin:0;color:var(--text);font-family:var(--font-display);font-size:clamp(34px,4.4vw,58px);line-height:1.02;font-weight:500;letter-spacing:-.028em}.zauth-footer-cta-card p{max-width:760px;margin:20px 0 0;color:var(--text-dim);font-size:clamp(16px,1.8vw,20px);line-height:1.62}.zauth-footer-cta-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:36px}.zauth-footer-cta-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border-radius:13px;text-decoration:none;font-weight:600;font-size:15px}.zauth-footer-cta-actions a:first-child{background:var(--accent);color:#fff;border:1px solid var(--accent)}.zauth-footer-cta-actions a:last-child{color:var(--text);background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.2)}.zauth-footer{display:block!important;padding:76px 24px 48px!important;margin:0!important;border-top:1px solid rgba(255,255,255,.06)!important}.zauth-footer>*{position:relative;z-index:1}.zauth-footer-shell{max-width:1080px;margin:0 auto}.zauth-footer-brand{display:flex;align-items:center;justify-content:center;gap:clamp(14px,2.4vw,24px);margin:0 auto 18px;color:var(--text);text-decoration:none;font-family:var(--font-display);font-size:clamp(46px,9vw,112px);line-height:.95;font-weight:700;letter-spacing:-.055em}.zauth-footer-brand img{width:.7em;height:.7em;flex:0 0 auto}.zauth-footer-tagline{margin:0 auto 50px;max-width:560px;text-align:center;color:var(--text-muted);font-size:clamp(16px,2vw,22px);line-height:1.5}.zauth-footer-grid{display:grid;grid-template-columns:repeat(3,minmax(150px,180px));justify-content:center;justify-items:center;gap:clamp(36px,8vw,118px);width:100%;margin:0 auto 56px}.zauth-footer-col{width:100%;text-align:left}.zauth-footer-col h3{margin:0 0 18px;color:var(--text-dim);font-size:18px;font-weight:600;letter-spacing:-.012em}.zauth-footer-col a{display:flex;align-items:center;gap:10px;width:fit-content;margin:0 0 14px;color:var(--text-muted);text-decoration:none;font-size:16px;line-height:1.25}.zauth-footer-bottom{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;padding-top:30px;border-top:1px solid rgba(255,255,255,.08);color:rgba(161,161,170,.52);font-size:14px;text-align:center}.zauth-footer-bottom a{color:rgba(161,161,170,.6);text-decoration:none}
 
-    const endTime = new Date(endsAt).getTime();
-    if (Date.now() >= endTime) return;
+      @media(max-width:880px){.mf-plan-wrap{grid-template-columns:1fr}.mf-plan-card{max-width:100%}.mf-plan-copy{text-align:center}.mf-plan-copy p{margin-left:auto;margin-right:auto}.mf-text-reveal{height:160vh}.mf-reveal-words{text-align:center}}
+      @media(max-width:760px){.integration-logo-marquee{padding:34px 0 42px}.integration-marquee-track{gap:20px;animation-duration:26s}.integration-tile{width:122px;min-width:122px;gap:11px}.integration-icon-shell{width:62px;height:62px;border-radius:18px}.integration-icon-shell img{width:36px;height:36px}.integration-name{max-width:122px;font-size:12px}.zauth-footer-cta{padding:72px 20px 48px}.zauth-footer-cta-card{padding:28px;border-radius:22px}.zauth-footer-cta-actions a{width:100%}.zauth-footer{padding:56px 20px 42px!important}.zauth-footer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.zauth-footer-col h3{font-size:14px}.zauth-footer-col a{font-size:13px}.zauth-footer-bottom{gap:16px;font-size:12px}}
+      @media(max-width:430px){.zauth-footer-grid{grid-template-columns:1fr;max-width:210px;gap:28px}.zauth-footer-col{text-align:center}.zauth-footer-col a{margin-left:auto;margin-right:auto}}
+      @media(prefers-reduced-motion:reduce){.integration-marquee-track{animation:none;flex-wrap:wrap;justify-content:center;width:100%}.mf-load{opacity:1;transform:none;filter:none}.mf-word span{opacity:1!important}}
+    `;
+    document.head.appendChild(style);
 
-    const bar = document.getElementById('freeAccessBar');
-    const countdown = document.getElementById('freeCountdown');
-    if (!bar || !countdown) return;
+    function closeMobile() {
+      $('#hamburger')?.classList.remove('active');
+      $('#mobileMenu')?.classList.remove('open');
+      document.body.classList.remove('mobile-menu-open');
+      $('#hamburger')?.setAttribute('aria-expanded', 'false');
+    }
+    window.closeMobile = closeMobile;
 
-    document.body.classList.add('free-access-active');
-    bar.style.display = 'flex';
+    const hamburger = $('#hamburger');
+    const mobileMenu = $('#mobileMenu');
+    if (hamburger && mobileMenu) {
+      hamburger.setAttribute('type', 'button');
+      hamburger.setAttribute('aria-expanded', 'false');
+      hamburger.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const open = !mobileMenu.classList.contains('open');
+        hamburger.classList.toggle('active', open);
+        mobileMenu.classList.toggle('open', open);
+        document.body.classList.toggle('mobile-menu-open', open);
+        hamburger.setAttribute('aria-expanded', String(open));
+      });
+      mobileMenu.addEventListener('click', (event) => { if (event.target.closest('a')) closeMobile(); });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMobile(); });
+    }
 
-    let countdownTimer = null;
-    function tick() {
-      const remaining = endTime - Date.now();
-      if (remaining <= 0) {
-        bar.style.display = 'none';
-        document.body.classList.remove('free-access-active');
-        if (countdownTimer) clearInterval(countdownTimer);
+    const integrations = [['payai.cash','payai.cash'],['heurist.xyz','heurist.xyz'],['silverbackdefi.app','silverbackdefi.app'],['minifetch.com','minifetch.com'],['kodaoracle.com','kodaoracle.com'],['x402.org','x402.org'],['solana.com','solana.com'],['phantom.com','phantom.com']];
+    const favicon = (domain) => `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+
+    function buildIntegrationMarquee() {
+      if ($('.integration-logo-marquee')) return;
+      const section = document.createElement('section');
+      section.className = 'integration-logo-marquee reveal';
+      section.setAttribute('aria-label', 'Meterflow integration ecosystem');
+      section.innerHTML = `<div class="integration-marquee-viewport" aria-live="off"><div class="integration-marquee-track"></div></div>`;
+      const track = $('.integration-marquee-track', section);
+      integrations.concat(integrations).forEach(([name, domain]) => {
+        const tile = document.createElement('a');
+        tile.className = 'integration-tile';
+        tile.href = `https://${domain}`;
+        tile.target = '_blank';
+        tile.rel = 'noopener';
+        tile.innerHTML = `<span class="integration-icon-shell"><img src="${favicon(domain)}" alt="${name} logo" loading="lazy"></span><span class="integration-name">${name}</span>`;
+        track.appendChild(tile);
+      });
+      const anchor = $('.trusted') || $('.showcase') || $('.stats');
+      if (anchor?.parentNode) anchor.parentNode.replaceChild(section, anchor);
+    }
+
+    function buildTextReveal() {
+      if ($('.mf-text-reveal')) return;
+      const text = 'Agents do not need another SaaS dashboard. They need a payment surface that can quote value, verify settlement, enforce budgets, and leave a receipt trail every time software buys software.';
+      const section = document.createElement('section');
+      section.className = 'mf-text-reveal';
+      section.innerHTML = `<div class="mf-text-reveal-sticky"><p class="mf-reveal-words">${text.split(' ').map((word) => `<span class="mf-word"><span>${word}</span>${word}</span>`).join(' ')}</p></div>`;
+      const anchor = $('.tools') || $('.how') || $('.cta');
+      if (anchor?.parentNode) anchor.parentNode.insertBefore(section, anchor);
+    }
+
+    function buildFooter() {
+      const footer = $('.site-footer');
+      if (!footer) return;
+      const cta = $('.cta');
+      const ctaMarkup = `<section class="zauth-footer-cta reveal" aria-label="Build with Meterflow"><div class="zauth-footer-cta-card"><h2>Become one with <em>Meterflow.</em></h2><p>Join the providers building the payment, receipt, and spend-control layer for autonomous agents on Solana.</p><div class="zauth-footer-cta-actions"><a href="/apply">Strategic Collaboration</a><a href="/docs">Read Documentation</a></div></div></section>`;
+      if (cta) cta.outerHTML = ctaMarkup;
+      footer.className = 'site-footer zauth-footer';
+      footer.innerHTML = `<div class="zauth-footer-shell"><a class="zauth-footer-brand" href="/" aria-label="Meterflow home"><img src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true"><span>Meterflow</span></a><p class="zauth-footer-tagline">Payment infrastructure for agent commerce.</p><div class="zauth-footer-grid" aria-label="Footer navigation"><div class="zauth-footer-col"><h3>Products</h3><a href="/dashboard">Dashboard</a><a href="/#tools">Surfaces</a><a href="/token">Token</a><a href="/how-it-works">How it works</a></div><div class="zauth-footer-col"><h3>Resources</h3><a href="/docs">Documentation</a><a href="/roadmap">Roadmap</a><a href="/status">Status</a><a href="/apply">Apply as provider</a></div><div class="zauth-footer-col"><h3>Connect</h3><a href="https://x.com/meterflowsol" target="_blank" rel="noopener">Twitter</a><a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener">Discord</a><a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener">GitHub</a></div></div><div class="zauth-footer-bottom"><span>© 2026 Meterflow. All rights reserved.</span><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a></div></div>`;
+    }
+
+    function initMotion() {
+      const targets = ['nav','.hero-headline','.hero-sub','.integration-logo-marquee','.section-header','.tools-grid','.how-step','.zauth-footer-cta-card','.zauth-footer-brand','.zauth-footer-grid'].flatMap((selector) => $$(selector));
+      targets.forEach((el, i) => {
+        el.classList.add('mf-load');
+        el.style.transitionDelay = `${Math.min(i * 45, 360)}ms`;
+      });
+      if (reducedMotion || !('IntersectionObserver' in window)) {
+        targets.forEach((el) => el.classList.add('mf-in'));
         return;
       }
-      const h = Math.floor(remaining / 3_600_000);
-      const m = Math.floor((remaining % 3_600_000) / 60_000);
-      const s = Math.floor((remaining % 60_000) / 1_000);
-      countdown.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('mf-in','in','visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .14, rootMargin: '0px 0px -8% 0px' });
+      targets.forEach((el) => observer.observe(el));
     }
-    tick();
-    countdownTimer = setInterval(tick, 1_000);
-  } catch { /* silent */ }
-})();
 
-let liveStats = { totalCallsToday: 0, activeKeys: 0 };
-let liveTreasury = { runwayDays: 0, treasuryBalanceUsd: 0 };
-let fetchFailed = false;
-
-async function fetchLiveData() {
-  try {
-    const [statsRes, treasuryRes] = await Promise.allSettled([
-      fetch(`${PROXY_BASE}/stats`).then(r => r.json()),
-      fetch(`${PROXY_BASE}/treasury`).then(r => r.json()),
-    ]);
-    if (statsRes.status === 'fulfilled') liveStats = statsRes.value;
-    if (treasuryRes.status === 'fulfilled') liveTreasury = treasuryRes.value;
-    fetchFailed = (statsRes.status !== 'fulfilled' && treasuryRes.status !== 'fulfilled');
-  } catch (err) {
-    console.warn('[Meterflow] Failed to fetch live data:', err);
-    fetchFailed = true;
-  }
-}
-
-function formatCompact(n) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-  return n.toLocaleString();
-}
-
-// Count-up animation for numbers
-const countUpTargets = new Map();
-let countUpRaf = null;
-
-function animateCountUp(elementId, target, suffix, duration) {
-  if (!suffix) suffix = '';
-  if (!duration) duration = 1800;
-  const el = document.getElementById(elementId);
-  if (!el || target <= 0) return;
-  countUpTargets.set(elementId, { el, target, suffix, duration, start: performance.now(), current: 0 });
-  if (!countUpRaf) tickCountUp();
-}
-
-function tickCountUp() {
-  const now = performance.now();
-  let hasActive = false;
-  countUpTargets.forEach((cfg, id) => {
-    const elapsed = now - cfg.start;
-    const progress = Math.min(elapsed / cfg.duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const value = Math.floor(cfg.target * eased);
-    if (value !== cfg.current) {
-      cfg.current = value;
-      cfg.el.textContent = formatCompact(value) + cfg.suffix;
+    function initTextReveal() {
+      const section = $('.mf-text-reveal');
+      const words = $$('.mf-word span', section || document);
+      if (!section || !words.length || reducedMotion) return;
+      const tick = () => {
+        const rect = section.getBoundingClientRect();
+        const max = Math.max(1, section.offsetHeight - window.innerHeight);
+        const progress = Math.min(1, Math.max(0, -rect.top / max));
+        words.forEach((word, i) => {
+          const start = i / words.length;
+          const end = start + 1 / words.length * 1.5;
+          const opacity = Math.min(1, Math.max(0, (progress - start) / (end - start)));
+          word.style.opacity = opacity.toFixed(3);
+        });
+      };
+      window.addEventListener('scroll', tick, { passive: true });
+      window.addEventListener('resize', tick);
+      tick();
     }
-    if (progress < 1) hasActive = true;
-    else countUpTargets.delete(id);
-  });
-  if (hasActive) countUpRaf = requestAnimationFrame(tickCountUp);
-  else countUpRaf = null;
-}
 
-function formatUptime(ms) {
-  const hours = Math.floor(ms / 3_600_000);
-  if (hours >= 24) return Math.floor(hours / 24) + 'd ' + (hours % 24) + 'h';
-  return hours + 'h ' + Math.floor((ms % 3_600_000) / 60_000) + 'm';
-}
-
-// Blended value proxy across bundled metered services.
-const BLENDED_COST_PER_TOKEN = 5.5 / 1_000_000;
-
-function formatUsd(amount) {
-  if (amount >= 1000) return '$' + (amount / 1000).toFixed(1) + 'K';
-  if (amount >= 1) return '$' + amount.toFixed(2);
-  return '$' + amount.toFixed(2);
-}
-
-let statsAnimated = false;
-
-function populateProtocolStats() {
-  const el = (id) => document.getElementById(id);
-
-  const callsToday = liveStats.totalCallsToday || 0;
-  const tokensToday = liveStats.totalTokensToday || 0;
-  const allTimeCalls = liveStats.allTimeCalls || 0;
-  const allTimeTokens = liveStats.allTimeTokens || 0;
-  const keys = liveStats.totalKeysIssued || 0;
-  const activeProviders = liveStats.activeProviders || 0;
-  const providers = liveStats.providers || {};
-  const uptimeMs = liveStats.uptimeMs || 0;
-
-  const balSol = liveTreasury.treasuryBalanceSol || 0;
-  const balUsd = liveTreasury.treasuryBalanceUsd || 0;
-  const runway = liveTreasury.runwayDays || 0;
-  const health = liveTreasury.healthStatus || 'unknown';
-
-  // Money saved calculation
-  const moneySaved = allTimeTokens * BLENDED_COST_PER_TOKEN;
-
-  // Hero stats with count-up on first load
-  const isFirstAnimation = !statsAnimated && (allTimeCalls > 0 || allTimeTokens > 0);
-  if (isFirstAnimation) {
-    animateCountUp('ps-alltime-calls', allTimeCalls, '', 2200);
-    animateCountUp('ps-alltime-tokens', allTimeTokens, '', 2200);
-    statsAnimated = true;
-  } else {
-    el('ps-alltime-calls').textContent = allTimeCalls > 0 ? formatCompact(allTimeCalls) : '--';
-    el('ps-alltime-tokens').textContent = allTimeTokens > 0 ? formatCompact(allTimeTokens) : '--';
-  }
-
-  // Money saved — animate alongside the hero stats
-  const savedEl = el('ps-money-saved');
-  if (savedEl) {
-    if (moneySaved > 0 && isFirstAnimation) {
-      const savedStart = performance.now();
-      function tickSaved(now) {
-        const progress = Math.min((now - savedStart) / 2200, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        savedEl.textContent = formatUsd(moneySaved * eased);
-        if (progress < 1) requestAnimationFrame(tickSaved);
-      }
-      requestAnimationFrame(tickSaved);
-    } else {
-      savedEl.textContent = moneySaved > 0 ? formatUsd(moneySaved) : '--';
+    function statFallbacks() {
+      const data = { 'ps-alltime-calls':'Preview','ps-alltime-tokens':'USDC','ps-money-saved':'Live','ps-active-keys':'Keys','ps-models':'Routes','ps-uptime':'Online' };
+      Object.entries(data).forEach(([id, value]) => { const el = document.getElementById(id); if (el && (!el.textContent || el.textContent.trim() === '---')) el.textContent = value; });
     }
-  }
 
-  el('ps-calls-today').textContent = formatCompact(callsToday);
-  el('ps-tokens-today').textContent = tokensToday > 0 ? formatCompact(tokensToday) + ' units' : 'billable units';
-  el('ps-active-keys').textContent = formatCompact(keys);
-  el('ps-treasury').textContent = balSol > 0 ? balSol.toFixed(2) + ' SOL' : '--';
-  el('ps-treasury-usd').textContent = balUsd > 0 ? '$' + formatCompact(Math.round(balUsd)) : (fetchFailed ? 'offline' : 'loading...');
-  el('ps-runway').textContent = runway > 0 ? runway + 'd' : (runway === Infinity || liveTreasury.runwayDays === '\u221E' ? '\u221E' : '--');
-  el('ps-health').textContent = health !== 'unknown' ? health : (fetchFailed ? 'offline' : 'loading...');
-  updateStatusIndicator(fetchFailed ? 'offline' : health);
-
-  // Services online
-  const providerNames = Object.entries(providers).filter(([, v]) => v).map(([k]) => k);
-  el('ps-models').textContent = activeProviders > 0 ? activeProviders : '--';
-  el('ps-providers').textContent = providerNames.length > 0 ? providerNames.join(', ') : (fetchFailed ? 'offline' : 'loading...');
-
-  // Uptime
-  el('ps-uptime').textContent = uptimeMs > 0 ? formatUptime(uptimeMs) : '--';
-  el('ps-uptime-pct').textContent = uptimeMs > 0 ? 'current session' : (fetchFailed ? 'offline' : 'loading...');
-}
-
-function updateStatusIndicator(status) {
-  const indicator = document.getElementById('statusIndicator');
-  if (!indicator) return;
-  const text = indicator.querySelector('.status-indicator-text');
-  const normalized = String(status || 'unknown').toLowerCase();
-  indicator.classList.remove('degraded', 'offline');
-  if (normalized === 'offline') {
-    indicator.classList.add('offline');
-    if (text) text.textContent = 'API status unavailable';
-    return;
-  }
-  if (['cautious', 'degraded', 'warning'].includes(normalized)) {
-    indicator.classList.add('degraded');
-    if (text) text.textContent = 'API operating with warnings';
-    return;
-  }
-  if (text) text.textContent = 'All systems operational';
-}
-
-// ═══════════ FAQ ═══════════
-function toggleFaq(btn) {
-  const item = btn.parentElement;
-  const answer = item.querySelector('.faq-answer');
-  const isOpen = item.classList.contains('active');
-
-  document.querySelectorAll('.faq-item').forEach(el => {
-    el.classList.remove('active');
-    el.querySelector('.faq-answer').classList.remove('open');
-  });
-
-  if (!isOpen) {
-    item.classList.add('active');
-    answer.classList.add('open');
-  }
-}
-
-// ═══════════ COPY CA ═══════════
-function copyCA() {
-  const address = document.getElementById('caAddress').textContent;
-  if (address.includes('imminent') || address.includes('TBD')) return;
-  navigator.clipboard.writeText(address).then(() => {
-    const btn = document.getElementById('caCopy');
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-  });
-}
-
-// ═══════════ PAYMENT FLOW SUMMARY ═══════════
-function populateToken() {
-  const mint = liveStats.tokenMint;
-
-  const heroCa = document.querySelector('.hero-ca');
-  if (heroCa) heroCa.classList.remove('pending');
-
-  const caEl = document.getElementById('caAddress');
-  const buyLink = document.getElementById('buyLink');
-  const ctaBuyLink = document.getElementById('ctaBuyLink');
-  const footerDex = document.getElementById('footerDex');
-  const treasuryLink = document.getElementById('treasurySolscan');
-
-  if (caEl) caEl.textContent = PAYMENT_FLOW;
-
-  if (buyLink) {
-    buyLink.href = '/docs';
-    buyLink.removeAttribute('target');
-    buyLink.removeAttribute('rel');
-  }
-
-  if (ctaBuyLink) {
-    ctaBuyLink.href = '/docs';
-    ctaBuyLink.removeAttribute('target');
-    ctaBuyLink.removeAttribute('rel');
-    ctaBuyLink.classList.remove('disabled');
-  }
-
-  if (footerDex && mint) {
-    footerDex.href = `https://dexscreener.com/solana/${mint}`;
-  }
-
-  if (treasuryLink && liveTreasury.wallet) {
-    treasuryLink.href = `https://solscan.io/account/${liveTreasury.wallet}`;
-  }
-
-  document.querySelectorAll('.tier-btn').forEach(btn => {
-    btn.onclick = () => window.location.href = btn.textContent.includes('Docs') ? '/docs' : '/dashboard';
-  });
-}
-
-// ═══════════ INIT ═══════════
-// Set loading state immediately so stats don't show -- before data arrives
-(function setLoadingState() {
-  const loading = ['ps-alltime-calls', 'ps-alltime-tokens', 'ps-money-saved',
-    'ps-calls-today', 'ps-active-keys', 'ps-treasury', 'ps-runway', 'ps-models', 'ps-uptime'];
-  loading.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '···';
+    buildIntegrationMarquee();
+    buildTextReveal();
+    buildFooter();
+    initMotion();
+    initTextReveal();
+    statFallbacks();
   });
 })();
-
-fetchLiveData().then(() => {
-  clearTimeout(dataTimeout);
-  populateToken();
-  populateProtocolStats();
-});
-
-// Show placeholder values if data doesn't arrive in time
-const dataTimeout = setTimeout(() => {
-  if (!liveStats.totalCallsToday && !liveTreasury.treasuryBalanceSol) {
-    fetchFailed = true;
-    populateProtocolStats();
-  }
-}, 8_000);
-
-setInterval(async () => {
-  await fetchLiveData();
-  populateProtocolStats();
-}, 30_000);
-
-// ═══════════ AGENT TABS ═══════════
-function showTab(tab) {
-  document.getElementById('tabHuman').classList.toggle('active', tab === 'human');
-  document.getElementById('tabAgent').classList.toggle('active', tab === 'agent');
-  document.getElementById('btnHuman').classList.toggle('active', tab === 'human');
-  document.getElementById('btnAgent').classList.toggle('active', tab === 'agent');
-}
-
-// ═══════════ ANCHOR SCROLL ═══════════
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href === '#' || href.length < 2) return;
-    const target = document.querySelector(href);
-    if (!target) return;
-    e.preventDefault();
-    target.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
-    history.replaceState(null, '', href);
-    closeMobile();
-  });
-});
-
-// ═══════════ NAV SCROLL SPY ═══════════
-const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-const spySections = document.querySelectorAll('section[id], .protocol-stats[id]');
-
-const spyObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navLinks.forEach(link => {
-        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
-      });
-    }
-  });
-}, { threshold: 0.2, rootMargin: '-80px 0px -40% 0px' });
-
-spySections.forEach(s => spyObserver.observe(s));
-
-// ═══════════ LIVE DEMO ═══════════
-const DEMO_DATA = [
-  {
-    prompt: 'Endpoint revenue',
-    claude: `Provider View\n\nEndpoint: /v1/risk-score\nPrice: 0.006 USDC per call\nStatus: Live\n\nToday:\n- 8,421 meter hits\n- 7,904 paid responses\n- 311 failed payments\n- 206 policy rejections\n\nRevenue:\n- Gross: 47.42 USDC\n- Median latency: 412ms\n- Top consumer: agent_7Kp...91a\n\nMeterflow is not just checking payment. It is showing what the endpoint earned, where calls failed, and whether the route is worth scaling.`,
-    gemini: `Agent View\n\nAgent: market-research-bot\nBudget: 12.00 USDC / day\nSpent: 3.84 USDC\nRemaining: 8.16 USDC\n\nAllowed endpoints:\n- /mcp/token-risk\n- /gateway/mtr_wallet_trace/*\n- /gateway/mtr_risk_feed/*\n\nRecent receipt:\nrcpt_41bd\n0.006 USDC\n/mcp/token-risk\nverified on Solana\n\nThe operator can let the agent work without giving it unlimited payment authority.`
-  },
-  {
-    prompt: 'Agent budget',
-    claude: `Provider View\n\nBudget policy matched:\npolicy_agent_research_v2\n\nThis request is allowed because:\n- endpoint is approved\n- agent has 8.16 USDC remaining\n- requested price is below per-call cap\n- wallet is not revoked\n\nQuote issued:\nqt_8f21\nexpires in 90 seconds\nprice: 0.006 USDC`,
-    gemini: `Agent View\n\nBefore payment:\nTask budget: 12.00 USDC\nEndpoint cap: 0.02 USDC per call\nDaily request cap: 2,000\n\nDecision:\nPay 0.006 USDC for /v1/risk-score\nExpected utility: high\nRemaining after call: 8.154 USDC\n\nMeterflow gives the agent enough context to spend intentionally, not blindly.`
-  },
-  {
-    prompt: 'Failed payment',
-    claude: `Provider View\n\nRequest blocked:\n/gateway/mtr_risk_feed/score\n\nReason:\nagent budget exceeded\n\nNo response was served.\nNo revenue was counted.\nReceipt status: failed_policy\n\nThis matters because a payment rail alone cannot tell a provider why revenue was lost. Meterflow turns failed payments into operational data.`,
-    gemini: `Agent View\n\nPayment denied.\n\nWhy:\n- daily budget already spent\n- endpoint not critical to current task\n- operator approval required for further calls\n\nNext action:\nstop workflow or request budget increase\n\nThe agent does not keep retrying blindly, and the operator has a clean audit trail.`
-  }
-];
-
-let demoAnimationId = null;
-
-function startDemo(index) {
-  document.querySelectorAll('.demo-chip').forEach((c, i) => {
-    c.classList.toggle('active', i === index);
-  });
-
-  const data = DEMO_DATA[index];
-  const claudeEl = document.getElementById('demoResponseClaude');
-  const geminiEl = document.getElementById('demoResponseGemini');
-  const timerClaude = document.getElementById('demoTimerClaude');
-  const timerGemini = document.getElementById('demoTimerGemini');
-
-  claudeEl.textContent = '';
-  geminiEl.textContent = '';
-  timerClaude.textContent = '0.0s';
-  timerGemini.textContent = '0.0s';
-
-  if (demoAnimationId) cancelAnimationFrame(demoAnimationId);
-
-  const startTime = performance.now();
-  let claudeIdx = 0;
-  let geminiIdx = 0;
-  let claudeDone = false;
-  let geminiDone = false;
-  let lastClaudeTime = 0;
-  let lastGeminiTime = 0;
-  let claudeInterval = 28 + Math.random() * 18;
-  let geminiInterval = 24 + Math.random() * 16;
-
-  function tick(now) {
-    const elapsed = now - startTime;
-
-    if (!claudeDone && elapsed - lastClaudeTime > claudeInterval) {
-      claudeIdx = Math.min(claudeIdx + 4, data.claude.length);
-      claudeEl.textContent = data.claude.slice(0, claudeIdx);
-      lastClaudeTime = elapsed;
-      claudeInterval = 28 + Math.random() * 24;
-      timerClaude.textContent = (elapsed / 1000).toFixed(1) + 's';
-      if (claudeIdx >= data.claude.length) claudeDone = true;
-    }
-
-    if (!geminiDone && elapsed - lastGeminiTime > geminiInterval) {
-      geminiIdx = Math.min(geminiIdx + 4, data.gemini.length);
-      geminiEl.textContent = data.gemini.slice(0, geminiIdx);
-      lastGeminiTime = elapsed;
-      geminiInterval = 24 + Math.random() * 20;
-      timerGemini.textContent = (elapsed / 1000).toFixed(1) + 's';
-      if (geminiIdx >= data.gemini.length) geminiDone = true;
-    }
-
-    if (!claudeDone || !geminiDone) {
-      demoAnimationId = requestAnimationFrame(tick);
-    }
-  }
-
-  demoAnimationId = requestAnimationFrame(tick);
-}
-
-// Auto-trigger demo on scroll into view
-const demoSection = document.querySelector('.demo-section');
-if (demoSection) {
-  let demoStarted = false;
-  const demoObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !demoStarted) {
-        demoStarted = true;
-        startDemo(0);
-        demoObserver.disconnect();
-      }
-    });
-  }, { threshold: 0.2 });
-  demoObserver.observe(demoSection);
-}

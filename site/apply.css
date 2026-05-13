@@ -1,20 +1,20 @@
 .apply-hero {
-  padding-bottom: 60px;
+  padding-bottom: 70px;
 }
 
 .apply-section {
   position: relative;
-  padding: 0 32px var(--section-pad);
+  padding: 0 40px var(--section-pad);
 }
 
 .apply-section::before {
   content: '';
   position: absolute;
-  left: 15%;
-  right: 15%;
+  left: 10%;
+  right: 10%;
   top: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(74, 139, 255, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(79, 156, 255, 0.28), transparent);
 }
 
 .apply-shell {
@@ -22,9 +22,9 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
-  gap: 24px;
+  gap: 28px;
   align-items: start;
-  padding-top: 48px;
+  padding-top: 56px;
 }
 
 .apply-context {
@@ -36,26 +36,27 @@
 .apply-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow-card);
 }
 
 .apply-panel {
-  padding: 24px;
+  padding: 28px;
 }
 
 .apply-list {
   list-style: none;
   display: grid;
-  gap: 14px;
-  margin-top: 18px;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .apply-list li {
   display: grid;
-  grid-template-columns: 36px 1fr;
+  grid-template-columns: 38px 1fr;
   gap: 14px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .apply-list li:last-child {
@@ -67,16 +68,15 @@
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--accent);
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .apply-list strong {
   display: block;
   font-family: var(--font-display);
-  font-size: 16px;
-  line-height: 1.25;
-  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.2;
   margin-bottom: 6px;
 }
 
@@ -87,36 +87,34 @@
   color: var(--text-dim);
   font-size: 14px;
   line-height: 1.7;
-  font-weight: 400;
 }
 
 .apply-note {
-  margin-top: 20px;
-  padding-top: 18px;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid var(--border);
 }
 
 .apply-card {
-  padding: 28px;
+  padding: 30px;
 }
 
 .apply-card-head {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .apply-card-head h2 {
   font-family: var(--font-display);
-  font-size: clamp(26px, 3.5vw, 40px);
-  line-height: 1.1;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
-  font-weight: 650;
   margin: 0 0 12px;
 }
 
 .apply-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .apply-field {
@@ -131,7 +129,7 @@
 .apply-field label {
   font-family: var(--font-body);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
 }
 
@@ -139,18 +137,18 @@
 .apply-field select,
 .apply-field textarea {
   width: 100%;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  border: 1px solid var(--border-light);
+  background: rgba(2, 7, 16, 0.72);
   color: var(--text);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 13px 14px;
   outline: none;
   font: 500 14px var(--font-body);
-  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .apply-field textarea {
-  min-height: 120px;
+  min-height: 126px;
   resize: vertical;
 }
 
@@ -162,9 +160,9 @@
 .apply-field input:focus-visible,
 .apply-field select:focus-visible,
 .apply-field textarea:focus-visible {
-  border-color: rgba(74, 139, 255, 0.4);
-  background: rgba(74, 139, 255, 0.02);
-  box-shadow: 0 0 0 3px rgba(74, 139, 255, 0.06);
+  border-color: rgba(79, 156, 255, 0.65);
+  background: rgba(2, 7, 16, 0.92);
+  box-shadow: 0 0 0 3px rgba(79, 156, 255, 0.08);
 }
 
 .apply-actions {
@@ -172,7 +170,7 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .apply-actions .btn-primary {
@@ -185,11 +183,11 @@
 }
 
 .apply-status.ok {
-  color: var(--green);
+  color: #9df8c7;
 }
 
 .apply-status.err {
-  color: var(--red);
+  color: #ffb1b1;
 }
 
 @media (max-width: 980px) {
@@ -208,7 +206,7 @@
   }
 
   .apply-shell {
-    padding-top: 36px;
+    padding-top: 40px;
   }
 
   .apply-form-grid {
@@ -228,6 +226,6 @@
 
   .apply-panel,
   .apply-card {
-    padding: 20px;
+    padding: 22px;
   }
 }

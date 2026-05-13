@@ -410,7 +410,7 @@ describe('Site link integrity', () => {
     assert.ok(readme.includes('default live paid route is intentionally narrow'), 'README should frame the live route surface narrowly');
     assert.ok(home.includes('The control plane for'), 'landing page should lead with agent-commerce positioning');
     assert.ok(home.includes('MPP'), 'landing page should mention MPP payment adapters');
-    assert.ok(home.includes('Wrap an API') && home.includes('View dashboard'), 'landing page CTAs should stay focused');
+    assert.ok(home.includes('Launchpad') && home.includes('Apply as provider'), 'landing page provider CTAs should stay focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('MPP Payment Rail'), 'docs should explain the MPP adapter layer');
     assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
@@ -603,6 +603,25 @@ describe('Meterflow control plane', () => {
     assert.ok(pkg.dependencies.mppx && pkg.dependencies['solana-mpp'], 'should declare MPP dependencies');
   });
 
+  it('Zauth provider monitoring is wired before x402', () => {
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    const zauth = readFileSync(resolve(root, 'lib', 'zauth.js'), 'utf-8');
+    const env = readFileSync(resolve(root, '.env.example'), 'utf-8');
+    const apiPkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
+    const rootPkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
+
+    assert.ok(app.includes('createZauthProviderMiddleware'), 'app should import Zauth middleware factory');
+    assert.ok(app.includes('zauthMiddlewareReady'), 'app should initialize Zauth middleware lazily');
+    assert.ok(app.indexOf('zauthMiddlewareReady') < app.indexOf('const x402GatewayReady'), 'Zauth should observe requests before x402 handles payment');
+    assert.ok(zauth.includes("import('@zauthx402/sdk/middleware')"), 'Zauth wrapper should use the official SDK middleware export');
+    assert.ok(zauth.includes('ZAUTH_API_KEY'), 'Zauth wrapper should be env-gated');
+    assert.ok(zauth.includes('ZAUTH_INCLUDE_ROUTES'), 'Zauth wrapper should support route filtering');
+    assert.ok(zauth.includes('ZAUTH_REFUNDS_ENABLED'), 'Zauth wrapper should keep refunds explicitly opt-in');
+    assert.ok(env.includes('ZAUTH_API_KEY') && env.includes('ZAUTH_INCLUDE_ROUTES'), 'env example should document Zauth setup');
+    assert.ok(apiPkg.dependencies['@zauthx402/sdk'], 'api-proxy should declare the Zauth SDK dependency');
+    assert.ok(rootPkg.dependencies['@zauthx402/sdk'], 'root package should declare the Zauth SDK dependency for Vercel installs');
+  });
+
   it('hosted gateway meters store target metadata safely', () => {
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
@@ -760,11 +779,11 @@ describe('Meterflow control plane', () => {
     assert.ok(profile.includes('geckoterminal.com'), 'should use GeckoTerminal for chart data');
     assert.ok(!page.includes('METERFLOW_TOKEN_CA'), 'public token page should not expose internal env names');
     assert.ok(page.includes('Coming soon') || page.includes('TBA'), 'public token page should use pre-launch language');
-    assert.ok(page.includes('More endpoints. More receipts. More reasons to hold.'), 'token page should explain the holder thesis');
-    assert.ok(page.includes('$MFLOW controls utility'), 'token page should connect utility to holder-facing benefits');
-    assert.ok(page.includes('Meterflow can now meter other people'), 'token page should explain the technical unlock');
-    assert.ok(page.includes('x402 + MPP'), 'token page should connect utility to protocol adapter positioning');
-    assert.ok(page.includes('Provider discovery'), 'token page should connect utility to the provider registry');
-    assert.ok(page.includes('Every new provider adds more routes'), 'token page should connect provider growth to receipt growth');
+    assert.ok(page.includes('One clean token page'), 'token page should explain the holder thesis');
+    assert.ok(page.includes('$MFLOW sits around Meterflow'), 'token page should connect utility to holder-facing benefits');
+    assert.ok(page.includes('APIs, MCP tools, and paid routes'), 'token page should explain the technical unlock');
+    assert.ok(page.includes('provider reputation'), 'token page should connect utility to provider positioning');
+    assert.ok(page.includes('registry ranking'), 'token page should connect utility to the provider registry');
+    assert.ok(page.includes('the token becomes the utility layer around that activity'), 'token page should connect provider growth to utility growth');
   });
 });
