@@ -56,6 +56,82 @@ function shortError(err) {
     .slice(0, 180);
 }
 
+function parseJson(value) {
+  if (!value) return null;
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(String(value));
+  } catch {
+    return null;
+  }
+}
+
+function decodePaymentRequiredHeader(header) {
+  if (!header) return null;
+  const raw = Array.isArray(header) ? header[0] : header;
+  const value = String(raw || '').trim();
+  if (!value) return null;
+
+  const direct = parseJson(value);
+  if (direct) return direct;
+
+  try {
+    return parseJson(Buffer.from(value, 'base64').toString('utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function paymentRequirementsFromPayload(payload) {
+  if (!payload || typeof payload !== 'object') return [];
+  if (Array.isArray(payload.paymentRequirements)) return payload.paymentRequirements;
+  if (Array.isArray(payload.accepts)) return payload.accepts;
+  if (payload.scheme && payload.network && payload.payTo) return [payload];
+  return [];
+}
+
+async function probeZauthEndpoint(endpointUrl, method = 'GET') {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  const httpMethod = String(method || 'GET').toUpperCase();
+
+  try {
+    const response = await fetch(endpointUrl, {
+      method: httpMethod,
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+    const text = await response.text().catch(() => '');
+    const body = parseJson(text);
+    const paymentPayload = decodePaymentRequiredHeader(response.headers.get('payment-required')) || body;
+    const paymentRequirements = paymentRequirementsFromPayload(paymentPayload);
+    const paymentRequirementsValid = response.status === 402 && paymentRequirements.length > 0;
+
+    return {
+      method: httpMethod,
+      statusCode: response.status,
+      responsive: true,
+      paymentRequirementsValid,
+      paymentRequirements,
+      responseTimeMs: Date.now() - startedAt,
+      error: paymentRequirementsValid ? undefined : `expected_402_payment_requirements_got_${response.status}`,
+    };
+  } catch (err) {
+    return {
+      method: httpMethod,
+      statusCode: null,
+      responsive: false,
+      paymentRequirementsValid: false,
+      paymentRequirements: [],
+      responseTimeMs: Date.now() - startedAt,
+      error: shortError(err),
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function loadZauthSdk() {
   if (!sdkPromise) {
     sdkPromise = Promise.all([
@@ -293,14 +369,21 @@ export async function submitEndpointToZauth(meter = {}) {
   };
 
   try {
+    const health = await probeZauthEndpoint(endpointUrl, metadata.method);
+
     await zauth.sendEvent({
       ...zauth.createEventBase('health_check'),
       url: endpointUrl,
-      responsive: true,
-      paymentRequirementsValid: true,
-      paymentRequirements: [],
-      responseTimeMs: 0,
-      metadata,
+      responsive: health.responsive,
+      paymentRequirementsValid: health.paymentRequirementsValid,
+      paymentRequirements: health.paymentRequirements,
+      responseTimeMs: health.responseTimeMs,
+      error: health.error,
+      metadata: {
+        ...metadata,
+        healthProbeMethod: health.method,
+        healthStatusCode: health.statusCode,
+      },
     });
 
     const checked = await zauth.checkEndpoint(endpointUrl);
