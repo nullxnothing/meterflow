@@ -1,0 +1,22 @@
+{
+  "public": ".",
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/site/index.html" },
+    { "source": "/how-it-works", "destination": "/site/how-it-works.html" },
+    { "source": "/docs", "destination": "/site/docs.html" },
+    { "source": "/docs.html", "destination": "/site/docs.html" },
+    { "source": "/status", "destination": "/site/status.html" },
+    { "source": "/roadmap", "destination": "/site/roadmap.html" },
+    { "source": "/token", "destination": "/site/token.html" },
+    { "source": "/apply", "destination": "/site/apply.html" },
+    { "source": "/apply/:path*", "destination": "/site/apply.html" },
+    { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
+    { "source": "/admin/applications/:path*", "destination": "/site/admin-applications.html" },
+    { "source": "/admin/zauth", "destination": "/site/admin-zauth.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/privacy", "destination": "/site/privacy.html" },
+    { "source": "/terms", "destination": "/site/terms.html" },
+    { "source": "/404", "destination": "/site/404.html" }
+  ]
+}
