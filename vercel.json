@@ -15,6 +15,7 @@
     { "source": "/apply/:path*", "destination": "/site/apply.html" },
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
     { "source": "/admin/applications/:path*", "destination": "/site/admin-applications.html" },
+    { "source": "/admin/zauth", "destination": "/site/admin-zauth.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/privacy", "destination": "/site/privacy.html" },
     { "source": "/terms", "destination": "/site/terms.html" },
