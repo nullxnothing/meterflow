@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/brand/og-meterflow.png" alt="Meterflow" width="100%">
+  <img src="assets/brand/og-meterflow-ocean.png" alt="Meterflow" width="100%">
 </p>
 
 # Meterflow
