@@ -3,6 +3,9 @@ import { logger } from './logger.js';
 const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauth.inc';
 const DEFAULT_INCLUDE_ROUTES = ['^/mcp/.*', '^/gateway/.*'];
 const DEFAULT_EXCLUDE_ROUTES = ['^/health$', '^/auth/.*', '^/oauth/.*', '^/discord/.*', '^/holder/.*'];
+const PUBLIC_ORIGIN = (process.env.METERFLOW_PUBLIC_URL || 'https://www.meterflow.fun')
+  .replace(/^https:\/\/meterflow\.fun(?=\/|$)/, 'https://www.meterflow.fun')
+  .replace(/\/$/, '');
 
 let sdkPromise = null;
 let cachedClient = null;
@@ -88,6 +91,59 @@ function paymentRequirementsFromPayload(payload) {
   if (Array.isArray(payload.accepts)) return payload.accepts;
   if (payload.scheme && payload.network && payload.payTo) return [payload];
   return [];
+}
+
+export function publicMeterEndpointUrl(meter, tail = '') {
+  if (!meter?.route) return null;
+  if (meter.targetUrl) {
+    const cleanTail = String(tail || '').replace(/^\/+/, '');
+    return `${PUBLIC_ORIGIN}/proxy/gateway/${meter.id}/${cleanTail}`.replace(/\/$/, '');
+  }
+  return `${PUBLIC_ORIGIN}/proxy${meter.route}`;
+}
+
+export function isZauthBillableMeter(meter) {
+  return Boolean(
+    meter
+    && meter.route
+    && ['live', 'test', 'example'].includes(meter.status)
+    && Number(meter.priceUsd) >= 0
+    && (meter.asset || 'USDC').toUpperCase() === 'USDC'
+    && publicMeterEndpointUrl(meter)
+  );
+}
+
+export function buildZauthSubmissionMeter(meter = {}, overrides = {}) {
+  const endpointUrl = overrides.endpointUrl || publicMeterEndpointUrl(meter, overrides.path || '');
+  return {
+    ...meter,
+    publicEndpointUrl: endpointUrl,
+    name: overrides.name || meter.name || meter.id,
+    displayName: overrides.displayName || meter.displayName || meter.name || meter.id,
+    providerName: overrides.providerName || meter.providerName || 'Meterflow',
+    category: overrides.category || meter.category || 'agent-api',
+    docsUrl: overrides.docsUrl || meter.docsUrl || null,
+    description: overrides.description || meter.description || meter.unit || null,
+    examplePrompt: overrides.examplePrompt || meter.examplePrompt || null,
+    contact: overrides.contact || meter.contact || null,
+    website: overrides.website || meter.website || 'https://meterflow.fun',
+  };
+}
+
+export function zauthStatusPatch(meter = {}, result = {}, endpointUrl, autoSubmit = false) {
+  const status = result.status || sanitizeZauthListingStatus({ endpointUrl, status: 'pending' });
+  return {
+    zauthListingId: status.listingId || meter.zauthListingId || endpointUrl,
+    zauthListed: Boolean(status.listed),
+    zauthVerified: Boolean(status.verified),
+    zauthStatus: status.status || 'pending',
+    zauthScore: status.score,
+    zauthLastCheckedAt: status.lastCheckedAt || new Date().toISOString(),
+    zauthSubmittedAt: meter.zauthSubmittedAt || new Date().toISOString(),
+    zauthError: result.configured ? null : 'ZAUTH_API_KEY is not configured.',
+    zauthUrl: status.url,
+    zauthAutoSubmit: Boolean(meter.zauthAutoSubmit || autoSubmit),
+  };
 }
 
 async function probeZauthEndpoint(endpointUrl, method = 'GET') {

@@ -7,35 +7,25 @@ import {
   updateMeter,
 } from '../lib/control-plane.js';
 import {
+  buildZauthSubmissionMeter,
   isZauthConfigured,
+  isZauthBillableMeter,
+  publicMeterEndpointUrl,
   refreshZauthStatusForMeter,
   sanitizeZauthListingStatus,
   submitEndpointToZauth,
+  zauthStatusPatch,
 } from '../lib/zauth.js';
 
 const router = Router();
-const PUBLIC_ORIGIN = (process.env.METERFLOW_PUBLIC_URL || 'https://www.meterflow.fun')
-  .replace(/^https:\/\/meterflow\.fun(?=\/|$)/, 'https://www.meterflow.fun')
-  .replace(/\/$/, '');
 const DEFAULT_ZAUTH_METER_ID = 'mtr_mcp_token_risk_get';
 
 function publicEndpointUrl(meter, tail = '') {
-  if (!meter?.route) return null;
-  if (meter.targetUrl) {
-    const cleanTail = String(tail || '').replace(/^\/+/, '');
-    return `${PUBLIC_ORIGIN}/proxy/gateway/${meter.id}/${cleanTail}`.replace(/\/$/, '');
-  }
-  return `${PUBLIC_ORIGIN}/proxy${meter.route}`;
+  return publicMeterEndpointUrl(meter, tail);
 }
 
 function isBillablePublicMeter(meter) {
-  return Boolean(
-    meter
-    && meter.route
-    && ['live', 'test', 'example'].includes(meter.status)
-    && Number(meter.priceUsd) >= 0
-    && (meter.asset || 'USDC').toUpperCase() === 'USDC'
-  );
+  return isZauthBillableMeter(meter);
 }
 
 function meterZauthStatus(meter) {
@@ -78,36 +68,11 @@ function publicRegistryMeter(meter) {
 }
 
 function buildSubmissionMeter(meter, body = {}) {
-  const endpointUrl = publicEndpointUrl(meter, body?.path || '');
-  return {
-    ...meter,
-    publicEndpointUrl: endpointUrl,
-    name: body?.name || meter.name || meter.id,
-    displayName: body?.displayName || meter.displayName || meter.name || meter.id,
-    providerName: body?.providerName || meter.providerName || 'Meterflow',
-    category: body?.category || meter.category || 'agent-api',
-    docsUrl: body?.docsUrl || meter.docsUrl || null,
-    description: body?.description || meter.description || meter.unit || null,
-    examplePrompt: body?.examplePrompt || meter.examplePrompt || null,
-    contact: body?.contact || meter.contact || null,
-    website: body?.website || meter.website || 'https://meterflow.fun',
-  };
+  return buildZauthSubmissionMeter(meter, body);
 }
 
 async function persistSubmitResult(meter, result, endpointUrl, autoSubmit = false) {
-  const status = result.status;
-  return updateMeter(meter.id, {
-    zauthListingId: status.listingId || meter.zauthListingId || endpointUrl,
-    zauthListed: Boolean(status.listed),
-    zauthVerified: Boolean(status.verified),
-    zauthStatus: status.status || 'pending',
-    zauthScore: status.score,
-    zauthLastCheckedAt: status.lastCheckedAt || new Date().toISOString(),
-    zauthSubmittedAt: meter.zauthSubmittedAt || new Date().toISOString(),
-    zauthError: result.configured ? null : 'ZAUTH_API_KEY is not configured.',
-    zauthUrl: status.url,
-    zauthAutoSubmit: Boolean(meter.zauthAutoSubmit || autoSubmit),
-  });
+  return updateMeter(meter.id, zauthStatusPatch(meter, result, endpointUrl, autoSubmit));
 }
 
 async function submitMeter(req, res, meter, { autoSubmit = false } = {}) {

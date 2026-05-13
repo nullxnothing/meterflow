@@ -619,6 +619,7 @@ describe('Meterflow control plane', () => {
   it('Zauth provider monitoring is wired before x402', () => {
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const zauth = readFileSync(resolve(root, 'lib', 'zauth.js'), 'utf-8');
+    const control = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     const env = readFileSync(resolve(root, '.env.example'), 'utf-8');
     const apiPkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
     const rootPkg = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'));
@@ -635,6 +636,8 @@ describe('Meterflow control plane', () => {
     assert.ok(zauth.includes('probeZauthEndpoint'), 'Zauth submission should probe the real 402 quote');
     assert.ok(zauth.includes('decodePaymentRequiredHeader'), 'Zauth submission should parse payment requirements from the x402 header');
     assert.ok(zauth.includes('paymentRequirements: health.paymentRequirements'), 'Zauth submission should forward probed payment requirements');
+    assert.ok(control.includes('submitMeterToZauth'), 'meter creation should auto-submit billable routes to Zauth');
+    assert.ok(control.includes('zauthSubmitted'), 'meter responses should expose Zauth submission status');
     assert.ok(env.includes('ZAUTH_API_KEY') && env.includes('ZAUTH_INCLUDE_ROUTES'), 'env example should document Zauth setup');
     assert.ok(apiPkg.dependencies['@zauthx402/sdk'], 'api-proxy should declare the Zauth SDK dependency');
     assert.ok(rootPkg.dependencies['@zauthx402/sdk'], 'root package should declare the Zauth SDK dependency for Vercel installs');
@@ -647,6 +650,7 @@ describe('Meterflow control plane', () => {
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(control.includes('normalizeTargetUrl'), 'should validate targetUrl');
+    assert.ok(control.includes('assertZauthObservedMeterRoute'), 'custom paid routes should stay in Zauth-observed namespaces');
     assert.ok(control.includes('targetHost'), 'should store target host metadata');
     assert.ok(control.includes('upstreamAuthConfigured'), 'meter responses should redact upstream auth secret values');
     assert.ok(control.includes("`/gateway/${meterId}/*`"), 'should generate hosted gateway route when route is omitted');
@@ -657,6 +661,7 @@ describe('Meterflow control plane', () => {
     assert.ok(dashboard.includes('meterTargetUrl'), 'dashboard should let providers create hosted API meters');
     assert.ok(dashboard.includes('upstreamAuth'), 'dashboard should submit upstream auth for hosted API meters');
     assert.ok(dashboard.includes('route: targetUrl ? undefined'), 'dashboard should let hosted API meters use generated gateway routes');
+    assert.ok(dashboard.includes('Zauth:'), 'dashboard should surface per-meter Zauth status');
     assert.ok(dashboard.includes('Copy Gateway'), 'dashboard should expose generated hosted gateway URLs');
   });
 

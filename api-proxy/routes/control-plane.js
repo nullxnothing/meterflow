@@ -29,6 +29,13 @@ import {
   applyProtocolFee,
   recordReceipt,
 } from '../lib/control-plane.js';
+import {
+  buildZauthSubmissionMeter,
+  isZauthBillableMeter,
+  sanitizeZauthListingStatus,
+  submitEndpointToZauth,
+  zauthStatusPatch,
+} from '../lib/zauth.js';
 
 const router = Router();
 
@@ -51,6 +58,53 @@ function requirePrice(input, res) {
   return null;
 }
 
+function meterZauthStatus(meter) {
+  return sanitizeZauthListingStatus({
+    listingId: meter?.zauthListingId,
+    listed: meter?.zauthListed,
+    verified: meter?.zauthVerified,
+    status: meter?.zauthStatus,
+    score: meter?.zauthScore,
+    url: meter?.zauthUrl,
+    lastCheckedAt: meter?.zauthLastCheckedAt,
+  });
+}
+
+async function submitMeterToZauth(meter, metadata = {}) {
+  if (!isZauthBillableMeter(meter)) {
+    return { meter, zauth: meterZauthStatus(meter), submitted: false, skipped: true };
+  }
+
+  const submissionMeter = buildZauthSubmissionMeter(meter, metadata);
+  try {
+    const result = await submitEndpointToZauth(submissionMeter);
+    const updated = await updateMeter(
+      meter.id,
+      zauthStatusPatch(meter, result, submissionMeter.publicEndpointUrl, true),
+    );
+    return {
+      meter: updated || meter,
+      zauth: meterZauthStatus(updated || meter),
+      configured: result.configured,
+      submitted: result.submitted,
+    };
+  } catch (err) {
+    const updated = await updateMeter(meter.id, {
+      zauthAutoSubmit: true,
+      zauthError: err.safeMessage || err.message || 'Zauth submission failed.',
+      zauthStatus: 'failed',
+      zauthLastCheckedAt: new Date().toISOString(),
+    }).catch(() => meter);
+    return {
+      meter: updated || meter,
+      zauth: meterZauthStatus(updated || meter),
+      configured: true,
+      submitted: false,
+      error: err.safeMessage || err.message || 'Zauth submission failed.',
+    };
+  }
+}
+
 function csvEscape(value) {
   const text = String(value ?? '');
   if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
@@ -65,8 +119,10 @@ router.post('/meters', authenticateApiKey, async (req, res) => {
   if (!req.body.targetUrl && requireRoute(req.body, res)) return;
   if (requirePrice(req.body, res)) return;
   try {
-    const meter = await createMeter(req.body, req.meterflow.wallet);
-    res.status(201).json({ meter });
+    let meter = await createMeter(req.body, req.meterflow.wallet);
+    const zauthResult = await submitMeterToZauth(meter, req.body || {});
+    meter = zauthResult.meter;
+    res.status(201).json({ meter, zauth: zauthResult.zauth, zauthSubmitted: zauthResult.submitted });
   } catch (err) {
     return badRequest(res, err.message || 'Invalid meter');
   }
@@ -90,7 +146,8 @@ router.patch('/meters/:id', authenticateApiKey, async (req, res) => {
     return badRequest(res, err.message || 'Invalid meter');
   }
   if (!meter) return res.status(404).json({ error: 'meter_not_found', message: 'Meter not found.' });
-  res.json({ meter });
+  const zauthResult = await submitMeterToZauth(meter, req.body || {});
+  res.json({ meter: zauthResult.meter, zauth: zauthResult.zauth, zauthSubmitted: zauthResult.submitted });
 });
 
 router.delete('/meters/:id', authenticateApiKey, async (req, res) => {
