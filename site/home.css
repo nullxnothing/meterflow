@@ -1004,6 +1004,23 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 
 .fan-card--active:active { cursor: grabbing; }
 
+/* Optional full-bleed card illustration */
+.fan-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.38;
+  -webkit-mask-image: linear-gradient(135deg, transparent 18%, rgba(0,0,0,0.5) 44%, black 72%);
+  mask-image: linear-gradient(135deg, transparent 18%, rgba(0,0,0,0.5) 44%, black 72%);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: var(--radius-lg);
+}
+
 /* Large decorative watermark glyph */
 .fan-card-wm {
   position: absolute;
