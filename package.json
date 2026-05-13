@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "npm@11.6.2",
   "scripts": {
     "dev": "serve . -l 3000 -c serve.json",
     "test": "npm --prefix api-proxy test",

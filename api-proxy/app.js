@@ -140,10 +140,36 @@ const zauthMiddlewareReady = isZauthConfigured()
     })
   : Promise.resolve(null);
 
+function flushZauthBeforeEnd(res, middleware) {
+  if (!process.env.VERCEL || typeof middleware?.shutdown !== 'function' || res.locals.zauthFlushInstalled) return;
+
+  res.locals.zauthFlushInstalled = true;
+  const originalEnd = res.end;
+  let ending = false;
+
+  res.end = function zauthFlushedEnd(chunk, encoding, callback) {
+    if (ending) return originalEnd.call(this, chunk, encoding, callback);
+    ending = true;
+
+    const finish = () => {
+      if (typeof encoding === 'function') return originalEnd.call(this, chunk, encoding);
+      if (encoding) return originalEnd.call(this, chunk, encoding, callback);
+      return originalEnd.call(this, chunk, callback);
+    };
+
+    Promise.resolve(middleware.shutdown())
+      .catch(err => logger.warn('Zauth telemetry flush failed', { err: err.message }))
+      .finally(finish);
+
+    return this;
+  };
+}
+
 app.use(async (req, res, next) => {
   try {
     const middleware = zauthMiddleware || await zauthMiddlewareReady;
     if (!middleware) return next();
+    flushZauthBeforeEnd(res, middleware);
     return middleware(req, res, next);
   } catch (err) {
     logger.warn('Zauth provider middleware error, continuing', { err: err.message });
