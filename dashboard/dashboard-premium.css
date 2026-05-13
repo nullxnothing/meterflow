@@ -1202,3 +1202,304 @@ code.mono,
     transform: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Dashboard Final Polish — typography, cards, forms, mobile
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Typography refinement — match site display system */
+.page-title {
+  letter-spacing: -0.022em !important;
+  line-height: 1.04 !important;
+}
+.page-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  -webkit-text-fill-color: initial;
+  background: none;
+  color: var(--text-dim);
+}
+.page-sub {
+  font-weight: 400;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 720px;
+}
+.section-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.012em;
+  font-weight: 650;
+}
+.section-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+/* Onboarding hero — premium feel */
+.onboarding-hero {
+  background:
+    radial-gradient(800px 360px at 0% 0%, rgba(var(--accent-rgb), 0.10), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
+    rgba(8, 13, 23, 0.82);
+  border: 1px solid rgba(var(--accent-rgb), 0.14);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset, 0 18px 54px rgba(0,0,0,0.42);
+}
+.onboarding-hero-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.onboarding-hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.onboarding-step-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.10);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+}
+
+/* Stat cards — unify radius + hover */
+.stat-card {
+  border-radius: var(--radius-md, 12px) !important;
+  background: var(--panel-bg, rgba(8, 13, 23, 0.84));
+}
+.stat-card:hover {
+  border-color: var(--panel-border-hover, rgba(199, 219, 255, 0.26)) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 16px 40px rgba(0,0,0,0.42) !important;
+}
+.stat-card.skeleton .skeleton-value {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: skelShimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes skelShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Tool cards — softer shadow, consistent radius */
+.tool-card {
+  border-radius: var(--radius-md, 12px);
+  background: var(--panel-bg, rgba(8, 13, 23, 0.84));
+}
+.tool-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+.tool-desc {
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+.tool-status {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+/* API key boxes — readable mono, no overflow */
+.api-key-box,
+.api-key-display {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.005)),
+    rgba(3, 7, 13, 0.7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
+}
+.api-key-value,
+.api-key-snippet {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+.api-key-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+}
+
+/* Trading bot panel — premium dark */
+.bot-sidebar {
+  background: linear-gradient(180deg, rgba(11, 16, 26, 0.85), rgba(10, 10, 12, 0.92)) !important;
+  border-right: 1px solid var(--border) !important;
+}
+.bot-nav-item {
+  border-radius: 10px;
+  transition: background 220ms cubic-bezier(.25,1,.5,1), color 220ms cubic-bezier(.25,1,.5,1);
+}
+.bot-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+.bot-nav-item.active {
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.04));
+  color: #fff;
+}
+.bot-card {
+  background: var(--panel-bg, rgba(8, 13, 23, 0.84));
+  border: 1px solid var(--panel-border, var(--border));
+  border-radius: var(--radius-md, 12px);
+}
+.bot-card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+.bot-input {
+  font-family: var(--font-mono);
+  background: var(--field-bg, rgba(3, 7, 13, 0.62));
+  border: 1px solid var(--field-border, var(--border));
+  border-radius: 10px;
+  color: var(--text);
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+.bot-input:focus {
+  outline: none;
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: rgba(3, 7, 13, 0.78);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.14);
+}
+.bot-empty {
+  background: var(--panel-bg, rgba(8, 13, 23, 0.6));
+  border: 1px dashed var(--border-light, rgba(156, 184, 220, 0.22));
+  border-radius: var(--radius-lg, 16px);
+}
+
+/* Forms — unify */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+textarea,
+select {
+  font-family: var(--font-body);
+  color: var(--text);
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.7);
+  outline-offset: 2px;
+}
+
+/* Badges */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.badge-live {
+  color: var(--green);
+  border-color: rgba(var(--green-rgb, 16,185,129), 0.32);
+  background: rgba(var(--green-rgb, 16,185,129), 0.08);
+}
+.badge-stopped {
+  color: var(--text-muted);
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Compliance notice */
+.compliance-notice {
+  background:
+    linear-gradient(180deg, rgba(245, 158, 11, 0.06), rgba(245, 158, 11, 0.015)),
+    rgba(8, 13, 23, 0.6);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: var(--radius-md, 12px);
+}
+.compliance-dot {
+  background: var(--warm, #f59e0b);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+
+/* Chat messages */
+.chat-msg-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.chat-msg-content {
+  line-height: 1.6;
+  color: var(--text);
+}
+.chat-msg-content.error {
+  color: var(--red);
+  background: rgba(var(--red-rgb), 0.06);
+  border: 1px solid rgba(var(--red-rgb), 0.24);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* Code accents */
+.code-accent { color: var(--accent); }
+.code-muted { color: var(--text-muted); }
+.code-command { color: var(--sky-2, var(--accent-2)); }
+
+/* Copy-inline button */
+.copy-inline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.10);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.copy-inline:hover {
+  background: rgba(var(--accent-rgb), 0.18);
+  color: #fff;
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+/* Mobile — tighten dashboard surfaces */
+@media (max-width: 768px) {
+  .page-header { margin-bottom: 22px; }
+  .page-title { font-size: clamp(28px, 7vw, 40px) !important; }
+  .page-sub { font-size: 13.5px; }
+  .stats-row { gap: 10px; }
+  .stat-card { padding: 18px; }
+  .stat-card .value { font-size: 22px; }
+  .onboarding-hero { padding: 22px 18px; border-radius: var(--radius-lg, 16px); }
+  .tool-card { padding: 22px; }
+  .api-key-box,
+  .api-key-display { padding: 14px; }
+  .bot-layout { grid-template-columns: 1fr; }
+  .bot-sidebar { position: static; height: auto; max-height: 60vh; overflow-y: auto; }
+  .compliance-notice { padding: 14px; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 26px !important; }
+  .stat-card { padding: 14px; }
+  .stat-card .value { font-size: 20px; }
+  .tool-card { padding: 18px; }
+  .badge { font-size: 10px; padding: 3px 6px; }
+}
