@@ -177,6 +177,9 @@ Core API variables:
 - `SENTRY_DSN` optional, for stack traces and grouped production errors
 - `ZAUTH_API_KEY` optional, enables Zauth x402 provider monitoring before the x402 middleware
 - `ZAUTH_INCLUDE_ROUTES` optional, defaults to `^/mcp/.*,^/gateway/.*`
+- `ZAUTH_EXCLUDE_ROUTES` optional, defaults to health/auth/OAuth/Discord/holder routes
+- `ZAUTH_BATCH_SIZE=1` and `ZAUTH_BATCH_WAIT_MS=100` keep telemetry flushing promptly on serverless deployments
+- `ZAUTH_REFUNDS_ENABLED=false` by default; set `ZAUTH_SOLANA_PRIVATE_KEY` only if refunds are intentionally enabled
 
 Token and settlement variables:
 
@@ -223,6 +226,7 @@ Use the smoke scripts before and after deploys:
 ```bash
 npm test
 npm run smoke:prod
+npm run smoke:zauth
 npm run smoke:paid
 ```
 
@@ -231,6 +235,8 @@ npm run smoke:paid
 `npm run smoke:paid` performs a real x402 SVM payment against the production paid route, currently `POST /proxy/mcp/token-risk` at `0.006` USDC. It verifies the 402 quote, signs the payment, submits through the PayAI facilitator, requires an on-chain settlement transaction signature, and checks that the resulting receipt is visible to the paying wallet.
 
 The paid smoke uses the local Solana CLI keypair at `~/.config/solana/id.json` by default. You can override it with `METERFLOW_PAYER_PRIVATE_KEY`, `X402_PAYER_PRIVATE_KEY`, or `SVM_PRIVATE_KEY` using a base58 secret key or JSON-array keypair. Optional overrides include `METERFLOW_SMOKE_BASE_URL`, `METERFLOW_PAID_ROUTE`, `METERFLOW_PAID_TOKEN`, `SOLANA_RPC_URL`, and `HELIUS_RPC_URL`.
+
+`npm run smoke:zauth` validates the Zauth SDK key and endpoint registration path without making a payment. Set `ZAUTH_API_KEY` in the shell or `.env.zauth.local`; optionally set `METERFLOW_ZAUTH_ENDPOINT` to test a non-default public endpoint. The default endpoint is `https://meterflow.fun/proxy/mcp/token-risk`.
 
 ## License
 

@@ -130,6 +130,12 @@ function buildProviderMiddlewareOptions() {
       redactFields: ['apiKey', 'secret', 'token', 'password', 'upstreamAuth', 'privateKey', 'solanaPrivateKey'],
       sampleRate: numberEnv('ZAUTH_SAMPLE_RATE', 1),
     },
+    batching: {
+      maxBatchSize: numberEnv('ZAUTH_BATCH_SIZE', 1),
+      maxBatchWaitMs: numberEnv('ZAUTH_BATCH_WAIT_MS', 100),
+      retry: true,
+      maxRetries: numberEnv('ZAUTH_BATCH_MAX_RETRIES', 3),
+    },
     refund: buildRefundConfig(),
     debug: boolEnv('ZAUTH_DEBUG', false),
   };

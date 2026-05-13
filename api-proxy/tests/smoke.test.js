@@ -460,6 +460,8 @@ describe('Vercel routing', () => {
     assert.ok(src.includes('(?:api\\/proxy|api|proxy)'), 'function should strip /api/proxy, /api, and /proxy prefixes');
     assert.ok(src.includes("searchParams.get('path')"), 'function should normalize Vercel rewrite path params');
     assert.ok(src.includes('req.originalUrl') && src.includes('/proxy${req.url}'), 'function should keep x402 resource URLs under /proxy');
+    assert.ok(src.includes('bodyParser: false'), 'function should let Express parse POST bodies for x402/Zauth routes');
+    assert.ok(src.includes('preserveVercelParsedBody') && src.includes('req._body = true'), 'function should tolerate Vercel dev pre-parsed bodies');
     assert.ok(!ignore.split(/\r?\n/).includes('api-proxy'), 'api-proxy must be included in Vercel deployment');
     assert.ok(pkg.dependencies.express, 'root package should include API dependencies for Vercel');
   });
@@ -617,6 +619,7 @@ describe('Meterflow control plane', () => {
     assert.ok(zauth.includes('ZAUTH_API_KEY'), 'Zauth wrapper should be env-gated');
     assert.ok(zauth.includes('ZAUTH_INCLUDE_ROUTES'), 'Zauth wrapper should support route filtering');
     assert.ok(zauth.includes('ZAUTH_REFUNDS_ENABLED'), 'Zauth wrapper should keep refunds explicitly opt-in');
+    assert.ok(zauth.includes('ZAUTH_BATCH_SIZE') && zauth.includes('maxBatchSize'), 'Zauth telemetry should flush promptly in serverless deployments');
     assert.ok(env.includes('ZAUTH_API_KEY') && env.includes('ZAUTH_INCLUDE_ROUTES'), 'env example should document Zauth setup');
     assert.ok(apiPkg.dependencies['@zauthx402/sdk'], 'api-proxy should declare the Zauth SDK dependency');
     assert.ok(rootPkg.dependencies['@zauthx402/sdk'], 'root package should declare the Zauth SDK dependency for Vercel installs');
