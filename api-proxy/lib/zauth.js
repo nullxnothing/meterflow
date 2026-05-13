@@ -1,10 +1,12 @@
 import { createClient } from '@zauthx402/sdk';
+import { zauthProvider } from '@zauthx402/sdk/middleware';
 import { logger } from './logger.js';
 
 const DEFAULT_ZAUTH_BASE_URL = 'https://back.zauthx402.com';
 const ZAUTH_PUBLIC_APP_URL = process.env.ZAUTH_PUBLIC_APP_URL || 'https://zauthx402.com';
 
 let cachedClient = null;
+let cachedProviderMiddleware = null;
 
 function nowIso() {
   return new Date().toISOString();
@@ -20,7 +22,11 @@ function zauthBaseUrl() {
 
 function shortError(err) {
   const raw = err?.message || String(err || 'zauth_unavailable');
-  return raw.replace(/Bearer\s+[^\s]+/gi, 'Bearer [redacted]').replace(/mf_[A-Za-z0-9_-]+/g, 'mf_[redacted]').slice(0, 180);
+  return raw
+    .replace(/zauth_sk_[A-Za-z0-9_-]+/g, 'zauth_sk_[redacted]')
+    .replace(/Bearer\s+[^\s]+/gi, 'Bearer [redacted]')
+    .replace(/mf_[A-Za-z0-9_-]+/g, 'mf_[redacted]')
+    .slice(0, 180);
 }
 
 function normalizeStatus(status = {}) {
@@ -69,6 +75,26 @@ function client() {
 
 export function isZauthConfigured() {
   return Boolean(zauthApiKey());
+}
+
+export function createZauthProviderMiddleware() {
+  const apiKey = zauthApiKey();
+  if (!apiKey) return null;
+  if (cachedProviderMiddleware) return cachedProviderMiddleware;
+
+  try {
+    // The SDK middleware is intentionally backend-only and must run before x402.
+    // Keep the key env-only: never pass a literal token here.
+    cachedProviderMiddleware = zauthProvider(apiKey, {
+      apiEndpoint: zauthBaseUrl(),
+      baseUrl: zauthBaseUrl(),
+      debug: false,
+    });
+    return cachedProviderMiddleware;
+  } catch (err) {
+    logger.warn('Zauth provider middleware init failed', { err: shortError(err) });
+    return null;
+  }
 }
 
 export function sanitizeZauthListingStatus(status = {}) {
@@ -150,9 +176,8 @@ export async function submitEndpointToZauth(meter = {}) {
   };
 
   try {
-    // The published SDK does not expose a dedicated provider-listing submit method.
-    // Provider Hub docs describe SDK telemetry as the registration path, so this sends
-    // a health-check event with listing metadata and then reads the registry status.
+    // Provider Hub listing signal comes from SDK/provider telemetry. This emits
+    // safe endpoint metadata, then reads back the known endpoint status.
     await zauth.sendEvent({
       ...zauth.createEventBase('health_check'),
       url: endpointUrl,
