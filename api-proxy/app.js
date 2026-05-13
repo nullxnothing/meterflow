@@ -27,6 +27,7 @@ import { initSentry } from './lib/sentry.js';
 import { errorAlertMiddleware } from './lib/alerts.js';
 import { buildX402Middleware, createX402Gateway } from './lib/x402.js';
 import { buildMppMiddleware, createMppGateway } from './lib/mpp.js';
+import { createZauthProviderMiddleware, isZauthConfigured } from './lib/zauth.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -126,6 +127,20 @@ app.use(async (req, res, next) => {
     return next();
   }
 });
+
+if (isZauthConfigured()) {
+  const zauthMiddleware = createZauthProviderMiddleware();
+  if (zauthMiddleware) {
+    app.use((req, res, next) => {
+      try {
+        return zauthMiddleware(req, res, next);
+      } catch (err) {
+        logger.warn('Zauth provider middleware error, continuing', { err: err.message });
+        return next();
+      }
+    });
+  }
+}
 
 let x402Gateway = null;
 const x402GatewayReady = buildX402Middleware()
