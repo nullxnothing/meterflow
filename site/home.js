@@ -703,10 +703,50 @@
       });
     }
 
+    /* ────────────── Scramble/decoder reveal for the thesis section ────────────── */
+    // Glyph pool tuned to feel technical without crossing into noise.
+    const SCRAMBLE_CHARS = '!<>-_\\/[]{}=+*^?#@%&$01001110';
+    const SCRAMBLE_DURATION_MS = 360;       // per word
+    const SCRAMBLE_REVEAL_RATIO = 0.7;      // fraction of duration spent revealing chars L→R; rest is final settle
+
+    function scrambleWord(el, finalText, accent) {
+      // Idempotent: cancel any in-flight RAF for this element.
+      if (el.__scrambleRAF) cancelAnimationFrame(el.__scrambleRAF);
+      const total = finalText.length;
+      const start = performance.now();
+      const pool = SCRAMBLE_CHARS;
+
+      function frame(now) {
+        const t = Math.min(1, (now - start) / SCRAMBLE_DURATION_MS);
+        const revealCount = Math.floor((t / SCRAMBLE_REVEAL_RATIO) * total);
+        if (t >= 1) {
+          el.textContent = finalText;
+          el.classList.add('mf-word-settled');
+          el.__scrambleRAF = null;
+          return;
+        }
+        let out = '';
+        for (let i = 0; i < total; i++) {
+          const ch = finalText[i];
+          if (i < revealCount || ch === ' ' || ch === ',' || ch === '.') {
+            out += ch;
+          } else {
+            out += pool[(Math.random() * pool.length) | 0];
+          }
+        }
+        el.textContent = out;
+        el.__scrambleRAF = requestAnimationFrame(frame);
+      }
+      el.__scrambleRAF = requestAnimationFrame(frame);
+    }
+
     async function initGSAPReveal() {
       const section = $('.mf-text-reveal');
       const wordEls = $$('.mf-word', section || document);
       if (!section || !wordEls.length || reducedMotion) return;
+
+      // Cache final text per word — scramble overwrites textContent.
+      wordEls.forEach((el) => { el.dataset.final = el.textContent; });
 
       try {
         if (!window.gsap) await loadScript('https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js');
@@ -714,43 +754,48 @@
         const { gsap } = window;
         gsap.registerPlugin(window.ScrollTrigger);
 
-        // Precisely lit-up reveal: each word transitions from dim → bright across the
-        // pinned scroll window. ScrollTrigger keeps it perfectly aligned to scroll position.
-        const dimWordColor = 'rgba(255,255,255,0.14)';
+        // Set the dim base state. Scramble keeps text technical-looking; the
+        // colour shift to bright/accent happens in tandem with the scramble.
+        const dimWordColor = 'rgba(255,255,255,0.22)';
         const brightWordColor = 'rgba(255,255,255,1)';
         const accentColor = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
         const accentGlow = colorWithAlpha(accentColor, 0.45);
-        const accentGlowStart = colorWithAlpha(accentColor, 0);
-        const accentWordEls = wordEls.filter((el) => el.classList.contains('accent'));
+        gsap.set(wordEls, { color: dimWordColor, textShadow: 'none', willChange: 'color' });
 
-        gsap.set(wordEls, { color: dimWordColor });
-        gsap.set(accentWordEls, { textShadow: `0 0 0 ${accentGlowStart}` });
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 0.6,
-            invalidateOnRefresh: true,
-          }
+        const triggered = new WeakSet();
+        // Drive the scramble off scroll progress: each word has a gated threshold;
+        // crossing it ONCE fires the scramble (forward direction).
+        const total = wordEls.length;
+        window.ScrollTrigger.create({
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          // Slight scrub so the threshold check fires on each frame the user actually scrolls.
+          scrub: 0.2,
+          invalidateOnRefresh: true,
+          onUpdate(self) {
+            const progress = self.progress;
+            for (let i = 0; i < total; i++) {
+              const el = wordEls[i];
+              // Stagger words across the first 92% of scroll so the last word settles before exit.
+              const threshold = (i / total) * 0.92;
+              if (progress >= threshold && !triggered.has(el)) {
+                triggered.add(el);
+                const accent = el.classList.contains('accent');
+                // Bring colour up in parallel with the scramble.
+                gsap.to(el, {
+                  color: accent ? accentColor : brightWordColor,
+                  textShadow: accent ? `0 0 22px ${accentGlow}` : 'none',
+                  duration: SCRAMBLE_DURATION_MS / 1000,
+                  ease: 'power2.out',
+                });
+                scrambleWord(el, el.dataset.final, accent);
+              }
+            }
+          },
         });
 
-        wordEls.forEach((el, i) => {
-          const accent = el.classList.contains('accent');
-          const tween = {
-            color: accent ? accentColor : brightWordColor,
-            duration: 0.5,
-            ease: 'none',
-          };
-          if (accent) tween.textShadow = `0 0 22px ${accentGlow}`;
-          tl.to(el, tween, i * 0.5);
-        });
-
-        // The CSS-based .mf-load → .mf-in reveal (via IntersectionObserver in initMotion)
-        // already handles section/card fade-ins, so we deliberately don't duplicate them here.
-
-        // Hero subtle parallax for the headline (keeps things lively without overdoing it)
+        // Hero subtle parallax for the headline.
         const headline = $('.hero-headline');
         if (headline) {
           gsap.to(headline, {
@@ -766,17 +811,26 @@
           document.fonts.ready.then(() => window.ScrollTrigger.refresh()).catch(() => {});
         }
       } catch (e) {
-        // Graceful fallback: simple scroll listener if GSAP can't load
+        // GSAP unavailable — scroll-listener fallback with the same scramble.
         section.classList.add('mf-fallback');
+        const triggered = new WeakSet();
+        const total = wordEls.length;
         let ticking = false;
         const tick = () => {
           const rect = section.getBoundingClientRect();
           const max = Math.max(1, section.offsetHeight - window.innerHeight);
           const progress = Math.min(1, Math.max(0, -rect.top / max));
-          wordEls.forEach((word, i) => {
-            const t = i / wordEls.length;
-            word.classList.toggle('lit', progress >= t);
-          });
+          for (let i = 0; i < total; i++) {
+            const el = wordEls[i];
+            const threshold = (i / total) * 0.92;
+            if (progress >= threshold && !triggered.has(el)) {
+              triggered.add(el);
+              const accent = el.classList.contains('accent');
+              el.style.color = accent ? 'var(--accent, #4f9cff)' : '#fff';
+              if (accent) el.style.textShadow = '0 0 22px rgba(79,156,255,0.45)';
+              scrambleWord(el, el.dataset.final, accent);
+            }
+          }
           ticking = false;
         };
         const onScroll = () => { if (!ticking) { requestAnimationFrame(tick); ticking = true; } };
