@@ -248,27 +248,27 @@
     <div class="section-header reveal">
       <div class="section-eyebrow"><span class="section-eyebrow-code">Mt</span> Meterflow Protocol</div>
       <h2 class="section-title">By the <em>numbers.</em></h2>
-      <p class="section-sub">Live counters from the Meterflow control plane &mdash; meters created, calls metered, and USDC settled across paid agent traffic.</p>
+      <p class="section-sub">Production telemetry will appear here once live meters, receipts, and settlement feeds are connected to the Meterflow control plane.</p>
     </div>
 
     <div class="stats-group reveal">
       <div class="stats-group-head"><span class="badge emerald">Mt</span> Meter activity</div>
       <div class="stat-row">
         <div class="stat-cell">
-          <div class="stat-number" id="ps-alltime-calls">---</div>
+          <div class="stat-number" id="ps-alltime-calls">—</div>
           <div class="stat-label">Metered calls tracked</div>
         </div>
         <div class="stat-cell">
-          <div class="stat-number" id="ps-alltime-tokens">---</div>
+          <div class="stat-number" id="ps-alltime-tokens">—</div>
           <div class="stat-label">Billable units processed</div>
         </div>
         <div class="stat-cell">
-          <div class="stat-number" id="ps-money-saved">---</div>
+          <div class="stat-number" id="ps-money-saved">—</div>
           <div class="stat-label">Estimated compute value</div>
         </div>
       </div>
-      <div class="chart-label">Calls per day &mdash; last 30 days</div>
-      <div class="chart" data-chart="emerald" aria-hidden="true"></div>
+      <div class="chart-label">Calls per day &mdash; production feed</div>
+      <div class="chart chart-empty" data-chart="emerald" data-empty-label="Awaiting production telemetry" aria-hidden="true"></div>
       <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
     </div>
 
@@ -276,20 +276,20 @@
       <div class="stats-group-head"><span class="badge sky">Rc</span> Receipts &amp; settlement</div>
       <div class="stat-row">
         <div class="stat-cell">
-          <div class="stat-number" id="ps-active-keys">---</div>
+          <div class="stat-number" id="ps-active-keys">—</div>
           <div class="stat-label">Developer keys issued</div>
         </div>
         <div class="stat-cell">
-          <div class="stat-number" id="ps-models">---</div>
+          <div class="stat-number" id="ps-models">—</div>
           <div class="stat-label">Services online <span id="ps-providers" style="display:none"></span></div>
         </div>
         <div class="stat-cell">
-          <div class="stat-number" id="ps-uptime">---</div>
+          <div class="stat-number" id="ps-uptime">—</div>
           <div class="stat-label">Session uptime <span id="ps-uptime-pct" style="display:none"></span><span id="ps-tokens-today" style="display:none"></span></div>
         </div>
       </div>
-      <div class="chart-label">Settled receipts per day &mdash; last 30 days</div>
-      <div class="chart" data-chart="sky" aria-hidden="true"></div>
+      <div class="chart-label">Settled receipts per day &mdash; production feed</div>
+      <div class="chart chart-empty" data-chart="sky" data-empty-label="Awaiting settlement events" aria-hidden="true"></div>
       <div class="chart-x"><span>30d ago</span><span>20d</span><span>10d</span><span>today</span></div>
     </div>
 
@@ -539,49 +539,14 @@
     requestAnimationFrame(frame);
   })();
 
-  /* ─── Seeded last-30-days bar data ─── */
+  /* ─── Empty chart scaffolds until live telemetry is connected ─── */
   (function renderCharts() {
-    function buildBars(target, points) {
-      var max = Math.max.apply(null, points);
-      var html = '';
-      for (var i = 0; i < points.length; i++) {
-        var h = Math.max(4, Math.round((points[i] / max) * 100));
-        var v = Math.round(points[i]);
-        html += '<span class="chart-bar" style="height:' + h + '%" data-val="' + v + '"></span>';
-      }
-      target.innerHTML = html;
-
-      /* Shared floating tooltip */
-      var tip = document.createElement('span');
-      tip.className = 'chart-tip';
-      target.appendChild(tip);
-      target.querySelectorAll('.chart-bar').forEach(function(bar) {
-        bar.addEventListener('mouseenter', function() {
-          var br = bar.getBoundingClientRect();
-          var cr = target.getBoundingClientRect();
-          tip.textContent = bar.dataset.val;
-          tip.style.left = (br.left - cr.left + br.width / 2) + 'px';
-          tip.style.bottom = (target.clientHeight - (br.top - cr.top) + 6) + 'px';
-          tip.classList.add('vis');
-        });
-        bar.addEventListener('mouseleave', function() { tip.classList.remove('vis'); });
-      });
-    }
-    function rng(seed) { var x = Math.sin(seed) * 10000; return x - Math.floor(x); }
-    function series(seed, base, spike) {
-      var out = [];
-      for (var i = 0; i < 30; i++) {
-        var trend = base * (0.5 + i / 60);
-        var noise = rng(seed + i) * base * 0.7;
-        var pop = (i > 18 && i < 24) ? spike * rng(seed + i + 99) : 0;
-        out.push(Math.max(base * 0.15, trend + noise + pop));
-      }
-      return out;
-    }
     document.querySelectorAll('.chart').forEach(function (el) {
-      var kind = el.getAttribute('data-chart');
-      var data = kind === 'sky' ? series(11, 42, 92) : series(3, 28, 80);
-      buildBars(el, data);
+      if (el.querySelector('.chart-empty-label')) return;
+      var label = document.createElement('span');
+      label.className = 'chart-empty-label';
+      label.textContent = el.getAttribute('data-empty-label') || 'Telemetry feed pending';
+      el.appendChild(label);
     });
   })();
 
