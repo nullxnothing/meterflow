@@ -120,23 +120,22 @@ assert.equal(cors.status, 204);
 assert.ok(requireHeader(cors.headers, 'access-control-allow-headers').toLowerCase().includes('payment-signature'));
 pass('x402 CORS preflight');
 
-const quote = await fetch(`${baseUrl}/proxy/v1/chat`, {
+const paidRouteUrl = `${baseUrl}/proxy/mcp/token-risk`;
+const quote = await fetch(paidRouteUrl, {
   method: 'POST',
   headers: {
     Origin: baseUrl,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    model: 'gemini-2.5-flash',
-    messages: [{ role: 'user', content: 'ping' }],
-    max_tokens: 8,
+    address: 'So11111111111111111111111111111111111111112',
   }),
 });
 assert.equal(quote.status, 402);
 assert.ok(requireHeader(quote.headers, 'access-control-expose-headers').includes('Payment-Required'));
 const paymentRequired = decodeBase64Json(requireHeader(quote.headers, 'payment-required'));
 assert.equal(paymentRequired.x402Version, 2);
-assert.equal(paymentRequired.resource?.url, `${baseUrl}/proxy/v1/chat`);
+assert.equal(paymentRequired.resource?.url, paidRouteUrl);
 assert.equal(paymentRequired.accepts?.[0]?.payTo, '6ybgqYcvbKkhPCfRg76naKY2gjUUgyx4HHR3FqTa2GYR');
 assert.equal(paymentRequired.accepts?.[0]?.asset, 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 pass('x402 unpaid quote');
