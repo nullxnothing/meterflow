@@ -14,5 +14,9 @@ export default function handler(req, res) {
     req.url = req.url.replace(/^\/(?:api\/proxy|api|proxy)(?=\/|$)/, '') || '/';
   }
 
+  if (req.url === '/registry' || req.url.startsWith('/registry?')) {
+    req.url = req.url.replace(/^\/registry/, '/v1/registry');
+  }
+
   return app(req, res);
 }
