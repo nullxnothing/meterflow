@@ -1664,19 +1664,18 @@ button.sidebar-cmdk {
   box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
 }
 
-/* Sidebar nav scroll polish */
+/* Sidebar nav — scrollable but scrollbar visually hidden (premium clean look) */
 .sidebar-nav {
   margin: 0 -4px;
   padding: 0 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.08) transparent;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge legacy */
 }
-.sidebar-nav::-webkit-scrollbar { width: 4px; }
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
+.sidebar-nav::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
 }
-.sidebar-nav::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
 
 /* Footer block */
 .sidebar-footer {
@@ -1825,4 +1824,58 @@ button.sidebar-connect-btn {
   .sidebar { padding: 18px 14px 14px !important; }
   .sidebar-logo { margin-bottom: 14px !important; }
   .nav-item { font-size: 12.5px !important; min-height: 36px !important; }
+}
+
+/* Fixed dashboard viewport shell.
+   The document must not scroll on desktop; .main owns vertical scrolling while
+   the sidebar remains pinned and only its nav region can scroll internally. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+#app.app {
+  height: 100dvh;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+#app.app > .sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  align-self: stretch;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+}
+
+#app.app > .main {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+}
+
+#app.app > .sidebar > .sidebar-nav {
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 1024px) {
+  #app.app {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  #app.app > .main {
+    height: auto !important;
+    min-height: 0 !important;
+  }
 }

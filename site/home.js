@@ -428,12 +428,14 @@
         layout();
       }
 
-      // Click inactive card → activate it; click active card → let CTA anchor through
+      // Click inactive card → activate it; click active card → navigate (unless dragged)
       cards.forEach((card, i) => {
         card.addEventListener('click', (e) => {
           if (i !== active) {
             e.preventDefault();
             goTo(i);
+          } else if (Math.abs(dragDx) > 4) {
+            e.preventDefault();
           }
         });
       });

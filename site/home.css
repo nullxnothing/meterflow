@@ -990,6 +990,8 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: pan-y;
+  text-decoration: none;
+  color: inherit;
 }
 
 .fan-card--active {
@@ -1012,9 +1014,9 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   height: 100%;
   object-fit: cover;
   object-position: center;
-  opacity: 0.38;
-  -webkit-mask-image: linear-gradient(135deg, transparent 18%, rgba(0,0,0,0.5) 44%, black 72%);
-  mask-image: linear-gradient(135deg, transparent 18%, rgba(0,0,0,0.5) 44%, black 72%);
+  opacity: 1;
+  -webkit-mask-image: none;
+  mask-image: none;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
