@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "serve site -l 3000",
     "test": "npm --prefix api-proxy test",
     "smoke:prod": "node scripts/smoke-production.mjs",
     "smoke:paid": "node scripts/smoke-paid-x402.mjs",
@@ -37,5 +38,8 @@
     "socket.io": "^4.8.3",
     "solana-mpp": "^0.1.1",
     "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
   }
 }
