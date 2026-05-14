@@ -1,5 +1,5 @@
-// Meterflow landing polish: refined nav, prominent Launch Dashboard CTA,
-// GSAP-driven highlight scroll text, layered "six surfaces" footer, mobile menu.
+// Meterflow landing polish: homepage-only product motion and content affordances.
+// Shared nav, footer, and background live in shared.css/shared.js.
 (function () {
   const ready = (fn) => document.readyState === 'loading'
     ? document.addEventListener('DOMContentLoaded', fn, { once: true })
@@ -12,41 +12,6 @@
 
     const style = document.createElement('style');
     style.textContent = `
-      body.mobile-menu-open{overflow:hidden}
-      #hamburger{position:relative;z-index:10001}
-      #mobileMenu.mobile-menu.open,body.mobile-menu-open #mobileMenu.mobile-menu{display:flex!important;position:fixed!important;top:72px!important;left:0!important;right:0!important;z-index:10000!important;max-height:calc(100vh - 72px);overflow-y:auto;background:rgba(6,7,10,.98)!important;border-bottom:1px solid rgba(255,255,255,.08)!important;box-shadow:0 30px 80px rgba(0,0,0,.48)}
-
-      /* ─── Unified Meterflow nav: dark glass, text-first, no route-code chips ─── */
-      body > nav.mf-nav{height:72px;padding:0 clamp(20px,3.4vw,42px)!important;display:flex;align-items:center;gap:18px;justify-content:space-between;background:linear-gradient(180deg,rgba(5,8,15,.84),rgba(5,8,15,.56))!important;backdrop-filter:saturate(145%) blur(18px);-webkit-backdrop-filter:saturate(145%) blur(18px);border-bottom:1px solid rgba(156,184,220,.1)!important;box-shadow:0 18px 70px rgba(0,0,0,.2)!important;position:fixed;top:0;left:0;right:0;z-index:300}
-      body.mf-nav-scrolled > nav.mf-nav{background:linear-gradient(180deg,rgba(5,8,15,.92),rgba(5,8,15,.7))!important;border-bottom-color:rgba(156,184,220,.14)!important;transition:background .25s ease,border-color .25s ease,box-shadow .25s ease}
-      body > nav.mf-nav .nav-logo{font-family:var(--font-serif,'Instrument Serif',Georgia,serif);font-style:italic;font-size:25px;line-height:1;letter-spacing:-.02em;text-transform:none;font-weight:400;color:rgba(244,248,255,.92);display:inline-flex;align-items:center;gap:9px;text-decoration:none;transition:color .2s ease}
-      body > nav.mf-nav .nav-logo:hover{color:#fff}
-      body > nav.mf-nav .nav-logo .brand-mark{width:19px;height:19px;display:block;opacity:.9;filter:drop-shadow(0 0 14px rgba(var(--accent-rgb),.34))}
-      body > nav.mf-nav .nav-links{display:flex;align-items:center;gap:6px;justify-content:center;flex:1;padding:0 12px}
-      body > nav.mf-nav .nav-links a{display:inline-flex;align-items:center;gap:0;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1;font-weight:550;color:rgba(174,193,220,.72);text-decoration:none;border:1px solid transparent;transition:color .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease}
-      body > nav.mf-nav .nav-links a::after{display:none!important}
-      body > nav.mf-nav .nav-links a:hover{color:#fff;background:rgba(255,255,255,.045);border-color:rgba(156,184,220,.1)}
-      body > nav.mf-nav .nav-links a.active{color:#fff;background:rgba(var(--accent-rgb),.1);border-color:rgba(var(--accent-rgb),.18);box-shadow:0 0 24px rgba(var(--accent-rgb),.08)}
-      body > nav.mf-nav .nav-glyph{display:none!important}
-      body > nav.mf-nav .nav-actions{display:flex;align-items:center;gap:10px}
-      body > nav.mf-nav .nav-socials{display:inline-flex;align-items:center;gap:2px}
-      body > nav.mf-nav .nav-social{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:rgba(225,228,236,.5);transition:color .18s ease,background .18s ease}
-      body > nav.mf-nav .nav-social:hover{color:#fff;background:rgba(255,255,255,.04)}
-      body > nav.mf-nav .nav-social svg{width:14px;height:14px}
-
-      /* ─── Tiny zauth-style "Log in" button ─── */
-      .mf-login{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:36px;padding:0 15px;border-radius:10px;font-family:var(--font-body),system-ui,sans-serif;font-size:13.5px;font-weight:600;letter-spacing:-.005em;color:var(--text);text-decoration:none;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.11);transition:color .18s ease,background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
-      .mf-login:hover{color:#fff;background:rgba(var(--accent-rgb),.08);border-color:rgba(var(--accent-rgb),.32);box-shadow:0 0 24px rgba(var(--accent-rgb),.10);transform:translateY(-1px)}
-      .mf-login-wallet{width:15px;height:15px;color:var(--accent);opacity:.9;display:block}
-      .mf-login:hover .mf-login-wallet{opacity:1}
-
-      /* Hero needs top padding now that the nav is absolutely positioned */
-      section.hero{padding-top:clamp(120px,14vh,170px)!important}
-
-      @media(max-width:1180px){body > nav.mf-nav{height:64px!important}body > nav.mf-nav .nav-links{display:none!important}body > nav.mf-nav .nav-socials{display:none!important}body > nav.mf-nav .nav-actions{display:none!important}body > nav.mf-nav .hamburger{display:flex!important}#mobileMenu.mobile-menu.open,body.mobile-menu-open #mobileMenu.mobile-menu{top:64px!important;max-height:calc(100vh - 64px)!important}}
-      @media(max-width:480px){body > nav.mf-nav{height:60px!important}#mobileMenu.mobile-menu.open,body.mobile-menu-open #mobileMenu.mobile-menu{top:60px!important;max-height:calc(100vh - 60px)!important}}
-      @media(max-width:560px){.mf-login{padding:6px 10px 6px 10px;font-size:12.5px}}
-
       /* ─── Section polish ─── */
       .hero-headline,.section-title,.cta-title{letter-spacing:-.035em}
       .hero-sub,.section-sub{color:rgba(225,228,236,.62)!important}
@@ -68,9 +33,9 @@
       .integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text-muted,#7b8190);letter-spacing:-.01em}
       @keyframes meterflowIntegrationMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-      /* ─── Highlight scroll text reveal (GSAP-driven) ─── */
-      .mf-text-reveal{position:relative;background:#0a0a0c}
-      .mf-text-reveal-sticky{position:sticky;top:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9vh 24px;text-align:left}
+      /* ─── Thesis section: fires the scramble once when in view, no scroll pinning ─── */
+      .mf-text-reveal{position:relative;padding:clamp(80px,12vh,128px) 24px}
+      .mf-text-reveal-sticky{margin:0 auto;width:100%;max-width:1080px;text-align:left}
       .mf-reveal-eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--accent,#4f9cff);margin-bottom:28px;display:inline-flex;align-items:center;gap:10px}
       .mf-reveal-eyebrow::before{content:'';width:24px;height:1px;background:currentColor;opacity:.6}
       .mf-reveal-words{max-width:1040px;margin:0;font-family:var(--font-display);font-size:clamp(28px,4.6vw,60px);line-height:1.14;font-weight:600;letter-spacing:-.035em;color:rgba(255,255,255,.14)}
@@ -79,43 +44,9 @@
       .mf-text-reveal.mf-fallback .mf-word.accent.lit{color:var(--accent,#4f9cff);text-shadow:0 0 22px rgba(var(--accent-rgb),.45)}
       .mf-word em{font-family:var(--font-serif);font-style:italic;font-weight:400}
 
-      /* ─── Landing footer shell ─── */
-      .mf-site-footer{background:#0a0a0c;border-top:1px solid rgba(255,255,255,.06);padding:30px 24px 36px}
-      .mf-site-footer-shell{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:22px;color:rgba(225,228,236,.44);font-family:var(--font-mono);font-size:12px;letter-spacing:.02em}
-      .mf-site-footer-links{display:inline-flex;align-items:center;gap:18px;flex-wrap:wrap}
-      .mf-site-footer a{color:rgba(225,228,236,.68);text-decoration:none;transition:color .18s ease}
-      .mf-site-footer a:hover{color:#fff}
-      @media(max-width:720px){.mf-site-footer-shell{flex-direction:column;align-items:flex-start}}
       @media(prefers-reduced-motion:reduce){.integration-marquee-track{animation:none;flex-wrap:wrap;justify-content:center;width:100%}.mf-load{opacity:1;transform:none;filter:none}.mf-launch-glow{animation:none}}
     `;
     document.head.appendChild(style);
-
-    /* ────────────────────────────────────────────── Mobile menu ─ */
-    function closeMobile() {
-      $('#hamburger')?.classList.remove('active');
-      $('#mobileMenu')?.classList.remove('open');
-      document.body.classList.remove('mobile-menu-open');
-      $('#hamburger')?.setAttribute('aria-expanded', 'false');
-    }
-    window.closeMobile = closeMobile;
-
-    const hamburger = $('#hamburger');
-    const mobileMenu = $('#mobileMenu');
-    if (hamburger && mobileMenu) {
-      hamburger.setAttribute('type', 'button');
-      hamburger.setAttribute('aria-expanded', 'false');
-      hamburger.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const open = !mobileMenu.classList.contains('open');
-        hamburger.classList.toggle('active', open);
-        mobileMenu.classList.toggle('open', open);
-        document.body.classList.toggle('mobile-menu-open', open);
-        hamburger.setAttribute('aria-expanded', String(open));
-      });
-      mobileMenu.addEventListener('click', (event) => { if (event.target.closest('a')) closeMobile(); });
-      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMobile(); });
-    }
 
     /* ────────────────────────────────────────────── Integration marquee ─ */
     const integrations = [['payai.cash','payai.cash'],['heurist.xyz','heurist.xyz'],['silverbackdefi.app','silverbackdefi.app'],['minifetch.com','minifetch.com'],['kodaoracle.com','kodaoracle.com'],['x402.org','x402.org'],['solana.com','solana.com'],['phantom.com','phantom.com']];
@@ -159,8 +90,8 @@
       if ($('.mf-text-reveal')) return;
       const section = document.createElement('section');
       section.className = 'mf-text-reveal';
-      // Keep enough scroll room for the word reveal without leaving a huge blank field.
-      section.style.height = '170vh';
+      // No inline height — the section is natural-size. The scramble fires
+      // once when the section enters view, driven by timer not scroll.
       const words = REVEAL_PARTS.flatMap((part) =>
         part.text.split(' ').map((w) => ({ word: w, accent: part.accent }))
       );
@@ -173,27 +104,6 @@
         </div>`;
       const anchor = $('.tools') || $('.how') || $('.cta');
       if (anchor?.parentNode) anchor.parentNode.insertBefore(section, anchor);
-    }
-
-    /* ────────────────────────────────────────────── Footer redesign ─ */
-    function buildFooter() {
-      const footer = $('.site-footer');
-      if (!footer) return;
-
-      footer.className = 'mf-site-footer';
-      footer.innerHTML = `
-        <div class="mf-site-footer-shell">
-            <span>© 2026 Meterflow · settled on Solana</span>
-            <span class="mf-site-footer-links">
-              <a href="/dashboard">Dashboard</a>
-              <a href="/docs">Docs</a>
-              <a href="/apply">Apply</a>
-              <a href="/privacy">Privacy</a>
-              <a href="/terms">Terms</a>
-              <a href="/status">Status</a>
-            </span>
-        </div>
-      `;
     }
 
     /* ────────────────────────────────────────────── Live public stats ─ */
@@ -612,6 +522,10 @@
           const on = tab.dataset.stab === state.key;
           tab.classList.toggle('active', on);
           tab.setAttribute('aria-selected', String(on));
+          if (on) {
+            const panel = document.getElementById('showcase-panel');
+            if (panel) panel.setAttribute('aria-labelledby', tab.id);
+          }
           if (on && !fromAuto) {
             tab.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
           }
@@ -740,13 +654,94 @@
       el.__scrambleRAF = requestAnimationFrame(frame);
     }
 
+    // Stagger between word starts. With ~90ms gap + 360ms scramble per word,
+    // 30 words wrap up in ~3s — fast enough to feel intentional, slow enough
+    // to read cadence.
+    const SCRAMBLE_STAGGER_MS = 90;
+
+    // Accent words shutter between blue and white after their scramble settles,
+    // landing on white with a soft accent glow that fades.
+    const SHUTTER_FLIPS = 7;            // odd number so we land on white
+    const SHUTTER_INTERVAL_MS = 70;     // gap between flips
+
+    function shutterToWhite(el, accentColor) {
+      const brightWordColor = 'rgba(255,255,255,1)';
+      let flip = 0;
+      const tick = () => {
+        flip++;
+        // Odd flip = white, even = accent. Final flip is white.
+        const showWhite = flip % 2 === 1;
+        el.style.color = showWhite ? brightWordColor : accentColor;
+        // Glow ONLY during the shutter, never on the final state.
+        el.style.textShadow = showWhite ? 'none' : `0 0 18px ${accentColor}`;
+        if (flip < SHUTTER_FLIPS) {
+          el.__shutterTimer = setTimeout(tick, SHUTTER_INTERVAL_MS);
+        } else {
+          // Settle hard on white with NO glow.
+          el.style.color = brightWordColor;
+          el.style.textShadow = 'none';
+          el.__shutterTimer = null;
+        }
+      };
+      tick();
+    }
+
+    function fireScrambleSequence(wordEls, accentColor, accentGlow) {
+      const brightWordColor = 'rgba(255,255,255,1)';
+      wordEls.forEach((el, i) => {
+        setTimeout(() => {
+          const accent = el.classList.contains('accent');
+          if (accent) {
+            // Accent words START on blue during the scramble, then shutter to white.
+            el.style.color = accentColor;
+            el.style.textShadow = `0 0 22px ${accentGlow}`;
+          } else {
+            el.style.color = brightWordColor;
+            el.style.textShadow = 'none';
+          }
+          scrambleWord(el, el.dataset.final, accent);
+          if (accent) {
+            // Kick off the shutter slightly after the scramble settles.
+            setTimeout(() => shutterToWhite(el, accentColor), SCRAMBLE_DURATION_MS + 40);
+          }
+        }, i * SCRAMBLE_STAGGER_MS);
+      });
+    }
+
     async function initGSAPReveal() {
       const section = $('.mf-text-reveal');
       const wordEls = $$('.mf-word', section || document);
-      if (!section || !wordEls.length || reducedMotion) return;
+      if (!section || !wordEls.length) return;
 
       // Cache final text per word — scramble overwrites textContent.
       wordEls.forEach((el) => { el.dataset.final = el.textContent; });
+
+      // Reduced-motion users: just show the words at full color, no scramble.
+      if (reducedMotion) {
+        const accentFallback = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
+        wordEls.forEach((el) => {
+          const accent = el.classList.contains('accent');
+          el.style.color = accent ? accentFallback : 'rgba(255,255,255,1)';
+        });
+        return;
+      }
+
+      const accentColor = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
+      const accentGlow = colorWithAlpha(accentColor, 0.45);
+
+      // Words start dim and fully opaque — only the scramble + color flip animates.
+      wordEls.forEach((el) => {
+        el.style.color = 'rgba(255,255,255,0.22)';
+        el.style.willChange = 'color';
+      });
+
+      // One-shot guard so back-scrolling can't replay the sequence.
+      let fired = false;
+      const fire = () => {
+        if (fired) return;
+        fired = true;
+        fireScrambleSequence(wordEls, accentColor, accentGlow);
+      };
 
       try {
         if (!window.gsap) await loadScript('https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js');
@@ -754,48 +749,17 @@
         const { gsap } = window;
         gsap.registerPlugin(window.ScrollTrigger);
 
-        // Set the dim base state. Scramble keeps text technical-looking; the
-        // colour shift to bright/accent happens in tandem with the scramble.
-        const dimWordColor = 'rgba(255,255,255,0.22)';
-        const brightWordColor = 'rgba(255,255,255,1)';
-        const accentColor = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
-        const accentGlow = colorWithAlpha(accentColor, 0.45);
-        gsap.set(wordEls, { color: dimWordColor, textShadow: 'none', willChange: 'color' });
-
-        const triggered = new WeakSet();
-        // Drive the scramble off scroll progress: each word has a gated threshold;
-        // crossing it ONCE fires the scramble (forward direction).
-        const total = wordEls.length;
+        // Fire-once trigger when the section comes into view. No pin, no scrub.
+        // "top 75%" means: fire when section top has reached 75% down the viewport
+        // (i.e. user has scrolled enough that the eyebrow is comfortably visible).
         window.ScrollTrigger.create({
           trigger: section,
-          start: 'top top',
-          end: 'bottom bottom',
-          // Slight scrub so the threshold check fires on each frame the user actually scrolls.
-          scrub: 0.2,
-          invalidateOnRefresh: true,
-          onUpdate(self) {
-            const progress = self.progress;
-            for (let i = 0; i < total; i++) {
-              const el = wordEls[i];
-              // Stagger words across the first 92% of scroll so the last word settles before exit.
-              const threshold = (i / total) * 0.92;
-              if (progress >= threshold && !triggered.has(el)) {
-                triggered.add(el);
-                const accent = el.classList.contains('accent');
-                // Bring colour up in parallel with the scramble.
-                gsap.to(el, {
-                  color: accent ? accentColor : brightWordColor,
-                  textShadow: accent ? `0 0 22px ${accentGlow}` : 'none',
-                  duration: SCRAMBLE_DURATION_MS / 1000,
-                  ease: 'power2.out',
-                });
-                scrambleWord(el, el.dataset.final, accent);
-              }
-            }
-          },
+          start: 'top 75%',
+          once: true,
+          onEnter: fire,
         });
 
-        // Hero subtle parallax for the headline.
+        // Hero subtle parallax for the headline (unchanged).
         const headline = $('.hero-headline');
         if (headline) {
           gsap.to(headline, {
@@ -811,32 +775,18 @@
           document.fonts.ready.then(() => window.ScrollTrigger.refresh()).catch(() => {});
         }
       } catch (e) {
-        // GSAP unavailable — scroll-listener fallback with the same scramble.
+        // GSAP unavailable — use IntersectionObserver to fire once on enter.
         section.classList.add('mf-fallback');
-        const triggered = new WeakSet();
-        const total = wordEls.length;
-        let ticking = false;
-        const tick = () => {
-          const rect = section.getBoundingClientRect();
-          const max = Math.max(1, section.offsetHeight - window.innerHeight);
-          const progress = Math.min(1, Math.max(0, -rect.top / max));
-          for (let i = 0; i < total; i++) {
-            const el = wordEls[i];
-            const threshold = (i / total) * 0.92;
-            if (progress >= threshold && !triggered.has(el)) {
-              triggered.add(el);
-              const accent = el.classList.contains('accent');
-              el.style.color = accent ? 'var(--accent, #4f9cff)' : '#fff';
-              if (accent) el.style.textShadow = '0 0 22px rgba(79,156,255,0.45)';
-              scrambleWord(el, el.dataset.final, accent);
+        const io = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              fire();
+              io.disconnect();
+              break;
             }
           }
-          ticking = false;
-        };
-        const onScroll = () => { if (!ticking) { requestAnimationFrame(tick); ticking = true; } };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
-        tick();
+        }, { threshold: 0.15 });
+        io.observe(section);
       }
     }
 
@@ -860,6 +810,8 @@
       if ([r, g, b].some((part) => Number.isNaN(part))) return `rgba(var(--accent-rgb),${alpha})`;
       return `rgba(${r},${g},${b},${alpha})`;
     }
+
+
 
     /* ────────────────────────────────────────────── Six Surfaces Fan Stack ─ */
     function initFanStack() {
@@ -1060,26 +1012,73 @@
       restartAuto();
     }
 
-    function initNavScroll() {
-      let raf = 0;
-      const update = () => {
-        document.body.classList.toggle('mf-nav-scrolled', window.scrollY > 12);
-        raf = 0;
-      };
-      window.addEventListener('scroll', () => {
-        if (!raf) raf = requestAnimationFrame(update);
-      }, { passive: true });
-      update();
-    }
-
-    buildIntegrationMarquee();
-    buildTextReveal();
     window.populateProtocolStats?.();
-    window.MeterflowInitFooterWaves?.();
     initMotion();
     initShowcaseCycle();
     initFanStack();
     initGSAPReveal();
-    initNavScroll();
+
+    /* ─── GooeyText morphing header for stats section ─── */
+    (function initStatsGooeyText() {
+      const wrap = document.getElementById('statsGooeyWrap');
+      if (!wrap) return;
+      const t1 = wrap.querySelector('.sg-t1');
+      const t2 = wrap.querySelector('.sg-t2');
+      if (!t1 || !t2) return;
+
+      const texts = ['numbers.', 'calls.', 'meters.', 'receipts.', 'volume.', 'flow.'];
+      const morphTime = 1.2;
+      const cooldownTime = 2.5;
+      let textIndex = 0;
+      let timeMs = Date.now();
+      let morph = 0;
+      let cooldown = cooldownTime;
+
+      t1.textContent = texts[0];
+      t2.textContent = texts[1];
+      t1.style.opacity = '0%';
+      t2.style.opacity = '100%';
+
+      if (reducedMotion) return; // static "numbers." shown via t2
+
+      function setMorph(fraction) {
+        t2.style.filter = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+        t2.style.opacity = (Math.pow(fraction, 0.4) * 100) + '%';
+        fraction = 1 - fraction;
+        t1.style.filter = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+        t1.style.opacity = (Math.pow(fraction, 0.4) * 100) + '%';
+      }
+      function doCooldown() {
+        morph = 0;
+        t2.style.filter = ''; t2.style.opacity = '100%';
+        t1.style.filter = ''; t1.style.opacity = '0%';
+      }
+      function doMorph() {
+        morph -= cooldown;
+        cooldown = 0;
+        let fraction = morph / morphTime;
+        if (fraction > 1) { cooldown = cooldownTime; fraction = 1; }
+        setMorph(fraction);
+      }
+      function tick() {
+        requestAnimationFrame(tick);
+        const now = Date.now();
+        const shouldIncrement = cooldown > 0;
+        const dt = (now - timeMs) / 1000;
+        timeMs = now;
+        cooldown -= dt;
+        if (cooldown <= 0) {
+          if (shouldIncrement) {
+            textIndex = (textIndex + 1) % texts.length;
+            t1.textContent = texts[textIndex % texts.length];
+            t2.textContent = texts[(textIndex + 1) % texts.length];
+          }
+          doMorph();
+        } else {
+          doCooldown();
+        }
+      }
+      tick();
+    })();
   });
 })();
