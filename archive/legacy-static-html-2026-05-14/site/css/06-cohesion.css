@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════
+   Final Public Shell Cohesion
+   Shared JS normalizes public nav markup; these rules keep every page on
+   the landing-page shell even when page-specific CSS loads later.
+   ═══════════════════════════════════════════ */
+
+.site-footer {
+  color: var(--text);
+}
+
+.site-footer-logo,
+.site-footer-col-title,
+.site-footer-bottom {
+  letter-spacing: 0;
+}
+
+.site-footer-logo {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 24px;
+}
+
+.site-footer-col a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.site-footer--auto {
+  margin-top: 0;
+}

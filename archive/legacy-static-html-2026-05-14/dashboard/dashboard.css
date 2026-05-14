@@ -1,0 +1,17 @@
+/* Dashboard stylesheet manifest. Keep imports ordered; cascade order is part of the UI contract. */
+@import url('./css/chat.css');
+@import url('./css/features.css');
+@import url('./css/trading.css');
+@import url('./css/live-trades.css');
+@import url('./css/media-lab-overlays.css');
+@import url('./css/shell.css');
+@import url('./css/treasury.css');
+@import url('./css/system-feedback.css');
+@import url('./css/access-gates.css');
+@import url('./css/forms.css');
+@import url('./css/integrations.css');
+@import url('./css/empty-state.css');
+@import url('./css/command-palette.css');
+@import url('./css/wallet-onboarding.css');
+@import url('./css/polish.css');
+@import url('./css/holder-tools.css');

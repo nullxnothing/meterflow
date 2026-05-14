@@ -360,7 +360,7 @@ describe('Security headers (vercel.json)', () => {
 // ═══════════════════════════════════════
 describe('XSS prevention (frontend)', () => {
   it('actions.js toast does not use innerHTML for user content', () => {
-    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'actions.js'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'actions.js'), 'utf-8');
     // Check that showToast doesn't assign user-controlled content via innerHTML
     // It should use textContent or createElement
     assert.ok(src.includes('textContent') || src.includes('createElement'),
@@ -368,7 +368,7 @@ describe('XSS prevention (frontend)', () => {
   });
 
   it('chat.js has image mime type whitelist', () => {
-    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'chat.js'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'chat.js'), 'utf-8');
     assert.ok(src.includes('ALLOWED_MIME') || src.includes('image/png') || src.includes('image/jpeg'),
       'should whitelist safe image mime types');
   });
@@ -379,7 +379,7 @@ describe('XSS prevention (frontend)', () => {
 // ═══════════════════════════════════════
 describe('Session storage for API key', () => {
   it('session.js uses sessionStorage not localStorage for apiKey', () => {
-    const src = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'session.js'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'session.js'), 'utf-8');
     // There should be sessionStorage.setItem for apiKey
     // Should NOT have localStorage.setItem('meterflow_apiKey'...)
     const localStorageApiKey = src.match(/localStorage\.(setItem|getItem)\(['"]meterflow_apiKey/);
@@ -394,31 +394,31 @@ describe('Session storage for API key', () => {
 // ═══════════════════════════════════════
 describe('Site link integrity', () => {
   it('index.html has no bare href="#" on important links', () => {
-    const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'site', 'index.html'), 'utf-8');
     const bareHashLinks = [...src.matchAll(/href="#"/g)];
     assert.equal(bareHashLinks.length, 0, 'important links should not point to bare #');
   });
 
   it('docs.html docs link points to /docs not #', () => {
-    const src = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'site', 'docs.html'), 'utf-8');
     assert.ok(src.includes('href="/docs"'), 'Docs nav link should point to /docs');
   });
 
   it('copyright year is current', () => {
-    const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
+    const src = readFileSync(resolve(projectRoot, 'public', 'site', 'index.html'), 'utf-8');
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
 
   it('product docs position Meterflow as the control plane for agent commerce', () => {
     const readme = readFileSync(resolve(projectRoot, 'README.md'), 'utf-8');
-    const home = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
-    const docs = readFileSync(resolve(projectRoot, 'site', 'docs.html'), 'utf-8');
+    const home = readFileSync(resolve(projectRoot, 'public', 'site', 'index.html'), 'utf-8');
+    const docs = readFileSync(resolve(projectRoot, 'public', 'site', 'docs.html'), 'utf-8');
     assert.ok(readme.includes('The Solana control plane for agent commerce'), 'README should lead with agent-commerce positioning');
     assert.ok(readme.includes('x402 and MPP, one control plane'), 'README should explain the protocol-neutral direction');
     assert.ok(readme.includes('default live paid route is intentionally narrow'), 'README should frame the live route surface narrowly');
     assert.ok(home.includes('The control plane for'), 'landing page should lead with agent-commerce positioning');
     assert.ok(home.includes('MPP'), 'landing page should mention MPP payment adapters');
-    assert.ok(home.includes('Launchpad') && home.includes('Apply as provider'), 'landing page provider CTAs should stay focused');
+    assert.ok(home.includes('Provider') && home.includes('Apply as provider'), 'landing page provider CTAs should stay focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('MPP Payment Rail'), 'docs should explain the MPP adapter layer');
     assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
@@ -427,7 +427,134 @@ describe('Site link integrity', () => {
 });
 
 // ═══════════════════════════════════════
-// 15. HELPER FUNCTIONS
+// 15. FRONTEND CASCADE BOUNDARIES
+// ═══════════════════════════════════════
+describe('Frontend cascade boundaries', () => {
+  it('React shell classes are namespaced away from legacy public CSS', () => {
+    const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
+    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const publicNav = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '02-public-nav.css'), 'utf-8');
+
+    for (const className of ['mf-shell-nav', 'mf-shell-nav-links', 'mf-shell-login', 'mf-shell-mobile-menu']) {
+      assert.ok(shell.includes(className), `Shell should use ${className}`);
+      assert.ok(globals.includes(`.${className}`), `globals.css should own ${className}`);
+      assert.ok(!publicNav.includes(className), `legacy public nav CSS must not target ${className}`);
+    }
+
+    for (const legacyClass of ['"mf-nav"', '"nav-links"', '"mf-login"', '"mobile-menu"', '"hamburger"']) {
+      assert.ok(!shell.includes(legacyClass), `Shell must not reuse legacy selector ${legacyClass}`);
+    }
+  });
+
+  it('React shell nav glyphs match the landing glyph source', () => {
+    const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
+    const legacyIndex = readFileSync(resolve(projectRoot, 'public', 'site', 'index.html'), 'utf-8');
+
+    for (const iconPath of ['M18.244 2H21.5', 'M19.27 5.33', 'M2 4.5A2.5']) {
+      assert.ok(legacyIndex.includes(iconPath), `legacy landing reference should include icon path ${iconPath}`);
+      assert.ok(shell.includes(iconPath), `React shell should use matching icon path ${iconPath}`);
+    }
+
+    assert.ok(!shell.includes('MessageCircle'), 'React shell should not use an approximate Discord icon');
+    assert.ok(!shell.includes('Wallet }'), 'React shell should not use an approximate wallet icon');
+  });
+
+  it('homepage is React-owned instead of injected through the legacy bridge', () => {
+    const app = readFileSync(resolve(projectRoot, 'src', 'App.tsx'), 'utf-8');
+    const productPages = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'ProductPages.tsx'), 'utf-8');
+    const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
+    const legacyPage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'LegacyPage.tsx'), 'utf-8');
+
+    assert.ok(app.includes('path === "/" || path === "/index.html"'), 'root route should render the React homepage');
+    assert.ok(app.includes('import("@/src/components/site/HomePage")'), 'root route should lazy-load the React homepage');
+    assert.ok(!productPages.includes('"/": <HomePage />'), 'shared product pages should not eagerly import the homepage bundle');
+    assert.ok(homePage.includes('<Showcase className="mf-home-showcase" />'), 'React homepage should own the product showcase');
+    assert.ok(homePage.includes('mf-home-surface-fan'), 'React homepage should own the surface fan');
+    assert.ok(homePage.includes('<MorphingText className="mf-home-morph-text mf-home-liquid-text"'), 'React homepage should keep the threshold morph hero text effect');
+    assert.ok(homePage.includes('statsWords'), 'React homepage should keep the animated stats headline words');
+    assert.ok(homePage.includes('window.setTimeout'), 'React surface fan should auto-advance without legacy home.js');
+    assert.ok(homePage.includes('onPointerDown'), 'React surface fan should keep drag/swipe affordance');
+    assert.ok(!legacyPage.includes('"/": "/site/index.html"'), 'legacy bridge should not serve the live root homepage');
+    assert.ok(!legacyPage.includes('src.endsWith("/index.html")'), 'legacy bridge should not contain homepage-only patching logic');
+  });
+
+  it('legacy public CSS does not restyle shared React footer or shell nav', () => {
+    const homeCss = readFileSync(resolve(projectRoot, 'public', 'site', 'home.css'), 'utf-8');
+    const componentsCss = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '03-public-components.css'), 'utf-8');
+    const sharedJs = readFileSync(resolve(projectRoot, 'public', 'site', 'shared.js'), 'utf-8');
+    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const footer = readFileSync(resolve(projectRoot, 'components', 'ui', 'flickering-footer.tsx'), 'utf-8');
+
+    assert.ok(homeCss.includes('footer:not(.mf-footer-art)'), 'home.css broad footer selector should exclude React footer');
+    assert.ok(homeCss.includes('nav:not(.mf-shell-nav)'), 'home.css broad nav selector should exclude React shell nav');
+    assert.ok(componentsCss.includes('footer:not(.fcp-foot):not(.mf-footer-art)'), 'legacy footer rule should exclude React footer');
+    assert.ok(componentsCss.includes('footer:not(.site-footer):not(.mf-footer-art)'), 'legacy mobile footer rule should exclude React footer');
+    assert.ok(sharedJs.includes('footer:not(.fcp-foot):not(.mf-footer-art)'), 'legacy footer JS should not replace React footer');
+    assert.ok(globals.includes('.mf-footer-art__item a'), 'React footer links should be locally normalized');
+    assert.ok(
+      footer.indexOf('mf-footer-art__canvas-fade') < footer.indexOf('mf-footer-art__content'),
+      'footer visual fade should render below footer content',
+    );
+  });
+
+  it('flow-step pattern layer remains visible above card fill and below content', () => {
+    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const flowAfter = globals.match(/\.mf-flow-step::after\s*\{[\s\S]*?animation: mf-flow-falling-pattern 150s linear infinite;\r?\n  \}/)?.[0] || '';
+
+    assert.ok(flowAfter.includes('z-index: 1'), 'flow pattern layer should sit above the card fill');
+    assert.ok(flowAfter.includes('opacity: 0.26'), 'flow pattern opacity should be visible but subtle');
+    assert.ok(flowAfter.includes('mask-image:'), 'flow pattern should be masked into the card instead of washing out text');
+    assert.ok(globals.includes('.mf-flow-step > *'), 'flow card content should have explicit stacking');
+    assert.ok(globals.includes('z-index: 2'), 'flow card content should sit above the pattern layer');
+  });
+
+  it('homepage motion effects are centralized in React globals', () => {
+    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
+
+    for (const selector of ['.mf-home-morph-text', '.mf-home-stats-morph', '.mf-home-surface-card--active::after']) {
+      assert.ok(globals.includes(selector), `globals.css should own ${selector}`);
+    }
+
+    assert.ok(globals.includes('filter: var(--morph-filter);'), 'morph text should use the scoped threshold blur filter');
+    assert.ok(globals.includes('@keyframes mf-home-surface-sheen'), 'surface fan sheen should be a shared CSS animation');
+    assert.ok(/\.mf-home-stats,\r?\n  \.mf-home-surfaces,\r?\n  \.mf-home-cta \{\r?\n    width: 100%;/.test(globals), 'homepage bands should be full-bleed');
+    assert.ok(globals.includes('grid-template-columns: minmax(0, 0.5fr) minmax(520px, 1fr);'), 'stats band should keep the split full-width composition');
+    assert.ok(globals.includes('min-height: 1.12em;'), 'hero morph text should reserve stable single-line height');
+    assert.ok(!homePage.includes('style={{'), 'homepage should not rely on inline styles for visual effects');
+  });
+
+  it('shared button primitive applies variant and size props', () => {
+    const button = readFileSync(resolve(projectRoot, 'components', 'ui', 'button.tsx'), 'utf-8');
+
+    assert.ok(button.includes('Button({ className, variant, size, children'), 'Button should consume size prop');
+    assert.ok(button.includes('buttonVariants({ variant, size })'), 'Button should pass size into cva variants');
+    assert.ok(button.includes('ButtonLink({ className, variant, size, children'), 'ButtonLink should consume size prop');
+  });
+
+  it('showcase layout is CSS-owned and does not flip after mount', () => {
+    const showcase = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Showcase.tsx'), 'utf-8');
+    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+
+    assert.ok(!showcase.includes('ResizeObserver'), 'showcase should not re-measure and change layout after first paint');
+    assert.ok(!showcase.includes('containerWidth'), 'showcase should not depend on runtime width state');
+    assert.ok(showcase.includes('mf-showcase-body mf-showcase-body--wide'), 'desktop showcase should render stable wide structure');
+    assert.ok(/\.mf-showcase-body--wide \{\r?\n    min-height: 360px;\r?\n    grid-template-columns: minmax\(220px, 0\.34fr\) minmax\(0, 1fr\);/.test(globals), 'wide showcase columns should be defined in CSS');
+  });
+
+  it('legacy routes and React routes do not stack background systems', () => {
+    const app = readFileSync(resolve(projectRoot, 'src', 'App.tsx'), 'utf-8');
+    const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
+    const legacyReturn = app.match(/return <LegacyPage src=\{legacyPageForPath\(path\)\} \/>;/)?.[0] || '';
+
+    assert.ok(shell.includes('<EtherealBackground />'), 'React shell should own the React background');
+    assert.ok(legacyReturn, 'legacy routes should render only LegacyPage');
+    assert.ok(!legacyReturn.includes('EtherealBackground'), 'legacy routes should not stack the React background over legacy CSS backgrounds');
+  });
+});
+
+// ═══════════════════════════════════════
+// 16. HELPER FUNCTIONS
 // ═══════════════════════════════════════
 describe('Helper functions', () => {
   // Dynamically import helpers since they don't require external deps
@@ -648,7 +775,7 @@ describe('Meterflow control plane', () => {
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     const gateway = readFileSync(resolve(root, 'routes', 'provider-gateway.js'), 'utf-8');
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
-    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(control.includes('normalizeTargetUrl'), 'should validate targetUrl');
     assert.ok(control.includes('assertZauthObservedMeterRoute'), 'custom paid routes should stay in Zauth-observed namespaces');
     assert.ok(control.includes('targetHost'), 'should store target host metadata');
@@ -668,7 +795,7 @@ describe('Meterflow control plane', () => {
   it('dashboard meter tests create visible quote receipts without marking payment failed', () => {
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
     const routes = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
-    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(routes.includes('recordReceipt'), 'meter test route should record a receipt');
     assert.ok(routes.includes("status: 'test_quote'"), 'meter test receipts should use a neutral quote status');
     assert.ok(routes.includes("paymentMethod: 'dashboard_test'"), 'meter test receipts should identify dashboard origin');
@@ -679,8 +806,8 @@ describe('Meterflow control plane', () => {
   });
 
   it('dashboard lets wallet-authenticated non-holders create paid endpoints', () => {
-    const gate = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'gate.js'), 'utf-8');
-    const overview = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'overview.js'), 'utf-8');
+    const gate = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'gate.js'), 'utf-8');
+    const overview = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'tabs', 'overview.js'), 'utf-8');
     const manageFn = gate.match(/export function canManageMeterflow\(\) \{([\s\S]*?)\n\}/)?.[1] || '';
     assert.ok(manageFn.includes('hasMeterflowSession()'), 'control-plane management should require a wallet key session');
     assert.ok(!manageFn.includes("STATE.tier !== 'Trial'"), 'control-plane management should not be holder-tier gated');
@@ -744,7 +871,7 @@ describe('Meterflow control plane', () => {
   it('control-plane routes enforce ownership-sensitive mutations', () => {
     const src = readFileSync(resolve(root, 'routes', 'control-plane.js'), 'utf-8');
     const control = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
-    const dashboard = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
+    const dashboard = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'tabs', 'control-plane.js'), 'utf-8');
     assert.ok(src.includes('canManageResource'), 'meter updates should check ownership');
     assert.ok(src.includes("router.delete('/meters/:id'"), 'custom meters should be deletable');
     assert.ok(src.includes('default_meter_protected'), 'built-in meters should be protected from delete');
@@ -789,7 +916,7 @@ describe('Meterflow control plane', () => {
 
   it('wallet auth uses a server-issued challenge and consumes the nonce', () => {
     const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
-    const wallet = readFileSync(resolve(projectRoot, 'dashboard', 'js', 'wallet.js'), 'utf-8');
+    const wallet = readFileSync(resolve(projectRoot, 'public', 'dashboard', 'js', 'wallet.js'), 'utf-8');
     assert.ok(auth.includes("router.get('/challenge'"), 'should expose challenge route');
     assert.ok(auth.includes('consumeChallenge'), 'register should consume nonce once');
     assert.ok(auth.includes('ALLOW_LEGACY_WALLET_REGISTER'), 'legacy timestamp registration should require explicit compat flag');
@@ -824,7 +951,7 @@ describe('Meterflow control plane', () => {
     const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
     const route = readFileSync(resolve(root, 'routes', 'token.js'), 'utf-8');
     const profile = readFileSync(resolve(root, 'lib', 'token-profile.js'), 'utf-8');
-    const page = readFileSync(resolve(projectRoot, 'site', 'token.html'), 'utf-8');
+    const page = readFileSync(resolve(projectRoot, 'public', 'site', 'token.html'), 'utf-8');
     assert.ok(app.includes('tokenRouter'), 'app should import token router');
     assert.ok(app.includes("app.use('/v1', tokenRouter)"), 'token router should mount under /v1');
     assert.ok(route.includes("router.get('/token/config'"), 'should expose public token config');

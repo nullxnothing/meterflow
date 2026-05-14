@@ -1,0 +1,24 @@
+{
+  "public": ".",
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/how-it-works", "destination": "/index.html" },
+    { "source": "/docs", "destination": "/index.html" },
+    { "source": "/docs.html", "destination": "/index.html" },
+    { "source": "/proxy/stats", "destination": "/site/dev-stats.json" },
+    { "source": "/proxy/v1/token", "destination": "/site/dev-token.json" },
+    { "source": "/status", "destination": "/index.html" },
+    { "source": "/roadmap", "destination": "/index.html" },
+    { "source": "/token", "destination": "/index.html" },
+    { "source": "/apply", "destination": "/index.html" },
+    { "source": "/apply/:path*", "destination": "/index.html" },
+    { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
+    { "source": "/admin/applications/:path*", "destination": "/site/admin-applications.html" },
+    { "source": "/admin/zauth", "destination": "/site/admin-zauth.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" },
+    { "source": "/privacy", "destination": "/index.html" },
+    { "source": "/terms", "destination": "/index.html" },
+    { "source": "/404", "destination": "/index.html" }
+  ]
+}
