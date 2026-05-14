@@ -52,8 +52,8 @@ body::before {
   opacity: var(--shadow-bg-opacity);
   mix-blend-mode: screen;
   filter: saturate(82%) contrast(132%) brightness(0.70);
-  -webkit-mask-image: url('/assets/backgrounds/shadow-mask.jpg');
-  mask-image: url('/assets/backgrounds/shadow-mask.jpg');
+  -webkit-mask-image: url('/assets/backgrounds/shadow-mask.avif');
+  mask-image: url('/assets/backgrounds/shadow-mask.avif');
   -webkit-mask-size: cover;
   mask-size: cover;
   -webkit-mask-repeat: no-repeat;
@@ -71,7 +71,7 @@ body::after {
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(var(--accent-2-rgb), 0.060), transparent 50%),
     linear-gradient(180deg, rgba(var(--surface-2-rgb), 0.18), rgba(var(--bg-deep-rgb), 0.18)),
-    url('/assets/backgrounds/shadow-noise.png');
+    url('/assets/backgrounds/shadow-noise.avif');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, var(--shadow-noise-scale) var(--shadow-noise-scale);
   opacity: var(--shadow-noise-opacity);

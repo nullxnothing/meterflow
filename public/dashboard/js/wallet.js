@@ -145,18 +145,18 @@ export function openWalletConnect() {
           ? `<button class="connect-btn btn-loading" disabled>Connecting<span class="dot-pulse">...</span></button>`
           : hasWallet ? providers.map((p, i) => `
             <button class="connect-btn${i > 0 ? ' connect-btn-secondary' : ''}" data-provider="${i}">
-              <img src="${p.icon}" alt="${p.name}" width="22" height="22" style="border-radius:5px;">
+              <img src="${p.icon}" alt="${p.name}" width="22" height="22" class="u-provider-icon-lg">
               <span>Continue with ${p.name}</span>
               <span class="connect-btn-arrow">\u2192</span>
             </button>
           `).join('') : `
             <button class="connect-btn" onclick="window.open('https://phantom.com/download','_blank')">
-              <img src="https://icons.duckduckgo.com/ip3/phantom.com.ico" alt="" width="22" height="22" style="border-radius:5px;">
+              <img src="https://icons.duckduckgo.com/ip3/phantom.com.ico" alt="" width="22" height="22" class="u-provider-icon-lg">
               <span>Install Phantom Wallet</span>
               <span class="connect-btn-arrow">\u2197</span>
             </button>
             <button class="connect-btn connect-btn-secondary" onclick="window.open('https://solflare.com/download','_blank')">
-              <img src="https://icons.duckduckgo.com/ip3/solflare.com.ico" alt="" width="22" height="22" style="border-radius:5px;">
+              <img src="https://icons.duckduckgo.com/ip3/solflare.com.ico" alt="" width="22" height="22" class="u-provider-icon-lg">
               <span>Install Solflare Wallet</span>
               <span class="connect-btn-arrow">\u2197</span>
             </button>

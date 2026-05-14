@@ -184,6 +184,7 @@
 
 .sidebar-usage-fill {
   height: 100%;
+  width: var(--progress-value, 0%);
   background: var(--accent);
   transition: width 0.8s ease-out;
   box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.30);

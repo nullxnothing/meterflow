@@ -38,10 +38,10 @@ export function renderOverview() {
         <div class="stat-card"><div class="label">Payment Rails</div><div class="value green">2</div><div class="sub">x402 + MPP-ready</div></div>
         <div class="stat-card"><div class="label">Utility Tier</div><div class="value accent">${STATE.tier || '\u2014'}</div><div class="sub">${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</div></div>
       ` : `
-        <div class="stat-card skeleton"><div class="label">Your Tier</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
-        <div class="stat-card skeleton"><div class="label">Calls Today</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
-        <div class="stat-card skeleton"><div class="label">Payment Rails</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
-        <div class="stat-card skeleton"><div class="label">Metering</div><div class="skeleton-value"></div><div class="sub" style="visibility:hidden">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Your Tier</div><div class="skeleton-value"></div><div class="sub u-invisible">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Calls Today</div><div class="skeleton-value"></div><div class="sub u-invisible">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Payment Rails</div><div class="skeleton-value"></div><div class="sub u-invisible">.</div></div>
+        <div class="stat-card skeleton"><div class="label">Metering</div><div class="skeleton-value"></div><div class="sub u-invisible">.</div></div>
       `}
     </div>
     ${renderTokenUtilityPanel({ compact: true })}
@@ -52,11 +52,11 @@ export function renderOverview() {
           <div class="usage-count">${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} metered calls</span></div>
           <div class="usage-count">${Math.round(usagePct)}%</div>
         </div>
-        <div class="usage-bar-track"><div class="usage-bar-fill ${barClass}" style="width: ${usagePct}%"></div></div>
+        <div class="usage-bar-track"><div class="usage-bar-fill ${barClass}" style="--progress-value:${usagePct}%"></div></div>
         <div class="usage-legend">
-          <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--accent)"></div>Used</div>
-          <div class="usage-legend-item"><div class="usage-legend-dot" style="background: var(--border)"></div>Remaining</div>
-          <div class="usage-legend-item" style="margin-left: auto">Resets in ${resetTime}</div>
+          <div class="usage-legend-item"><div class="usage-legend-dot usage-legend-dot--used"></div>Used</div>
+          <div class="usage-legend-item"><div class="usage-legend-dot usage-legend-dot--remaining"></div>Remaining</div>
+          <div class="usage-legend-item usage-legend-item--reset">Resets in ${resetTime}</div>
         </div>
         ${usagePct >= 90 ? `<div class="usage-warn-inline danger">${usagePct >= 100 ? 'Daily limit reached \u2014 calls will resume at midnight UTC.' : `${STATE.usage.remaining.toLocaleString()} calls remaining \u2014 approaching daily limit.`}</div>` : usagePct >= 70 ? `<div class="usage-warn-inline warning">${Math.round(100 - usagePct)}% of daily quota remaining. Resets in ${resetTime}.</div>` : ''}
       </div>
@@ -109,8 +109,8 @@ function renderPublicOverview() {
         </div>
       </div>
     ` : `
-      <div class="section" style="text-align:center;padding:24px 0;">
-        <p style="color:var(--text-muted);font-size:13px;">Your wallet is connected. Utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong>.</p>
+      <div class="section u-center-section">
+        <p class="u-text-mono-sm">Your wallet is connected. Utility balance: <strong>${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}</strong>.</p>
       </div>
     `}
 

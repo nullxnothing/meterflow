@@ -1,62 +1,60 @@
-import { lazy, Suspense, useEffect } from "react";
-import { ButtonLink } from "@/components/ui/button";
-import { LegacyPage, legacyPageForPath } from "@/src/components/site/LegacyPage";
-import { Shell } from "@/src/components/site/Shell";
+import { lazy, Suspense, type ReactNode } from "react";
+import { Route, Switch, useLocation } from "wouter";
+import { HomePage } from "@/components/site/HomePage";
+import { LegacyPage, legacyPageForPath } from "@/components/site/LegacyPage";
+import { RouteErrorBoundary } from "@/components/site/RouteErrorBoundary";
+import { Shell } from "@/components/site/Shell";
 
-const HomePage = lazy(() => import("@/src/components/site/HomePage").then((module) => ({ default: module.HomePage })));
-const ProductRoute = lazy(() => import("@/src/components/site/ProductPages").then((module) => ({ default: module.ProductRoute })));
+const ProductRoute = lazy(() => import("@/pages/ProductRoute").then((module) => ({ default: module.ProductRoute })));
 
-const productPaths = new Set(["/docs", "/docs.html", "/how-it-works", "/how-it-works.html", "/token", "/token.html", "/roadmap", "/roadmap.html"]);
+const homePaths = ["/", "/index.html"];
+const productPaths = ["/docs", "/docs.html", "/how-it-works", "/how-it-works.html", "/token", "/token.html", "/roadmap", "/roadmap.html"];
+const dashboardPaths = ["/dashboard", "/dashboard/index.html"];
 
 export default function App() {
-  const path = window.location.pathname.replace(/\/$/, "") || "/";
-
-  if (path === "/dashboard") {
-    return <DashboardRedirect />;
-  }
-
-  if (path === "/" || path === "/index.html") {
-    return (
-      <Shell>
-        <Suspense fallback={<RouteFallback />}>
-          <HomePage />
-        </Suspense>
-      </Shell>
-    );
-  }
-
-  if (productPaths.has(path)) {
-    return (
-      <Shell>
-        <Suspense fallback={<RouteFallback />}>
-          <ProductRoute path={path} />
-        </Suspense>
-      </Shell>
-    );
-  }
-
-  return <LegacyPage src={legacyPageForPath(path)} />;
+  return (
+    <Switch>
+      {homePaths.map((path) => (
+        <Route path={path} key={path}>
+          <RouteFrame>
+            <HomePage />
+          </RouteFrame>
+        </Route>
+      ))}
+      {productPaths.map((path) => (
+        <Route path={path} key={path}>
+          <RouteFrame>
+            <ProductRoute path={path} />
+          </RouteFrame>
+        </Route>
+      ))}
+      {dashboardPaths.map((path) => (
+        <Route path={path} key={path}>
+          <LegacyPage src={legacyPageForPath(path)} />
+        </Route>
+      ))}
+      <Route>
+        <LegacyFallback />
+      </Route>
+    </Switch>
+  );
 }
 
 function RouteFallback() {
   return <div className="mf-route-fallback" aria-hidden="true" />;
 }
 
-function DashboardRedirect() {
-  useEffect(() => {
-    window.location.replace("/dashboard/index.html");
-  }, []);
-
+function RouteFrame({ children }: { children: ReactNode }) {
   return (
     <Shell>
-      <section className="mf-dashboard-redirect">
-        <p className="mf-eyebrow">Dashboard</p>
-        <h1 className="mf-redirect-title">Opening dashboard.</h1>
-        <p className="mf-redirect-copy">The dashboard remains on the existing static bundle during this migration.</p>
-        <ButtonLink className="mt-8 w-fit" href="/dashboard/index.html">
-          Open dashboard
-        </ButtonLink>
-      </section>
+      <RouteErrorBoundary>
+        <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+      </RouteErrorBoundary>
     </Shell>
   );
+}
+
+function LegacyFallback() {
+  const [path] = useLocation();
+  return <LegacyPage src={legacyPageForPath(path)} />;
 }

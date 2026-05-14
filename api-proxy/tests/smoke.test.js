@@ -12,6 +12,23 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const projectRoot = resolve(root, '..');
+const reactStyleFiles = [
+  'globals.css',
+  'globals/_tokens.css',
+  'globals/_keyframes.css',
+  'globals/_shell.css',
+  'globals/_home.css',
+  'globals/_pages.css',
+  'globals/_showcase.css',
+  'globals/_effects.css',
+  'globals/_responsive.css',
+];
+
+function readReactStyles() {
+  return reactStyleFiles
+    .map((file) => readFileSync(resolve(projectRoot, 'src', 'styles', file), 'utf-8'))
+    .join('\n');
+}
 
 // ═══════════════════════════════════════
 // 1. CONFIG & ENV VALIDATION
@@ -432,7 +449,7 @@ describe('Site link integrity', () => {
 describe('Frontend cascade boundaries', () => {
   it('React shell classes are namespaced away from legacy public CSS', () => {
     const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readReactStyles();
     const publicNav = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '02-public-nav.css'), 'utf-8');
 
     for (const className of ['mf-shell-nav', 'mf-shell-nav-links', 'mf-shell-login', 'mf-shell-mobile-menu']) {
@@ -465,9 +482,13 @@ describe('Frontend cascade boundaries', () => {
     const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
     const legacyPage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'LegacyPage.tsx'), 'utf-8');
 
-    assert.ok(app.includes('path === "/" || path === "/index.html"'), 'root route should render the React homepage');
-    assert.ok(app.includes('import("@/src/components/site/HomePage")'), 'root route should lazy-load the React homepage');
+    assert.ok(app.includes('const homePaths = ["/", "/index.html"]'), 'root route should render the React homepage');
+    assert.ok(app.includes('from "wouter"'), 'React routes should be owned by a router');
+    assert.ok(app.includes('import { HomePage } from "@/components/site/HomePage"'), 'root route should render the homepage without a route-level Suspense shift');
     assert.ok(!productPages.includes('"/": <HomePage />'), 'shared product pages should not eagerly import the homepage bundle');
+    assert.ok(homePage.includes('lazy(() =>') && homePage.includes('import("@/components/site/Showcase")'), 'React homepage should lazy-load the product showcase below a stable placeholder');
+    assert.ok(homePage.includes('import("@/components/site/HomeMotion")'), 'React homepage should defer GSAP homepage motion off the critical route render');
+    assert.ok(homePage.includes('import("@/components/site/SurfaceFanMotion")'), 'React homepage should defer GSAP surface fan motion off the critical route render');
     assert.ok(homePage.includes('<Showcase className="mf-home-showcase" />'), 'React homepage should own the product showcase');
     assert.ok(homePage.includes('mf-home-surface-fan'), 'React homepage should own the surface fan');
     assert.ok(homePage.includes('<MorphingText className="mf-home-morph-text mf-home-liquid-text"'), 'React homepage should keep the threshold morph hero text effect');
@@ -482,8 +503,8 @@ describe('Frontend cascade boundaries', () => {
     const homeCss = readFileSync(resolve(projectRoot, 'public', 'site', 'home.css'), 'utf-8');
     const componentsCss = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '03-public-components.css'), 'utf-8');
     const sharedJs = readFileSync(resolve(projectRoot, 'public', 'site', 'shared.js'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
-    const footer = readFileSync(resolve(projectRoot, 'components', 'ui', 'flickering-footer.tsx'), 'utf-8');
+    const globals = readReactStyles();
+    const footer = readFileSync(resolve(projectRoot, 'src', 'components', 'ui', 'flickering-footer.tsx'), 'utf-8');
 
     assert.ok(homeCss.includes('footer:not(.mf-footer-art)'), 'home.css broad footer selector should exclude React footer');
     assert.ok(homeCss.includes('nav:not(.mf-shell-nav)'), 'home.css broad nav selector should exclude React shell nav');
@@ -498,7 +519,7 @@ describe('Frontend cascade boundaries', () => {
   });
 
   it('flow-step pattern layer remains visible above card fill and below content', () => {
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readReactStyles();
     const flowAfter = globals.match(/\.mf-flow-step::after\s*\{[\s\S]*?animation: mf-flow-falling-pattern 150s linear infinite;\r?\n  \}/)?.[0] || '';
 
     assert.ok(flowAfter.includes('z-index: 1'), 'flow pattern layer should sit above the card fill');
@@ -509,7 +530,7 @@ describe('Frontend cascade boundaries', () => {
   });
 
   it('homepage motion effects are centralized in React globals', () => {
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readReactStyles();
     const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
 
     for (const selector of ['.mf-home-morph-text', '.mf-home-stats-morph', '.mf-home-surface-card--active::after']) {
@@ -525,7 +546,7 @@ describe('Frontend cascade boundaries', () => {
   });
 
   it('shared button primitive applies variant and size props', () => {
-    const button = readFileSync(resolve(projectRoot, 'components', 'ui', 'button.tsx'), 'utf-8');
+    const button = readFileSync(resolve(projectRoot, 'src', 'components', 'ui', 'button.tsx'), 'utf-8');
 
     assert.ok(button.includes('Button({ className, variant, size, children'), 'Button should consume size prop');
     assert.ok(button.includes('buttonVariants({ variant, size })'), 'Button should pass size into cva variants');
@@ -534,7 +555,7 @@ describe('Frontend cascade boundaries', () => {
 
   it('showcase layout is CSS-owned and does not flip after mount', () => {
     const showcase = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Showcase.tsx'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readReactStyles();
 
     assert.ok(!showcase.includes('ResizeObserver'), 'showcase should not re-measure and change layout after first paint');
     assert.ok(!showcase.includes('containerWidth'), 'showcase should not depend on runtime width state');
@@ -545,7 +566,7 @@ describe('Frontend cascade boundaries', () => {
   it('legacy routes and React routes do not stack background systems', () => {
     const app = readFileSync(resolve(projectRoot, 'src', 'App.tsx'), 'utf-8');
     const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
-    const legacyReturn = app.match(/return <LegacyPage src=\{legacyPageForPath\(path\)\} \/>;/)?.[0] || '';
+    const legacyReturn = app.match(/<LegacyPage src=\{legacyPageForPath\(path\)\} \/>/)?.[0] || '';
 
     assert.ok(shell.includes('<EtherealBackground />'), 'React shell should own the React background');
     assert.ok(legacyReturn, 'legacy routes should render only LegacyPage');

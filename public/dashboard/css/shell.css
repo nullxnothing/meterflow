@@ -198,6 +198,11 @@
   display: block;
 }
 
+.sidebar-social-link svg.sidebar-social-icon--dexscreener {
+  width: 16px;
+  height: 16px;
+}
+
 .sidebar-social-link:hover {
   color: var(--text);
   border-color: rgba(var(--accent-rgb), 0.32);
@@ -623,6 +628,7 @@
 
 .usage-bar-fill {
   height: 100%;
+  width: var(--progress-value, 0%);
   background: var(--accent);
   transition: width 1s ease-out;
   box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.30), 0 0 20px rgba(var(--accent-rgb), 0.12);
@@ -649,6 +655,18 @@
   animation: overviewUsagePulse 1.5s ease-in-out infinite;
 }
 .usage-bar-fill.danger::after { display: none; }
+
+.usage-legend-dot--used {
+  background: var(--accent);
+}
+
+.usage-legend-dot--remaining {
+  background: var(--border);
+}
+
+.usage-legend-item--reset {
+  margin-left: auto;
+}
 
 @keyframes overviewUsagePulse {
   0%, 100% { opacity: 1; }

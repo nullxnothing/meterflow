@@ -8,6 +8,10 @@ env
 .vercel
 cloddsbot-ref/
 *.mp4
+*.blend
+*.fbx
+*.obj
+*.mtl
 dist/
 target/
 CLAUDE.md
@@ -16,6 +20,7 @@ docs/
 .claude/
 .playwright-mcp/
 screenshots/
+artifacts/
 eliza-agent/
 twitter-bot/test-ai.js
 *.png

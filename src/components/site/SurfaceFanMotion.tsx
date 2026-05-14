@@ -4,12 +4,58 @@ import type { RefObject } from "react";
 
 gsap.registerPlugin(useGSAP);
 
+function tweenSurfaceValue(element: HTMLElement) {
+  const source = element.dataset.mfSurfaceValue || element.textContent || "";
+  const match = source.match(/-?\d[\d,]*(?:\.\d+)?/);
+  if (!match) return undefined;
+
+  const rawNumber = match[0];
+  const end = Number(rawNumber.replace(/,/g, ""));
+  if (!Number.isFinite(end)) return undefined;
+
+  const decimals = rawNumber.includes(".") ? rawNumber.split(".")[1]?.length || 0 : 0;
+  const state = { value: 0 };
+  const prefix = source.slice(0, match.index || 0);
+  const suffix = source.slice((match.index || 0) + rawNumber.length);
+
+  return gsap.to(state, {
+    value: end,
+    duration: 0.74,
+    ease: "power3.out",
+    onUpdate: () => {
+      const value = decimals > 0 ? state.value.toFixed(decimals) : Math.round(state.value).toLocaleString();
+      element.textContent = `${prefix}${value}${suffix}`;
+    },
+    onComplete: () => {
+      element.textContent = source;
+    },
+  });
+}
+
 export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, activeIndex: number, paused: boolean) {
   useGSAP(
     () => {
       const root = scope.current;
       if (!root) return undefined;
 
+      return mountSurfaceFanMotion(root, activeIndex, paused);
+    },
+    { scope, dependencies: [activeIndex, paused], revertOnUpdate: true },
+  );
+
+  useGSAP(
+    () => {
+      const root = scope.current;
+      if (!root) return undefined;
+
+      return mountSurfaceFanTilt(root);
+    },
+    { scope },
+  );
+}
+
+export function mountSurfaceFanMotion(root: HTMLDivElement, activeIndex: number, paused: boolean) {
+  const context = gsap.context(() => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
 
@@ -33,15 +79,16 @@ export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, act
           const activeTopline = activeCard.querySelector<HTMLElement>(".mf-home-surface-card__topline");
           const activeScan = activeCard.querySelector<HTMLElement>(".mf-home-surface-card__scan");
           const activeValues = gsap.utils.toArray<HTMLElement>(activeCard.querySelectorAll(".mf-home-surface-row strong"));
+          const nearbyContent = gsap.utils.toArray<HTMLElement>(
+            q(".mf-home-surface-card--next .mf-home-surface-card__content, .mf-home-surface-card--prev .mf-home-surface-card__content"),
+          );
+          const styles = getComputedStyle(document.documentElement);
+          const textGlowStart = styles.getPropertyValue("--motion-text-glow-start").trim();
+          const textGlowActive = styles.getPropertyValue("--motion-text-glow-active").trim();
 
           gsap.set(q(".mf-home-surface-card__bar, .mf-home-surface-card__foot, .mf-home-surface-row"), {
             clearProps: "opacity,visibility,transform,filter",
           });
-          gsap.set(activeCard, {
-            "--surface-pointer-x": 50,
-            "--surface-pointer-y": 42,
-          });
-
           if (reduceMotion) {
             gsap.set(q(".mf-home-surface-card__content, .mf-home-surface-row, .mf-home-surface-card__bar, .mf-home-surface-card__foot"), {
               autoAlpha: 1,
@@ -50,6 +97,10 @@ export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, act
             return undefined;
           }
 
+          gsap.set([activeCard, activeContent, ...nearbyContent], { willChange: "transform,opacity" });
+          gsap.killTweensOf([activeContent, activeTopline, activeScan, activeValues, nearbyContent]);
+
+          const valueTweens: gsap.core.Tween[] = [];
           const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
           intro
             .fromTo(
@@ -59,26 +110,42 @@ export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, act
             )
             .fromTo(
               activeValues,
-              { textShadow: "0 0 0 rgba(125, 199, 255, 0)" },
-              {
-                textShadow: "0 0 18px rgba(125, 199, 255, 0.42)",
-                duration: 0.22,
-                stagger: 0.025,
-                yoyo: true,
-                repeat: 1,
-                clearProps: "textShadow",
+              { textShadow: textGlowStart },
+            {
+              textShadow: textGlowActive,
+              duration: 0.22,
+              stagger: 0.025,
+              overwrite: "auto",
+              yoyo: true,
+              repeat: 1,
+              clearProps: "textShadow",
               },
               "<0.14",
             )
+            .add(() => {
+              valueTweens.forEach((tween) => tween.kill());
+              valueTweens.length = 0;
+              activeValues.forEach((element) => {
+                const tween = tweenSurfaceValue(element);
+                if (tween) valueTweens.push(tween);
+              });
+            }, "<")
             .fromTo(
               activeScan,
               { xPercent: -120, autoAlpha: 0 },
-              { xPercent: 120, autoAlpha: 0.8, duration: 0.72, ease: "power2.out", clearProps: "transform,opacity,visibility" },
+              { xPercent: 120, autoAlpha: 0.8, duration: 0.72, ease: "power2.out", overwrite: "auto", clearProps: "transform,opacity,visibility" },
               "<0.02",
             );
 
           if (!isDesktop) {
-            return () => intro.kill();
+            return () => {
+              intro.kill();
+              valueTweens.forEach((tween) => tween.kill());
+              activeValues.forEach((element) => {
+                element.textContent = element.dataset.mfSurfaceValue || element.textContent;
+              });
+              gsap.set([activeCard, activeContent, ...nearbyContent], { clearProps: "willChange" });
+            };
           }
 
           const ambient = gsap.to(activeContent, {
@@ -87,48 +154,65 @@ export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, act
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
+            overwrite: "auto",
           });
 
-          const nearby = gsap.to(q(".mf-home-surface-card--next .mf-home-surface-card__content, .mf-home-surface-card--prev .mf-home-surface-card__content"), {
+          const nearby = gsap.to(nearbyContent, {
             y: paused ? 0 : 4,
             duration: 3.8,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
             stagger: 0.18,
+            overwrite: "auto",
           });
 
           return () => {
             intro.kill();
+            valueTweens.forEach((tween) => tween.kill());
+            activeValues.forEach((element) => {
+              element.textContent = element.dataset.mfSurfaceValue || element.textContent;
+            });
             ambient.kill();
             nearby.kill();
+            gsap.set([activeCard, activeContent, ...nearbyContent], { clearProps: "willChange" });
           };
         },
       );
 
       return () => mm.revert();
-    },
-    { scope, dependencies: [activeIndex, paused], revertOnUpdate: true },
-  );
+  }, root);
 
-  useGSAP(
-    (context, contextSafe) => {
-      const root = scope.current;
-      if (!root) return undefined;
+  return () => context.revert();
+}
 
+export function mountSurfaceFanTilt(root: HTMLDivElement) {
+  const context = gsap.context(() => {
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const canTilt = window.matchMedia("(min-width: 1024px)").matches && !reducedMotion;
       if (!canTilt) return undefined;
 
       const tiltToX = gsap.quickTo(root, "--surface-tilt-x", { duration: 0.38, ease: "power3.out" });
       const tiltToY = gsap.quickTo(root, "--surface-tilt-y", { duration: 0.38, ease: "power3.out" });
+      let activeCard: HTMLElement | null = null;
+      let activeRect: DOMRect | null = null;
+      let measureFrame = 0;
 
-      const onPointerMove = contextSafe((event: PointerEvent) => {
-        const activeCard = root.querySelector<HTMLElement>(".mf-home-surface-card--active");
-        if (!activeCard) return;
+      const measureActiveCard = () => {
+        measureFrame = 0;
+        activeCard = root.querySelector<HTMLElement>(".mf-home-surface-card--active");
+        activeRect = activeCard?.getBoundingClientRect() ?? null;
+      };
 
-        const rect = activeCard.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
+      const queueMeasure = () => {
+        if (measureFrame) return;
+        measureFrame = window.requestAnimationFrame(measureActiveCard);
+      };
+
+      const onPointerMove = (event: PointerEvent) => {
+        if (!activeRect) measureActiveCard();
+        const rect = activeRect;
+        if (!rect?.width || !rect.height) return;
 
         const localX = (event.clientX - rect.left) / rect.width;
         const localY = (event.clientY - rect.top) / rect.height;
@@ -139,38 +223,30 @@ export function useSurfaceFanMotion(scope: RefObject<HTMLDivElement | null>, act
 
         tiltToY(rotateY);
         tiltToX(rotateX);
-        gsap.to(activeCard, {
-          "--surface-pointer-x": gsap.utils.clamp(0, 100, localX * 100),
-          "--surface-pointer-y": gsap.utils.clamp(0, 100, localY * 100),
-          duration: 0.32,
-          ease: "power3.out",
-          overwrite: "auto",
-        });
-      });
+      };
 
-      const onPointerLeave = contextSafe(() => {
+      const onPointerLeave = () => {
         tiltToX(0);
         tiltToY(0);
-        const activeCard = root.querySelector<HTMLElement>(".mf-home-surface-card--active");
-        if (activeCard) {
-          gsap.to(activeCard, {
-            "--surface-pointer-x": 50,
-            "--surface-pointer-y": 42,
-            duration: 0.44,
-            ease: "power3.out",
-            overwrite: "auto",
-          });
-        }
-      });
+      };
+
+      measureActiveCard();
+      const mutationObserver = new MutationObserver(queueMeasure);
+      mutationObserver.observe(root, { attributes: true, attributeFilter: ["class"], subtree: true });
+      const resizeObserver = new ResizeObserver(queueMeasure);
+      resizeObserver.observe(root);
 
       root.addEventListener("pointermove", onPointerMove, { passive: true });
       root.addEventListener("pointerleave", onPointerLeave);
 
       return () => {
+        if (measureFrame) window.cancelAnimationFrame(measureFrame);
+        mutationObserver.disconnect();
+        resizeObserver.disconnect();
         root.removeEventListener("pointermove", onPointerMove);
         root.removeEventListener("pointerleave", onPointerLeave);
       };
-    },
-    { scope },
-  );
+  }, root);
+
+  return () => context.revert();
 }

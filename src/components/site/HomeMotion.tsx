@@ -19,12 +19,29 @@ function numericValue(template: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function revealTrigger(trigger: Element, start: string) {
+  return {
+    trigger,
+    start,
+    once: true,
+    toggleActions: "play none none none",
+  };
+}
+
 export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
   useGSAP(
     () => {
       const root = scope.current;
       if (!root) return undefined;
 
+      return mountHomeMotion(root);
+    },
+    { scope },
+  );
+}
+
+export function mountHomeMotion(root: HTMLDivElement) {
+  const context = gsap.context(() => {
       const q = gsap.utils.selector(root);
       const mm = gsap.matchMedia();
 
@@ -61,7 +78,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
               clearProps: "transform,opacity,visibility,filter",
             })
             .from(
-              q(".mf-home-hero__powered, .mf-home-hero__copy, .mf-home-hero__actions"),
+              q(".mf-home-hero__attribution, .mf-home-hero__copy, .mf-home-hero__actions"),
               {
                 autoAlpha: 0,
                 y: 20,
@@ -72,11 +89,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
             );
 
           const statsTimeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: q(".mf-home-stats")[0],
-              start: "top 74%",
-              once: true,
-            },
+            scrollTrigger: revealTrigger(q(".mf-home-stats")[0], "top 74%"),
           });
           statsTimeline
             .from(q(".mf-home-stats .mf-home-section-head"), {
@@ -105,11 +118,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
               value: numericValue(template),
               duration: 1.35,
               ease: "power4.out",
-              scrollTrigger: {
-                trigger: element.closest(".mf-home-stats") || element,
-                start: "top 72%",
-                once: true,
-              },
+              scrollTrigger: revealTrigger(element.closest(".mf-home-stats") || element, "top 72%"),
               onUpdate: () => {
                 element.textContent = formatCount(state.value, template);
               },
@@ -120,11 +129,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
           });
 
           const surfacesTimeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: q(".mf-home-surfaces")[0],
-              start: "top 72%",
-              once: true,
-            },
+            scrollTrigger: revealTrigger(q(".mf-home-surfaces")[0], "top 72%"),
           });
           surfacesTimeline
             .from(q(".mf-home-surfaces .mf-home-section-head"), {
@@ -162,11 +167,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
             scale: 0.985,
             duration: 0.82,
             clearProps: "transform,opacity,visibility",
-            scrollTrigger: {
-              trigger: q(".mf-home-cta")[0],
-              start: "top 78%",
-              once: true,
-            },
+            scrollTrigger: revealTrigger(q(".mf-home-cta")[0], "top 78%"),
           });
 
           gsap.from(q(".mf-home-cta .mf-kicker, .mf-home-cta h2, .mf-home-cta p:not(.mf-kicker), .mf-home-cta__actions a"), {
@@ -175,11 +176,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
             stagger: 0.08,
             duration: 0.52,
             clearProps: "transform,opacity,visibility",
-            scrollTrigger: {
-              trigger: q(".mf-home-cta")[0],
-              start: "top 72%",
-              once: true,
-            },
+            scrollTrigger: revealTrigger(q(".mf-home-cta")[0], "top 72%"),
           });
 
           return undefined;
@@ -187,7 +184,7 @@ export function useHomeMotion(scope: RefObject<HTMLDivElement | null>) {
       );
 
       return () => mm.revert();
-    },
-    { scope },
-  );
+  }, root);
+
+  return () => context.revert();
 }

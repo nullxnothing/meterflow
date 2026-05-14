@@ -50,9 +50,9 @@ export function renderChat() {
               ).join('')}
             </select>
           </div>
-          <div style="display:flex;gap:8px;">
+          <div class="u-inline-actions">
             ${CHAT.conversations.length > 1 ? `
-              <select class="chat-model-select" id="chatConvSelect" style="max-width:200px;">
+              <select class="chat-model-select u-max-compact" id="chatConvSelect">
                 ${CHAT.conversations.map(c =>
                   `<option value="${c.id}" ${c.id === CHAT.activeId ? 'selected' : ''}>${escapeHtml(c.title)}</option>`
                 ).join('')}
@@ -97,7 +97,7 @@ export function renderChat() {
 
         <div class="chat-input-area">
           <button class="chat-upload-btn" id="chatUploadBtn" title="Upload image">+</button>
-          <input type="file" id="chatFileInput" accept="image/*" multiple style="display:none;">
+          <input type="file" id="chatFileInput" accept="image/*" multiple hidden>
           <button class="chat-upload-btn chat-connectors-btn" id="chatConnectorsBtn" title="Connections">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v4M10 10v4M4 6h4a2 2 0 012 2v0M8 8h4"/><circle cx="6" cy="2" r="1"/><circle cx="10" cy="14" r="1"/></svg>
             ${Object.values(STATE.connections).some(Boolean) ? '<span class="connectors-dot"></span>' : ''}

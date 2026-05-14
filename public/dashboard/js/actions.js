@@ -65,6 +65,10 @@ export function toggleKeyVisibility() {
 
 export function setTab(tab) {
   if (!DASHBOARD_TABS.has(tab)) tab = 'overview';
+  if (tab === 'receipts') {
+    STATE.newReceiptCount = 0;
+    document.querySelectorAll('.nav-new-count').forEach(el => el.remove());
+  }
   // Sync URL hash for deep-linking, refresh persistence, and back-button support
   if (typeof history !== 'undefined' && location.hash !== '#' + tab) {
     history.pushState({ tab }, '', '#' + tab);
