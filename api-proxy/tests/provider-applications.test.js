@@ -47,10 +47,10 @@ describe('Provider applications intake', () => {
   });
 
   it('ships public and admin pages with the required API calls', () => {
-    const apply = read('site/apply.html');
-    const admin = read('site/admin-applications.html');
-    const home = read('site/index.html');
-    const docs = read('site/docs.html');
+    const apply = read('public/site/apply.html');
+    const admin = read('public/site/admin-applications.html');
+    const home = read('public/site/index.html');
+    const docs = read('public/site/docs.html');
     const vercel = read('vercel.json');
     assert.ok(apply.includes('paid endpoint'));
     assert.ok(apply.includes('agent commerce stack'));

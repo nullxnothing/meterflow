@@ -1,0 +1,248 @@
+// ═══════════════════════════════════════════
+// Meterflow Dashboard — Chat Logic
+// ═══════════════════════════════════════════
+
+import { STATE, CHAT, API_BASE } from './state.js';
+import { escapeHtml, scrollChat } from './utils.js';
+import { showToast } from './actions.js';
+import { getActiveConversation, saveChatHistory } from './session.js';
+import { renderMarkdown } from './markdown.js';
+import { renderImagePreview } from './images.js';
+import { showToolIndicator, removeToolIndicator, showSearchSources, showToolResultCard, bindCodeCopyButtons, bindCodeToggleButtons } from './tools.js';
+
+// ─── Main Chat Function ───
+
+export async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || CHAT.isGenerating) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  const conv = getActiveConversation();
+  const sentImages = CHAT.pendingImages.length > 0 ? [...CHAT.pendingImages] : null;
+  conv.messages.push({ role: 'user', content: text, images: sentImages });
+
+  if (conv.messages.filter(m => m.role === 'user').length === 1) {
+    conv.title = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+  }
+
+  appendMessageToDOM({ role: 'user', content: text, images: sentImages });
+  showTypingIndicator();
+  CHAT.isGenerating = true;
+  updateSendButton();
+
+  const model = CHAT.selectedModel || STATE.models[0] || 'claude-sonnet-4-6';
+  const tools = CHAT.enabledTools.length > 0 ? [...CHAT.enabledTools] : undefined;
+  const images = sentImages || undefined;
+
+  CHAT.pendingImages = [];
+  renderImagePreview();
+
+  try {
+    CHAT.abortController = new AbortController();
+
+    const response = await fetch(`${API_BASE}/v1/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.apiKeyFull}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: conv.messages.map(m => ({ role: m.role, content: m.content })),
+        ...(STATE.tier !== 'Trial' ? { tools } : {}),
+        images,
+      }),
+      signal: CHAT.abortController.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      if (err.error === 'trial_exhausted') {
+        STATE.usage.remaining = 0;
+        STATE.usage.today = STATE.usage.limit;
+        import('./render.js').then(m => m.render());
+        throw new Error('Free trial exhausted. Connect a wallet or use a metered client key to continue.');
+      }
+      if (response.status === 429) {
+        STATE.usage.remaining = 0;
+        STATE.usage.today = STATE.usage.limit;
+        import('./polling.js').then(m => m.updateSidebarFooter());
+        const resetInfo = err.resetsAt ? ` Resets at ${new Date(err.resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}.` : ' Resets at midnight UTC.';
+        throw new Error(`Daily limit of ${(err.limit || STATE.usage.limit).toLocaleString()} calls reached.${resetInfo}`);
+      }
+      throw new Error(err.message || 'Request failed');
+    }
+
+    removeTypingIndicator();
+
+    const msgEl = appendMessageToDOM({ role: 'assistant', content: '', model });
+    const contentEl = msgEl.querySelector('.chat-msg-content');
+    const bodyEl = msgEl.querySelector('.chat-msg-body');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    let collectedSources = [];
+    let collectedToolResults = [];
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+          try {
+            const data = JSON.parse(jsonStr);
+            if (data.type === 'text') {
+              fullText += data.content;
+              contentEl.innerHTML = renderMarkdown(fullText);
+              scrollChat();
+            } else if (data.type === 'tool_start') {
+              showToolIndicator(bodyEl, data.tool, data.query);
+            } else if (data.type === 'tool_result') {
+              removeToolIndicator(bodyEl);
+              if (data.tool === 'web_search' && data.sources?.length > 0) {
+                collectedSources = collectedSources.concat(data.sources);
+                showSearchSources(bodyEl, collectedSources);
+              } else if (data.tool && data.data) {
+                collectedToolResults.push({ tool: data.tool, data: data.data });
+                showToolResultCard(bodyEl, data.tool, data.data);
+              }
+            } else if (data.type === 'trial') {
+              STATE.usage.today = data.used;
+              STATE.usage.remaining = data.limit - data.used;
+            } else if (data.type === 'error') {
+              throw new Error(data.message);
+            }
+          } catch (e) {
+            if (e.message && !e.message.includes('JSON')) throw e;
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    removeToolIndicator(bodyEl);
+    conv.messages.push({
+      role: 'assistant', content: fullText, model,
+      sources: collectedSources.length > 0 ? collectedSources : undefined,
+      toolResults: collectedToolResults.length > 0 ? collectedToolResults : undefined,
+    });
+    saveChatHistory();
+    bindCodeCopyButtons();
+    bindCodeToggleButtons();
+
+    // Update trial banner if applicable
+    if (STATE.tier === 'Trial') updateTrialBanner();
+
+  } catch (err) {
+    removeTypingIndicator();
+    if (err.name !== 'AbortError') {
+      appendMessageToDOM({ role: 'assistant', content: `Error: ${err.message}`, isError: true });
+    }
+  } finally {
+    CHAT.isGenerating = false;
+    CHAT.abortController = null;
+    updateSendButton();
+  }
+}
+
+function updateTrialBanner() {
+  const banner = document.querySelector('.trial-banner');
+  if (!banner) return;
+  if (STATE.trial.remaining <= 0) {
+    import('./render.js').then(m => m.render());
+    return;
+  }
+  const countEl = banner.querySelector('.trial-banner-count');
+  if (countEl) countEl.textContent = `${STATE.trial.remaining} of ${STATE.trial.limit} calls remaining today`;
+}
+
+// ─── Quick Prompt ───
+
+export function sendQuickPrompt(text) {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  input.value = text;
+  input.dispatchEvent(new Event('input'));
+  sendChatMessage();
+}
+
+window.sendQuickPrompt = sendQuickPrompt;
+
+// ─── DOM Helpers ───
+
+function appendMessageToDOM(msg) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return null;
+
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const imagesHtml = msg.images ? `<div class="chat-msg-images">${msg.images
+    .filter(img => ALLOWED_MIME.includes(img.mimeType))
+    .map(img => `<img src="data:${escapeHtml(img.mimeType)};base64,${img.data}" alt="uploaded">`)
+    .join('')}</div>` : '';
+
+  const el = document.createElement('div');
+  el.className = `chat-message ${msg.role}`;
+  el.innerHTML = `
+    <div class="chat-msg-avatar">${msg.role === 'user' ? 'You' : 'AI'}</div>
+    <div class="chat-msg-body">
+      <div class="chat-msg-name">${msg.role === 'user' ? 'You' : (msg.model || 'AI')}</div>
+      ${imagesHtml}
+      <div class="chat-msg-content${msg.isError ? ' error' : ''}">${
+        msg.role === 'user' ? escapeHtml(msg.content) : (msg.content ? renderMarkdown(msg.content) : '')
+      }</div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollChat();
+  return el;
+}
+
+function showTypingIndicator() {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'chat-message assistant';
+  el.id = 'typingIndicator';
+  el.innerHTML = `
+    <div class="chat-msg-avatar">AI</div>
+    <div class="chat-msg-body">
+      <div class="chat-typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+  `;
+  container.appendChild(el);
+  scrollChat();
+}
+
+function removeTypingIndicator() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function updateSendButton() {
+  const btn = document.getElementById('chatSendBtn');
+  if (btn) {
+    btn.disabled = CHAT.isGenerating;
+    btn.textContent = CHAT.isGenerating ? '...' : '\u2192';
+  }
+}
