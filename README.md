@@ -125,11 +125,18 @@ Historical service-route experiments may still exist in the repository, but they
 
 | Path | Purpose |
 | --- | --- |
-| `site/` | Public website and docs |
-| `dashboard/` | Wallet-connected control plane |
+| `src/` | Vite/React shell, primary product routes, global background, and legacy-page fallback bridge |
+| `src/components/site/HomePage.tsx` | Active React implementation for the landing page |
+| `src/components/site/ProductPages.tsx` | Active React implementation for Docs, How It Works, Token, and Roadmap |
+| `src/styles/globals.css` | Frontend design tokens, theme variables, and shared `mf-*` component classes |
+| `public/site/` | Static fallback and legacy public pages served under `/site/*` |
+| `public/dashboard/` | Active wallet-connected dashboard bundle served at `/dashboard/*` |
+| `components/ui/` | Shared React UI components used by the Vite shell |
 | `api-proxy/` | Express gateway, auth, meters, receipts, budgets, x402, and service routes |
 | `sdk/` | JavaScript client for Meterflow routes |
 | `skills/meterflow-api/` | Agent skill and provider metadata |
+| `docs/frontend-architecture.md` | Frontend source-of-truth and design-system rules |
+| `archive/legacy-static-html-2026-05-14/` | Archived pre-Vite root static copies; do not edit for live UI work |
 
 ## SDK Quick Start
 
@@ -153,6 +160,17 @@ console.log(meter.route);
 ## Local Development
 
 ```bash
+npm install
+npm run dev
+```
+
+The Vite app serves the React shell from `src/`. The landing page and primary product routes (`/`, `/docs`, `/how-it-works`, `/token`, and `/roadmap`) are React pages backed by the shared design system. Static pages in `public/site/` remain available for reference, fallback, and legacy routes. The dashboard remains the existing static bundle under `public/dashboard/` during the migration.
+
+Frontend design-system notes live in `docs/frontend-architecture.md`. New product UI should use `src/styles/globals.css` tokens, shared `mf-*` component classes, and `components/ui/` primitives instead of page-specific one-off styling.
+
+Run API work separately:
+
+```bash
 cd api-proxy
 cp .env.example .env
 npm install
@@ -161,7 +179,7 @@ npm test
 npm run dev
 ```
 
-Serve the static site and dashboard from the repository root with any local static server. In production, Vercel rewrites `/proxy/*` to the local Vercel Function at `/api/*`.
+In production, Vercel serves the Vite build and rewrites `/proxy/*` to the local Vercel Function at `/api/*`.
 
 ## Environment
 

@@ -1,0 +1,333 @@
+/* Meterflow secondary-page layer.
+   This file intentionally does not style nav, buttons, or footer. Those live
+   in shared.css so every public page uses one shell source of truth. */
+
+main,
+.status-page,
+.legal,
+.notfound {
+  position: relative;
+  z-index: 1;
+}
+
+.site-subpage-hero,
+.roadmap-hero,
+.hero {
+  position: relative;
+  min-height: auto;
+  padding: clamp(124px, 15vh, 166px) clamp(20px, 4vw, 40px) clamp(56px, 8vh, 86px);
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+}
+
+.site-subpage-hero::before,
+.site-subpage-hero::after,
+.hero-grid-bg,
+.hero-glow {
+  display: none;
+}
+
+.site-subpage-hero-inner,
+.roadmap-hero-content,
+.status-hero,
+.hero .container,
+.legal {
+  width: min(1080px, calc(100% - 32px));
+  max-width: 1080px;
+  margin-inline: auto;
+}
+
+.site-subpage-label,
+.hero-label,
+.label-sm,
+.section-label,
+.card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 22px;
+  padding: 6px 12px 6px 10px;
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  border-radius: var(--radius-sm);
+  background: rgba(var(--accent-rgb), 0.065);
+  color: rgba(157, 176, 202, 0.9);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+.site-subpage-label::before,
+.hero-label::before,
+.label-sm::before,
+.section-label::before,
+.card-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.34);
+}
+
+.site-subpage-title,
+.roadmap-headline,
+.status-hero h1,
+.legal h1,
+.hero h1,
+.cta-section h2,
+.vision-headline {
+  max-width: 950px;
+  margin: 0 0 22px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: var(--type-page-title);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-heading);
+  letter-spacing: 0;
+  text-wrap: balance;
+  background: linear-gradient(180deg, var(--text-strong) 0%, var(--text-gradient-a) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.site-subpage-title .accent,
+.roadmap-headline .accent,
+.vision-headline .accent,
+.cta-section h2 .accent {
+  color: var(--accent);
+  -webkit-text-fill-color: var(--accent);
+  text-shadow: none;
+}
+
+.site-subpage-sub,
+.roadmap-sub,
+.status-hero p,
+.hero-sub,
+.section-body,
+.vision-sub,
+.phase-desc,
+.status-card p,
+.legal p,
+.legal li,
+.apply-card-head p,
+.apply-list p,
+.apply-note,
+.apply-status {
+  max-width: 760px;
+  color: rgba(157, 176, 202, 0.9);
+  font-size: var(--type-md);
+  line-height: var(--leading-copy);
+  font-weight: var(--weight-regular);
+}
+
+.roadmap-progress-bar {
+  max-width: 680px;
+  margin: 0;
+}
+
+.progress-track,
+.timeline-line {
+  background: rgba(var(--sky-2-rgb), 0.14);
+}
+
+.progress-fill,
+.timeline-line-fill {
+  background: linear-gradient(90deg, var(--accent), var(--sky));
+}
+
+.card,
+.feature-card,
+.phase-content,
+.phase-item,
+.status-card,
+.status-summary,
+.apply-panel,
+.apply-card,
+.mobile-card,
+.vision-stat,
+.code-block,
+.phase-code-preview {
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-card);
+}
+
+.phase-item,
+.status-summary,
+.code-block {
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.card:hover,
+.feature-card:hover,
+.phase-content:hover,
+.phase-item:hover,
+.status-card:hover,
+.apply-panel:hover,
+.apply-card:hover,
+.mobile-card:hover,
+.vision-stat:hover {
+  border-color: var(--panel-border-hover);
+  background: var(--panel-bg-hover);
+}
+
+.phase-title,
+.status-card h2,
+.apply-card-head h2,
+.section-title {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0;
+}
+
+.phase-badge,
+.item-tag,
+.progress-label,
+.status-summary,
+.status-links a,
+.feature-title,
+.flow-num {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.phase-badge.completed {
+  color: var(--green);
+  background: rgba(var(--green-rgb), 0.085);
+  border-color: rgba(var(--green-rgb), 0.24);
+}
+
+.phase-dot.active,
+.timeline-phase.completed .phase-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.phase-pulse.active,
+.roadmap-hero-content > *,
+.timeline-phase,
+.scroll-reveal {
+  animation: none;
+}
+
+.roadmap-hero-content > *,
+.timeline-phase,
+.scroll-reveal {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.status-page {
+  min-height: 100vh;
+  padding: clamp(116px, 14vh, 148px) clamp(16px, 3vw, 24px) 80px;
+}
+
+.status-grid,
+.status-links {
+  width: min(var(--container), calc(100% - 32px));
+}
+
+.status-summary {
+  min-height: 44px;
+  padding: 11px 13px;
+}
+
+.status-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.status-links a:hover {
+  color: var(--text);
+  border-color: rgba(var(--accent-rgb), 0.30);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.apply-shell,
+.timeline-inner,
+.vision-inner,
+.cta-inner {
+  width: min(var(--container), calc(100% - 32px));
+}
+
+.legal {
+  max-width: 820px;
+}
+
+.legal h1 {
+  font-weight: 560;
+}
+
+.legal h2 {
+  color: rgba(244, 248, 255, 0.96);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s var(--ease-out-expo), transform 0.75s var(--ease-out-expo);
+}
+
+.reveal.in-view,
+.reveal-stagger.in-view > * {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.65s var(--ease-out-expo), transform 0.65s var(--ease-out-expo);
+}
+
+@media (max-width: 768px) {
+  .site-subpage-hero,
+  .roadmap-hero,
+  .hero {
+    padding: 104px 20px 54px;
+  }
+
+  .site-subpage-title,
+  .roadmap-headline,
+  .status-hero h1,
+  .legal h1,
+  .hero h1,
+  .cta-section h2,
+  .vision-headline {
+    font-size: clamp(36px, 10vw, 50px);
+    line-height: 1.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-stagger > *,
+  .phase-pulse,
+  .scroll-reveal,
+  .timeline-phase {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+}

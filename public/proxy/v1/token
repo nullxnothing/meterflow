@@ -1,0 +1,17 @@
+{
+  "configured": false,
+  "config": {
+    "name": "Meterflow",
+    "symbol": "MFLOW",
+    "mint": ""
+  },
+  "links": {},
+  "asset": {},
+  "market": {},
+  "chart": {
+    "candles": []
+  },
+  "holders": [],
+  "sources": [],
+  "updatedAt": null
+}
