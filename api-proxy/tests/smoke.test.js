@@ -499,7 +499,7 @@ describe('Frontend cascade boundaries', () => {
 
   it('flow-step pattern layer remains visible above card fill and below content', () => {
     const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
-    const flowAfter = globals.match(/\.mf-flow-step::after\s*\{[\s\S]*?animation: mf-flow-falling-pattern 150s linear infinite;\n  \}/)?.[0] || '';
+    const flowAfter = globals.match(/\.mf-flow-step::after\s*\{[\s\S]*?animation: mf-flow-falling-pattern 150s linear infinite;\r?\n  \}/)?.[0] || '';
 
     assert.ok(flowAfter.includes('z-index: 1'), 'flow pattern layer should sit above the card fill');
     assert.ok(flowAfter.includes('opacity: 0.26'), 'flow pattern opacity should be visible but subtle');
@@ -518,7 +518,7 @@ describe('Frontend cascade boundaries', () => {
 
     assert.ok(globals.includes('filter: var(--morph-filter);'), 'morph text should use the scoped threshold blur filter');
     assert.ok(globals.includes('@keyframes mf-home-surface-sheen'), 'surface fan sheen should be a shared CSS animation');
-    assert.ok(globals.includes('.mf-home-stats,\n  .mf-home-surfaces,\n  .mf-home-cta {\n    width: 100%;'), 'homepage bands should be full-bleed');
+    assert.ok(/\.mf-home-stats,\r?\n  \.mf-home-surfaces,\r?\n  \.mf-home-cta \{\r?\n    width: 100%;/.test(globals), 'homepage bands should be full-bleed');
     assert.ok(globals.includes('grid-template-columns: minmax(0, 0.5fr) minmax(520px, 1fr);'), 'stats band should keep the split full-width composition');
     assert.ok(globals.includes('min-height: 1.12em;'), 'hero morph text should reserve stable single-line height');
     assert.ok(!homePage.includes('style={{'), 'homepage should not rely on inline styles for visual effects');
@@ -539,7 +539,7 @@ describe('Frontend cascade boundaries', () => {
     assert.ok(!showcase.includes('ResizeObserver'), 'showcase should not re-measure and change layout after first paint');
     assert.ok(!showcase.includes('containerWidth'), 'showcase should not depend on runtime width state');
     assert.ok(showcase.includes('mf-showcase-body mf-showcase-body--wide'), 'desktop showcase should render stable wide structure');
-    assert.ok(globals.includes('.mf-showcase-body--wide {\n    min-height: 360px;\n    grid-template-columns: minmax(220px, 0.34fr) minmax(0, 1fr);'), 'wide showcase columns should be defined in CSS');
+    assert.ok(/\.mf-showcase-body--wide \{\r?\n    min-height: 360px;\r?\n    grid-template-columns: minmax\(220px, 0\.34fr\) minmax\(0, 1fr\);/.test(globals), 'wide showcase columns should be defined in CSS');
   });
 
   it('legacy routes and React routes do not stack background systems', () => {
