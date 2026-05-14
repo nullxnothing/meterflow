@@ -7,6 +7,7 @@ import { loadSession } from './session.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
 import { render } from './render.js?v=agent-checkout';
 import { showToast } from './actions.js';
+import { api } from './api.js';
 import { loadVotes } from './votes.js';
 import { maskKey } from './utils.js';
 import { saveSession } from './session.js';
@@ -18,9 +19,7 @@ const hasSession = loadSession();
 
 async function loadTokenAccess() {
   try {
-    const res = await fetch(`${API_BASE}/auth/tiers`);
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await api('/auth/tiers');
     if (data.token) STATE.token = { ...STATE.token, ...data.token };
   } catch { /* public token metadata is non-critical */ }
 }

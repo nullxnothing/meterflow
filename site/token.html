@@ -78,33 +78,66 @@
   <section class="token-hero">
     <div class="token-hero-glow" aria-hidden="true"></div>
     <div class="token-hero-inner">
-      <span class="section-label">Mf &middot; Meterflow Token</span>
-      <h1 class="token-hero-title reveal">
-        <span id="tokenSymbol">$MFLOW</span><br>
-        <em>the utility layer.</em>
-      </h1>
-      <p class="token-hero-sub reveal">
-        One clean token page. $MFLOW sits around Meterflow&rsquo;s agent-commerce network: access, provider reputation, higher limits, analytics, and long-term alignment &mdash; settled on Solana.
-      </p>
+      <div class="token-hero-copy">
+        <span class="section-label">Mf &middot; Meterflow Token</span>
+        <h1 class="token-hero-title reveal">
+          <span id="tokenSymbol">$MFLOW</span><br>
+          <em>the utility layer.</em>
+        </h1>
+        <p class="token-hero-sub reveal">
+          $MFLOW wraps the Meterflow network with access, provider reputation, higher policy limits, analytics, and long-term alignment while paid requests settle in USDC on Solana.
+        </p>
 
-      <div class="token-hero-meta reveal">
+        <div class="token-hero-actions reveal">
+          <a class="btn-primary" id="swapLink" href="/token">Trade &mdash; Coming Soon</a>
+          <a class="btn-secondary" id="dexLink" href="/token">Market &mdash; TBA</a>
+          <a class="btn-secondary" id="orbLink" href="/token">Explorer &mdash; TBA</a>
+        </div>
+      </div>
+
+      <aside class="token-command-card reveal" aria-label="Token status">
+        <div class="token-command-top">
+          <span class="token-command-kicker">Network utility</span>
+          <span class="token-command-state"><i></i><strong id="tokenStatus">Preparing</strong></span>
+        </div>
         <div class="token-address">
-          <span class="token-address-label" id="tokenAddressLabel">Contract</span>
+          <span class="token-address-label" id="tokenAddressLabel">Contract address</span>
           <code id="tokenAddress">TBA</code>
           <button id="copyTokenAddress" type="button" class="token-address-copy">Copy</button>
         </div>
         <div class="token-status-pills">
-          <span class="token-pill"><i></i>Status &middot; <strong id="tokenStatus">Preparing</strong></span>
-          <span class="token-pill"><i></i>CA &middot; <strong id="statusCA">TBA</strong></span>
-          <span class="token-pill"><i></i>Updated &middot; <strong id="tokenUpdated">TBA</strong></span>
+          <span class="token-pill">CA <strong id="statusCA">TBA</strong></span>
+          <span class="token-pill">Market <strong id="statusMarket">Coming soon</strong></span>
+          <span class="token-pill">Updated <strong id="tokenUpdated">TBA</strong></span>
         </div>
-      </div>
+        <div class="token-command-grid">
+          <div><span>Access</span><strong>Higher limits</strong></div>
+          <div><span>Providers</span><strong>Reputation</strong></div>
+          <div><span>Receipts</span><strong>Retention</strong></div>
+          <div><span>Fees</span><strong>Relief tiers</strong></div>
+        </div>
+      </aside>
+    </div>
+  </section>
 
-      <div class="token-hero-actions reveal">
-        <a class="btn-primary" id="swapLink" href="/token">Trade &mdash; Coming Soon</a>
-        <a class="btn-secondary" id="dexLink" href="/token">Market &mdash; TBA</a>
-        <a class="btn-secondary" id="orbLink" href="/token">Explorer &mdash; TBA</a>
-      </div>
+  <!-- MARKET SNAPSHOT -->
+  <section class="token-market reveal" aria-label="Token market snapshot">
+    <div class="token-market-grid">
+      <article class="token-metric-card">
+        <span>Price</span>
+        <strong id="metricPrice">TBA</strong>
+        <em id="metricChange">coming soon</em>
+      </article>
+      <article class="token-metric-card">
+        <span>Market cap</span>
+        <strong id="metricMarketCap">TBA</strong>
+        <em id="metricMarketCapMeta">coming soon</em>
+      </article>
+      <article class="token-metric-card">
+        <span>Volume</span>
+        <strong id="metricVolume">TBA</strong>
+        <em id="metricTxns">coming soon</em>
+      </article>
     </div>
   </section>
 
@@ -112,8 +145,8 @@
   <section class="token-utility reveal">
     <header class="token-utility-head">
       <span class="section-label">Ut &middot; Core Utility</span>
-      <h2 class="token-utility-title">Only the important stuff. <em>No token page bloat.</em></h2>
-      <p class="token-utility-lede">Four reasons $MFLOW exists. Every utility line below maps to a concrete dial inside Meterflow.</p>
+      <h2 class="token-utility-title">Utility that maps to the product.</h2>
+      <p class="token-utility-lede">Every token surface corresponds to an operator-facing control inside Meterflow: budgets, routes, receipts, registry placement, and provider trust.</p>
     </header>
 
     <div class="token-utility-grid">
@@ -142,6 +175,64 @@
     <p class="token-note" id="tokenStatusDetail"><strong>Launch details are still TBA.</strong> Official contract and market links will appear here when they are ready.</p>
   </section>
 
+  <!-- PRODUCT LINKAGE -->
+  <section class="token-product reveal">
+    <div class="token-product-copy">
+      <span class="section-label">Cp &middot; Control Plane</span>
+      <h2 id="tokenName">Meterflow</h2>
+      <p id="tokenDescription">One clean token page keeps the holder thesis explicit: $MFLOW sits around Meterflow as the utility layer for APIs, MCP tools, and paid routes. The product already maps holder utility to provider reputation, registry ranking, fee relief, higher policy limits, premium analytics, and longer receipt retention.</p>
+    </div>
+    <div class="token-product-rail" aria-label="Utility path">
+      <div><span>01</span><strong>Meter</strong><p>Price routes, tools, and data products in USDC.</p></div>
+      <div><span>02</span><strong>Enforce</strong><p>Apply wallet-bound agent budgets before calls run.</p></div>
+      <div><span>03</span><strong>Attribute</strong><p>Write receipts, provider revenue, and registry signals.</p></div>
+      <div><span>04</span><strong>Scale</strong><p>Use token utility for limits, retention, and reputation.</p></div>
+    </div>
+  </section>
+
+  <!-- MARKET DATA -->
+  <section class="token-data reveal">
+    <div class="token-chart-panel">
+      <div class="token-panel-head">
+        <div>
+          <span class="section-label">Mk &middot; Market</span>
+          <h2 id="chartHeading">Chart coming soon</h2>
+        </div>
+        <span id="chartSource">TBA</span>
+      </div>
+      <div id="chartWrap" class="chart-wrap">
+        <svg id="priceChart" viewBox="0 0 720 260" role="img" aria-label="$MFLOW price chart"></svg>
+      </div>
+    </div>
+
+    <aside class="token-details-panel">
+      <div class="token-panel-head compact">
+        <div>
+          <span class="section-label">Dt &middot; Details</span>
+          <h2>Token details</h2>
+        </div>
+      </div>
+      <div class="detail-list">
+        <div><span>Pair</span><strong id="detailPair">TBA</strong></div>
+        <div><span>FDV</span><strong id="detailFdv">TBA</strong></div>
+        <div><span>5m / 1h / 6h</span><strong id="detailChanges">TBA</strong></div>
+        <div><span>Sources</span><strong id="detailSources">Coming soon</strong></div>
+      </div>
+      <div class="holders-box">
+        <div class="holders-box-head">
+          <h3 id="holdersHeading">Holder data coming soon</h3>
+          <a id="holdersExplorer" href="/token">TBA</a>
+        </div>
+        <div class="holders-table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Wallet</th><th>Amount</th><th>Supply</th><th>Accts</th></tr></thead>
+            <tbody id="holdersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </section>
+
   <!-- CTA STRIP -->
   <section class="token-cta-strip reveal">
     <div class="token-cta-strip-inner">
@@ -160,25 +251,6 @@
   <!-- Hidden data targets preserved for token.js -->
   <div hidden>
     <span id="tokenHeroSuffix">utility layer.</span>
-    <span id="statusMarket">Coming soon</span>
-    <span id="metricPrice">TBA</span>
-    <span id="metricChange">coming soon</span>
-    <span id="metricMarketCap">TBA</span>
-    <span id="metricMarketCapMeta">coming soon</span>
-    <span id="metricVolume">TBA</span>
-    <span id="metricTxns">coming soon</span>
-    <span id="tokenName">Meterflow</span>
-    <span id="tokenDescription">$MFLOW details are coming soon.</span>
-    <span id="detailPair">TBA</span>
-    <span id="detailFdv">TBA</span>
-    <span id="detailChanges">TBA</span>
-    <span id="detailSources">Coming soon</span>
-    <span id="chartHeading">Chart coming soon</span>
-    <span id="chartSource">TBA</span>
-    <span id="holdersHeading">Holder data coming soon</span>
-    <a id="holdersExplorer" href="/token">TBA</a>
-    <div id="chartWrap"><svg id="priceChart" viewBox="0 0 720 260"></svg></div>
-    <table><tbody id="holdersBody"></tbody></table>
   </div>
 </main>
 
