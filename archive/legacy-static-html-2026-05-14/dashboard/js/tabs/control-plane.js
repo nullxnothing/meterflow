@@ -1,0 +1,751 @@
+// ═══════════════════════════════════════════
+// Meterflow Dashboard - Meters, Receipts, Budgets
+// ═══════════════════════════════════════════
+
+import { STATE, API_BASE } from '../state.js';
+import { api } from '../api.js';
+import { render } from '../render.js';
+import { showToast } from '../actions.js';
+import { escapeHtml } from '../utils.js';
+import { canManageMeterflow, renderPreviewNotice } from '../gate.js?v=preview-link-2';
+
+const CP = {
+  loaded: false,
+  loading: false,
+  meters: [],
+  receipts: [],
+  budgets: [],
+  revenue: [],
+  mcpTools: [],
+  webhooks: [],
+};
+
+const PREVIEW_METERS = [
+  { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live' },
+  { id: 'mtr_wallet_trace', route: '/gateway/mtr_wallet_trace/*', method: 'GET', unit: 'wallet trace', priceUsd: 0.012, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Wallet intelligence provider', targetUrl: 'https://api.example.com/wallet' },
+  { id: 'mtr_risk_feed', route: '/gateway/mtr_risk_feed/*', method: 'GET', unit: 'risk feed request', priceUsd: 0.009, asset: 'USDC', status: 'test', mode: 'hosted', providerName: 'Risk data provider', targetUrl: 'https://api.example.com/risk' },
+];
+
+const PREVIEW_RECEIPTS = [
+  { id: 'rcpt_preview_001', createdAt: new Date().toISOString(), route: '/mcp/token-risk', status: 'verified', paymentState: 'verified', paymentProtocol: 'x402', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.006, baseAmountUsd: 0.006, protocolFeeUsd: 0, protocolFeeBps: 0, asset: 'USDC', policyResult: 'x402_verified', payerWallet: '79pRV2PCd5Ja7xqHVeKSJmP9MvfxLpd5AhSvNDFPcKdD', txSignature: '3jdvQvjyEDr3DFza8bXLFS1xJnzrh2tX3uW8UJ7SzG1Pv8pAmDEb1rpaPxfF6jikmVUH2Kb6niPLnL32ARDciPwM', responseStatus: 200, latencyMs: 228 },
+  { id: 'rcpt_preview_002', createdAt: new Date().toISOString(), route: '/gateway/mtr_wallet_trace/7Kp', status: 'verified', paymentState: 'verified', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0.012, baseAmountUsd: 0.012, asset: 'USDC', policyResult: 'mpp_verified', responseStatus: 200, latencyMs: 184, txSignature: '4Nzg2CeJHbk8xEYYXSpG1S9x85CL2GVbnpWnNRzqkV5ad2M54kK9K2p6wMR7L9WDqjDL6nFC4VhE77duYoZ6T4Bm' },
+  { id: 'fail_preview_003', createdAt: new Date().toISOString(), route: '/gateway/mtr_risk_feed/score', status: 'payment_verification_failed', paymentState: 'verification_failed', paymentProtocol: 'mpp', paymentIntent: 'charge', paymentMethod: 'solana', amountUsd: 0, baseAmountUsd: 0.009, asset: 'USDC', policyResult: 'mpp_verification_failed', responseStatus: 402, error: 'invalid payment credential' },
+];
+
+const PREVIEW_BUDGETS = [
+  { id: 'bdg_preview_001', name: 'risk-agent-budget', status: 'active', dailyCapUsd: 25, perCallCapUsd: 0.05, spentUsdToday: 4.38, allowedMeterIds: ['mtr_mcp_token_risk', 'mtr_wallet_trace'] },
+  { id: 'bdg_preview_002', name: 'provider-test-budget', status: 'revoked', dailyCapUsd: 10, perCallCapUsd: 0.02, spentUsdToday: 0, allowedMeterIds: ['mtr_mcp_token_risk'] },
+];
+
+const PREVIEW_MCP_TOOLS = [
+  { id: 'mcp_preview_001', name: 'Token Risk Score', route: '/mcp/token-risk', priceUsd: 0.006, status: 'live' },
+  { id: 'mcp_preview_002', name: 'Wallet Funding Trace', route: '/mcp/wallet-trace', priceUsd: 0.012, status: 'test' },
+];
+
+const PREVIEW_WEBHOOKS = [
+  { id: 'wh_preview_001', url: 'https://example.com/meterflow/events', events: ['receipt.verified', 'payment.failed'], status: 'active' },
+];
+
+const PREVIEW_REVENUE = [
+  { meterId: 'mtr_mcp_token_risk', calls: 412, estimatedUsd: 2.47 },
+  { meterId: 'mtr_wallet_trace', calls: 203, estimatedUsd: 2.44 },
+  { meterId: 'mtr_risk_feed', calls: 166, estimatedUsd: 1.49 },
+];
+
+function viewData() {
+  if (canManageMeterflow()) return CP;
+  return {
+    meters: PREVIEW_METERS,
+    receipts: PREVIEW_RECEIPTS,
+    budgets: PREVIEW_BUDGETS,
+    revenue: PREVIEW_REVENUE,
+    mcpTools: PREVIEW_MCP_TOOLS,
+    webhooks: PREVIEW_WEBHOOKS,
+  };
+}
+
+function money(value) {
+  return `$${Number(value || 0).toFixed(Number(value || 0) >= 0.1 ? 2 : 3)}`;
+}
+
+function statusBadge(status) {
+  const safe = escapeHtml(status || 'unknown');
+  return `<span class="tool-status">${safe.toUpperCase()}</span>`;
+}
+
+function zauthLabel(meter) {
+  if (meter?.zauthVerified) return 'verified';
+  if (meter?.zauthListed) return 'listed';
+  if (meter?.zauthStatus) return meter.zauthStatus;
+  return meter?.zauthAutoSubmit ? 'pending' : 'queued';
+}
+
+function canDeleteMeter(meter) {
+  return meter.source === 'custom' || (meter.ownerWallet && meter.ownerWallet !== 'meterflow');
+}
+
+function isReceiptSuccess(receipt) {
+  return receipt.status === 'verified' || receipt.status === 'metered_key';
+}
+
+function isReceiptFailure(receipt) {
+  return [
+    'settlement_failed',
+    'payment_verification_failed',
+    'budget_exhausted',
+    'policy_denied',
+    'per_call_cap_exceeded',
+    'upstream_error',
+  ].includes(receipt.status) || String(receipt.status || '').includes('failed');
+}
+
+function receiptStateMeta(receipt) {
+  const state = receipt.paymentState || receipt.status || 'unknown';
+  const normalized = String(state).toLowerCase();
+  if (normalized === 'verified') return { label: 'Settled', tone: 'ok', detail: 'USDC settled on Solana' };
+  if (normalized === 'test_quote') return { label: 'Test Quote', tone: 'neutral', detail: 'Dashboard quote recorded; no payment settled' };
+  if (normalized === 'legacy_key_metered') return { label: 'Key Metered', tone: 'neutral', detail: 'API key usage record' };
+  if (normalized === 'verified_unsettled') return { label: 'Paid / Upstream Failed', tone: 'warn', detail: 'Payment verified before provider failure' };
+  if (normalized === 'settlement_failed') return { label: 'Settlement Failed', tone: 'bad', detail: 'Facilitator could not settle payment' };
+  if (normalized === 'verification_failed') return { label: 'Verification Failed', tone: 'bad', detail: 'Payment proof rejected' };
+  return { label: state.replaceAll('_', ' '), tone: isReceiptFailure(receipt) ? 'bad' : 'neutral', detail: receipt.error || receipt.policyResult || 'Receipt recorded' };
+}
+
+function shortHash(value, left = 4, right = 4) {
+  const text = String(value || '');
+  if (!text) return '—';
+  if (text.length <= left + right + 3) return text;
+  return `${text.slice(0, left)}…${text.slice(-right)}`;
+}
+
+function jsString(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r?\n/g, ' ');
+}
+
+function hostedMeterUrl(meter) {
+  if (!meter?.targetUrl || !meter?.route) return null;
+  return `https://meterflow.fun/proxy${meter.route.replace(/\*$/, 'path')}`;
+}
+
+function txLink(signature) {
+  if (!signature) return '<span class="receipt-muted">—</span>';
+  const safe = escapeHtml(signature);
+  return `<a class="receipt-link mono" href="https://solscan.io/tx/${safe}" target="_blank" rel="noreferrer">${shortHash(safe, 5, 5)}</a>`;
+}
+
+function renderPaidRoutePanel(locked) {
+  const endpoint = 'https://meterflow.fun/proxy/mcp/token-risk';
+  return `
+    <div class="x402-route-panel ${locked ? 'preview-disabled' : ''}">
+      <div>
+        <div class="x402-route-kicker">Live x402 Route</div>
+        <div class="x402-route-title">Token Risk Score</div>
+        <p class="x402-route-copy">A request without payment returns a machine-readable x402 quote. A compatible SVM client pays 0.006 USDC, retries with proof, and Meterflow records the settled receipt against the payer wallet.</p>
+      </div>
+      <div class="x402-route-meta">
+        <div><span>Endpoint</span><code>${endpoint}</code></div>
+        <div><span>Price</span><strong>0.006 USDC</strong></div>
+        <div><span>Receipt visibility</span><strong>payer wallet + API key</strong></div>
+      </div>
+      <div class="x402-route-actions">
+        <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : `copyText('${endpoint}')`}">${locked ? 'Unlock' : 'Copy Endpoint'}</button>
+        <button class="btn-sm" onclick="setTab('mcp-tools')">View MCP Tool</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderReceiptState(receipt) {
+  const meta = receiptStateMeta(receipt);
+  return `
+    <div class="receipt-state">
+      <span class="receipt-state-badge ${meta.tone}">${escapeHtml(meta.label)}</span>
+      <span class="receipt-state-detail">${escapeHtml(receipt.error || meta.detail)}</span>
+    </div>
+  `;
+}
+
+function loadControlPlane(force = false) {
+  if (!canManageMeterflow() || CP.loading || (CP.loaded && !force)) return;
+  CP.loading = true;
+  Promise.all([
+    api('/v1/meters'),
+    api('/v1/receipts?limit=80'),
+    api('/v1/budgets'),
+    api('/v1/providers/revenue'),
+    api('/v1/mcp-tools'),
+    api('/v1/webhooks'),
+  ]).then(([meters, receipts, budgets, revenue, mcpTools, webhooks]) => {
+    CP.meters = meters.meters || [];
+    CP.receipts = receipts.receipts || [];
+    CP.budgets = budgets.budgets || [];
+    CP.revenue = revenue.revenue || [];
+    CP.mcpTools = mcpTools.tools || [];
+    CP.webhooks = webhooks.webhooks || [];
+    CP.loaded = true;
+  }).catch(err => {
+    showToast(err.message || 'Could not load Meterflow control plane', true);
+  }).finally(() => {
+    CP.loading = false;
+    render();
+  });
+}
+
+function renderLoading(title) {
+  return `
+    <div class="page-header">
+      <h1 class="page-title">${title}</h1>
+      <p class="page-sub">Loading Meterflow control-plane data...</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
+      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
+      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
+      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
+    </div>
+  `;
+}
+
+function ensureLoaded(title) {
+  if (!canManageMeterflow()) return true;
+  loadControlPlane();
+  return CP.loaded || renderLoading(title);
+}
+
+export function renderMeters() {
+  const ready = ensureLoaded('Meters');
+  if (ready !== true) return ready;
+
+  const data = viewData();
+  const locked = !canManageMeterflow();
+  const active = data.meters.filter(m => m.status !== 'paused').length;
+  const hosted = data.meters.filter(m => m.targetUrl).length;
+  const gross = data.revenue.reduce((sum, row) => sum + Number(row.estimatedUsd || 0), 0);
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Meters</h1>
+      <p class="page-sub">Define what is billable: route, unit, price, policy, owner wallet, and current state.</p>
+    </div>
+    ${locked ? renderPreviewNotice('meters') : ''}
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Active Meters</div><div class="value accent">${active}</div><div class="sub">${data.meters.length} total configured</div></div>
+      <div class="stat-card"><div class="label">Hosted APIs</div><div class="value accent">${hosted}</div><div class="sub">external endpoints wrapped</div></div>
+      <div class="stat-card"><div class="label">Estimated Gross</div><div class="value green">${money(gross)}</div><div class="sub">from metered-key usage</div></div>
+      <div class="stat-card"><div class="label">Settlement Asset</div><div class="value accent">USDC</div><div class="sub">MFLOW controls utility</div></div>
+    </div>
+
+    <div class="section ${locked ? 'preview-disabled' : ''}">
+      <div class="section-title">Create Paid Endpoint</div>
+      <div class="tool-config-box hosted-meter-form">
+        <input id="meterTargetUrl" class="bot-form-input" placeholder="https://api.example.com">
+        <input id="meterProviderName" class="bot-form-input" placeholder="Provider name">
+        <input id="meterRoute" class="bot-form-input" placeholder="/mcp/my-route (for local meters)">
+        <select id="meterMethod" class="bot-form-input"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select>
+        <input id="meterUnit" class="bot-form-input" placeholder="request">
+        <input id="meterPrice" class="bot-form-input" placeholder="0.006">
+        <select id="meterStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
+        <select id="meterAuthType" class="bot-form-input"><option value="">No upstream auth</option><option value="bearer">Bearer token</option><option value="header">Custom header</option></select>
+        <input id="meterAuthHeader" class="bot-form-input" placeholder="Header name">
+        <input id="meterAuthValue" class="bot-form-input" placeholder="Upstream auth secret">
+        <button class="btn-sm primary" onclick="createMeterFromDashboard()">Create Hosted Meter</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Endpoint Catalog</div>
+      <div class="tools-grid">
+        ${data.meters.map(meter => {
+          const revenue = data.revenue.find(row => row.meterId === meter.id);
+          const gatewayUrl = hostedMeterUrl(meter);
+          return `
+            <div class="tool-card">
+              <div class="tool-header">${statusBadge(meter.status)}<span class="dim">${gatewayUrl ? 'hosted' : escapeHtml(meter.mode || 'test')}</span></div>
+              <div class="tool-name">${escapeHtml(meter.route)}</div>
+              <div class="tool-desc">
+                Unit: ${escapeHtml(meter.unit)}<br>
+                Price: ${money(meter.priceUsd)} ${escapeHtml(meter.asset || 'USDC')}<br>
+                ${gatewayUrl ? `Provider: ${escapeHtml(meter.providerName || meter.targetHost || 'Hosted API')}<br>Gateway: ${escapeHtml(gatewayUrl)}<br>` : ''}
+                Zauth: ${escapeHtml(zauthLabel(meter))}<br>
+                Calls: ${Number(revenue?.calls || 0).toLocaleString()} · Gross: ${money(revenue?.estimatedUsd || 0)}
+              </div>
+              <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testMeter('${meter.id}')`}">${locked ? 'Unlock' : 'Test Quote'}</div>
+              ${!locked && gatewayUrl ? `<div class="tool-launch" onclick="copyText('${jsString(gatewayUrl)}')">Copy Gateway</div>` : ''}
+              ${!locked && canDeleteMeter(meter) ? `<div class="tool-launch danger" onclick="deleteMeterFromDashboard('${meter.id}')">Delete</div>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+export function renderReceipts() {
+  const ready = ensureLoaded('Receipts');
+  if (ready !== true) return ready;
+
+  const data = viewData();
+  const locked = !canManageMeterflow();
+  const verified = data.receipts.filter(isReceiptSuccess).length;
+  const failed = data.receipts.filter(isReceiptFailure).length;
+  const unsettled = data.receipts.filter(r => r.paymentState === 'verified_unsettled').length;
+  const gross = data.receipts
+    .filter(isReceiptSuccess)
+    .reduce((sum, r) => sum + Number(r.amountUsd || 0), 0);
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Receipts</h1>
+      <p class="page-sub">Connect each request to quote, payer wallet, payment proof, policy result, response status, and exportable accounting records.</p>
+    </div>
+    ${locked ? renderPreviewNotice('receipts') : ''}
+    ${renderPaidRoutePanel(locked)}
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Recorded</div><div class="value accent">${data.receipts.length}</div><div class="sub">latest events</div></div>
+      <div class="stat-card"><div class="label">Settled</div><div class="value green">${verified}</div><div class="sub">verified payment receipts</div></div>
+      <div class="stat-card"><div class="label">Needs Review</div><div class="value">${failed + unsettled}</div><div class="sub">failed or unsettled states</div></div>
+      <div class="stat-card"><div class="label">Gross</div><div class="value green">${money(gross)}</div><div class="sub">settled USDC</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Payment Ledger</div>
+      <div class="receipt-summary-strip">
+        <div><span>${verified}</span> settled</div>
+        <div><span>${data.receipts.filter(r => r.status === 'settlement_failed').length}</span> settlement failed</div>
+        <div><span>${data.receipts.filter(r => r.status === 'payment_verification_failed').length}</span> verification failed</div>
+        <div><span>${unsettled}</span> upstream failed after pay</div>
+      </div>
+      <div class="tool-config-box receipt-table-wrap">
+        <table class="treasury-table receipt-ledger-table">
+          <thead><tr><th>Time</th><th>State</th><th>Route</th><th>Payer</th><th>Amount</th><th>Tx</th><th>Response</th><th>Receipt</th><th></th></tr></thead>
+          <tbody>
+            ${data.receipts.length ? data.receipts.map(r => `
+              <tr>
+                <td>${escapeHtml((r.createdAt || '').slice(0, 19).replace('T', ' '))}</td>
+                <td>${renderReceiptState(r)}</td>
+                <td>${escapeHtml(r.route || '—')}</td>
+                <td><span class="mono">${escapeHtml(shortHash(r.payerWallet || r.wallet, 5, 5))}</span></td>
+                <td><strong>${money(r.amountUsd)}</strong><span class="receipt-muted"> ${escapeHtml(r.asset || 'USDC')}</span></td>
+                <td>${txLink(r.txSignature)}</td>
+                <td><span class="receipt-response ${Number(r.responseStatus || 0) >= 400 ? 'bad' : 'ok'}">${escapeHtml(String(r.responseStatus || '—'))}</span></td>
+                <td><span class="mono">${escapeHtml(shortHash(r.id, 8, 4))}</span></td>
+                <td><button class="receipt-row-action" onclick="${locked ? 'openTokenPurchase()' : `viewReceiptDetails('${r.id}')`}">View</button></td>
+              </tr>
+            `).join('') : '<tr><td colspan="9">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : 'downloadReceiptsCsv()'}">${locked ? 'Unlock Export' : 'Export CSV'}</button>
+      </div>
+    </div>
+  `;
+}
+
+export function renderWebhooks() {
+  const ready = ensureLoaded('Webhooks');
+  if (ready !== true) return ready;
+
+  const data = viewData();
+  const locked = !canManageMeterflow();
+  const active = data.webhooks.filter(w => w.status === 'active').length;
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Webhooks</h1>
+      <p class="page-sub">Send signed events for verified receipts, payment failures, budget exhaustion, and test deliveries.</p>
+    </div>
+    ${locked ? renderPreviewNotice('webhooks') : ''}
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Endpoints</div><div class="value accent">${data.webhooks.length}</div><div class="sub">configured destinations</div></div>
+      <div class="stat-card"><div class="label">Active</div><div class="value green">${active}</div><div class="sub">ready for delivery</div></div>
+      <div class="stat-card"><div class="label">Signing</div><div class="value">HMAC</div><div class="sub">per endpoint secret</div></div>
+      <div class="stat-card"><div class="label">Events</div><div class="value accent">4</div><div class="sub">receipt + budget lifecycle</div></div>
+    </div>
+    <div class="section ${locked ? 'preview-disabled' : ''}">
+      <div class="section-title">Create Webhook</div>
+      <div class="tool-config-box webhook-form-grid">
+        <input id="webhookUrl" class="bot-form-input" placeholder="https://example.com/meterflow/events">
+        <select id="webhookEvents" class="bot-form-input" multiple>
+          <option value="receipt.verified" selected>receipt.verified</option>
+          <option value="payment.failed" selected>payment.failed</option>
+          <option value="budget.exhausted">budget.exhausted</option>
+          <option value="webhook.test">webhook.test</option>
+        </select>
+        <input id="webhookSecret" class="bot-form-input" placeholder="optional signing secret">
+        <select id="webhookStatus" class="bot-form-input"><option>active</option><option>paused</option></select>
+        <button class="btn-sm primary" onclick="createWebhookFromDashboard()">Create Webhook</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Delivery Endpoints</div>
+      <div class="tools-grid">
+        ${data.webhooks.length ? data.webhooks.map(webhook => `
+          <div class="tool-card">
+            <div class="tool-header">${statusBadge(webhook.status)}</div>
+            <div class="tool-name">${escapeHtml(webhook.url)}</div>
+            <div class="tool-desc">
+              Events: ${(webhook.events || []).map(escapeHtml).join(', ') || 'none'}<br>
+              Secret: ${webhook.hasSecret === false ? 'not set' : 'configured'}<br>
+              ID: <span class="mono">${escapeHtml(shortHash(webhook.id, 7, 4))}</span>
+            </div>
+            <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testWebhookFromDashboard('${webhook.id}')`}">${locked ? 'Unlock' : 'Send Test'}</div>
+            ${!locked ? `<div class="tool-launch danger" onclick="deleteWebhookFromDashboard('${webhook.id}')">Delete</div>` : ''}
+          </div>
+        `).join('') : '<div class="tool-card"><div class="tool-name">No webhooks yet</div><div class="tool-desc">Create an endpoint to receive signed payment and budget events.</div></div>'}
+      </div>
+    </div>
+  `;
+}
+
+export function renderBudgets() {
+  const ready = ensureLoaded('Agent Budgets');
+  if (ready !== true) return ready;
+
+  const data = viewData();
+  const locked = !canManageMeterflow();
+  const active = data.budgets.filter(b => b.status === 'active').length;
+  const spent = data.budgets.reduce((sum, b) => sum + Number(b.spentUsdToday || 0), 0);
+  return `
+    <div class="page-header">
+      <h1 class="page-title">Agent Budgets</h1>
+      <p class="page-sub">Give agents controlled spend permissions before they call paid APIs or MCP tools.</p>
+    </div>
+    ${locked ? renderPreviewNotice('agent budgets') : ''}
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Active Budgets</div><div class="value accent">${active}</div><div class="sub">${data.budgets.length} total policies</div></div>
+      <div class="stat-card"><div class="label">Spent Today</div><div class="value green">${money(spent)}</div><div class="sub">metered-key estimated spend</div></div>
+      <div class="stat-card"><div class="label">Revocation</div><div class="value green">On</div><div class="sub">kill switch per budget</div></div>
+      <div class="stat-card"><div class="label">MFLOW Utility</div><div class="value">Policy</div><div class="sub">higher limits and retention</div></div>
+    </div>
+
+    <div class="section ${locked ? 'preview-disabled' : ''}">
+      <div class="section-title">Create Budget</div>
+      <div class="tool-config-box budget-form-grid">
+        <input id="budgetName" class="bot-form-input cp-span-2" placeholder="market-research-bot">
+        <input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">
+        <input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">
+        <select id="budgetAllowedMeters" class="bot-form-input cp-span-2" multiple>
+          ${data.meters.map(m => `<option value="${m.id}" ${m.id === 'mtr_mcp_token_risk' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
+        </select>
+        <button class="btn-sm primary cp-span-6" onclick="createBudgetFromDashboard()">Create Budget Policy</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Budget Policies</div>
+      <div class="tools-grid">
+        ${data.budgets.length ? data.budgets.map(budget => `
+          <div class="tool-card">
+            <div class="tool-header">${statusBadge(budget.status)}</div>
+            <div class="tool-name">${escapeHtml(budget.name)}</div>
+            <div class="tool-desc">
+              Daily cap: ${money(budget.dailyCapUsd)}<br>
+              Per-call cap: ${money(budget.perCallCapUsd)}<br>
+              Spent today: ${money(budget.spentUsdToday)}<br>
+              Allowed meters: ${(budget.allowedMeterIds || []).length || 'all'}
+            </div>
+            ${budget.status === 'active' ? `<div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `revokeBudgetFromDashboard('${budget.id}')`}">${locked ? 'Unlock' : 'Revoke'}</div>` : '<div class="tool-launch">Revoked</div>'}
+          </div>
+        `).join('') : '<div class="tool-card"><div class="tool-name">No budgets yet</div><div class="tool-desc">Create a policy to cap agent spend and route access before automation runs.</div></div>'}
+      </div>
+    </div>
+    <div class="compliance-notice">
+      <div class="compliance-notice-header"><span class="compliance-dot"></span> Token Utility Layer</div>
+      <div class="compliance-notice-text">
+        USDC is the payment asset. MFLOW is the control-plane utility layer for provider verification, fee discounts, registry ranking, higher policy limits, and longer receipt retention.
+      </div>
+    </div>
+  `;
+}
+
+export function renderMcpTools() {
+  const ready = ensureLoaded('MCP Tools');
+  if (ready !== true) return ready;
+  const data = viewData();
+  const locked = !canManageMeterflow();
+
+  return `
+    <div class="page-header">
+      <h1 class="page-title">MCP Tools</h1>
+      <p class="page-sub">Package MCP tools as priced capabilities with a hosted Meterflow gateway, receipts, budgets, and analytics.</p>
+    </div>
+    ${locked ? renderPreviewNotice('MCP tool monetization') : ''}
+    <div class="section ${locked ? 'preview-disabled' : ''}">
+      <div class="section-title">Package Tool</div>
+      <div class="tool-config-box mcp-form-grid">
+        <input id="mcpName" class="bot-form-input cp-span-2" placeholder="Token Risk Score">
+        <input id="mcpManifest" class="bot-form-input cp-span-2" placeholder="https://example.com/mcp/manifest.json">
+        <input id="mcpPrice" class="bot-form-input" placeholder="0.006">
+        <select id="mcpStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
+        <button class="btn-sm primary cp-span-6" onclick="createMcpToolFromDashboard()">Package MCP Tool</button>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Tool Catalog</div>
+      <div class="tools-grid">
+        ${data.mcpTools.length ? data.mcpTools.map(tool => `
+          <div class="tool-card">
+            <div class="tool-header">${statusBadge(tool.status)}</div>
+            <div class="tool-name">${escapeHtml(tool.name)}</div>
+            <div class="tool-desc">
+              Route: ${escapeHtml(tool.route)}<br>
+              Price: ${money(tool.priceUsd)} USDC<br>
+              Gateway: /proxy${escapeHtml(tool.route)}
+            </div>
+            <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `copyText('https://meterflow.fun/proxy${escapeHtml(tool.route)}')`}">${locked ? 'Unlock' : 'Copy Gateway'}</div>
+            ${!locked ? `<div class="tool-launch danger" onclick="deleteMcpToolFromDashboard('${tool.id}')">Delete</div>` : ''}
+          </div>
+        `).join('') : '<div class="tool-card"><div class="tool-name">No MCP tools yet</div><div class="tool-desc">Package a tool to generate a priced hosted gateway path.</div></div>'}
+      </div>
+    </div>
+  `;
+}
+
+async function createMeterFromDashboard() {
+  const targetUrl = document.getElementById('meterTargetUrl')?.value.trim();
+  const route = document.getElementById('meterRoute')?.value.trim();
+  const upstreamAuthValue = document.getElementById('meterAuthValue')?.value.trim();
+  const upstreamAuthType = document.getElementById('meterAuthType')?.value;
+  const upstreamAuthHeader = document.getElementById('meterAuthHeader')?.value.trim();
+  if (!targetUrl && !route) {
+    showToast('Enter a target URL for hosted APIs or a route for local meters', true);
+    return;
+  }
+  try {
+    const body = {
+      route: targetUrl ? undefined : (route || undefined),
+      targetUrl: targetUrl || undefined,
+      providerName: document.getElementById('meterProviderName')?.value.trim() || undefined,
+      method: document.getElementById('meterMethod')?.value,
+      unit: document.getElementById('meterUnit')?.value.trim() || 'request',
+      priceUsd: Number(document.getElementById('meterPrice')?.value || 0),
+      status: document.getElementById('meterStatus')?.value || 'test',
+    };
+    if (upstreamAuthValue) {
+      body.upstreamAuth = {
+        type: upstreamAuthType || 'bearer',
+        headerName: upstreamAuthHeader || undefined,
+        value: upstreamAuthValue,
+      };
+    }
+    const data = await api('/v1/meters', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    CP.loaded = false;
+    const gatewayUrl = hostedMeterUrl(data.meter);
+    const zauth = data.zauth?.status || zauthLabel(data.meter);
+    showToast(`${gatewayUrl ? 'Hosted API meter created' : 'Meter created'} · Zauth ${zauth}`);
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Meter creation failed', true);
+  }
+}
+
+async function testMeter(meterId) {
+  try {
+    const data = await api(`/v1/meters/${meterId}/test`, { method: 'POST' });
+    const suffix = data.hostedGateway?.urlTemplate ? ' · hosted gateway ready' : '';
+    CP.loaded = false;
+    loadControlPlane(true);
+    const receipt = data.receipt?.id ? ` · receipt ${shortHash(data.receipt.id, 6, 4)}` : '';
+    showToast(`Test quote recorded: ${money(data.quote.amountUsd)} ${data.quote.asset}${suffix}${receipt}`);
+  } catch (err) {
+    showToast(err.message || 'Meter test failed', true);
+  }
+}
+
+async function deleteMeterFromDashboard(meterId) {
+  if (!confirm('Delete this custom meter? This cannot be undone.')) return;
+  try {
+    await api(`/v1/meters/${meterId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('Meter deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Meter deletion failed', true);
+  }
+}
+
+async function createBudgetFromDashboard() {
+  const select = document.getElementById('budgetAllowedMeters');
+  const allowedMeterIds = select ? [...select.selectedOptions].map(opt => opt.value) : [];
+  try {
+    await api('/v1/budgets', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('budgetName')?.value.trim() || 'Agent budget',
+        dailyCapUsd: Number(document.getElementById('budgetDailyCap')?.value || 12),
+        perCallCapUsd: Number(document.getElementById('budgetPerCallCap')?.value || 0.02),
+        allowedMeterIds,
+      }),
+    });
+    CP.loaded = false;
+    showToast('Budget policy created');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Budget creation failed', true);
+  }
+}
+
+async function revokeBudgetFromDashboard(budgetId) {
+  try {
+    await api(`/v1/budgets/${budgetId}/revoke`, { method: 'POST' });
+    CP.loaded = false;
+    showToast('Budget revoked');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Budget revoke failed', true);
+  }
+}
+
+async function createMcpToolFromDashboard() {
+  try {
+    await api('/v1/mcp-tools', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: document.getElementById('mcpName')?.value.trim(),
+        manifestUrl: document.getElementById('mcpManifest')?.value.trim(),
+        priceUsd: Number(document.getElementById('mcpPrice')?.value || 0.006),
+        status: document.getElementById('mcpStatus')?.value || 'test',
+      }),
+    });
+    CP.loaded = false;
+    showToast('MCP tool packaged');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'MCP tool creation failed', true);
+  }
+}
+
+async function deleteMcpToolFromDashboard(toolId) {
+  if (!confirm('Delete this MCP tool package? This cannot be undone.')) return;
+  try {
+    await api(`/v1/mcp-tools/${toolId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('MCP tool deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'MCP tool deletion failed', true);
+  }
+}
+
+async function downloadReceiptsCsv() {
+  try {
+    const res = await fetch(`${API_BASE}/v1/receipts/export.csv`, {
+      headers: { Authorization: `Bearer ${STATE.apiKeyFull}` },
+    });
+    if (!res.ok) throw new Error('CSV export failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'meterflow-receipts.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    showToast(err.message || 'CSV export failed', true);
+  }
+}
+
+async function viewReceiptDetails(receiptId) {
+  try {
+    const data = await api(`/v1/receipts/${receiptId}`);
+    const receipt = data.receipt;
+    const existing = document.getElementById('receiptDetailModal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'receiptDetailModal';
+    modal.className = 'receipt-modal-overlay';
+    const rows = [
+      ['Receipt', receipt.id],
+      ['Route', receipt.route],
+      ['State', receipt.paymentState || receipt.status],
+      ['Amount', `${money(receipt.amountUsd)} ${receipt.asset || 'USDC'}`],
+      ['Payer', receipt.payerWallet || receipt.wallet || '—'],
+      ['Pay To', receipt.payTo || '—'],
+      ['Transaction', receipt.txSignature || '—'],
+      ['Policy', receipt.policyResult || '—'],
+      ['Response', receipt.responseStatus || '—'],
+      ['Created', receipt.createdAt || '—'],
+    ];
+    modal.innerHTML = `
+      <div class="receipt-modal">
+        <button class="receipt-modal-close" aria-label="Close">&times;</button>
+        <div class="receipt-modal-kicker">Receipt Detail</div>
+        <h2>${escapeHtml(shortHash(receipt.id, 10, 6))}</h2>
+        <div class="receipt-modal-grid">
+          ${rows.map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join('')}
+        </div>
+        <div class="receipt-modal-actions">
+          ${receipt.txSignature ? `<a class="btn-sm primary" href="https://solscan.io/tx/${escapeHtml(receipt.txSignature)}" target="_blank" rel="noreferrer">Open Solscan</a>` : ''}
+          <button class="btn-sm" onclick="copyText('${escapeHtml(receipt.id)}')">Copy Receipt ID</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.querySelector('.receipt-modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', event => {
+      if (event.target === modal) modal.remove();
+    });
+  } catch (err) {
+    showToast(err.message || 'Receipt detail failed', true);
+  }
+}
+
+async function createWebhookFromDashboard() {
+  const select = document.getElementById('webhookEvents');
+  const events = select ? [...select.selectedOptions].map(opt => opt.value) : [];
+  try {
+    await api('/v1/webhooks', {
+      method: 'POST',
+      body: JSON.stringify({
+        url: document.getElementById('webhookUrl')?.value.trim(),
+        events,
+        secret: document.getElementById('webhookSecret')?.value.trim() || undefined,
+        status: document.getElementById('webhookStatus')?.value || 'active',
+      }),
+    });
+    CP.loaded = false;
+    showToast('Webhook created');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Webhook creation failed', true);
+  }
+}
+
+async function testWebhookFromDashboard(webhookId) {
+  try {
+    const data = await api(`/v1/webhooks/${webhookId}/test`, { method: 'POST' });
+    showToast(data.delivery?.ok === false ? 'Webhook test sent with delivery error' : 'Webhook test sent');
+  } catch (err) {
+    showToast(err.message || 'Webhook test failed', true);
+  }
+}
+
+async function deleteWebhookFromDashboard(webhookId) {
+  if (!confirm('Delete this webhook endpoint? This cannot be undone.')) return;
+  try {
+    await api(`/v1/webhooks/${webhookId}`, { method: 'DELETE' });
+    CP.loaded = false;
+    showToast('Webhook deleted');
+    loadControlPlane(true);
+  } catch (err) {
+    showToast(err.message || 'Webhook deletion failed', true);
+  }
+}
+
+window.createMeterFromDashboard = createMeterFromDashboard;
+window.testMeter = testMeter;
+window.deleteMeterFromDashboard = deleteMeterFromDashboard;
+window.createBudgetFromDashboard = createBudgetFromDashboard;
+window.revokeBudgetFromDashboard = revokeBudgetFromDashboard;
+window.createMcpToolFromDashboard = createMcpToolFromDashboard;
+window.deleteMcpToolFromDashboard = deleteMcpToolFromDashboard;
+window.downloadReceiptsCsv = downloadReceiptsCsv;
+window.viewReceiptDetails = viewReceiptDetails;
+window.createWebhookFromDashboard = createWebhookFromDashboard;
+window.testWebhookFromDashboard = testWebhookFromDashboard;
+window.deleteWebhookFromDashboard = deleteWebhookFromDashboard;

@@ -1,0 +1,52 @@
+- generic [ref=e2] [box=0,0,1440,960]:
+  - complementary [ref=e3] [box=0,0,260,960]:
+    - generic [ref=e4] [box=18,22,223,42]:
+      - text: Meterflow
+      - generic "Not connected" [ref=e5] [box=225,31,8,8]
+    - button "⌕ Quick jump ⌘K" [ref=e6] [cursor=pointer] [box=18,82,223,39]:
+      - generic [ref=e7] [box=30,93,7,18]: ⌕
+      - generic [ref=e8] [box=47,93,142,17]: Quick jump
+      - generic [ref=e9] [box=199,92,30,19]: ⌘K
+    - navigation [ref=e10] [box=18,139,223,583]:
+      - generic [ref=e11] [box=22,143,215,16]: Control Plane
+      - generic [ref=e12] [cursor=pointer] [box=18,167,223,44]
+      - generic [ref=e15] [cursor=pointer] [box=18,211,223,44]
+      - generic [ref=e18] [cursor=pointer] [box=18,256,223,44]
+      - generic [ref=e21] [cursor=pointer] [box=18,301,223,44]
+      - generic [ref=e24] [cursor=pointer] [box=18,345,223,44]
+      - generic [ref=e27] [cursor=pointer] [box=18,390,223,44]
+      - generic [ref=e30] [cursor=pointer] [box=18,434,223,44]
+      - generic [ref=e33] [box=22,496,215,16]: Operations
+      - generic [ref=e34] [cursor=pointer] [box=18,520,223,44]
+      - generic [ref=e37] [cursor=pointer] [box=18,565,223,44]
+      - generic [ref=e40] [cursor=pointer] [box=18,609,223,44]
+    - generic [ref=e43] [box=18,733,223,209]:
+      - generic [ref=e44] [box=18,750,223,107]
+      - generic [ref=e47] [box=18,871,223,32]
+      - generic "Meterflow tracks usage, receipts, route access, and budget limits for agent-accessible APIs." [ref=e57] [box=18,915,117,27]: Metering Active
+  - main [ref=e59] [box=260,0,1180,960]:
+    - generic [ref=e60] [box=303,43,960,173]:
+      - text: Meterflow control plane
+      - heading "Meterflow" [level=1] [ref=e61] [box=303,91,900,63]
+      - paragraph [ref=e62] [box=303,165,720,26]: Connect a wallet, issue metered clients, and visualize x402-style paid API usage on Solana.
+    - generic [ref=e63] [box=303,248,1083,395]:
+      - generic [ref=e64] [box=336,281,283,29]: New here? Start in 60 seconds
+      - heading "Connect a wallet to start metering paid API usage." [level=2] [ref=e66] [box=336,328,720,65]
+      - paragraph [ref=e67] [box=336,405,640,48]: No card. No subscription. Wallets handle identity and settlement — you keep control of every key, budget, and route.
+      - list [ref=e68] [box=336,476,1018,73]
+      - generic [ref=e84] [box=336,573,1018,41]
+    - generic [ref=e87] [box=303,671,1083,127]:
+      - generic [ref=e88] [box=303,671,259,127]
+      - generic [ref=e92] [box=578,671,259,127]
+      - generic [ref=e96] [box=853,671,259,127]
+      - generic [ref=e100] [box=1128,671,259,127]
+    - generic [ref=e104] [box=303,828,1083,200]:
+      - generic [ref=e105] [box=326,851,599,106]
+      - generic [ref=e109] [box=943,851,421,40]
+      - generic [ref=e115] [box=326,975,1038,30]
+    - generic [ref=e118] [box=303,1046,1083,668]:
+      - generic [ref=e119] [box=303,1046,325,32]: What The Dashboard Is For
+      - generic [ref=e120] [box=303,1094,1083,620]
+    - generic [ref=e169] [box=303,1749,1083,105]:
+      - generic [ref=e170] [box=328,1769,1034,18]: Why This Exists
+      - generic [ref=e172] [box=328,1795,1034,37]: Payment rails let agents pay. Meterflow is where builders manage what is metered, which wallet funded it, what failed, how much an agent can spend, and which providers earn fee relief and reputation through MFLOW utility.

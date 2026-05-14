@@ -1,0 +1,9 @@
+/* Meterflow shared design-system manifest. Keep imports ordered; cascade order is part of the public UI contract. */
+@import url('./css/00-foundation.css');
+@import url('./css/01-background.css');
+@import url('./css/01-typography-legal.css');
+@import url('./css/02-public-nav.css');
+@import url('./css/03-public-components.css');
+@import url('./css/04-effects.css');
+@import url('./css/05-primitives.css');
+@import url('./css/06-cohesion.css');

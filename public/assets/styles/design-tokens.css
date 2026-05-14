@@ -1,0 +1,254 @@
+/* Meterflow design tokens.
+   This is the shared source of truth for React, public pages, and dashboard CSS. */
+:root {
+  color-scheme: dark;
+
+  /* Color: core surfaces */
+  --bg: #030609;
+  --bg-deep: #000204;
+  --bg-footer: #020407;
+  --bg-elevated: #080d14;
+  --bg-ambient-top: #07111d;
+  --bg-rgb: 3, 6, 9;
+  --bg-deep-rgb: 0, 2, 4;
+  --surface: #0b1118;
+  --surface-2: #101a25;
+  --surface-3: #162536;
+  --surface-raised: #111b29;
+  --surface-raised-2: #080d14;
+  --surface-rgb: 11, 17, 24;
+  --surface-2-rgb: 16, 26, 37;
+  --surface-3-rgb: 22, 37, 54;
+  --surface-code: #04070b;
+  --surface-showcase-a: #101a25;
+  --surface-showcase-b: #0b1118;
+  --surface-showcase-c: #0e1725;
+  --surface-showcase-d: #04070b;
+  --surface-glass: rgba(11, 17, 24, 0.76);
+  --surface-hover: rgba(var(--white-rgb), 0.045);
+
+  /* Color: borders and text */
+  --border: rgba(155, 178, 202, 0.14);
+  --border-light: rgba(155, 178, 202, 0.24);
+  --border-strong: rgba(183, 221, 255, 0.32);
+  --border-faint: rgba(var(--white-rgb), 0.06);
+  --text: #dbe6f3;
+  --text-strong: #f4f7fb;
+  --text-dim: #8b98aa;
+  --text-muted: #596679;
+  --text-faint: #344255;
+  --text-inverse: #071014;
+  --text-inverse-soft: #0f172a;
+  --white: #ffffff;
+  --black: #000000;
+  --white-rgb: 255, 255, 255;
+  --black-rgb: 0, 0, 0;
+
+  /* Color: brand, status, and legacy aliases */
+  --accent: #78bfff;
+  --accent-2: #b7ddff;
+  --accent-deep: #2f6fae;
+  --accent-dim: #356f9d;
+  --accent-rgb: 120, 191, 255;
+  --accent-2-rgb: 183, 221, 255;
+  --accent-deep-rgb: 47, 111, 174;
+  --accent-glow: rgba(var(--accent-rgb), 0.13);
+  --accent-soft: rgba(var(--accent-rgb), 0.068);
+  --accent-tint: rgba(var(--accent-rgb), 0.040);
+  --accent-border: rgba(var(--accent-rgb), 0.22);
+  --sky: #4f88b0;
+  --sky-2: #b7ddff;
+  --sky-deep: #203f66;
+  --sky-rgb: 79, 136, 176;
+  --sky-2-rgb: 183, 221, 255;
+  --sky-glow: rgba(var(--sky-rgb), 0.13);
+  --green: #22ddb1;
+  --green-rgb: 34, 221, 177;
+  --green-bright: #7bead0;
+  --green-bright-rgb: 123, 234, 208;
+  --red: #ef4444;
+  --red-rgb: 239, 68, 68;
+  --red-soft: #ff8b80;
+  --red-soft-rgb: 255, 139, 128;
+  --warm: #f5b544;
+  --warm-rgb: 245, 181, 68;
+  --warm-bright: #febc2e;
+  --warm-bright-rgb: 254, 188, 46;
+  --orange: #f59e0b;
+  --orange-rgb: 245, 158, 11;
+  --purple: #a78bfa;
+  --purple-rgb: 167, 139, 250;
+  --blue: var(--sky);
+  --blue-rgb: var(--sky-rgb);
+  --amber: var(--warm);
+  --amber-2: #ffc964;
+  --amber-deep: #b07c1c;
+  --amber-glow: rgba(var(--warm-rgb), 0.10);
+  --teal: var(--sky);
+  --teal-2: var(--sky-2);
+  --teal-deep: var(--sky-deep);
+  --teal-glow: var(--sky-glow);
+  --solana-green: #00ffa3;
+  --solana-purple: #dc1fff;
+  --syntax-orange: #ff9f43;
+  --success-soft: #9df8c7;
+  --danger-pale: #ffb1b1;
+  --warning-soft: #ffe3a0;
+  --success-dark: #04140d;
+  --severity-minor: #eab308;
+  --severity-minor-rgb: 234, 179, 8;
+  --severity-major: #f97316;
+  --severity-major-rgb: 249, 115, 22;
+  --severity-critical: var(--red);
+  --severity-critical-rgb: var(--red-rgb);
+
+  /* Typography */
+  --font-body: "Geist", system-ui, sans-serif;
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Times New Roman", Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --type-xs: 11px;
+  --type-sm: 13px;
+  --type-base: 15px;
+  --type-md: 16px;
+  --type-lg: 18px;
+  --type-xl: 20px;
+  --type-2xl: 24px;
+  --type-3xl: 32px;
+  --type-4xl: 44px;
+  --type-5xl: 60px;
+  --type-6xl: 76px;
+  --type-display: clamp(52px, 5.6vw, 86px);
+  --type-page-title: clamp(44px, 6.8vw, 88px);
+  --type-section-title: clamp(32px, 4.4vw, 56px);
+  --type-card-title: 18px;
+  --type-body: 15px;
+  --type-body-lg: 18px;
+  --type-label: 11px;
+  --leading-tight: 1;
+  --leading-title: 1.05;
+  --leading-heading: 1.08;
+  --leading-copy: 1.7;
+  --tracking-tight: 0;
+  --tracking-normal: 0;
+  --tracking-label: 0.08em;
+  --tracking-caps: 0.12em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-heavy: 760;
+
+  /* Spacing and layout */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --nav-height: 72px;
+  --container: 1180px;
+  --container-narrow: 1080px;
+  --section-pad: clamp(48px, 5vw, 72px);
+  --section-pad-y: clamp(72px, 9vw, 112px);
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1180px;
+
+  /* Shape, depth, and layers */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+  --elevation-card: 0 1px 0 rgba(var(--white-rgb), 0.035) inset, 0 18px 54px rgba(var(--black-rgb), 0.34);
+  --elevation-strong: 0 1px 0 rgba(var(--white-rgb), 0.05) inset, 0 34px 90px rgba(var(--black-rgb), 0.52);
+  --elevation-nav: 0 18px 70px rgba(var(--black-rgb), 0.24);
+  --elevation-popover: 0 34px 90px rgba(var(--black-rgb), 0.48);
+  --elevation-glow: 0 0 58px rgba(var(--accent-rgb), 0.12);
+  --elevation-focus: 0 0 0 4px rgba(var(--accent-rgb), 0.14);
+  --elevation-primary: 0 10px 30px rgba(var(--accent-rgb), 0.18);
+  --shadow-card: var(--elevation-card);
+  --shadow-elev: var(--elevation-strong);
+  --shadow-nav: var(--elevation-nav);
+  --shadow-popover: var(--elevation-popover);
+  --shadow-glow: var(--elevation-glow);
+  --shadow-focus: var(--elevation-focus);
+  --shadow-primary: var(--elevation-primary);
+  --z-base: 0;
+  --z-raised: 10;
+  --z-nav: 300;
+  --z-overlay: 700;
+  --z-modal: 900;
+  --z-toast: 1000;
+
+  /* Forms and reusable panels */
+  --field-bg: rgba(var(--bg-rgb), 0.66);
+  --field-border: rgba(155, 178, 202, 0.16);
+  --field-border-hover: rgba(183, 221, 255, 0.26);
+  --panel-bg:
+    linear-gradient(180deg, rgba(var(--white-rgb), 0.045), rgba(var(--white-rgb), 0.014)),
+    rgba(var(--surface-rgb), 0.84);
+  --panel-bg-hover:
+    radial-gradient(560px 260px at var(--mx, 50%) var(--my, 0%), rgba(var(--accent-rgb), 0.075), transparent 62%),
+    linear-gradient(180deg, rgba(var(--white-rgb), 0.055), rgba(var(--white-rgb), 0.018)),
+    rgba(var(--surface-2-rgb), 0.86);
+  --panel-border: rgba(155, 178, 202, 0.13);
+  --panel-border-hover: rgba(var(--accent-2-rgb), 0.24);
+
+  /* Gradients */
+  --text-gradient-a: #dbe6f3;
+  --text-gradient-b: #b7ddff;
+  --text-gradient-c: #9bb2ca;
+  --text-gradient-d: #78bfff;
+  --text-gradient-e: #dbe6f3;
+  --text-blue-soft: #b7ddff;
+  --text-blue-frost: #d8ecff;
+  --text-blue-fade: #78bfff;
+  --text-blue-pale: #dbe6f3;
+  --text-blue-pale-2: #edf3f7;
+  --text-blue-pale-3: #b7ddff;
+  --text-blue-muted: #4f88b0;
+  --gradient-text: linear-gradient(180deg, var(--text-strong) 0%, var(--text-gradient-a) 100%);
+  --gradient-text-soft: linear-gradient(180deg, var(--text-strong) 0%, var(--text-blue-pale) 56%, var(--accent) 100%);
+  --gradient-brand-text: var(--gradient-text);
+  --gradient-primary: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 56%, var(--accent-deep) 100%);
+  --gradient-panel: linear-gradient(180deg, var(--surface-2), var(--surface));
+  --gradient-background:
+    radial-gradient(920px 400px at 50% -12%, rgba(var(--accent-2-rgb), 0.070), transparent 72%),
+    radial-gradient(760px 440px at 100% 18%, rgba(var(--sky-rgb), 0.075), transparent 74%),
+    radial-gradient(640px 420px at 0% 82%, rgba(var(--accent-rgb), 0.042), transparent 70%),
+    linear-gradient(180deg, rgba(var(--bg-rgb), 0.08), rgba(var(--bg-deep-rgb), 0.72));
+  --gradient-shadow-a:
+    linear-gradient(135deg, rgba(var(--accent-2-rgb), 0.16), rgba(var(--sky-rgb), 0.18) 34%, rgba(var(--surface-2-rgb), 0.58) 74%);
+  --gradient-shadow-b:
+    linear-gradient(225deg, rgba(var(--accent-rgb), 0.11), rgba(var(--sky-rgb), 0.16) 46%, rgba(var(--bg-deep-rgb), 0) 80%);
+  --gradient-showcase:
+    radial-gradient(800px 360px at 80% -10%, rgba(var(--accent-rgb), 0.065), transparent 60%),
+    radial-gradient(640px 320px at 8% 108%, rgba(var(--sky-rgb), 0.050), transparent 64%),
+    linear-gradient(180deg, var(--surface-raised), var(--surface-raised-2));
+  --gradient-card-texture:
+    radial-gradient(380px 180px at 86% 0%, rgba(var(--accent-2-rgb), 0.10), transparent 72%),
+    radial-gradient(300px 160px at 0% 100%, rgba(var(--sky-rgb), 0.055), transparent 70%),
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.055), transparent 38%, rgba(var(--white-rgb), 0.018));
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-base: 180ms;
+  --duration-slow: 220ms;
+  --duration-enter: 650ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-standard: cubic-bezier(0.2, 0.65, 0.3, 1);
+  --ease-out: var(--ease-standard);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
