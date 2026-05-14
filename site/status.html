@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="Live Meterflow production status for API health, x402 payments, storage, providers, and treasury readiness.">
+<meta name="theme-color" content="#05080f">
+<meta property="og:title" content="Meterflow Status">
+<meta property="og:description" content="Live status for Meterflow API health, x402 payments, providers, and storage.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow-ocean.png">
+<meta property="og:url" content="https://meterflow.fun/status">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image:width" content="1672">
+<meta property="og:image:height" content="941">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow-ocean.png">
+<title>Meterflow Status</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="color-scheme" content="dark">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<link rel="stylesheet" href="/site/status.css">
+<link rel="stylesheet" href="/site/subpage.css">
+<link rel="stylesheet" href="/site/premium.css">
+</head>
+<body>
+<nav class="mf-nav">
+  <a href="/" class="nav-logo" aria-label="Meterflow home"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">Meterflow</a>
+  <div class="nav-links">
+    <a href="/#tools" data-nav="tools">Tools</a>
+    <a href="/how-it-works" data-nav="how-it-works">How It Works</a>
+    <a href="/token" data-nav="token">Token</a>
+    <a href="/status" data-nav="status">Status</a>
+    <a href="/roadmap" data-nav="roadmap">Roadmap</a>
+    <a href="/apply" data-nav="apply">Apply</a>
+  </div>
+  <div class="nav-actions">
+    <a class="nav-docs" href="/docs" data-nav="docs">Docs</a>
+        <div class="nav-socials">
+      <a class="nav-social" href="https://x.com/meterflowsol" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.36-7.013L4.16 22H.9l8.025-9.17L1.5 2h6.97l4.84 6.4L18.244 2Zm-1.2 18h1.86L7.04 4H5.05l11.994 16Z"/></svg></a>
+      <a class="nav-social" href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33a17.6 17.6 0 0 0-4.43-1.38c-.19.34-.4.78-.55 1.13a16.3 16.3 0 0 0-4.92 0c-.15-.36-.37-.79-.56-1.13a17.6 17.6 0 0 0-4.43 1.38A18.06 18.06 0 0 0 .73 17.51a17.7 17.7 0 0 0 5.34 2.7c.41-.56.78-1.16 1.1-1.79a11.7 11.7 0 0 1-1.67-.8c.11-.08.22-.17.33-.26a12.6 12.6 0 0 0 10.74 0c.11.09.22.18.33.26-.53.31-1.09.58-1.67.8.33.63.7 1.23 1.1 1.79a17.6 17.6 0 0 0 5.35-2.7 17.95 17.95 0 0 0-3.46-12.15ZM8.52 15.33c-1.06 0-1.93-.97-1.93-2.16 0-1.2.86-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.86 2.16-1.93 2.16Zm6.97 0c-1.06 0-1.93-.97-1.93-2.16 0-1.2.85-2.17 1.93-2.17 1.08 0 1.94.98 1.93 2.17 0 1.19-.85 2.16-1.93 2.16Z"/></svg></a>
+    </div>
+    <a class="nav-cta" href="/dashboard" data-nav="dashboard">Launch Dashboard</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#tools" data-nav="tools" onclick="closeMobile()">Tools</a>
+  <a href="/how-it-works" data-nav="how-it-works" onclick="closeMobile()">How It Works</a>
+  <a href="/token" data-nav="token" onclick="closeMobile()">Token</a>
+  <a href="/status" data-nav="status" onclick="closeMobile()">Status</a>
+  <a href="/roadmap" data-nav="roadmap" onclick="closeMobile()">Roadmap</a>
+  <a href="/apply" data-nav="apply" onclick="closeMobile()">Apply as Provider</a>
+  <a href="https://github.com/nullxnothing/meterflow" target="_blank" rel="noopener" onclick="closeMobile()">GitHub</a>
+  <a href="https://x.com/meterflowsol" target="_blank" rel="noopener" onclick="closeMobile()">X</a>
+  <a href="https://discord.gg/tned74z4eN" target="_blank" rel="noopener" onclick="closeMobile()">Discord</a>
+  <a href="/docs" class="mobile-menu-cta" data-nav="docs" onclick="closeMobile()">Read Docs</a>
+  <a href="/dashboard" class="mobile-menu-cta primary" data-nav="dashboard" onclick="closeMobile()">Launch Dashboard</a>
+</div>
+
+<main class="status-page">
+  <section class="status-hero">
+    <div class="label-sm">LIVE OPERATIONS</div>
+    <h1>Meterflow Status</h1>
+    <p>Production readiness for the Meterflow gateway, x402 payment path, storage layer, provider keys, and settlement wallet.</p>
+    <div class="status-summary" id="statusSummary">
+      <span class="status-dot pending"></span>
+      <span>Checking production...</span>
+    </div>
+  </section>
+
+  <section class="status-grid" aria-live="polite">
+    <article class="status-card">
+      <div class="card-label">API</div>
+      <h2 id="apiStatus">Checking</h2>
+      <p id="apiDetail">Waiting for /proxy/health.</p>
+    </article>
+    <article class="status-card">
+      <div class="card-label">Storage</div>
+      <h2 id="storageStatus">Checking</h2>
+      <p id="storageDetail">Redis and Postgres readiness.</p>
+    </article>
+    <article class="status-card">
+      <div class="card-label">x402</div>
+      <h2 id="paymentStatus">Checking</h2>
+      <p id="paymentDetail">Settlement recipient and unpaid quote readiness.</p>
+    </article>
+    <article class="status-card">
+      <div class="card-label">Treasury</div>
+      <h2 id="treasuryStatus">Checking</h2>
+      <p id="treasuryDetail">Settlement wallet balance and runway.</p>
+    </article>
+    <article class="status-card">
+      <div class="card-label">Providers</div>
+      <h2 id="providerStatus">Checking</h2>
+      <p id="providerDetail">AI provider availability.</p>
+    </article>
+    <article class="status-card">
+      <div class="card-label">Smoke</div>
+      <h2 id="smokeStatus">Checking</h2>
+      <p id="smokeDetail">Latest scheduled GitHub production smoke run.</p>
+    </article>
+  </section>
+
+  <section class="status-links">
+    <a href="/proxy/health" target="_blank" rel="noopener">Health JSON</a>
+    <a href="/proxy/treasury" target="_blank" rel="noopener">Treasury JSON</a>
+    <a href="https://github.com/nullxnothing/meterflow/actions/workflows/production-smoke.yml" target="_blank" rel="noopener">Smoke Runs</a>
+    <a href="/dashboard">Dashboard</a>
+  </section>
+</main>
+
+<script src="/site/shared.js" defer></script>
+<script src="/site/status.js" defer></script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/site/premium.js"></script>
+</body>
+</html>

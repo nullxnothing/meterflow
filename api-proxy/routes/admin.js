@@ -12,7 +12,6 @@ import { logger } from '../lib/logger.js';
 import { checkPostgresHealth } from '../lib/postgres.js';
 import { checkRedisHealth } from '../lib/redis.js';
 import { captureError, flushSentry } from '../lib/sentry.js';
-import { listMeters, listReceipts } from '../lib/control-plane.js';
 
 const router = Router();
 
@@ -68,65 +67,6 @@ function computeTreasuryHealth(balance, globalStats, treasuryState) {
   return { multiplier, healthStatus, runwayDays, dailyBudget, tiers };
 }
 
-function buildDailySeries(receipts, predicate = () => true, days = 30) {
-  const end = new Date();
-  end.setUTCHours(0, 0, 0, 0);
-  const buckets = new Map();
-
-  for (let i = days - 1; i >= 0; i -= 1) {
-    const date = new Date(end);
-    date.setUTCDate(end.getUTCDate() - i);
-    buckets.set(date.toISOString().slice(0, 10), 0);
-  }
-
-  receipts.forEach(receipt => {
-    if (!predicate(receipt)) return;
-    const created = new Date(receipt.createdAt || 0);
-    if (Number.isNaN(created.getTime())) return;
-    const key = created.toISOString().slice(0, 10);
-    if (!buckets.has(key)) return;
-    buckets.set(key, buckets.get(key) + 1);
-  });
-
-  return Array.from(buckets, ([date, value]) => ({ date, value }));
-}
-
-async function getControlPlaneTelemetry() {
-  const [meters, receipts] = await Promise.all([
-    listMeters(),
-    listReceipts({ limit: 500 }),
-  ]);
-
-  const isTest = receipt => receipt.status === 'test_quote' || receipt.paymentState === 'test_quote' || receipt.paymentMethod === 'dashboard_test';
-  const isVerified = receipt => receipt.status === 'verified' || receipt.paymentState === 'verified' || Boolean(receipt.txSignature);
-  const isFailed = receipt => String(receipt.status || '').includes('failed') || String(receipt.paymentState || '').includes('failed');
-
-  const verifiedReceipts = receipts.filter(isVerified);
-  const testReceipts = receipts.filter(isTest);
-  const failedReceipts = receipts.filter(isFailed);
-  const billableReceipts = receipts.filter(receipt => receipt.status === 'metered_key' || isVerified(receipt));
-
-  return {
-    meters: {
-      total: meters.length,
-      active: meters.filter(meter => meter.status !== 'disabled').length,
-    },
-    receipts: {
-      total: receipts.length,
-      billable: billableReceipts.length,
-      verified: verifiedReceipts.length,
-      test: testReceipts.length,
-      failed: failedReceipts.length,
-      today: buildDailySeries(receipts, () => true, 1)[0]?.value || 0,
-      estimatedUsd: Number(billableReceipts.reduce((sum, receipt) => sum + Number(receipt.amountUsd || 0), 0).toFixed(6)),
-      verifiedUsd: Number(verifiedReceipts.reduce((sum, receipt) => sum + Number(receipt.amountUsd || 0), 0).toFixed(6)),
-      withTxSignature: receipts.filter(receipt => receipt.txSignature || receipt.paymentReference).length,
-      series30d: buildDailySeries(receipts),
-      verifiedSeries30d: buildDailySeries(receipts, isVerified),
-    },
-  };
-}
-
 function getOpsReadiness() {
   return {
     errorAlertWebhookConfigured: !!process.env.ERROR_ALERT_WEBHOOK,
@@ -141,11 +81,7 @@ router.get('/stats', publicLimiter, async (req, res) => {
     return res.json(statsCache.data);
   }
 
-  const [totalKeysIssued, globalStats, controlPlane] = await Promise.all([
-    countKeys(),
-    getGlobalStats(),
-    getControlPlaneTelemetry(),
-  ]);
+  const [totalKeysIssued, globalStats] = await Promise.all([countKeys(), getGlobalStats()]);
   const providers = {
     claude: PROVIDER_AVAILABLE.claude,
     gemini: PROVIDER_AVAILABLE.gemini,
@@ -160,7 +96,6 @@ router.get('/stats', publicLimiter, async (req, res) => {
     allTimeTokens: globalStats.allTimeTokens,
     activeProviders: Object.values(providers).filter(Boolean).length,
     providers,
-    controlPlane,
     uptimeMs: Date.now() - startedAt,
     tokenMint: CONFIG.TOKEN_MINT || null,
     tiers: Object.entries(CONFIG.TIERS).map(([key, t]) => ({
