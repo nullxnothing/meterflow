@@ -12,7 +12,7 @@ The Solana control plane for agent commerce: paid APIs, MCP tools, budgets, rece
 
 ## $MFLOW
 
-Official contract address: `TBA`
+Official contract address: `GrFTVNJi6JKbLRFTXSXYki72ovYWVmbvDcrHHS2mpump`
 
 The site and backend use `METERFLOW_TOKEN_CA` as the master token address. Set that env var once when the token is public and Meterflow will use it for the token page, holder checks, and token-gated utility tiers.
 
@@ -204,7 +204,7 @@ Core API variables:
 
 Token and settlement variables:
 
-- `METERFLOW_TOKEN_CA` is the canonical `$MFLOW` contract address used by the whole site, token page, and token-gated utility tiers. Current public CA: `TBA`
+- `METERFLOW_TOKEN_CA` is the canonical `$MFLOW` contract address used by the whole site, token page, and token-gated utility tiers. Current public CA: `GrFTVNJi6JKbLRFTXSXYki72ovYWVmbvDcrHHS2mpump`
 - `METERFLOW_TOKEN_MINT` is still supported as a backward-compatible fallback
 - `METERFLOW_TOKEN_NAME`, `METERFLOW_TOKEN_SYMBOL`, and `METERFLOW_TOKEN_SWAP_URL` control token page labeling and trade links
 - `X402_PAY_TO`, `SETTLEMENT_WALLET`, or `TREASURY_WALLET` for the provider or treasury USDC recipient
