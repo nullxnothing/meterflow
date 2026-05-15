@@ -1,5 +1,4 @@
 import { Keypair, Connection, VersionedTransaction, TransactionMessage, SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 import crypto from 'crypto';
 
 const SCRYPT_KEY_LEN = 32;
@@ -87,9 +86,11 @@ export async function getTokenBalance(connection, ownerStr, mintStr) {
   try {
     const owner = new PublicKey(ownerStr);
     const mint = new PublicKey(mintStr);
-    const ata = await getAssociatedTokenAddress(mint, owner);
-    const account = await getAccount(connection, ata);
-    return Number(account.amount);
+    const accounts = await connection.getParsedTokenAccountsByOwner(owner, { mint });
+    return accounts.value.reduce((sum, { account }) => {
+      const rawAmount = account.data?.parsed?.info?.tokenAmount?.amount || '0';
+      return sum + Number(rawAmount);
+    }, 0);
   } catch {
     return 0;
   }

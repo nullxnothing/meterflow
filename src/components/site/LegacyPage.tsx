@@ -3,6 +3,7 @@ import { FlickeringFooter } from "@/components/ui/flickering-footer";
 
 const pageFiles: Record<string, string> = {
   "/status": "/site/status.html",
+  "/buy": "/site/buy.html",
   "/apply": "/site/apply.html",
   "/privacy": "/site/privacy.html",
   "/terms": "/site/terms.html",

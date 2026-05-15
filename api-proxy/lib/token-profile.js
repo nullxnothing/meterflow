@@ -16,12 +16,13 @@ function configuredMint() {
 
 function tokenConfig() {
   const mint = configuredMint();
+  const buyUrl = mint ? `${CONFIG.PUBLIC_URL}/buy?input=SOL` : null;
   return {
     configured: !!mint,
     mint: mint || null,
     name: CONFIG.TOKEN_NAME || 'Meterflow',
     symbol: CONFIG.TOKEN_SYMBOL || 'MFLOW',
-    swapUrl: CONFIG.TOKEN_SWAP_URL || null,
+    swapUrl: CONFIG.TOKEN_SWAP_URL || buyUrl,
     orbUrl: mint ? `https://orbmarkets.io/token/${mint}` : null,
     dexscreenerUrl: mint ? `https://dexscreener.com/solana/${mint}` : null,
   };

@@ -65,6 +65,7 @@ type TokenSummary = {
 };
 
 const METERFLOW_TOKEN_MINT = "GrFTVNJi6JKbLRFTXSXYki72ovYWVmbvDcrHHS2mpump";
+const METERFLOW_BUY_URL = "/buy?input=SOL";
 
 function shortAddress(value?: string | null) {
   return value ? `${value.slice(0, 5)}...${value.slice(-5)}` : "Indexing";
@@ -107,13 +108,13 @@ function tokenFallback(): TokenSummary {
       mint: METERFLOW_TOKEN_MINT,
       orbUrl: `https://orbmarkets.io/token/${METERFLOW_TOKEN_MINT}`,
       dexscreenerUrl: `https://dexscreener.com/solana/${METERFLOW_TOKEN_MINT}`,
-      swapUrl: `https://jup.ag/swap/SOL-${METERFLOW_TOKEN_MINT}`,
+      swapUrl: METERFLOW_BUY_URL,
     },
     market: null,
     links: {
       orb: `https://orbmarkets.io/token/${METERFLOW_TOKEN_MINT}`,
       dexscreener: `https://dexscreener.com/solana/${METERFLOW_TOKEN_MINT}`,
-      swap: `https://jup.ag/swap/SOL-${METERFLOW_TOKEN_MINT}`,
+      swap: METERFLOW_BUY_URL,
     },
     sources: [],
     updatedAt: null,
@@ -657,9 +658,9 @@ function TokenPage() {
         lede="$MFLOW wraps the Meterflow network with access, provider reputation, higher policy limits, analytics, and long-term alignment while paid requests settle in USDC on Solana."
         actions={
           <>
-            <ButtonLink href={swapUrl} target="_blank" rel="noopener">
-              Trade
-              <ExternalLink className="h-4 w-4" />
+            <ButtonLink href={swapUrl}>
+              Buy {symbol}
+              <Wallet className="h-4 w-4" />
             </ButtonLink>
             <ButtonLink href={dexUrl} target="_blank" rel="noopener" variant="secondary">
               Market
@@ -685,7 +686,7 @@ function TokenPage() {
               </Button>
             </div>
             <div className="mf-pill-row">
-              <a className="mf-pill" href={swapUrl} target="_blank" rel="noopener">Trade</a>
+              <a className="mf-pill" href={swapUrl}>Buy {symbol}</a>
               <a className="mf-pill" href={dexUrl} target="_blank" rel="noopener">DEX Screener</a>
               <a className="mf-pill" href={orbUrl} target="_blank" rel="noopener">Explorer</a>
             </div>
@@ -795,63 +796,63 @@ const roadmapPhases = [
   {
     status: "shipped",
     phase: "01",
-    title: "Metering Foundation",
-    copy: "Route catalog, hosted external API gateway, dashboard/API keys, and usage accounting.",
-    items: ["Hosted gateway routes", "Meter create/test flows", "Usage and route state"],
+    title: "x402 Metered Routes",
+    copy: "Turn API routes into priced, machine-payable endpoints with dashboard accounts, API key management, route meters, and proxy enforcement.",
+    items: ["x402 price metadata", "Hosted gateway routes", "Usage accounting and quotas"],
   },
   {
     status: "live",
     phase: "02",
-    title: "Receipt Graph And Payment State",
-    copy: "Quote, proof, payer, route, provider, response state, latency, and exportable accounting.",
-    items: ["Per-endpoint quote", "Payer wallet and proof", "Receipt ledger and exports"],
+    title: "MPP-Compatible Agent Commerce",
+    copy: "Expose machine-readable route, price, and acceptance metadata so agents can discover, price, call, pay, and verify provider services.",
+    items: ["MPP route metadata", "Agent-ready paid calls", "Unified proof handling"],
   },
   {
     status: "live",
     phase: "03",
-    title: "Provider Revenue",
-    copy: "Aggregate calls, gross revenue, verified revenue, failures, and latency by meter.",
-    items: ["Provider revenue view", "Failed-payment state", "Webhook delivery state"],
+    title: "Receipts And Payment State",
+    copy: "Connect quotes, Solana USDC payment proof, payer wallet, route, response state, latency, and exportable accounting records.",
+    items: ["Per-endpoint quote", "Payer wallet and proof", "Receipt ledger and exports"],
   },
   {
     status: "live",
     phase: "04",
-    title: "Agent Budget Vaults",
-    copy: "Wallet-bound daily caps, per-call caps, route allowlists, expirations, and revocation.",
-    items: ["Budget policies", "Route allowlists", "Operator receipt visibility"],
+    title: "Agent Budgets And Wallet Policy",
+    copy: "Give agents wallet-bound spending controls before payment: route allowlists, per-call caps, daily caps, alerts, and revocation.",
+    items: ["Budget policies", "Pre-payment checks", "Alerts and revocation"],
   },
   {
     status: "live",
     phase: "05",
-    title: "MCP/API Launchpad",
-    copy: "Package MCP tools and external API routes as priced capabilities agents can call.",
-    items: ["MCP tool registration", "Hosted API wrapper", "Provider apply flow"],
+    title: "MCP Tool Monetization",
+    copy: "Package, price, meter, and monitor MCP tools from one dashboard with hosted gateway paths, receipt streams, and agent-facing discovery metadata.",
+    items: ["Paid MCP gateway paths", "Tool pricing and metering", "Provider apply flow"],
   },
   {
     status: "next",
     phase: "06",
-    title: "x402 And MPP Adapter",
-    copy: "Keep x402 live while MPP opt-in calls normalize into the same receipt and policy layer.",
-    items: ["MPP challenge support", "Protocol metadata", "Unified receipt model"],
+    title: "Provider Revenue And Registry",
+    copy: "Help providers see which routes earn and help agents find reliable services with calls, verified revenue, failures, latency, receipts, and reputation signals.",
+    items: ["Provider revenue view", "Reliability metrics", "Registry ranking"],
   },
   {
     status: "next",
     phase: "07",
-    title: "Open Provider Registry",
-    copy: "Registration, custom meters, revenue share, provider earnings, and registry ranking.",
-    items: ["Public provider profiles", "Reliability metrics", "Utility-backed signal"],
+    title: "Embedded MFLOW Purchase Flow",
+    copy: "Keep users on Meterflow for MFLOW access with a cleaner Jupiter-powered purchase page instead of dropping every buy button onto the Jupiter site.",
+    items: ["Embedded swap page", "SOL and USDC entry points", "Wallet-friendly purchase state"],
   },
   {
     status: "planned",
     phase: "08",
     title: "$MFLOW Utility Layer",
-    copy: "Access, provider reputation, higher policy limits, analytics, fee relief, and long-term network alignment.",
-    items: ["Holder utility tiers", "Provider reputation", "Registry ranking"],
+    copy: "USDC remains the payment asset. MFLOW wraps network utility through provider reputation, fee relief, registry ranking, higher policy limits, analytics, receipt retention, and future bonding.",
+    items: ["Holder utility tiers", "Provider reputation", "Future provider bonding"],
   },
 ];
 
-const roadmapPillars = ["Gateway", "Receipts", "Budgets", "Registry", "MFLOW"] as const;
-const roadmapPhasePillars = ["Gateway", "Receipts", "Receipts", "Budgets", "Registry", "Gateway", "Registry", "MFLOW"] as const;
+const roadmapPillars = ["x402", "MPP", "Receipts", "MCP", "MFLOW"] as const;
+const roadmapPhasePillars = ["x402", "MPP", "Receipts", "Receipts", "MCP", "MCP", "MFLOW", "MFLOW"] as const;
 
 function RoadmapPage() {
   const roadmapRef = useRef<HTMLDivElement>(null);
@@ -863,8 +864,8 @@ function RoadmapPage() {
       <div className="mf-roadmap-page" ref={roadmapRef}>
         <PageHero
           kicker="Product Map"
-          title="Agent commerce. Solana control plane."
-          lede="A practical roadmap for hosted API gateways, paid MCP tools, x402/MPP flows, receipts, budget policies, provider revenue, registry signal, and the MFLOW utility layer."
+          title="Agent payment rails. Meterflow control plane."
+          lede="x402 and the Machine Payments Protocol make machine-payable API calls possible. Meterflow adds the operating layer around them: route pricing, wallet policy, spend limits, Solana USDC settlement, receipts, provider revenue, discovery, and MFLOW utility."
           actions={
             <>
               <ButtonLink href="/docs">
@@ -875,14 +876,18 @@ function RoadmapPage() {
                 <Activity className="h-4 w-4" />
                 Status
               </ButtonLink>
+              <ButtonLink href="/buy?input=SOL" variant="secondary">
+                <Wallet className="h-4 w-4" />
+                Buy MFLOW
+              </ButtonLink>
             </>
           }
           aside={
             <MetricPanel
               items={[
-                { label: "Now", value: "Gateway", copy: "Meters, receipts, budgets" },
-                { label: "Next", value: "Registry", copy: "Provider distribution" },
-                { label: "Planned", value: "MFLOW", copy: "Utility and alignment" },
+                { label: "Now", value: "x402 + MPP", copy: "Machine-payable routes" },
+                { label: "Next", value: "Registry", copy: "Provider revenue signal" },
+                { label: "Planned", value: "MFLOW", copy: "Utility and bonding" },
               ]}
             />
           }
@@ -918,8 +923,8 @@ function RoadmapPage() {
 
           <CtaPanel
             kicker="Vision"
-            title="Agents need trusted paid tools. Providers need distribution."
-            copy="The roadmap is focused on the operational layer that turns paid requests into products agents can discover, afford, and trust."
+            title="Agents need trusted paid tools. APIs need proof."
+            copy="The roadmap is focused on the operational layer that turns x402 and MPP payments into products agents can discover, afford, verify, and trust."
             href="/apply"
             action="Apply as Provider"
           />
