@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-<meta name="description" content="Meterflow product map - meters, receipts, agent budgets, integrations, and Solana settlement for paid API usage.">
+<meta name="description" content="Meterflow roadmap for x402 and MPP-compatible paid APIs, MCP tool monetization, Solana USDC settlement, receipts, agent budgets, and MFLOW utility.">
 <meta name="theme-color" content="#05080f">
 <link rel="canonical" href="https://meterflow.fun/roadmap">
 <meta property="og:title" content="Meterflow — Roadmap">
-<meta property="og:description" content="The Meterflow product surface for Solana-native API payments.">
+<meta property="og:description" content="The Meterflow roadmap for x402, MPP, MCP tools, Solana settlement, receipts, agent budgets, and MFLOW utility.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://meterflow.fun/roadmap">
 <meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
@@ -66,18 +66,18 @@
   <div class="roadmap-hero-content">
     <div class="hero-label">Product Map</div>
     <h1 class="roadmap-headline">
-      Metered APIs.<br>
-      <span class="accent">Solana settlement.</span>
+      Agent payment rails.<br>
+      <span class="accent">Meterflow control plane.</span>
     </h1>
     <p class="roadmap-sub">
-      Meterflow is the operating layer around paid API usage: meters, receipts, budget policies, service routes, integrations, and Solana settlement context.
+      x402 and the Machine Payments Protocol (MPP) make machine-payable API calls possible. Meterflow adds the operating layer around them: route pricing, wallet policy, spend limits, Solana USDC settlement, receipts, provider revenue, discovery, and MFLOW utility.
     </p>
     <div class="roadmap-progress-bar">
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-labels">
-        <span class="progress-label active">Meters</span>
+        <span class="progress-label active">x402</span>
+        <span class="progress-label active">MPP</span>
         <span class="progress-label active">Receipts</span>
-        <span class="progress-label active">Budgets</span>
         <span class="progress-label active">MCP</span>
         <span class="progress-label active">MFLOW</span>
       </div>
@@ -93,12 +93,12 @@
       <div class="phase-marker"><div class="phase-dot"></div><div class="phase-pulse"></div></div>
       <div class="phase-content">
         <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 01</span></div>
-        <h2 class="phase-title">Metering Foundation</h2>
-        <p class="phase-desc">Dashboard accounts, API key management, service routes, and usage tracking.</p>
+        <h2 class="phase-title">x402 Metered Routes</h2>
+        <p class="phase-desc">Turn API routes into priced, machine-payable endpoints with dashboard accounts, API key management, route meters, and usage tracking.</p>
         <div class="phase-items">
-          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Route catalog and usage accounting</span><span class="item-tag">Meters</span></div></div>
+          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Route catalog with price and payment metadata</span><span class="item-tag">x402</span></div></div>
           <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Dashboard and API key issuance</span><span class="item-tag">Keys</span></div></div>
-          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Usage accounting and quotas</span><span class="item-tag">Metering</span></div></div>
+          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Usage accounting, quotas, and proxy enforcement</span><span class="item-tag">Meters</span></div></div>
         </div>
       </div>
     </div>
@@ -106,13 +106,13 @@
     <div class="timeline-phase active" data-phase="2">
       <div class="phase-marker"><div class="phase-dot active"></div><div class="phase-pulse active"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge active">Active</span><span class="phase-number">Surface 02</span></div>
-        <h2 class="phase-title">Receipts And Payment State</h2>
-        <p class="phase-desc">Connect quote, payment proof, payer wallet, response state, and exportable accounting records.</p>
+        <div class="phase-header"><span class="phase-badge active">In Progress</span><span class="phase-number">Surface 02</span></div>
+        <h2 class="phase-title">MPP-Compatible Agent Commerce</h2>
+        <p class="phase-desc">Make Meterflow routes easier for agents to discover, price, call, pay, and verify without custom integration work for every provider.</p>
         <div class="phase-items">
-          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Per-endpoint quote state</span><span class="item-tag">Billing</span></div></div>
-          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Payer wallet and proof records</span><span class="item-tag">Settlement</span></div></div>
-          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Receipt ledger and exports</span><span class="item-tag">Ledger</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Machine-readable route, price, and acceptance metadata</span><span class="item-tag">MPP</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Agent-ready paid API and MCP tool call patterns</span><span class="item-tag">Agents</span></div></div>
+          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Embedded MFLOW purchase flow instead of direct Jupiter handoff</span><span class="item-tag">Buy Flow</span></div></div>
         </div>
       </div>
     </div>
@@ -120,17 +120,17 @@
     <div class="timeline-phase" data-phase="3">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 03</span></div>
-        <h2 class="phase-title">Provider Revenue</h2>
-        <p class="phase-desc">Aggregate calls, estimated gross revenue, verified revenue, failures, and latency by meter so providers can see which endpoints earn.</p>
+        <div class="phase-header"><span class="phase-badge active">In Progress</span><span class="phase-number">Surface 03</span></div>
+        <h2 class="phase-title">Receipts And Payment State</h2>
+        <p class="phase-desc">Connect quotes, Solana USDC payment proof, payer wallet, response state, and exportable accounting records for every paid request.</p>
         <div class="phase-code-preview">
-          <div class="code-header"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-filename">server.ts</span></div>
-          <pre class="code-body"><code><span class="kw">import</span> { meterflow } <span class="kw">from</span> <span class="str">'@meterflow/sdk'</span>;
-
-const revenue = await meterflow.providerRevenue();
-const receipts = await meterflow.receipts({
-  meterId: <span class="str">'mtr_chat'</span>
-});</code></pre>
+          <div class="code-header"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-filename">receipt.json</span></div>
+          <pre class="code-body"><code>{
+  <span class="str">"route"</span>: <span class="str">"/v1/agent/tool"</span>,
+  <span class="str">"asset"</span>: <span class="str">"USDC-SOL"</span>,
+  <span class="str">"payer"</span>: <span class="str">"wallet"</span>,
+  <span class="str">"status"</span>: <span class="str">"settled"</span>
+}</code></pre>
         </div>
       </div>
     </div>
@@ -139,8 +139,13 @@ const receipts = await meterflow.receipts({
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
         <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 04</span></div>
-        <h2 class="phase-title">Agent Budgets</h2>
-        <p class="phase-desc">Wallet-bound spending policies, route allowlists, per-call caps, daily caps, alerts, and revocation for autonomous agents.</p>
+        <h2 class="phase-title">Agent Budgets And Wallet Policy</h2>
+        <p class="phase-desc">Give agents wallet-bound spending controls before payment: route allowlists, per-call caps, daily caps, alerts, and revocation for autonomous usage.</p>
+        <div class="phase-items">
+          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Per-route and per-agent budget policies</span><span class="item-tag">Policy</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Pre-payment checks for paid API requests</span><span class="item-tag">Guardrails</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Alerts, revocation, and quota enforcement</span><span class="item-tag">Controls</span></div></div>
+        </div>
       </div>
     </div>
 
@@ -148,17 +153,41 @@ const receipts = await meterflow.receipts({
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
         <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 05</span></div>
-        <h2 class="phase-title">MCP Tool Packaging</h2>
-        <p class="phase-desc">Package, price, meter, and monitor MCP tools from one dashboard with hosted gateway paths and receipt streams.</p>
+        <h2 class="phase-title">MCP Tool Monetization</h2>
+        <p class="phase-desc">Package, price, meter, and monitor MCP tools from one dashboard with hosted gateway paths, receipt streams, and agent-facing discovery metadata.</p>
+        <div class="phase-items">
+          <div class="phase-item done"><span class="item-check">></span><div class="item-content"><span class="item-name">Hosted gateway paths for paid MCP tools</span><span class="item-tag">MCP</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Tool pricing, metering, and provider analytics</span><span class="item-tag">Tools</span></div></div>
+          <div class="phase-item active"><span class="item-check blink">></span><div class="item-content"><span class="item-name">Agent registry entries for discoverable paid tools</span><span class="item-tag">Registry</span></div></div>
+        </div>
       </div>
     </div>
 
     <div class="timeline-phase" data-phase="6">
       <div class="phase-marker"><div class="phase-dot"></div></div>
       <div class="phase-content">
-        <div class="phase-header"><span class="phase-badge completed">Active</span><span class="phase-number">Surface 06</span></div>
+        <div class="phase-header"><span class="phase-badge upcoming">Next</span><span class="phase-number">Surface 06</span></div>
+        <h2 class="phase-title">Provider Revenue And Registry</h2>
+        <p class="phase-desc">Help providers see which routes earn and help agents find reliable services with calls, verified revenue, failures, latency, receipts, and reputation signals.</p>
+        <div class="phase-code-preview">
+          <div class="code-header"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-filename">server.ts</span></div>
+          <pre class="code-body"><code><span class="kw">import</span> { meterflow } <span class="kw">from</span> <span class="str">'@meterflow/sdk'</span>;
+
+const revenue = await meterflow.providerRevenue();
+const registry = await meterflow.discover({
+  accepts: <span class="str">'x402'</span>,
+  chain: <span class="str">'solana'</span>
+});</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-phase" data-phase="7">
+      <div class="phase-marker"><div class="phase-dot"></div></div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-badge upcoming">Next</span><span class="phase-number">Surface 07</span></div>
         <h2 class="phase-title">MFLOW Utility</h2>
-        <p class="phase-desc">USDC is the payment asset. MFLOW powers provider reputation, fee discounts, registry ranking, higher policy limits, longer receipt retention, and future provider bonding.</p>
+        <p class="phase-desc">USDC remains the payment asset. MFLOW powers provider reputation, fee relief, registry ranking, higher policy limits, longer receipt retention, future provider bonding, and a cleaner embedded purchase path on Meterflow.</p>
       </div>
     </div>
   </div>
@@ -167,8 +196,8 @@ const receipts = await meterflow.receipts({
 <section class="vision-section" id="vision">
   <div class="vision-inner">
     <div class="section-label">The Direction</div>
-    <h2 class="vision-headline">Agents need<br><span class="accent">priced tools.</span><br>APIs need settlement.</h2>
-    <p class="vision-sub">Meterflow gives both sides a simple contract: expose a price, enforce policy, run the request, emit a receipt, and track revenue.</p>
+    <h2 class="vision-headline">Agents need<br><span class="accent">paid tools.</span><br>APIs need proof.</h2>
+    <p class="vision-sub">Meterflow gives both sides a simple contract: advertise a price, enforce policy, accept payment, run the request, emit a receipt, and track revenue across x402, MPP-aligned routes, MCP tools, and Solana settlement.</p>
   </div>
 </section>
 
@@ -176,10 +205,11 @@ const receipts = await meterflow.receipts({
   <div class="cta-glow"></div>
   <div class="cta-inner">
     <h2>Build with<br><span class="accent">Meterflow.</span></h2>
-    <p class="cta-sub">Start with the dashboard, configure meters, attach integrations, and control agent spend.</p>
+    <p class="cta-sub">Start with the dashboard, configure meters, attach integrations, control agent spend, and use the embedded buy flow for MFLOW access.</p>
     <div class="cta-links">
       <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
       <a href="/docs" class="btn-secondary">Read Docs</a>
+      <a href="/buy" class="btn-secondary">Buy MFLOW</a>
     </div>
   </div>
 </section>

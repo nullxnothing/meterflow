@@ -17,6 +17,11 @@ const router = Router();
 const SIG_MAX_AGE_MS = 5 * 60 * 1000;
 const WRAPPED_SOL_MINT = 'So11111111111111111111111111111111111111112';
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const PUBLIC_SITE_URL = (
+  process.env.PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  'https://meterflow.fun'
+).replace(/\/+$/, '');
 
 const registerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -29,8 +34,10 @@ const registerLimiter = rateLimit({
 function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
   const isHolder = tier && tier !== 'trial';
   const minSignal = CONFIG.TIERS.signal?.min || 0;
-  const purchaseUrl = CONFIG.TOKEN_SWAP_URL || (CONFIG.TOKEN_MINT ? `https://jup.ag/swap/SOL-${CONFIG.TOKEN_MINT}` : null);
-  const usdcPurchaseUrl = CONFIG.TOKEN_MINT ? `https://jup.ag/swap/${USDC_MINT}-${CONFIG.TOKEN_MINT}` : null;
+  const buyUrl = CONFIG.TOKEN_MINT ? `${PUBLIC_SITE_URL}/buy?input=SOL` : null;
+  const usdcBuyUrl = CONFIG.TOKEN_MINT ? `${PUBLIC_SITE_URL}/buy?input=USDC` : null;
+  const purchaseUrl = CONFIG.TOKEN_SWAP_URL || buyUrl;
+  const usdcPurchaseUrl = CONFIG.TOKEN_SWAP_URL || usdcBuyUrl;
   const protocolFeeBps = isHolder ? CONFIG.HOLDER_PROTOCOL_FEE_BPS : CONFIG.PROTOCOL_FEE_BPS;
 
   return {
@@ -45,18 +52,21 @@ function buildTokenAccess({ tier = 'trial', balance = 0 } = {}) {
     nonHolderProtocolFeeBps: CONFIG.PROTOCOL_FEE_BPS,
     purchaseUrl,
     usdcPurchaseUrl,
+    buyUrl,
     jupiterQuoteTemplate: CONFIG.TOKEN_MINT
-      ? `https://api.jup.ag/ultra/v1/order?inputMint=${WRAPPED_SOL_MINT}&outputMint=${CONFIG.TOKEN_MINT}&amount={lamports}&taker={wallet}`
+      ? `https://api.jup.ag/swap/v2/order?inputMint=${WRAPPED_SOL_MINT}&outputMint=${CONFIG.TOKEN_MINT}&amount={lamports}&taker={wallet}`
       : null,
     agentInstructions: CONFIG.TOKEN_MINT
       ? {
-          action: 'open_purchase_url_or_quote_jupiter',
+          action: 'open_meterflow_buy_page_or_quote_jupiter_swap_v2',
+          buyUrl,
+          usdcBuyUrl,
           outputMint: CONFIG.TOKEN_MINT,
           defaultInputMint: WRAPPED_SOL_MINT,
           usdcInputMint: USDC_MINT,
-          verifyWith: '/auth/status',
+          verifyWith: `${PUBLIC_SITE_URL}/proxy/auth/status`,
         }
-      : { action: 'wait_for_token_launch', verifyWith: '/auth/tiers' },
+      : { action: 'wait_for_token_launch', verifyWith: `${PUBLIC_SITE_URL}/proxy/auth/tiers` },
   };
 }
 

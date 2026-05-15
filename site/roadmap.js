@@ -69,7 +69,7 @@ const progressObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting && !hasAnimatedProgress) {
       hasAnimatedProgress = true;
       setTimeout(() => {
-        progressFill.style.width = '35%';
+        progressFill.style.width = '62%';
       }, 400);
     }
   });

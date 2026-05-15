@@ -10,6 +10,7 @@
     { "source": "/registry", "destination": "/site/registry.html" },
     { "source": "/receipt", "destination": "/site/receipt.html" },
     { "source": "/roadmap", "destination": "/site/roadmap.html" },
+    { "source": "/buy", "destination": "/site/buy.html" },
     { "source": "/apply", "destination": "/site/apply.html" },
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },

@@ -160,7 +160,7 @@ html { scroll-behavior: auto; }
 
 .progress-fill {
   height: 100%;
-  width: 35%;
+  width: 62%;
   background: linear-gradient(90deg, var(--accent), rgba(79, 156, 255, 0.4));
   border-radius: 2px;
   position: relative;

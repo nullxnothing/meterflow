@@ -382,6 +382,17 @@ describe('Site link integrity', () => {
     const src = readFileSync(resolve(projectRoot, 'site', 'index.html'), 'utf-8');
     assert.ok(src.includes('2026'), 'copyright should be 2026');
   });
+
+  it('MFLOW purchase defaults to the embedded buy page', () => {
+    const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    const buyPage = readFileSync(resolve(projectRoot, 'site', 'buy.html'), 'utf-8');
+    assert.ok(auth.includes('/buy?input=SOL'), 'default token purchase should use /buy');
+    assert.ok(auth.includes('/proxy/auth/status'), 'agent verify URL should use deployed proxy route');
+    assert.ok(auth.includes('api.jup.ag/swap/v2/order'), 'quote template should use Jupiter Swap V2');
+    assert.ok(!auth.includes('https://jup.ag/swap/SOL-'), 'default token purchase should not deep-link to jup.ag');
+    assert.ok(buyPage.includes('plugin.jup.ag/plugin-v1.js'), 'buy page should embed Jupiter Plugin');
+    assert.ok(buyPage.includes('fixedMint'), 'buy page should lock the output mint');
+  });
 });
 
 // ═══════════════════════════════════════
@@ -444,6 +455,7 @@ describe('Vercel routing', () => {
     assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
     assert.ok(sources.includes('/docs'), 'should rewrite /docs');
     assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
+    assert.ok(sources.includes('/buy'), 'should rewrite /buy');
   });
 });
 
