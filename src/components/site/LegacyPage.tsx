@@ -17,6 +17,7 @@ const activeNavByPath: Record<string, string> = {
   "/how-it-works": "how-it-works",
   "/token": "token",
   "/status": "status",
+  "/registry": "registry",
   "/roadmap": "roadmap",
   "/apply": "apply",
   "/dashboard": "dashboard",

@@ -75,7 +75,7 @@ export function TokenPage() {
   const statusLabel = loadState === "loading" ? "Syncing" : market?.priceUsd ? "Live" : "Indexing";
   const description =
     summary.asset?.description ||
-    "$MFLOW wraps Meterflow as the utility layer for APIs, MCP tools, paid routes, provider reputation, fee relief, higher policy limits, analytics, and receipt retention.";
+    "$MFLOW wraps Meterflow as the utility layer for provider trust, registry bonding, APIs, MCP tools, paid routes, fee relief, higher policy limits, analytics, and receipt retention.";
 
   const copyMint = async () => {
     await navigator.clipboard.writeText(mint);
@@ -92,7 +92,7 @@ export function TokenPage() {
             ${symbol} <span>the utility layer.</span>
           </>
         }
-        lede="$MFLOW wraps the Meterflow network with access, provider reputation, higher policy limits, analytics, and long-term alignment while paid requests settle in USDC on Solana."
+        lede="$MFLOW wraps the Meterflow network with provider trust, registry bonding, access, higher policy limits, analytics, and long-term alignment while paid requests settle in USDC on Solana."
         actions={
           <>
             <ButtonLink href={swapUrl}>
@@ -165,11 +165,11 @@ export function TokenPage() {
           <CardGrid
             cards={[
               { label: "Access", title: "Higher policy limits.", copy: "Holder utility can raise dashboard, route, budget, and analytics limits as network usage expands." },
-              { label: "Providers", title: "Reputation and ranking signal.", copy: "Provider reputation and registry ranking can reflect verified usage, reliability, and utility-tier alignment." },
+              { label: "Providers", title: "Bonded trust and ranking signal.", copy: "Providers can commit MFLOW for registry standing while receipt history, reliability, and verification shape routing priority." },
               { label: "Receipts", title: "Longer retention and analytics.", copy: "Receipts, exports, revenue views, and operational analytics can scale with utility tier." },
               { label: "Fees", title: "Protocol fee relief.", copy: "Fee relief can be based on actual MFLOW balance instead of loose access-tier labels." },
               { label: "Network", title: "Alignment around usage.", copy: "The token becomes the utility layer around that activity as APIs, MCP tools, and paid routes grow." },
-              { label: "Control", title: "Operator and provider policy.", copy: "Utility can bind to wallet identity, provider standing, spend controls, and product limits." },
+              { label: "Control", title: "Operator and provider policy.", copy: "Utility can bind to wallet identity, provider standing, spend controls, trust filters, and product limits." },
             ]}
           />
         </Section>
@@ -211,8 +211,8 @@ export function TokenPage() {
               <strong>Record receipts and revenue.</strong>
             </div>
             <div>
-              <span>Scale</span>
-              <strong>Use utility to expand limits.</strong>
+              <span>Register</span>
+              <strong>Use MFLOW utility for provider trust.</strong>
             </div>
           </div>
         </Section>

@@ -9,6 +9,8 @@
     { "source": "/docs", "destination": "/index.html" },
     { "source": "/docs.html", "destination": "/index.html" },
     { "source": "/status", "destination": "/index.html" },
+    { "source": "/registry", "destination": "/index.html" },
+    { "source": "/registry.html", "destination": "/index.html" },
     { "source": "/roadmap", "destination": "/index.html" },
     { "source": "/token", "destination": "/index.html" },
     { "source": "/buy", "destination": "/site/buy.html" },

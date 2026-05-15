@@ -190,6 +190,29 @@ export class MeterflowClient {
   }
 
   /**
+   * Get the public Meterflow provider trust registry summary.
+   */
+  async registrySummary() {
+    return this._get('/v1/registry/summary');
+  }
+
+  /**
+   * List public registry providers by trust score.
+   * @param {{category?: string, rail?: string, status?: string, verification?: string, minScore?: number, limit?: number}} [params]
+   */
+  async registryProviders(params = {}) {
+    return this._get(`/v1/registry/providers${this._query(params)}`);
+  }
+
+  /**
+   * Read one public registry provider by id or slug.
+   * @param {string} providerIdOrSlug
+   */
+  async registryProvider(providerIdOrSlug) {
+    return this._get(`/v1/registry/providers/${encodeURIComponent(providerIdOrSlug)}`);
+  }
+
+  /**
    * List configured webhook endpoints.
    */
   async webhooks() {

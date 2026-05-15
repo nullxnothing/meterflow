@@ -19,6 +19,9 @@ export function DocsPage() {
               <Code2 className="h-4 w-4" />
               Wrap an API
             </ButtonLink>
+            <ButtonLink href="/registry" variant="secondary">
+              Provider Registry
+            </ButtonLink>
           </>
         }
         aside={
@@ -144,15 +147,20 @@ console.log(meter.route); // /gateway/mtr_xxxxx/*
             id="registry"
             eyebrow="Discovery"
             title="Provider Registry"
-            lede="The registry turns paid endpoints into a market ranked by verification, price, uptime, latency, receipt volume, utility tier, and provider reputation."
+            lede="The registry turns paid endpoints into a market ranked by verification, MFLOW bond state, price, uptime, latency, receipt volume, budget support, and provider reputation."
           >
             <CardGrid
               cards={[
-                { label: "Providers", title: "Publish priced capabilities.", copy: "Hosted API routes and MCP tools can expose metadata agents can reason about." },
-                { label: "Operators", title: "Choose by live signal.", copy: "Registry listings can reflect reliability, cost, receipt history, and policy fit." },
-                { label: "$MFLOW", title: "Utility wraps usage.", copy: "Token utility can raise limits, retain analytics, reduce fees, and strengthen registry placement." },
+                { label: "Providers", title: "Publish priced capabilities.", copy: "Hosted API routes and MCP tools expose endpoint, category, rails, price, bond state, and policy metadata." },
+                { label: "Operators", title: "Choose by live signal.", copy: "Registry listings reflect reliability, cost, receipt history, budget support, verification, and payment rail fit." },
+                { label: "$MFLOW", title: "Utility wraps trust.", copy: "USDC settles the request. MFLOW coordinates provider bonding, fee relief, limits, analytics, and registry standing." },
               ]}
             />
+            <CodeBlock>{`
+GET /v1/registry/providers?rail=x402&minScore=55
+GET /v1/registry/summary
+GET /v1/registry/providers/meterflow-token-risk
+            `}</CodeBlock>
           </Section>
 
           <Section

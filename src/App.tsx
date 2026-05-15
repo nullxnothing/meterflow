@@ -8,7 +8,7 @@ import { Shell } from "@/components/site/Shell";
 const ProductRoute = lazy(() => import("@/pages/ProductRoute").then((module) => ({ default: module.ProductRoute })));
 
 const homePaths = ["/", "/index.html"];
-const productPaths = ["/docs", "/docs.html", "/how-it-works", "/how-it-works.html", "/token", "/token.html", "/roadmap", "/roadmap.html"];
+const productPaths = ["/docs", "/docs.html", "/how-it-works", "/how-it-works.html", "/token", "/token.html", "/registry", "/registry.html", "/roadmap", "/roadmap.html"];
 const dashboardPaths = ["/dashboard", "/dashboard/index.html"];
 
 export default function App() {
