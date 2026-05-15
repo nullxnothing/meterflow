@@ -7,8 +7,6 @@
  * or METERFLOW_DEFAULT_PAYMENT_PROTOCOL=mpp.
  */
 
-import { Receipt as MppReceipt, Store as MppStore } from 'mppx';
-import { Mppx, solana } from 'solana-mpp/server';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { USDC_MAINNET_ADDRESS } from '@x402/svm';
 import { CONFIG } from '../config.js';
@@ -47,7 +45,7 @@ async function loadBillableMeters() {
   }
 }
 
-function createMppStore() {
+function createMppStore(MppStore) {
   const redis = getRedis();
   if (!redis) return MppStore.memory();
 
@@ -171,6 +169,10 @@ export async function buildMppMiddleware() {
   }
 
   try {
+    const [{ Receipt: MppReceipt, Store: MppStore }, { Mppx, solana }] = await Promise.all([
+      import('mppx'),
+      import('solana-mpp/server'),
+    ]);
     const meters = await loadBillableMeters();
     const mppx = Mppx.create({
       methods: [
@@ -180,7 +182,7 @@ export async function buildMppMiddleware() {
           decimals: USDC_DECIMALS,
           network,
           connection: new Connection(rpcUrl, 'confirmed'),
-          store: createMppStore(),
+          store: createMppStore(MppStore),
           verifyTimeout: Number(process.env.MPP_VERIFY_TIMEOUT_MS || 60_000),
         }),
       ],
@@ -194,6 +196,7 @@ export async function buildMppMiddleware() {
       meters,
       network,
       payTo,
+      MppReceipt,
       refreshedAt: Date.now(),
       refresh: buildMppMiddleware,
     };
@@ -275,7 +278,7 @@ export function createMppGateway(mpp) {
 
     const receiptResponse = payment.withReceipt(new Response(null, { status: 204 }));
     const paymentReceipt = receiptResponse.headers.get('Payment-Receipt');
-    const receipt = paymentReceipt ? MppReceipt.deserialize(paymentReceipt) : null;
+    const receipt = paymentReceipt && state.MppReceipt ? state.MppReceipt.deserialize(paymentReceipt) : null;
     if (paymentReceipt) res.setHeader('Payment-Receipt', paymentReceipt);
     res.setHeader('X-Meterflow-Payment-Protocol', 'mpp');
     res.setHeader('X-Meterflow-Meter', meter.id);
