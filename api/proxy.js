@@ -42,6 +42,19 @@ export default function handler(req, res) {
     req.url = req.url.replace(/^\/registry/, '/v1/registry');
   }
 
+  if (
+    req.url === '/resource-packs' || req.url.startsWith('/resource-packs?') || req.url.startsWith('/resource-packs/') ||
+    req.url === '/policy' || req.url.startsWith('/policy?') || req.url.startsWith('/policy/') ||
+    req.url === '/meters' || req.url.startsWith('/meters?') || req.url.startsWith('/meters/') ||
+    req.url === '/receipts' || req.url.startsWith('/receipts?') || req.url.startsWith('/receipts/') ||
+    req.url === '/budgets' || req.url.startsWith('/budgets?') || req.url.startsWith('/budgets/') ||
+    req.url === '/providers/revenue' || req.url.startsWith('/providers/revenue?') ||
+    req.url === '/mcp-tools' || req.url.startsWith('/mcp-tools?') || req.url.startsWith('/mcp-tools/') ||
+    req.url === '/webhooks' || req.url.startsWith('/webhooks?') || req.url.startsWith('/webhooks/')
+  ) {
+    req.url = `/v1${req.url}`;
+  }
+
   if (req.url === '/admin/zauth/submit-default' || req.url.startsWith('/admin/zauth/submit-default?')) {
     req.url = req.url.replace(/^\/admin\/zauth\/submit-default/, '/v1/admin/zauth/submit-default');
   }
