@@ -244,6 +244,9 @@
       <a href="#intro" class="sidebar-link active">Introduction</a>
       <a href="#flow" class="sidebar-link">Payment Flow</a>
       <a href="#protocol-adapter" class="sidebar-link">Protocol Adapter</a>
+      <a href="#agent-spend-control" class="sidebar-link">Agent Spend Control</a>
+      <a href="#xona-resource-pack" class="sidebar-link">Xona Resource Pack</a>
+      <a href="#daemon-integration" class="sidebar-link">DAEMON Integration</a>
       <a href="#mpp" class="sidebar-link">MPP Rail</a>
       <a href="#dashboard" class="sidebar-link">Dashboard</a>
     </div>
@@ -289,6 +292,108 @@
         <div class="feature-card"><div class="feature-title">One Ledger</div><p class="feature-desc">Every rail writes to the same receipt graph with payer, provider, route, amount, policy, response, latency, and settlement metadata.</p></div>
         <div class="feature-card"><div class="feature-title">One Budget</div><p class="feature-desc">Agent spend caps should apply before any supported rail can spend against a protected route or MCP tool.</p></div>
       </div>
+    </section>
+
+    <section class="doc-section" id="agent-spend-control">
+      <h2 class="section-title">Agent Spend Control</h2>
+      <p class="section-text">Meterflow turns x402 and MPP from payment handshakes into enterprise-approved workflows: policy checks before spend, route and rail allowlists, budget projection, metadata hashing, monitor mode, enforce mode, and optional audit receipts.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-title">Policy Firewall</div><p class="feature-desc">Enforce daily caps, per-call caps, meter allowlists, route allowlists, approved rails, denied providers, and approval thresholds.</p></div>
+        <div class="feature-card"><div class="feature-title">Rail Router</div><p class="feature-desc">Use x402 for exact one-shot API calls, MPP for sessions or multi-call jobs, Kora for gasless Solana flows, and compliance-oriented facilitators when KYT matters.</p></div>
+        <div class="feature-card"><div class="feature-title">PII Guard</div><p class="feature-desc">Sensitive request metadata is reduced to a deterministic hash in policy responses so operators keep an audit trail without exposing private context.</p></div>
+        <div class="feature-card"><div class="feature-title">Receipts</div><p class="feature-desc">Policy evaluations can write audit receipts beside paid-request receipts, giving finance and security teams one ledger.</p></div>
+      </div>
+      <div class="code-block">POST /v1/budgets
+{
+  "agentId": "research-agent-1",
+  "dailyCapUsd": 12,
+  "perCallCapUsd": 0.02,
+  "allowedRoutes": ["/mcp/token-risk", "/gateway/*"],
+  "allowedRails": ["x402", "mpp"],
+  "mode": "enforce",
+  "piiGuard": true
+}
+
+POST /v1/policy/evaluate
+{
+  "route": "/mcp/token-risk",
+  "method": "POST",
+  "agentId": "research-agent-1",
+  "paymentProtocol": "x402",
+  "metadata": { "purpose": "token risk check" },
+  "record": true
+}</div>
+    </section>
+
+    <section class="doc-section" id="xona-resource-pack">
+      <h2 class="section-title">Xona Resource Pack</h2>
+      <p class="section-text">The clean partnership wedge is Meterflow x Xona first: Xona builds agent-accessible resources, and Meterflow gives those resources meters, budgets, receipts, revenue views, and policy controls so agents can safely pay per call.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-title">Xona Supply</div><p class="feature-desc">Creative generation, token intelligence, Solana market data, PumpFun movers, token news, and token signals can be exposed as paid resources for agents.</p></div>
+        <div class="feature-card"><div class="feature-title">Meterflow Control</div><p class="feature-desc">Meterflow wraps Xona-style resources with route pricing, budgets, receipts, provider revenue views, rail controls, and operator-safe spend limits.</p></div>
+        <div class="feature-card"><div class="feature-title">Catalog</div><p class="feature-desc">`GET /v1/resource-packs/xona` returns resources, categories, endpoints, prices, rails, and presets.</p></div>
+        <div class="feature-card"><div class="feature-title">Policy Presets</div><p class="feature-desc">Research, market, and creative presets generate route allowlists, caps, PII guard, and receipt requirements.</p></div>
+      </div>
+      <div class="code-block">GET /v1/resource-packs/xona
+
+POST /v1/resource-packs/xona/budgets
+{
+  "presetId": "xona-market-agent",
+  "agentId": "market-agent-1",
+  "dailyCapUsd": 12,
+  "mode": "enforce"
+}
+
+POST /v1/policy/evaluate
+{
+  "route": "/xona/token/pumpfun-movers",
+  "method": "GET",
+  "agentId": "market-agent-1",
+  "paymentProtocol": "x402",
+  "record": true
+}</div>
+      <p class="section-text">Start with Meterflow x Xona: resources from Xona, metering and controls from Meterflow. Once that path is live, DAEMON becomes the next layer: a workspace where builders discover, budget, call, and ship with those resources.</p>
+    </section>
+
+    <section class="doc-section" id="daemon-integration">
+      <h2 class="section-title">DAEMON Integration</h2>
+      <p class="section-text">After the Meterflow x Xona path is live, DAEMON can become the builder workspace where teams discover Xona-style resources, assign budgets, let agents call them, and ship the resulting work with task receipts and settlement visibility.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="feature-title">Discover</div><p class="feature-desc">DAEMON can surface Meterflow resource packs, registry entries, prices, rails, and provider trust signals where builders already run agents.</p></div>
+        <div class="feature-card"><div class="feature-title">Budget</div><p class="feature-desc">Meterflow budgets define which Xona resources, MCP tools, and provider APIs a DAEMON agent can buy during a work session.</p></div>
+        <div class="feature-card"><div class="feature-title">Ship</div><p class="feature-desc">DAEMON hashes repo, prompt, acceptance, commit, diff, tests, and artifacts for on-chain task receipts. Meterflow adds payment receipts for the resources used during that run.</p></div>
+        <div class="feature-card"><div class="feature-title">Clean Boundary</div><p class="feature-desc">DAEMON settles task escrows in its registry. Meterflow records paid API/resource settlement, provider revenue, policy decisions, and webhook events.</p></div>
+      </div>
+      <div class="code-block">POST /v1/budgets
+{
+  "name": "daemon-operator-agent",
+  "agentId": "daemon-agent-workbench",
+  "dailyCapUsd": 60,
+  "perCallCapUsd": 0.50,
+  "allowedRoutes": [
+    "/xona/*",
+    "/mcp/*",
+    "/daemon/agent-work/*"
+  ],
+  "allowedRails": ["x402", "mpp"],
+  "mode": "enforce",
+  "requireReceipt": true,
+  "piiGuard": true
+}
+
+POST /v1/policy/evaluate
+{
+  "route": "/xona/token/pumpfun-movers",
+  "method": "GET",
+  "agentId": "daemon-agent-workbench",
+  "paymentProtocol": "x402",
+  "metadata": {
+    "daemonPlan": "operator",
+    "daemonTaskId": "agent-work-task-123",
+    "agentTask": "funded-work-receipt"
+  },
+  "record": true
+}</div>
     </section>
 
     <section class="doc-section" id="mpp">

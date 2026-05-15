@@ -60,6 +60,12 @@ console.log(await client.testMeter(meter.id));
 | `budgets()` | `Promise<Object>` | List agent budget policies |
 | `createBudget(params)` | `Promise<Object>` | Create a spend-control policy |
 | `revokeBudget(budgetId)` | `Promise<Object>` | Revoke an active spend-control policy |
+| `policyCapabilities()` | `Promise<Object>` | Inspect supported spend controls and rails |
+| `evaluatePolicy(params)` | `Promise<Object>` | Preflight an agent payment against active policy |
+| `resourcePacks()` | `Promise<Object>` | List integration-ready resource packs |
+| `resourcePack(idOrSlug)` | `Promise<Object>` | Read one resource pack catalog |
+| `resourcePackPolicyTemplate(idOrSlug, params)` | `Promise<Object>` | Preview allowlists and budget config |
+| `createResourcePackBudget(idOrSlug, params)` | `Promise<Object>` | Create a policy budget from a pack preset |
 | `createMcpTool(params)` | `Promise<Object>` | Package an MCP tool behind Meterflow |
 | `deleteMcpTool(toolId)` | `Promise<Object>` | Delete a packaged MCP tool |
 | `webhooks()` | `Promise<Object>` | List webhook endpoints |
@@ -81,9 +87,30 @@ const meter = await client.createHostedMeter({
 
 const budget = await client.createBudget({
   name: 'research-agent',
+  agentId: 'research-agent-1',
   dailyCapUsd: 12,
   perCallCapUsd: 0.02,
   allowedMeterIds: ['mtr_mcp_token_risk', meter.meter.id],
+  allowedRoutes: ['/mcp/token-risk', '/gateway/*'],
+  allowedRails: ['x402', 'mpp'],
+  mode: 'enforce',
+  piiGuard: true,
+});
+
+const decision = await client.evaluatePolicy({
+  route: meter.meter.route,
+  method: 'GET',
+  agentId: 'research-agent-1',
+  paymentProtocol: 'x402',
+  metadata: { purpose: 'market research' },
+  record: true,
+});
+
+const xonaPolicy = await client.createResourcePackBudget('xona', {
+  presetId: 'xona-market-agent',
+  agentId: 'market-agent-1',
+  dailyCapUsd: 12,
+  mode: 'enforce',
 });
 
 const tool = await client.createMcpTool({

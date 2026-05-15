@@ -37,6 +37,9 @@ const WEBHOOK_EVENTS = new Set([
   'webhook.test',
 ]);
 
+const PAYMENT_RAILS = new Set(['x402', 'mpp', 'meterflow', 'api-key', 'solana-pay']);
+const BUDGET_MODES = new Set(['enforce', 'monitor']);
+
 export const DEFAULT_METERS = [
   { id: 'mtr_mcp_token_risk', route: '/mcp/token-risk', method: 'POST', unit: 'MCP tool call', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
   { id: 'mtr_mcp_token_risk_get', route: '/mcp/token-risk', method: 'GET', unit: 'MCP tool metadata', priceUsd: 0.006, asset: 'USDC', status: 'live', mode: 'live', ownerWallet: 'meterflow', source: 'default' },
@@ -143,6 +146,42 @@ function normalizePath(path = '') {
   return clean.replace(/\/$/, '') || '/';
 }
 
+function normalizePaymentRail(value, fallback = 'x402') {
+  const rail = String(value || fallback).trim().toLowerCase();
+  return PAYMENT_RAILS.has(rail) ? rail : fallback;
+}
+
+function normalizePaymentRailList(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map(item => String(item || '').trim().toLowerCase()).filter(rail => PAYMENT_RAILS.has(rail)))];
+}
+
+function normalizeStringList(value, max = 50) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map(item => String(item || '').trim()).filter(Boolean))].slice(0, max);
+}
+
+function normalizeRouteList(value) {
+  return normalizeStringList(value).map(route => normalizePath(route));
+}
+
+function routeMatchesPolicy(route, patterns = []) {
+  const normalized = normalizePath(route);
+  return patterns.some(pattern => {
+    const candidate = normalizePath(pattern);
+    if (candidate.endsWith('*')) return normalized.startsWith(candidate.slice(0, -1));
+    return normalized === candidate;
+  });
+}
+
+function hashMetadata(metadata) {
+  if (!metadata || typeof metadata !== 'object') return null;
+  return crypto
+    .createHash('sha256')
+    .update(JSON.stringify(metadata).slice(0, 20_000))
+    .digest('hex');
+}
+
 function assertZauthObservedMeterRoute(route) {
   const normalized = normalizePath(route);
   if (normalized.startsWith('/mcp/') || normalized.startsWith('/gateway/')) return;
@@ -217,6 +256,55 @@ function normalizeUpstreamAuth(input) {
     headerName: headerName || 'Authorization',
     value,
     configured: true,
+  };
+}
+
+function normalizeBudgetPolicy(input = {}) {
+  return {
+    agentId: String(input.agentId || 'default-agent').trim().slice(0, 96) || 'default-agent',
+    dailyCapUsd: Number(input.dailyCapUsd || 12),
+    perCallCapUsd: Number(input.perCallCapUsd || 0.02),
+    allowedMeterIds: normalizeStringList(input.allowedMeterIds),
+    allowedRoutes: normalizeRouteList(input.allowedRoutes),
+    allowedRails: normalizePaymentRailList(input.allowedRails),
+    deniedProviderIds: normalizeStringList(input.deniedProviderIds),
+    mode: BUDGET_MODES.has(String(input.mode || '').toLowerCase()) ? String(input.mode).toLowerCase() : 'enforce',
+    piiGuard: input.piiGuard !== false,
+    requireReceipt: input.requireReceipt !== false,
+    approvalThresholdUsd: Number(input.approvalThresholdUsd || 0),
+    onExhausted: input.onExhausted || 'stop_workflow',
+  };
+}
+
+export function recommendPaymentPath(input = {}) {
+  const intent = String(input.intent || input.paymentIntent || 'request').toLowerCase();
+  const expectedCalls = Number(input.expectedCalls || 1);
+  const requestedRail = input.paymentProtocol ? normalizePaymentRail(input.paymentProtocol) : null;
+  const rail = requestedRail || (intent === 'session' || intent === 'stream' || expectedCalls > 1 ? 'mpp' : 'x402');
+  const requiresCompliance = Boolean(input.requiresCompliance || input.enterprise || input.kytRequired);
+  const gasless = Boolean(input.gasless || input.sponsoredFees);
+  const facilitator = rail === 'mpp'
+    ? 'mpp-session'
+    : gasless
+      ? 'kora'
+      : requiresCompliance
+        ? 'cdp-x402'
+        : 'payai-solana';
+
+  return {
+    rail,
+    facilitator,
+    settlementAsset: 'USDC',
+    settlementNetwork: 'solana-mainnet-beta',
+    reason: rail === 'mpp'
+      ? 'Session or multi-call intent benefits from MPP lifecycle semantics.'
+      : 'Exact one-shot API access maps cleanly to x402 on Solana.',
+    controls: {
+      policyCheck: true,
+      receiptRequired: input.requireReceipt !== false,
+      piiGuard: input.piiGuard !== false,
+      auditTrail: true,
+    },
   };
 }
 
@@ -790,19 +878,27 @@ export async function getBudget(budgetId) {
 
 export async function createBudget(input, apiKey, operatorWallet) {
   const ts = nowIso();
+  const policy = normalizeBudgetPolicy(input);
   return setJson(BUDGET_PREFIX, fallbackBudgets, {
     id: id('bdg'),
     name: input.name || 'Agent budget',
     apiKey,
     operatorWallet,
-    agentId: input.agentId || 'default-agent',
-    dailyCapUsd: Number(input.dailyCapUsd || 12),
-    perCallCapUsd: Number(input.perCallCapUsd || 0.02),
-    allowedMeterIds: Array.isArray(input.allowedMeterIds) ? input.allowedMeterIds : [],
+    agentId: policy.agentId,
+    dailyCapUsd: policy.dailyCapUsd,
+    perCallCapUsd: policy.perCallCapUsd,
+    allowedMeterIds: policy.allowedMeterIds,
+    allowedRoutes: policy.allowedRoutes,
+    allowedRails: policy.allowedRails,
+    deniedProviderIds: policy.deniedProviderIds,
+    mode: policy.mode,
+    piiGuard: policy.piiGuard,
+    requireReceipt: policy.requireReceipt,
+    approvalThresholdUsd: policy.approvalThresholdUsd,
     status: input.status || 'active',
     spentUsdToday: 0,
     spentDate: todayKey(),
-    onExhausted: input.onExhausted || 'stop_workflow',
+    onExhausted: policy.onExhausted,
     createdAt: ts,
     updatedAt: ts,
   });
@@ -811,10 +907,14 @@ export async function createBudget(input, apiKey, operatorWallet) {
 export async function updateBudget(budgetId, patch) {
   const current = await getBudget(budgetId);
   if (!current) return null;
-  const next = { ...current, ...patch, updatedAt: nowIso() };
-  if (patch.dailyCapUsd !== undefined) next.dailyCapUsd = Number(patch.dailyCapUsd);
-  if (patch.perCallCapUsd !== undefined) next.perCallCapUsd = Number(patch.perCallCapUsd);
-  if (patch.allowedMeterIds !== undefined && !Array.isArray(patch.allowedMeterIds)) next.allowedMeterIds = [];
+  const policy = normalizeBudgetPolicy({ ...current, ...patch });
+  const next = {
+    ...current,
+    ...patch,
+    ...policy,
+    status: patch.status || current.status,
+    updatedAt: nowIso(),
+  };
   return setJson(BUDGET_PREFIX, fallbackBudgets, next);
 }
 
@@ -822,9 +922,13 @@ export async function revokeBudget(budgetId) {
   return updateBudget(budgetId, { status: 'revoked' });
 }
 
-export async function getActiveBudgetForApiKey(apiKey) {
+export async function getActiveBudgetForApiKey(apiKey, agentId = null) {
   const budgets = await listBudgets({ apiKey });
-  return budgets.find(budget => budget.status === 'active') || null;
+  const active = budgets.filter(budget => budget.status === 'active');
+  if (agentId) {
+    return active.find(budget => budget.agentId === agentId) || active.find(budget => budget.agentId === 'default-agent') || null;
+  }
+  return active.find(budget => budget.agentId === 'default-agent') || active[0] || null;
 }
 
 export async function addBudgetSpend(budgetId, amountUsd) {
@@ -837,30 +941,111 @@ export async function addBudgetSpend(budgetId, amountUsd) {
   return updateBudget(budgetId, { spentUsdToday, spentDate: date });
 }
 
-export async function authorizeMeteredRequest(req) {
-  const meter = await findMeterForRequest(req.method, req.originalUrl || req.path);
-  if (!meter) return { allowed: true, meter: null, budget: null, policyResult: 'unmetered' };
+function policyDecision({ allowed, status = 200, error = null, message = null, policyResult = 'allowed', details = {} }) {
+  return { allowed, status, error, message, policyResult, ...details };
+}
 
-  const budget = await getActiveBudgetForApiKey(req.meterflow.apiKey);
-  const economics = applyProtocolFee(meter.priceUsd, req.meterflow);
-  if (!budget) return { allowed: true, meter, budget: null, policyResult: 'allowed_no_budget', economics };
+export async function evaluateAgentSpendPolicy(input = {}, principal = {}) {
+  const method = String(input.method || 'GET').toUpperCase();
+  const route = normalizePath(input.route || input.path || '/');
+  const agentId = String(input.agentId || principal.agentId || 'default-agent').trim() || 'default-agent';
+  const paymentProtocol = normalizePaymentRail(input.paymentProtocol || input.rail || 'x402');
+  const meter = input.meterId ? await getMeter(input.meterId) : await findMeterForRequest(method, route);
+  const amountUsd = Number(input.amountUsd ?? meter?.priceUsd ?? 0);
+  const economics = applyProtocolFee(amountUsd, principal);
+  const budget = await getActiveBudgetForApiKey(principal.apiKey, agentId);
+  const recommendation = recommendPaymentPath({
+    ...input,
+    paymentProtocol,
+    piiGuard: budget?.piiGuard,
+    requireReceipt: budget?.requireReceipt,
+  });
+  const metadataHash = hashMetadata(input.metadata);
+  const context = {
+    meter,
+    budget,
+    economics,
+    recommendation,
+    metadata: metadataHash ? { hash: metadataHash, piiGuardApplied: budget?.piiGuard !== false } : null,
+  };
+
+  if (!meter) {
+    return policyDecision({
+      allowed: true,
+      policyResult: 'unmetered',
+      details: context,
+    });
+  }
+
+  if (!budget) {
+    return policyDecision({
+      allowed: true,
+      policyResult: 'allowed_no_budget',
+      details: context,
+    });
+  }
 
   const date = todayKey();
   const spent = budget.spentDate === date ? Number(budget.spentUsdToday || 0) : 0;
   const price = economics.totalAmountUsd;
   const allowedIds = budget.allowedMeterIds || [];
+  const allowedRoutes = budget.allowedRoutes || [];
+  const allowedRails = budget.allowedRails || [];
+  const providerId = input.providerId || meter.providerId || meter.providerName || null;
 
+  let denied = null;
   if (allowedIds.length > 0 && !allowedIds.includes(meter.id)) {
-    return { allowed: false, meter, budget, status: 403, error: 'policy_denied', message: 'This agent budget does not allow the requested meter.' };
-  }
-  if (budget.perCallCapUsd > 0 && price > Number(budget.perCallCapUsd)) {
-    return { allowed: false, meter, budget, status: 403, error: 'per_call_cap_exceeded', message: 'This request exceeds the agent per-call cap.' };
-  }
-  if (budget.dailyCapUsd > 0 && spent + price > Number(budget.dailyCapUsd)) {
-    return { allowed: false, meter, budget, status: 429, error: 'budget_exhausted', message: 'This agent budget has reached its daily spend cap.' };
+    denied = { status: 403, error: 'policy_denied', message: 'This agent budget does not allow the requested meter.' };
+  } else if (allowedRoutes.length > 0 && !routeMatchesPolicy(meter.route || route, allowedRoutes) && !routeMatchesPolicy(route, allowedRoutes)) {
+    denied = { status: 403, error: 'route_not_allowed', message: 'This agent budget does not allow the requested route.' };
+  } else if (allowedRails.length > 0 && !allowedRails.includes(paymentProtocol)) {
+    denied = { status: 403, error: 'rail_not_allowed', message: 'This agent budget does not allow the requested payment rail.' };
+  } else if (providerId && (budget.deniedProviderIds || []).includes(providerId)) {
+    denied = { status: 403, error: 'provider_denied', message: 'This provider is blocked by the active agent budget.' };
+  } else if (budget.perCallCapUsd > 0 && price > Number(budget.perCallCapUsd)) {
+    denied = { status: 403, error: 'per_call_cap_exceeded', message: 'This request exceeds the agent per-call cap.' };
+  } else if (budget.dailyCapUsd > 0 && spent + price > Number(budget.dailyCapUsd)) {
+    denied = { status: 429, error: 'budget_exhausted', message: 'This agent budget has reached its daily spend cap.' };
+  } else if (budget.approvalThresholdUsd > 0 && price > Number(budget.approvalThresholdUsd)) {
+    denied = { status: 403, error: 'approval_required', message: 'This request requires operator approval before payment.' };
   }
 
-  return { allowed: true, meter, budget, policyResult: 'allowed', economics };
+  if (denied) {
+    const monitor = budget.mode === 'monitor';
+    return policyDecision({
+      allowed: monitor,
+      status: monitor ? 200 : denied.status,
+      error: denied.error,
+      message: denied.message,
+      policyResult: monitor ? `monitor_${denied.error}` : denied.error,
+      details: {
+        ...context,
+        enforcement: monitor ? 'monitor' : 'enforce',
+        spentUsdToday: spent,
+        projectedSpendUsdToday: +(spent + price).toFixed(6),
+      },
+    });
+  }
+
+  return policyDecision({
+    allowed: true,
+    policyResult: 'allowed',
+    details: {
+      ...context,
+      enforcement: budget.mode || 'enforce',
+      spentUsdToday: spent,
+      projectedSpendUsdToday: +(spent + price).toFixed(6),
+    },
+  });
+}
+
+export async function authorizeMeteredRequest(req) {
+  return evaluateAgentSpendPolicy({
+    method: req.method,
+    route: req.originalUrl || req.path,
+    agentId: header(req, 'x-meterflow-agent-id') || req.meterflow?.wallet || 'default-agent',
+    paymentProtocol: header(req, 'x-meterflow-payment-protocol') || (req.meterflow?.paymentVerified ? 'x402' : 'api-key'),
+  }, req.meterflow);
 }
 
 export async function completeMeteredRequest(req, result = {}) {

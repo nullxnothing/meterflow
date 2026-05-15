@@ -80,6 +80,28 @@ const BASE_PROVIDERS = [
     createdAt: '2026-05-15T00:00:00.000Z',
     updatedAt: '2026-05-15T00:00:00.000Z',
   },
+  {
+    id: 'prv_xona_agent_resources',
+    slug: 'xona-agent-resources',
+    name: 'Xona Agent Resources',
+    category: 'agent-resources',
+    summary: 'Policy-ready x402/MPP resource pack for Xona endpoints including creative generation, token intelligence, Solana discovery, PumpFun movers, token news, and token signals.',
+    endpoint: '/xona/*',
+    website: 'https://xona-agent.com/resources',
+    protocolRails: ['x402', 'mpp'],
+    paymentAsset: 'USDC',
+    priceUsd: 0.0001,
+    status: 'live',
+    verification: 'reviewing',
+    ownerWallet: '',
+    bond: { asset: 'MFLOW', required: 500000, committed: 0, state: 'planned', unlockCooldownDays: 14 },
+    metrics: { successfulCalls: 0, verifiedUsd: 0, uptimePct: null, p95LatencyMs: null, failureRatePct: null, receipts30d: 0 },
+    policy: { supportsBudgets: true, supportsRefunds: true, piiGuard: true, agentAllowlisted: true },
+    tags: ['xona', 'x402', 'mpp', 'resource-pack', 'creative', 'token-data'],
+    source: 'meterflow_seed',
+    createdAt: '2026-05-15T00:00:00.000Z',
+    updatedAt: '2026-05-15T00:00:00.000Z',
+  },
 ];
 
 function nowIso() {

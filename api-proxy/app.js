@@ -13,6 +13,7 @@ import multiRouter from './routes/multi.js';
 import adminRouter from './routes/admin.js';
 import applicationsRouter from './routes/applications.js';
 import registryRouter from './routes/registry.js';
+import resourcePacksRouter from './routes/resource-packs.js';
 import discordRouter from './routes/discord.js';
 import tokenRouter from './routes/token.js';
 import tradesRouter from './routes/trades.js';
@@ -104,6 +105,7 @@ app.use('/oauth', oauthRouter);
 app.use('/auth', authRouter);
 app.use('/', applicationsRouter);
 app.use('/', registryRouter);
+app.use('/', resourcePacksRouter);
 app.use('/discord', discordRouter);
 app.use('/holder', holderRouter);
 

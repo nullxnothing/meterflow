@@ -28,6 +28,8 @@ import {
   sendWebhookTest,
   applyProtocolFee,
   recordReceipt,
+  evaluateAgentSpendPolicy,
+  recommendPaymentPath,
 } from '../lib/control-plane.js';
 import {
   buildZauthSubmissionMeter,
@@ -271,6 +273,100 @@ router.post('/budgets', authenticateApiKey, async (req, res) => {
   }
   const budget = await createBudget(req.body, req.meterflow.apiKey, req.meterflow.wallet);
   res.status(201).json({ budget });
+});
+
+router.get('/policy/capabilities', authenticateApiKey, async (_req, res) => {
+  res.json({
+    policy: {
+      modes: ['enforce', 'monitor'],
+      controls: [
+        'dailyCapUsd',
+        'perCallCapUsd',
+        'allowedMeterIds',
+        'allowedRoutes',
+        'allowedRails',
+        'deniedProviderIds',
+        'approvalThresholdUsd',
+        'piiGuard',
+        'requireReceipt',
+      ],
+      rails: ['x402', 'mpp', 'meterflow', 'api-key', 'solana-pay'],
+      receipts: ['policy_allowed', 'policy_denied', 'receipt.created', 'receipt.verified', 'payment.failed', 'budget.exhausted'],
+    },
+    routing: {
+      x402: ['payai-solana', 'cdp-x402', 'kora'],
+      mpp: ['mpp-session'],
+      settlementAsset: 'USDC',
+      settlementNetwork: 'solana-mainnet-beta',
+    },
+  });
+});
+
+router.post('/policy/evaluate', authenticateApiKey, async (req, res) => {
+  const body = req.body || {};
+  if (!body.route && !body.meterId) {
+    return badRequest(res, 'route or meterId is required');
+  }
+
+  const decision = await evaluateAgentSpendPolicy(body, {
+    ...req.meterflow,
+    agentId: body.agentId || req.meterflow.wallet,
+  });
+
+  let auditReceipt = null;
+  if (body.record === true || body.audit === true) {
+    auditReceipt = await recordReceipt({
+      meterId: decision.meter?.id,
+      route: decision.meter?.route || body.route,
+      method: decision.meter?.method || body.method || 'GET',
+      status: decision.allowed ? 'policy_allowed' : decision.error || 'policy_denied',
+      amountUsd: 0,
+      baseAmountUsd: 0,
+      asset: decision.meter?.asset || 'USDC',
+      wallet: req.meterflow.wallet,
+      apiKey: req.meterflow.apiKey,
+      agent: body.agentId || req.meterflow.wallet,
+      paymentState: 'not_required',
+      paymentProtocol: body.paymentProtocol || decision.recommendation?.rail || 'x402',
+      paymentIntent: body.intent || 'policy_evaluation',
+      paymentMethod: 'meterflow_policy',
+      paymentNetwork: decision.recommendation?.settlementNetwork || 'solana-mainnet-beta',
+      payerWallet: body.payerWallet || req.meterflow.wallet,
+      policyResult: decision.policyResult,
+      responseStatus: decision.status,
+      error: decision.allowed ? null : decision.message,
+    });
+  }
+
+  res.status(decision.allowed ? 200 : decision.status || 403).json({
+    decision: {
+      allowed: decision.allowed,
+      policyResult: decision.policyResult,
+      error: decision.error,
+      message: decision.message,
+      enforcement: decision.enforcement || decision.budget?.mode || 'none',
+    },
+    meter: decision.meter ? {
+      id: decision.meter.id,
+      route: decision.meter.route,
+      method: decision.meter.method,
+      priceUsd: decision.meter.priceUsd,
+      asset: decision.meter.asset,
+    } : null,
+    budget: decision.budget ? {
+      id: decision.budget.id,
+      agentId: decision.budget.agentId,
+      dailyCapUsd: decision.budget.dailyCapUsd,
+      perCallCapUsd: decision.budget.perCallCapUsd,
+      mode: decision.budget.mode || 'enforce',
+      spentUsdToday: decision.spentUsdToday,
+      projectedSpendUsdToday: decision.projectedSpendUsdToday,
+    } : null,
+    economics: decision.economics,
+    recommendation: decision.recommendation || recommendPaymentPath(body),
+    metadata: decision.metadata,
+    auditReceipt,
+  });
 });
 
 router.patch('/budgets/:id', authenticateApiKey, async (req, res) => {

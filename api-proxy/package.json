@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test tests/smoke.test.js tests/provider-applications.test.js tests/provider-registry.test.js",
+    "test": "node --test tests/smoke.test.js tests/provider-applications.test.js tests/provider-registry.test.js tests/agent-policy.test.js tests/resource-packs.test.js",
     "migrate": "node scripts/migrate.js"
   },
   "dependencies": {

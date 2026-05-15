@@ -434,6 +434,9 @@ describe('Site link integrity', () => {
     assert.ok(home.includes('Provider') && home.includes('Apply as provider'), 'landing page provider CTAs should stay focused');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('MPP Payment Rail'), 'docs should explain the MPP adapter layer');
+    assert.ok(docs.includes('Agent Spend Control'), 'docs should explain enterprise agent spend controls');
+    assert.ok(docs.includes('DAEMON Integration'), 'docs should explain how DAEMON and Meterflow integrate');
+    assert.ok(docs.includes('Xona Resource Pack'), 'docs should explain the Xona resource-pack integration');
     assert.ok(docs.includes('Provider Registry'), 'docs should explain provider discovery and ranking');
     assert.ok(docs.includes('Meterflow routes are priced product surfaces'), 'docs should frame routes as priced control-plane surfaces');
   });
@@ -689,9 +692,12 @@ describe('Meterflow control plane', () => {
 
   it('control-plane storage defines meters receipts budgets and MCP tools', () => {
     const src = readFileSync(resolve(root, 'lib', 'control-plane.js'), 'utf-8');
-    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'updateReceipt', 'authorizeMeteredRequest', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent', 'listReceiptsForPrincipal']) {
+    for (const token of ['DEFAULT_METERS', 'recordReceipt', 'updateReceipt', 'authorizeMeteredRequest', 'evaluateAgentSpendPolicy', 'recommendPaymentPath', 'createBudget', 'createMcpTool', 'idempotencyKey', 'txSignature', 'payerWallet', 'dispatchWebhookEvent', 'listReceiptsForPrincipal']) {
       assert.ok(src.includes(token), `should include ${token}`);
     }
+    const app = readFileSync(resolve(root, 'app.js'), 'utf-8');
+    assert.ok(app.includes("import resourcePacksRouter from './routes/resource-packs.js'"), 'should import resource pack routes');
+    assert.ok(app.includes("app.use('/', resourcePacksRouter)"), 'should mount resource pack routes');
   });
 
   it('wallet-authenticated users can inspect x402 payer receipts', () => {
@@ -930,7 +936,7 @@ describe('Meterflow control plane', () => {
 
   it('SDK exposes control-plane helpers', () => {
     const src = readFileSync(resolve(projectRoot, 'sdk', 'src', 'client.js'), 'utf-8');
-    for (const method of ['meters()', 'createMeter', 'createHostedMeter', 'testMeter', 'deleteMeter', 'receipts', 'createBudget', 'revokeBudget', 'createMcpTool', 'deleteMcpTool', 'providerRevenue', 'webhooks', 'createWebhook']) {
+    for (const method of ['meters()', 'createMeter', 'createHostedMeter', 'testMeter', 'deleteMeter', 'receipts', 'createBudget', 'revokeBudget', 'policyCapabilities', 'evaluatePolicy', 'resourcePacks', 'resourcePack', 'createResourcePackBudget', 'createMcpTool', 'deleteMcpTool', 'providerRevenue', 'webhooks', 'createWebhook']) {
       assert.ok(src.includes(method), `should include ${method}`);
     }
   });
