@@ -392,7 +392,7 @@ export function HomePage() {
             >
               <span>Routed through</span>
               <img
-                src="/assets/brand/zauth-mark.png"
+                src="/assets/brand/zauth-mark.svg"
                 alt=""
                 width={20}
                 height={20}
