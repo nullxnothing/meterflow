@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Meterflow advanced homepage prototype: premium x402 payment infrastructure for agent APIs on Solana.">
+  <meta name="theme-color" content="#010204">
+  <title>Meterflow Advanced Prototype</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site/advanced-v2.css">
+  <script defer src="/site/advanced-v2.js"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <canvas id="flowCanvas" aria-hidden="true"></canvas>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="cursor-orb" id="cursorOrb" aria-hidden="true"></div>
+
+    <header class="topbar" data-reveal>
+      <a class="brand" href="/" aria-label="Meterflow home">
+        <img src="/assets/brand/meterflow-mark.svg" alt="" aria-hidden="true">
+        <span>Meterflow</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#flow">Flow</a>
+        <a href="#products">Modules</a>
+        <a href="#dashboard">Provider Hub</a>
+        <a href="/docs">Docs</a>
+      </nav>
+      <a class="topbar-cta" href="/dashboard">Launch app</a>
+    </header>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-copy" data-reveal>
+          <div class="eyebrow"><span></span> x402 payment layer for autonomous APIs</div>
+          <h1>APIs are becoming <span class="hero-word-muted">machine payable.</span></h1>
+          <p class="hero-subcopy">Meterflow gives agents a clean path to request an endpoint, receive a 402 quote, pay in USDC, verify access, and unlock the response.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="/dashboard#meters">Create a meter</a>
+            <a class="button button-secondary" href="#flow">Watch payment flow</a>
+          </div>
+          <div class="trust-strip" aria-label="Protocol tags">
+            <span>Solana</span>
+            <span>USDC</span>
+            <span>x402</span>
+            <span>MCP</span>
+            <span>Agent budgets</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" data-reveal>
+          <section class="hero-lab" aria-label="Meterflow route generator demo">
+            <div class="lab-top">
+              <div class="lab-title">
+                <span>Route generator</span>
+                <strong>Make an endpoint payable.</strong>
+              </div>
+              <div class="live-pill">Live</div>
+            </div>
+
+            <div class="endpoint-box">
+              <input class="endpoint-input" value="https://api.yourapp.com/signals" aria-label="API endpoint demo input">
+              <button class="lab-button" id="labButton" type="button">Generate 402 route</button>
+            </div>
+
+            <div class="lab-output" aria-label="Payment request states">
+              <div class="lab-line is-active"><span class="lab-code">GET</span><span>/signals</span><span class="lab-price">protected</span></div>
+              <div class="lab-line"><span class="lab-code">402</span><span>Payment Required</span><span class="lab-price">0.004 USDC</span></div>
+              <div class="lab-line"><span class="lab-code">BUDGET</span><span>agent spend checked</span><span class="lab-price">pass</span></div>
+              <div class="lab-line"><span class="lab-code">VERIFY</span><span>payment confirmed</span><span class="lab-price">unlock</span></div>
+            </div>
+
+            <div class="lab-grid">
+              <div><span>Price</span><strong>$0.004</strong></div>
+              <div><span>Policy</span><strong>capped</strong></div>
+              <div><span>Receipts</span><strong>on</strong></div>
+              <div><span>Rail</span><strong>USDC</strong></div>
+            </div>
+          </section>
+
+          <section class="terminal-card" id="terminalCard" aria-label="Meterflow terminal demo">
+            <div class="terminal-chrome">
+              <span></span><span></span><span></span>
+              <strong>meterflow / provider hub</strong>
+              <em>online</em>
+            </div>
+            <div class="terminal-body" id="terminalBody">
+              <div><b>request</b> agent_7c2 → /api/signals</div>
+              <div><b>quote</b> 0.004 USDC · ttl 45s</div>
+              <div><b>budget</b> allowlist pass · cap pass</div>
+              <div><b>verify</b> signature confirmed</div>
+              <div><b>receipt</b> rcpt_41bd · response unlocked</div>
+            </div>
+            <div class="terminal-map" aria-hidden="true">
+              <svg viewBox="0 0 420 136" fill="none" preserveAspectRatio="none">
+                <path d="M60 57 C135 18 165 20 205 42 C258 72 285 52 342 66" stroke="url(#g1)" stroke-width="1.2"/>
+                <path d="M60 57 C120 104 180 102 210 80 C244 54 280 80 342 66" stroke="url(#g2)" stroke-width="1.2"/>
+                <defs>
+                  <linearGradient id="g1" x1="50" x2="360" y1="0" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#7df7ff" stop-opacity=".1"/><stop offset=".55" stop-color="#7df7ff"/><stop offset="1" stop-color="#8affc1" stop-opacity=".2"/>
+                  </linearGradient>
+                  <linearGradient id="g2" x1="50" x2="360" y1="100" y2="0" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#78b8ff" stop-opacity=".12"/><stop offset=".52" stop-color="#78b8ff"/><stop offset="1" stop-color="#7df7ff" stop-opacity=".2"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="metrics-strip" data-reveal aria-label="Meterflow value summary">
+        <div><strong>402</strong><span>quote before access</span></div>
+        <div><strong>USDC</strong><span>settled per call</span></div>
+        <div><strong>Caps</strong><span>agent spend guarded</span></div>
+        <div><strong>Receipts</strong><span>usage becomes auditable</span></div>
+      </section>
+
+      <section class="flow-section" id="flow">
+        <div class="section-kicker" data-reveal>payment sequence</div>
+        <div class="flow-layout">
+          <div class="flow-copy" data-reveal>
+            <h2>From blocked endpoint to paid response.</h2>
+            <p>A visual request path for agents: route protected, quote issued, budget checked, payment verified, and response unlocked.</p>
+          </div>
+
+          <div class="flow-stage" id="flowStage" data-reveal>
+            <div class="stage-screen">
+              <div class="stage-progress"><span id="stageProgress"></span></div>
+              <div class="stage-header">
+                <span id="stageStep">01</span>
+                <strong id="stageTitle">Request hits a protected route</strong>
+              </div>
+              <p id="stageText">The agent calls a paid API endpoint without needing a subscription, account, or shared API key.</p>
+              <div class="stage-pipeline" aria-hidden="true">
+                <span class="pipe-dot is-active"></span><span class="pipe-line"></span>
+                <span class="pipe-dot"></span><span class="pipe-line"></span>
+                <span class="pipe-dot"></span><span class="pipe-line"></span>
+                <span class="pipe-dot"></span><span class="pipe-line"></span>
+                <span class="pipe-dot"></span>
+              </div>
+              <div class="stage-code" id="stageCode">
+                <div><b>$</b> curl https://api.yourapp.com/signals</div>
+                <div><b>&gt;</b> route protected by Meterflow</div>
+                <div><b>&gt;</b> payment required before response</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="product-section" id="products">
+        <div class="section-kicker" data-reveal>product modules</div>
+        <div class="section-heading" data-reveal>
+          <h2>Black-glass modules, not generic cards.</h2>
+          <p>Each surface should feel like a real part of the payment system: gateway, quote engine, budget vault, receipt graph, provider hub, and agent access.</p>
+        </div>
+
+        <div class="bento-grid">
+          <article class="bento-card large" data-reveal>
+            <div class="card-topline"><span>Gateway</span><em>active</em></div>
+            <h3>Wrap APIs into paid routes.</h3>
+            <p>Meter endpoints, MCP tools, private data, model calls, and workflows with route-level pricing.</p>
+            <div class="route-preview">
+              <div><span>GET</span> /signals/edge-score <strong>$0.004</strong></div>
+              <div><span>POST</span> /agent/rebalance <strong>$0.018</strong></div>
+              <div><span>GET</span> /wallet/risk <strong>$0.006</strong></div>
+            </div>
+          </article>
+
+          <article class="bento-card" data-reveal>
+            <div class="card-topline"><span>Budget Vault</span><em>guarded</em></div>
+            <h3>Cap agent spend.</h3>
+            <p>Daily limits, route allowlists, expiration windows, and emergency revocation.</p>
+            <div class="budget-meter"><span style="--value:67%"></span></div>
+            <small>$8.04 / $12.00 used today</small>
+          </article>
+
+          <article class="bento-card" data-reveal>
+            <div class="card-topline"><span>Receipt Graph</span><em>verified</em></div>
+            <h3>Attach proof to usage.</h3>
+            <p>Every paid request links payer, route, status, timestamp, and response metadata.</p>
+            <div class="receipt-stack"><span>rcpt_8fa2</span><span>rcpt_41bd</span><span>rcpt_c920</span></div>
+          </article>
+
+          <article class="bento-card tall" data-reveal>
+            <div class="card-topline"><span>Quote Engine</span><em>x402</em></div>
+            <h3>No SaaS account required.</h3>
+            <p>Agents need a price, budget, payment, verification, and receipt. Not a credit card or shared dashboard login.</p>
+            <div class="settlement-orb" aria-hidden="true"></div>
+          </article>
+
+          <article class="bento-card wide" data-reveal>
+            <div class="card-topline"><span>Provider Hub</span><em>revenue</em></div>
+            <h3>See what sold, what failed, and who paid.</h3>
+            <p>Calls, revenue, failed payment reasons, endpoint health, and customer-level usage in one command center.</p>
+            <div class="sparkline" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-section" id="dashboard">
+        <div class="dashboard-shell" data-reveal>
+          <div class="dashboard-copy">
+            <div class="section-kicker">provider hub</div>
+            <h2>A dark command center for paid traffic.</h2>
+            <p>The visual direction is now sharper: black glass, dot matrix texture, glowing edges, dense product surfaces, and mobile-first stacking.</p>
+          </div>
+          <div class="dashboard-mock">
+            <div class="mock-sidebar"><span class="active">Overview</span><span>Meters</span><span>Agents</span><span>Receipts</span></div>
+            <div class="mock-main">
+              <div class="mock-stat-row">
+                <div><strong>$184.20</strong><span>revenue 24h</span></div>
+                <div><strong>30,704</strong><span>calls</span></div>
+                <div><strong>98.7%</strong><span>verified</span></div>
+              </div>
+              <div class="mock-table">
+                <div><span>/signals</span><em>0.004 USDC</em><strong>verified</strong></div>
+                <div><span>/risk</span><em>0.006 USDC</em><strong>verified</strong></div>
+                <div><span>/rebalance</span><em>0.018 USDC</em><strong class="warn">budget cap</strong></div>
+                <div><span>/alpha</span><em>0.012 USDC</em><strong>verified</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta" data-reveal>
+        <div>
+          <span>Meterflow visual pass v2</span>
+          <h2>Closer to the Zauth feel: darker, sharper, shinier.</h2>
+          <p>This version is built around visual polish first: black glass surfaces, dot texture, strong contrast, product console hero, and mobile-safe structure.</p>
+        </div>
+        <a class="button button-primary" href="/dashboard">Launch app</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
