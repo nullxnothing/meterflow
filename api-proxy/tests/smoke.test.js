@@ -749,8 +749,8 @@ describe('Meterflow control plane', () => {
     const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'));
     assert.ok(app.includes('buildMppMiddleware') && app.includes('mppGatewayReady'), 'app should initialize the MPP gateway before x402');
     assert.ok(app.indexOf('mppGatewayReady') < app.indexOf('x402GatewayReady'), 'MPP opt-in should get first chance before x402 fallback');
-    assert.ok(mpp.includes("from 'solana-mpp/server'"), 'should use the Solana MPP server SDK');
-    assert.ok(mpp.includes("from 'mppx'"), 'should use MPP receipt/store helpers');
+    assert.ok(mpp.includes("import('solana-mpp/server')"), 'should lazy-load the Solana MPP server SDK');
+    assert.ok(mpp.includes("import('mppx')"), 'should lazy-load MPP receipt/store helpers');
     assert.ok(mpp.includes('MPP_SECRET_KEY'), 'MPP should require signed challenge configuration');
     assert.ok(mpp.includes('X-Meterflow-Payment-Protocol'), 'callers should be able to opt into MPP explicitly');
     assert.ok(mpp.includes('Authorization') && mpp.includes('Payment-Receipt'), 'should support standard MPP auth and receipt headers');
