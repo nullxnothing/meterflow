@@ -92,6 +92,7 @@ describe('Provider trust registry', () => {
     const shell = read('src/components/site/Shell.tsx');
     const sdk = read('sdk/src/client.js');
     const vercel = read('vercel.json');
+    const vercelFunction = read('api/proxy.js');
     const sitemap = read('public/sitemap.xml');
 
     assert.ok(app.includes('"/registry"'));
@@ -101,6 +102,8 @@ describe('Provider trust registry', () => {
     assert.ok(shell.includes('{ href: "/registry", label: "Registry" }'));
     assert.ok(sdk.includes('registryProviders'));
     assert.ok(vercel.includes('"/registry"'));
+    assert.ok(vercelFunction.includes("req.url.startsWith('/registry/')"));
+    assert.ok(vercelFunction.includes("req.url.replace(/^\\/registry/, '/v1/registry')"));
     assert.ok(sitemap.includes('https://meterflow.fun/registry'));
   });
 });
