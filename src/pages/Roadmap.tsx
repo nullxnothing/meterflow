@@ -42,11 +42,11 @@ const roadmapPhases = [
     items: ["Paid MCP gateway paths", "Tool pricing and metering", "Provider apply flow"],
   },
   {
-    status: "next",
+    status: "live",
     phase: "06",
-    title: "Provider Revenue And Registry",
-    copy: "Help providers see which routes earn and help agents find reliable services with calls, verified revenue, failures, latency, receipts, and reputation signals.",
-    items: ["Provider revenue view", "Reliability metrics", "Registry ranking"],
+    title: "MFLOW Provider Trust Registry",
+    copy: "Give agents a public discovery layer for paid endpoints ranked by verification, MFLOW bond state, receipt history, uptime, latency, failures, and budget support.",
+    items: ["Public registry API", "Trust score model", "MFLOW bond state"],
   },
   {
     status: "next",
@@ -58,9 +58,9 @@ const roadmapPhases = [
   {
     status: "planned",
     phase: "08",
-    title: "$MFLOW Utility Layer",
-    copy: "USDC remains the payment asset. MFLOW wraps network utility through provider reputation, fee relief, registry ranking, higher policy limits, analytics, receipt retention, and future bonding.",
-    items: ["Holder utility tiers", "Provider reputation", "Future provider bonding"],
+    title: "On-Chain Provider Bonding",
+    copy: "Move registry commitments from tracked bond state into wallet-signed MFLOW lockups with cooldowns, review workflows, delegated trust, and future governance over provider standards.",
+    items: ["Wallet-signed MFLOW lockups", "Delegated trust", "Verification governance"],
   },
 ];
 
@@ -85,6 +85,10 @@ export function RoadmapPage() {
                 Build with Meterflow
                 <ArrowRight className="h-4 w-4" />
               </ButtonLink>
+              <ButtonLink href="/registry" variant="secondary">
+                Registry
+                <ArrowRight className="h-4 w-4" />
+              </ButtonLink>
               <ButtonLink href="/status" variant="secondary">
                 <Activity className="h-4 w-4" />
                 Status
@@ -99,8 +103,8 @@ export function RoadmapPage() {
             <MetricPanel
               items={[
                 { label: "Now", value: "x402 + MPP", copy: "Machine-payable routes" },
-                { label: "Next", value: "Registry", copy: "Provider revenue signal" },
-                { label: "Planned", value: "MFLOW", copy: "Utility and bonding" },
+                { label: "Live", value: "Registry", copy: "Provider trust score" },
+                { label: "Planned", value: "Bonding", copy: "MFLOW lockups" },
               ]}
             />
           }

@@ -63,6 +63,7 @@ const navItems = [
   { href: "/docs", label: "Docs" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/token", label: "Token" },
+  { href: "/registry", label: "Registry" },
   { href: "/roadmap", label: "Roadmap" },
 ];
 

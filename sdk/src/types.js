@@ -126,4 +126,24 @@
  * @property {'test'|'live'|'paused'} [status]
  */
 
+/**
+ * @typedef {Object} RegistryProvider
+ * @property {string} id
+ * @property {string} slug
+ * @property {string} name
+ * @property {string} category
+ * @property {string} summary
+ * @property {string} endpoint
+ * @property {string[]} protocolRails
+ * @property {string} paymentAsset
+ * @property {number} priceUsd
+ * @property {'forming'|'test'|'live'|'paused'|'archived'} status
+ * @property {'unverified'|'reviewing'|'verified'|'prime'} verification
+ * @property {{asset: string, required: number, committed: number, state: string, txSignature?: string, unlockCooldownDays: number}} bond
+ * @property {{successfulCalls: number, verifiedUsd: number, uptimePct: number|null, p95LatencyMs: number|null, failureRatePct: number|null, receipts30d: number}} metrics
+ * @property {{supportsBudgets: boolean, supportsRefunds: boolean, piiGuard: boolean, agentAllowlisted: boolean}} policy
+ * @property {number} trustScore
+ * @property {'emerging'|'candidate'|'verified'|'prime'} trustTier
+ */
+
 export {};

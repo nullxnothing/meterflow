@@ -109,20 +109,20 @@ const surfaces = [
   },
   {
     code: "Lp",
-    name: "launchpad/",
-    meta: "live",
+    name: "registry/",
+    meta: "trust scored",
     tone: "sky",
-    href: "/apply",
-    cta: "Apply as provider",
-    foot: "Hosted / no infra needed",
-    detail: "Providers can launch priced API products without building their own usage, payment, or receipt system.",
+    href: "/registry",
+    cta: "View registry",
+    foot: "MFLOW utility layer",
+    detail: "Providers publish paid capabilities with verification, MFLOW bond state, uptime, receipt history, and routing signal.",
     rows: [
       ["provider", "api.meterflow"],
       ["route", "POST /v1/risk", "accent"],
-      ["price", "0.006 USDC"],
-      ["asset", "USDC / Solana"],
-      ["status", "live", "ok"],
-      ["calls today", "342"],
+      ["score", "84", "accent"],
+      ["bond", "MFLOW", "ok"],
+      ["rail", "x402 + MPP"],
+      ["calls", "412"],
     ],
   },
   {
@@ -511,6 +511,9 @@ export function HomePage() {
             </ButtonLink>
             <ButtonLink href="/apply" variant="secondary" size="lg">
               Apply as Provider
+            </ButtonLink>
+            <ButtonLink href="/registry" variant="secondary" size="lg">
+              View Registry
             </ButtonLink>
           </div>
         </div>

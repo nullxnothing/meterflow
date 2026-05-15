@@ -16,6 +16,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://meterflow.fun/registry</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://meterflow.fun/status</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
