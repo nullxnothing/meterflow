@@ -46,6 +46,7 @@ export const STATE = {
   isGuest: false,
   freeAccess: false,
   freeAccessEndsAt: null,
+  newReceiptCount: 0,
   providerStatus: null, // { indicator, description, incident, details[] }
 };
 

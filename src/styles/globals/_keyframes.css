@@ -1,0 +1,150 @@
+@keyframes mf-showcase-content-in {
+  0% {
+    opacity: 0.62;
+    transform: translateY(10px);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes mf-showcase-glow-sweep {
+  0% {
+    opacity: 0.45;
+    transform: translateX(-18%) scaleX(0.76);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.82;
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+@keyframes mf-showcase-progress-sweep {
+  0% {
+    transform: scaleX(0);
+    opacity: 0.42;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mf-morph-word-in {
+  0% {
+    opacity: 0;
+    transform: translateY(0.16em);
+    filter: blur(10px);
+  }
+  42% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes mf-flow-falling-pattern {
+  from {
+    background-position:
+      0 0,
+      28px 46px,
+      96px 12px,
+      164px 84px,
+      232px 28px,
+      300px 112px;
+  }
+  to {
+    background-position:
+      0 520px,
+      28px 684px,
+      96px 456px,
+      164px 760px,
+      232px 584px,
+      300px 920px;
+  }
+}
+
+@keyframes mf-home-surface-sheen {
+  0%, 54% {
+    opacity: 0;
+    transform: translateX(-120%) skewX(-16deg);
+  }
+  68% {
+    opacity: 0.34;
+  }
+  84%, 100% {
+    opacity: 0;
+    transform: translateX(120%) skewX(-16deg);
+  }
+}
+
+@keyframes mf-home-surface-glow {
+  0%, 100% {
+    opacity: 0.62;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes mf-home-deck-fog {
+  0% {
+    opacity: 0.38;
+    transform: translate3d(-3%, 0, 0) scale(0.96);
+  }
+  100% {
+    opacity: 0.72;
+    transform: translate3d(4%, -4%, 0) scale(1.06);
+  }
+}
+
+@keyframes mf-home-deck-particles {
+  0% {
+    background-position: 12% 22%, 72% 58%;
+  }
+  100% {
+    background-position: 12% 82%, 72% 18%;
+  }
+}
+
+@keyframes mf-home-status-pulse {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(0.92);
+    box-shadow: 0 0 10px rgba(var(--surface-tone-rgb), 0.42);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(var(--surface-tone-rgb), 0.78);
+  }
+}
+
+@keyframes mf-home-row-shimmer {
+  0%, 58% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  70% {
+    opacity: 1;
+  }
+  86%, 100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes mf-home-terminal-cursor {
+  0%, 49% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}

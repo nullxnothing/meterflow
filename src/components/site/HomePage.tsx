@@ -1,13 +1,25 @@
 import { ArrowRight, BookOpen, Wallet } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { MorphingText } from "@/components/ui/liquid-text";
 import { cn } from "@/lib/utils";
-import { useHomeMotion } from "@/src/components/site/HomeMotion";
-import { Showcase } from "@/src/components/site/Showcase";
-import { useSurfaceFanMotion } from "@/src/components/site/SurfaceFanMotion";
+
+const Showcase = lazy(() =>
+  import("@/components/site/Showcase").then((module) => ({ default: module.Showcase })),
+);
+const CtaShader = lazy(() =>
+  import("@/components/site/CtaShader").then((module) => ({ default: module.CtaShader })),
+);
+const LogoOrbit = lazy(() =>
+  import("@/components/site/LogoOrbit").then((module) => ({ default: module.LogoOrbit })),
+);
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const stats = [
   { label: "Receipt events", value: "12,400" },
@@ -30,6 +42,7 @@ const surfaces = [
     href: "/dashboard#meters",
     cta: "Open meters",
     foot: "policy.allowlist ok",
+    detail: "Route pricing, ownership, settlement policy, and live/test state stay visible from one control surface.",
     rows: [
       ["paid", "5", "group"],
       ["v1/risk-score", "96%", "accent"],
@@ -48,6 +61,7 @@ const surfaces = [
     href: "/dashboard#receipts",
     cta: "View receipts",
     foot: "last 30 receipts",
+    detail: "Every paid request resolves to a receipt with payer, proof, route, response, latency, and settlement state.",
     rows: [
       ["id", "rcpt_41bd"],
       ["chain", "solana", "ok"],
@@ -65,6 +79,7 @@ const surfaces = [
     href: "/dashboard#budgets",
     cta: "Configure",
     foot: "0 violations today",
+    detail: "Agent spend is gated before execution with route allowlists, per-call caps, daily limits, and revocation.",
     rows: [
       ["policy.allowlist", "ok", "ok"],
       ["budget.cap", "98%", "warn"],
@@ -82,6 +97,7 @@ const surfaces = [
     href: "/dashboard#analytics",
     cta: "Open analytics",
     foot: "USDC / Solana mainnet",
+    detail: "Provider revenue, route demand, settlement volume, and failed-payment rates are tracked in real time.",
     rows: [
       ["settled", "14.2 USDC", "accent"],
       ["total calls", "1,840"],
@@ -99,6 +115,7 @@ const surfaces = [
     href: "/apply",
     cta: "Apply as provider",
     foot: "Hosted / no infra needed",
+    detail: "Providers can launch priced API products without building their own usage, payment, or receipt system.",
     rows: [
       ["provider", "api.meterflow"],
       ["route", "POST /v1/risk", "accent"],
@@ -116,6 +133,7 @@ const surfaces = [
     href: "/docs",
     cta: "Read protocol",
     foot: "x402 + MPP + 402",
+    detail: "Payment protocols normalize into one metering layer so apps can support multiple rails cleanly.",
     rows: [
       ["x402", "active", "ok"],
       ["MPP", "active", "ok"],
@@ -137,13 +155,214 @@ function getSurfacePosition(index: number, activeIndex: number, total: number) {
   return "back";
 }
 
+function scheduleIdle(callback: () => void) {
+  if (typeof window.requestIdleCallback === "function") {
+    const idleId = window.requestIdleCallback(callback, { timeout: 1800 });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timer = window.setTimeout(callback, 900);
+  return () => window.clearTimeout(timer);
+}
+
+function ShowcaseFallback() {
+  return (
+    <div className="mf-home-showcase mf-home-showcase--placeholder" aria-hidden="true">
+      <div className="mf-showcase-tabs mf-showcase-tabs--wide mf-showcase-tabs--placeholder">
+        {["Mt", "Rc", "Bg", "Pr"].map((label) => (
+          <span className="mf-showcase-tab" key={label}>
+            <span className="mf-showcase-tab__code">{label}</span>
+            <span>loading</span>
+          </span>
+        ))}
+      </div>
+      <div className="mf-showcase-frame mf-showcase-frame--placeholder" />
+    </div>
+  );
+}
+
 export function HomePage() {
   const homeRef = useRef<HTMLDivElement>(null);
+  const chapterRef = useRef<HTMLDivElement>(null);
+  const surfacesSectionRef = useRef<HTMLElement>(null);
+  const logoSectionRef = useRef<HTMLElement>(null);
+  const [surfacesInView, setSurfacesInView] = useState(false);
+  const [chapterSurfaceIndex, setChapterSurfaceIndex] = useState(0);
+  const [chapterScrolling, setChapterScrolling] = useState(false);
 
-  useHomeMotion(homeRef);
+  useGSAP(
+    () => {
+      const chapter = chapterRef.current;
+      const surfaceSection = surfacesSectionRef.current;
+      const logoSection = logoSectionRef.current;
+      if (!chapter || !surfaceSection || !logoSection) return undefined;
+
+      const pin = chapter.querySelector<HTMLElement>(".mf-home-scroll-chapter__pin");
+      const surfaceFan = surfaceSection.querySelector<HTMLElement>(".mf-home-surface-fan");
+      const stage = logoSection.querySelector<HTMLElement>(".mf-home-logo-section__stage");
+      const copy = logoSection.querySelector<HTMLElement>(".mf-home-logo-section__copy");
+      if (!pin || !surfaceFan || !stage || !copy) return undefined;
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const canPin = window.matchMedia("(min-width: 1024px)").matches && !reducedMotion;
+      gsap.set(logoSection, { "--mf-logo-scroll-turn": 0 });
+      gsap.set(logoSection, { "--mf-logo-morph": 0 });
+      gsap.set(logoSection, { "--mf-x402-sweep": 0 });
+      gsap.set(stage, { transformOrigin: "50% 50%" });
+      gsap.set([surfaceSection, logoSection, stage, copy], { willChange: "transform,opacity" });
+
+      if (!canPin) {
+        gsap.set(stage, { scale: 1, y: 0 });
+        gsap.set(copy, { autoAlpha: 1, y: 0 });
+        gsap.set([surfaceSection, logoSection, stage, copy], { clearProps: "opacity,visibility,transform,filter,pointerEvents,willChange" });
+        setChapterScrolling(false);
+        return undefined;
+      }
+
+      let activeIndex = -1;
+      let chapterActive = false;
+      let fanScrolling = false;
+      let x402Active = false;
+      let scrolling = false;
+
+      const setChapterScrollingState = (next: boolean) => {
+        if (scrolling === next) return;
+        scrolling = next;
+        setChapterScrolling(next);
+      };
+
+      const setChapterActiveState = (next: boolean) => {
+        if (chapterActive === next) return;
+        chapterActive = next;
+        chapter.classList.toggle("mf-home-scroll-chapter--active", next);
+      };
+
+      const setFanScrollingState = (next: boolean) => {
+        if (fanScrolling === next) return;
+        fanScrolling = next;
+        surfaceFan.classList.toggle("mf-home-surface-fan--scrolling", next);
+      };
+
+      const setX402ActiveState = (next: boolean) => {
+        if (x402Active === next) return;
+        x402Active = next;
+        chapter.classList.toggle("mf-home-scroll-chapter--x402-active", next);
+      };
+
+      const setSurfaceProgress = (progress: number) => {
+        const cardsProgress = gsap.utils.clamp(0, 1, progress / 0.36);
+        const atEnd = cardsProgress >= 0.999;
+        const unit = atEnd ? surfaces.length - 0.001 : cardsProgress * surfaces.length;
+        const index = atEnd ? surfaces.length - 1 : Math.floor(unit);
+        const localProgress = atEnd ? 1 : unit - index;
+        const pulse = Math.sin(localProgress * Math.PI);
+        const scale = gsap.utils.interpolate(1.018, 1.118, pulse);
+
+        surfaceFan.style.setProperty("--surface-active-scale", scale.toFixed(3));
+        surfaceFan.style.setProperty("--surface-scroll-progress", cardsProgress.toFixed(4));
+
+        if (index !== activeIndex) {
+          activeIndex = index;
+          setChapterSurfaceIndex(index);
+        }
+      };
+
+      gsap.set(surfaceSection, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto" });
+      gsap.set(logoSection, { autoAlpha: 0, y: 64, scale: 0.97, pointerEvents: "none" });
+      gsap.set(stage, { scale: 1.3, y: 28 });
+      gsap.set(copy, { autoAlpha: 0.54, y: 24 });
+
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          id: "mf-home-scroll-chapter",
+          trigger: chapter,
+          start: "top top",
+          end: () => `+=${Math.round(window.innerHeight * 3.6)}`,
+          scrub: 0.5,
+          pin,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          refreshPriority: -30,
+          onToggle: (self) => {
+            setChapterActiveState(self.isActive);
+            setFanScrollingState(self.isActive && self.progress < 0.42);
+            setChapterScrollingState(self.isActive);
+          },
+          onUpdate: (self) => {
+            setSurfaceProgress(self.progress);
+            setFanScrollingState(self.isActive && self.progress < 0.42);
+            setX402ActiveState(self.progress >= 0.38);
+          },
+          onRefresh: (self) => setSurfaceProgress(self.progress),
+        },
+      });
+
+      timeline
+        .to(surfaceSection, { autoAlpha: 1, y: 0, scale: 1, duration: 0.34, ease: "none" }, 0)
+        .to(surfaceSection, { autoAlpha: 0, y: -72, scale: 0.955, pointerEvents: "none", duration: 0.14, ease: "none" }, 0.38)
+        .to(logoSection, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto", duration: 0.18, ease: "none" }, 0.38)
+        .to(stage, { scale: 1, y: 0, duration: 0.28, ease: "none" }, 0.4)
+        .to(logoSection, { "--mf-logo-scroll-turn": 1, duration: 0.16, ease: "none" }, 0.38)
+        .to(logoSection, { "--mf-logo-morph": 1, duration: 0.16, ease: "none" }, 0.52)
+        .to(logoSection, { "--mf-logo-scroll-turn": 2, duration: 0.22, ease: "none" }, 0.62)
+        .to(logoSection, { "--mf-x402-sweep": 1, duration: 0.46, ease: "none" }, 0.38)
+        .to(copy, { autoAlpha: 1, y: 0, duration: 0.2, ease: "none" }, 0.42);
+
+      const refreshFrame = window.requestAnimationFrame(() => {
+        ScrollTrigger.sort();
+        ScrollTrigger.refresh();
+      });
+
+      return () => {
+        window.cancelAnimationFrame(refreshFrame);
+        scrolling = false;
+        surfaceFan.classList.remove("mf-home-surface-fan--scrolling");
+        surfaceFan.style.removeProperty("--surface-active-scale");
+        surfaceFan.style.removeProperty("--surface-scroll-progress");
+        chapter.classList.remove("mf-home-scroll-chapter--active", "mf-home-scroll-chapter--x402-active");
+        gsap.set([surfaceSection, logoSection, stage, copy], { clearProps: "willChange" });
+      };
+    },
+    { scope: chapterRef },
+  );
+
+  useEffect(() => {
+    const root = homeRef.current;
+    if (!root) return undefined;
+
+    let cleanupMotion: (() => void) | undefined;
+    let cancelled = false;
+
+    const cancelIdle = scheduleIdle(() => {
+      import("@/components/site/HomeMotion").then((module) => {
+        if (cancelled) return;
+        cleanupMotion = module.mountHomeMotion(root);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelIdle();
+      cleanupMotion?.();
+    };
+  }, []);
 
   useEffect(() => {
     document.title = "Meterflow | Control Plane For Agent Commerce";
+  }, []);
+
+  useEffect(() => {
+    const section = surfacesSectionRef.current;
+    if (!section) return undefined;
+
+    const observer = new IntersectionObserver(([entry]) => setSurfacesInView(entry.isIntersecting), {
+      rootMargin: "80% 0px",
+      threshold: 0,
+    });
+
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -157,9 +376,42 @@ export function HomePage() {
             </span>
           </h1>
 
-          <div className="mf-home-hero__powered" aria-label="Powered by Solana">
-            <span>Powered by</span>
-            <SolanaLogo />
+          <div className="mf-home-hero__attribution">
+            <span className="mf-home-hero__powered" aria-label="Powered by Solana">
+              <span>Powered by</span>
+              <SolanaLogo />
+              <span className="mf-home-hero__powered-name">Solana</span>
+            </span>
+            <span aria-hidden className="mf-home-hero__attribution-sep" />
+            <a
+              className="mf-home-hero__routed"
+              href="https://zauthx402.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Routed through Zauth"
+            >
+              <span>Routed through</span>
+              <img
+                src="/assets/brand/zauth-mark.png"
+                alt=""
+                width={20}
+                height={20}
+                className="mf-home-hero__zauth-logo"
+                loading="lazy"
+                decoding="async"
+              />
+              <span className="mf-home-hero__routed-name">Zauth</span>
+            </a>
+            <span aria-hidden className="mf-home-hero__attribution-sep" />
+            <span className="mf-home-hero__rail" aria-label="Metered via x402">
+              <span>Metered via</span>
+              <span className="mf-home-hero__rail-mark">x402</span>
+            </span>
+            <span aria-hidden className="mf-home-hero__attribution-sep" />
+            <span className="mf-home-hero__rail" aria-label="Settled on MPP">
+              <span>Settled on</span>
+              <span className="mf-home-hero__rail-mark">MPP</span>
+            </span>
           </div>
 
           <p className="mf-home-hero__copy">
@@ -179,7 +431,9 @@ export function HomePage() {
         </div>
 
         <div className="mf-home-hero__demo" aria-label="Meterflow product demo">
-          <Showcase className="mf-home-showcase" />
+          <Suspense fallback={<ShowcaseFallback />}>
+            <Showcase className="mf-home-showcase" />
+          </Suspense>
         </div>
       </section>
 
@@ -200,15 +454,51 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mf-home-surfaces" aria-labelledby="home-surfaces-title">
-        <div className="mf-home-section-head">
-          <h2 id="home-surfaces-title">Six surfaces.</h2>
+      <div className="mf-home-scroll-chapter" ref={chapterRef}>
+        <div className="mf-home-scroll-chapter__pin">
+          <section
+            className={cn("mf-home-surfaces", !surfacesInView && "mf-home-surfaces--paused")}
+            aria-labelledby="home-surfaces-title"
+            ref={surfacesSectionRef}
+          >
+            <div className="mf-home-section-head">
+              <h2 id="home-surfaces-title">Six surfaces.</h2>
+            </div>
+            <SurfaceFan active={surfacesInView} scrollIndex={chapterSurfaceIndex} scrollActive={chapterScrolling} />
+          </section>
+
+          <section className="mf-home-logo-section" aria-labelledby="home-logo-title" ref={logoSectionRef}>
+            <div className="mf-home-logo-section__copy">
+              <p className="mf-kicker">x402 / Meterflow</p>
+              <h2 id="home-logo-title" className="mf-home-x402-title">
+                <span>Meterflow</span>
+                <span className="mf-home-x402-title__join">×</span>
+                <span>x402</span>
+              </h2>
+              <p className="mf-home-x402-copyline mf-home-x402-copyline--lede">
+                x402 makes APIs payable. Meterflow makes them manageable.
+              </p>
+              <p className="mf-home-x402-copyline">
+                x402 brings payments directly into the HTTP request flow: an agent meets a 402 challenge, pays, retries, and gets access without accounts, subscriptions, shared cards, or legacy API-key billing.
+              </p>
+              <p className="mf-home-x402-copyline">
+                Meterflow turns that payment surface into infrastructure: every paid request becomes observable, budgeted, attributable, exportable, and ready for provider operations.
+              </p>
+            </div>
+            <div className="mf-home-logo-section__stage">
+              <Suspense fallback={<div className="mf-logo-orbit mf-logo-orbit--loading" aria-hidden="true" />}>
+                <LogoOrbit />
+              </Suspense>
+            </div>
+          </section>
         </div>
-        <SurfaceFan />
-      </section>
+      </div>
 
       <section className="mf-home-cta">
         <div className="mf-home-cta__inner">
+          <Suspense fallback={null}>
+            <CtaShader fps={0} />
+          </Suspense>
           <p className="mf-kicker">Launch</p>
           <h2>
             Become one with <em>Meterflow.</em>
@@ -229,10 +519,11 @@ export function HomePage() {
   );
 }
 
-function SurfaceFan() {
+function SurfaceFan({ active, scrollIndex, scrollActive = false }: { active: boolean; scrollIndex?: number; scrollActive?: boolean }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [dragStart, setDragStart] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const surfaceFanRef = useRef<HTMLDivElement>(null);
   const activeSurface = surfaces[activeIndex];
   const positionedSurfaces = useMemo(
@@ -244,21 +535,68 @@ function SurfaceFan() {
     [activeIndex],
   );
 
-  useSurfaceFanMotion(surfaceFanRef, activeIndex, paused);
+  useEffect(() => {
+    if (typeof scrollIndex !== "number") return;
+    setActiveIndex(((scrollIndex % surfaces.length) + surfaces.length) % surfaces.length);
+    setExpanded(false);
+  }, [scrollIndex]);
+
+  useEffect(() => {
+    const root = surfaceFanRef.current;
+    if (!root || !active) return undefined;
+
+    let cleanupMotion: (() => void) | undefined;
+    let cancelled = false;
+
+    const cancelIdle = scheduleIdle(() => {
+      import("@/components/site/SurfaceFanMotion").then((module) => {
+        if (cancelled) return;
+        cleanupMotion = module.mountSurfaceFanMotion(root, activeIndex, paused);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelIdle();
+      cleanupMotion?.();
+    };
+  }, [active, activeIndex, paused]);
+
+  useEffect(() => {
+    const root = surfaceFanRef.current;
+    if (!root || !active) return undefined;
+
+    let cleanupTilt: (() => void) | undefined;
+    let cancelled = false;
+
+    const cancelIdle = scheduleIdle(() => {
+      import("@/components/site/SurfaceFanMotion").then((module) => {
+        if (cancelled) return;
+        cleanupTilt = module.mountSurfaceFanTilt(root);
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelIdle();
+      cleanupTilt?.();
+    };
+  }, [active]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (media.matches || paused || dragStart !== null) return undefined;
+    if (!active || media.matches || scrollActive || paused || dragStart !== null) return undefined;
 
     const timer = window.setTimeout(() => {
       setActiveIndex((index) => (index + 1) % surfaces.length);
     }, 3600);
 
     return () => window.clearTimeout(timer);
-  }, [activeIndex, dragStart, paused]);
+  }, [active, activeIndex, dragStart, paused, scrollActive]);
 
   const goTo = (index: number) => {
     setActiveIndex(((index % surfaces.length) + surfaces.length) % surfaces.length);
+    setExpanded(false);
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -280,7 +618,17 @@ function SurfaceFan() {
   };
 
   return (
-    <div className="mf-home-surface-fan" ref={surfaceFanRef} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div
+      className={cn("mf-home-surface-fan", expanded && "mf-home-surface-fan--expanded", scrollActive && "mf-home-surface-fan--scrolling")}
+      ref={surfaceFanRef}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="mf-home-surface-atmosphere" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
       <div
         className="mf-home-surface-stage"
         aria-live="polite"
@@ -313,14 +661,19 @@ function SurfaceFan() {
             )}
             key={surface.code}
             aria-hidden={index !== activeIndex}
+            aria-expanded={index === activeIndex ? expanded : undefined}
             data-surface-index={index}
             onClick={(event) => {
+              if ((event.target as HTMLElement).closest("a")) return;
               if (index !== activeIndex) {
                 event.preventDefault();
                 goTo(index);
+                return;
               }
+              setExpanded((value) => !value);
             }}
           >
+            <div className="mf-home-surface-card__glow" aria-hidden="true" />
             <div className="mf-home-surface-card__holo" aria-hidden="true" />
             <div className="mf-home-surface-card__scan" aria-hidden="true" />
             <div className="mf-home-surface-card__content">
@@ -335,12 +688,17 @@ function SurfaceFan() {
                 {surface.rows.map(([label, value, tone]) => (
                   <div className={cn("mf-home-surface-row", tone === "group" && "mf-home-surface-row--group")} key={`${surface.code}-${label}`}>
                     <span>{label}</span>
-                    <strong className={cn(tone && tone !== "group" && `mf-home-surface-value--${tone}`)}>{value}</strong>
+                    <strong className={cn(tone && tone !== "group" && `mf-home-surface-value--${tone}`)} data-mf-surface-value={value}>
+                      {value}
+                    </strong>
                   </div>
                 ))}
               </div>
               <footer className="mf-home-surface-card__foot">
-                <span>{surface.foot}</span>
+                <span>
+                  {surface.foot}
+                  <i aria-hidden="true" className="mf-home-surface-cursor" />
+                </span>
                 <a href={surface.href}>
                   {surface.cta}
                   <ArrowRight className="h-3 w-3" />
@@ -349,6 +707,18 @@ function SurfaceFan() {
             </div>
           </article>
         ))}
+      </div>
+
+      <div className={cn("mf-home-surface-detail", expanded && "is-expanded")} data-surface-detail>
+        <div className="mf-home-surface-detail__mark">{activeSurface.code}</div>
+        <div>
+          <span>{activeSurface.name}</span>
+          <p>{activeSurface.detail}</p>
+        </div>
+        <a href={activeSurface.href}>
+          {activeSurface.cta}
+          <ArrowRight className="h-3 w-3" />
+        </a>
       </div>
 
       <div className="mf-home-surface-nav" role="tablist" aria-label="Product surfaces">
@@ -371,16 +741,22 @@ function SurfaceFan() {
 
 function SolanaLogo() {
   return (
-    <svg className="mf-home-solana-logo" viewBox="0 0 398 311" role="img" aria-label="Solana">
+    <svg
+      className="mf-home-solana-logo"
+      viewBox="0 0 397.7 311.7"
+      role="img"
+      aria-label="Solana"
+      preserveAspectRatio="xMidYMid meet"
+    >
       <defs>
-        <linearGradient id="mf-home-solana-gradient" x1="360.879" y1="351.455" x2="141.213" y2="-69.293" gradientUnits="userSpaceOnUse">
-          <stop stopColor="var(--solana-green)" />
+        <linearGradient id="mf-home-solana-gradient" x1="360.879" y1="351.455" x2="141.213" y2="-69.294" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="var(--solana-green)" />
           <stop offset="1" stopColor="var(--solana-purple)" />
         </linearGradient>
       </defs>
-      <path d="M64.6 237.9c2.6-2.6 6.2-4.1 9.9-4.1h318.7c6.2 0 9.3 7.5 4.9 11.9l-63 63c-2.6 2.6-6.2 4.1-9.9 4.1H6.5c-6.2 0-9.3-7.5-4.9-11.9l63-63Z" fill="url(#mf-home-solana-gradient)" />
-      <path d="M64.6 2.1C67.2-.5 70.8-2 74.5-2h318.7c6.2 0 9.3 7.5 4.9 11.9l-63 63c-2.6 2.6-6.2 4.1-9.9 4.1H6.5c-6.2 0-9.3-7.5-4.9-11.9l63-63Z" fill="url(#mf-home-solana-gradient)" />
-      <path d="M333.4 119.5c-2.6-2.6-6.2-4.1-9.9-4.1H4.8c-6.2 0-9.3 7.5-4.9 11.9l63 63c2.6 2.6 6.2 4.1 9.9 4.1h318.7c6.2 0 9.3-7.5 4.9-11.9l-63-63Z" fill="url(#mf-home-solana-gradient)" />
+      <path fill="url(#mf-home-solana-gradient)" d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7Z" />
+      <path fill="url(#mf-home-solana-gradient)" d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8Z" />
+      <path fill="url(#mf-home-solana-gradient)" d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.7Z" />
     </svg>
   );
 }

@@ -1,0 +1,103 @@
+@theme {
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-display: "Geist", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --color-background: var(--bg);
+  --color-background-deep: var(--bg-deep);
+  --color-foreground: var(--text);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--text-dim);
+  --color-subtle-foreground: var(--text-muted);
+  --color-panel: var(--surface);
+  --color-panel-elevated: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--text-inverse);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-info: var(--sky);
+  --color-success: var(--green);
+  --color-warning: var(--warm);
+  --color-destructive: var(--red);
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  --shadow-card: var(--elevation-card);
+  --shadow-elevated: var(--elevation-strong);
+  --shadow-glow: var(--elevation-glow);
+  --shadow-primary: var(--elevation-primary);
+
+  --spacing-container: var(--container);
+  --spacing-container-narrow: var(--container-narrow);
+  --spacing-container-wide: var(--container-wide);
+
+  --text-xs: var(--type-xs);
+  --text-sm: var(--type-sm);
+  --text-base: var(--type-base);
+  --text-md: var(--type-md);
+  --text-lg: var(--type-lg);
+  --text-xl: var(--type-xl);
+  --text-2xl: var(--type-2xl);
+  --text-3xl: var(--type-3xl);
+  --text-4xl: var(--type-4xl);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background: var(--bg-deep);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid rgba(var(--accent-rgb), 0.82);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: rgba(var(--accent-rgb), 0.34);
+    color: var(--text);
+  }
+}

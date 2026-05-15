@@ -13,6 +13,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const projectRoot = resolve(root, '..');
 
+function readFrontendStyles() {
+  return [
+    resolve(projectRoot, 'src', 'styles', 'globals.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_shell.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_effects.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_pages.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_home.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_showcase.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_responsive.css'),
+    resolve(projectRoot, 'src', 'styles', 'globals', '_keyframes.css'),
+  ].map(file => readFileSync(file, 'utf-8')).join('\n');
+}
+
 // ═══════════════════════════════════════
 // 1. CONFIG & ENV VALIDATION
 // ═══════════════════════════════════════
@@ -432,12 +445,12 @@ describe('Site link integrity', () => {
 describe('Frontend cascade boundaries', () => {
   it('React shell classes are namespaced away from legacy public CSS', () => {
     const shell = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Shell.tsx'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readFrontendStyles();
     const publicNav = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '02-public-nav.css'), 'utf-8');
 
     for (const className of ['mf-shell-nav', 'mf-shell-nav-links', 'mf-shell-login', 'mf-shell-mobile-menu']) {
       assert.ok(shell.includes(className), `Shell should use ${className}`);
-      assert.ok(globals.includes(`.${className}`), `globals.css should own ${className}`);
+      assert.ok(globals.includes(`.${className}`), `React styles should own ${className}`);
       assert.ok(!publicNav.includes(className), `legacy public nav CSS must not target ${className}`);
     }
 
@@ -461,13 +474,13 @@ describe('Frontend cascade boundaries', () => {
 
   it('homepage is React-owned instead of injected through the legacy bridge', () => {
     const app = readFileSync(resolve(projectRoot, 'src', 'App.tsx'), 'utf-8');
-    const productPages = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'ProductPages.tsx'), 'utf-8');
+    const productRoute = readFileSync(resolve(projectRoot, 'src', 'pages', 'ProductRoute.tsx'), 'utf-8');
     const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
     const legacyPage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'LegacyPage.tsx'), 'utf-8');
 
-    assert.ok(app.includes('path === "/" || path === "/index.html"'), 'root route should render the React homepage');
-    assert.ok(app.includes('import("@/src/components/site/HomePage")'), 'root route should lazy-load the React homepage');
-    assert.ok(!productPages.includes('"/": <HomePage />'), 'shared product pages should not eagerly import the homepage bundle');
+    assert.ok(app.includes('const homePaths = ["/", "/index.html"]'), 'root route should render the React homepage');
+    assert.ok(app.includes('<HomePage />'), 'root route should mount the React homepage');
+    assert.ok(!productRoute.includes('HomePage'), 'shared product routes should not import the homepage bundle');
     assert.ok(homePage.includes('<Showcase className="mf-home-showcase" />'), 'React homepage should own the product showcase');
     assert.ok(homePage.includes('mf-home-surface-fan'), 'React homepage should own the surface fan');
     assert.ok(homePage.includes('<MorphingText className="mf-home-morph-text mf-home-liquid-text"'), 'React homepage should keep the threshold morph hero text effect');
@@ -482,8 +495,8 @@ describe('Frontend cascade boundaries', () => {
     const homeCss = readFileSync(resolve(projectRoot, 'public', 'site', 'home.css'), 'utf-8');
     const componentsCss = readFileSync(resolve(projectRoot, 'public', 'site', 'css', '03-public-components.css'), 'utf-8');
     const sharedJs = readFileSync(resolve(projectRoot, 'public', 'site', 'shared.js'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
-    const footer = readFileSync(resolve(projectRoot, 'components', 'ui', 'flickering-footer.tsx'), 'utf-8');
+    const globals = readFrontendStyles();
+    const footer = readFileSync(resolve(projectRoot, 'src', 'components', 'ui', 'flickering-footer.tsx'), 'utf-8');
 
     assert.ok(homeCss.includes('footer:not(.mf-footer-art)'), 'home.css broad footer selector should exclude React footer');
     assert.ok(homeCss.includes('nav:not(.mf-shell-nav)'), 'home.css broad nav selector should exclude React shell nav');
@@ -498,7 +511,7 @@ describe('Frontend cascade boundaries', () => {
   });
 
   it('flow-step pattern layer remains visible above card fill and below content', () => {
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readFrontendStyles();
     const flowAfter = globals.match(/\.mf-flow-step::after\s*\{[\s\S]*?animation: mf-flow-falling-pattern 150s linear infinite;\r?\n  \}/)?.[0] || '';
 
     assert.ok(flowAfter.includes('z-index: 1'), 'flow pattern layer should sit above the card fill');
@@ -509,23 +522,23 @@ describe('Frontend cascade boundaries', () => {
   });
 
   it('homepage motion effects are centralized in React globals', () => {
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readFrontendStyles();
     const homePage = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8');
 
     for (const selector of ['.mf-home-morph-text', '.mf-home-stats-morph', '.mf-home-surface-card--active::after']) {
-      assert.ok(globals.includes(selector), `globals.css should own ${selector}`);
+      assert.ok(globals.includes(selector), `React styles should own ${selector}`);
     }
 
     assert.ok(globals.includes('filter: var(--morph-filter);'), 'morph text should use the scoped threshold blur filter');
     assert.ok(globals.includes('@keyframes mf-home-surface-sheen'), 'surface fan sheen should be a shared CSS animation');
-    assert.ok(/\.mf-home-stats,\r?\n  \.mf-home-surfaces,\r?\n  \.mf-home-cta \{\r?\n    width: 100%;/.test(globals), 'homepage bands should be full-bleed');
+    assert.ok(/\.mf-home-stats,[\s\S]*?\.mf-home-surfaces,[\s\S]*?\.mf-home-cta \{\r?\n    width: 100%;/.test(globals), 'homepage bands should be full-bleed');
     assert.ok(globals.includes('grid-template-columns: minmax(0, 0.5fr) minmax(520px, 1fr);'), 'stats band should keep the split full-width composition');
     assert.ok(globals.includes('min-height: 1.12em;'), 'hero morph text should reserve stable single-line height');
     assert.ok(!homePage.includes('style={{'), 'homepage should not rely on inline styles for visual effects');
   });
 
   it('shared button primitive applies variant and size props', () => {
-    const button = readFileSync(resolve(projectRoot, 'components', 'ui', 'button.tsx'), 'utf-8');
+    const button = readFileSync(resolve(projectRoot, 'src', 'components', 'ui', 'button.tsx'), 'utf-8');
 
     assert.ok(button.includes('Button({ className, variant, size, children'), 'Button should consume size prop');
     assert.ok(button.includes('buttonVariants({ variant, size })'), 'Button should pass size into cva variants');
@@ -534,7 +547,7 @@ describe('Frontend cascade boundaries', () => {
 
   it('showcase layout is CSS-owned and does not flip after mount', () => {
     const showcase = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'Showcase.tsx'), 'utf-8');
-    const globals = readFileSync(resolve(projectRoot, 'src', 'styles', 'globals.css'), 'utf-8');
+    const globals = readFrontendStyles();
 
     assert.ok(!showcase.includes('ResizeObserver'), 'showcase should not re-measure and change layout after first paint');
     assert.ok(!showcase.includes('containerWidth'), 'showcase should not depend on runtime width state');
@@ -626,7 +639,8 @@ describe('Vercel routing', () => {
   it('MFLOW purchase routes stay on Meterflow and use Jupiter only as the embedded swap engine', () => {
     const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
     const profile = readFileSync(resolve(root, 'lib', 'token-profile.js'), 'utf-8');
-    const productPages = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'ProductPages.tsx'), 'utf-8');
+    const tokenPage = readFileSync(resolve(projectRoot, 'src', 'pages', 'Token.tsx'), 'utf-8');
+    const productShared = readFileSync(resolve(projectRoot, 'src', 'pages', 'productShared.tsx'), 'utf-8');
     const buyPage = readFileSync(resolve(projectRoot, 'public', 'site', 'buy.html'), 'utf-8');
 
     assert.ok(auth.includes('/buy?input='), 'auth metadata should point buyers to the embedded /buy page');
@@ -634,7 +648,8 @@ describe('Vercel routing', () => {
     assert.ok(auth.includes('https://api.jup.ag/swap/v2/order'), 'server-side quote template should use the current Jupiter Swap API');
     assert.ok(auth.includes('/proxy/auth/status'), 'agent verify URL should work through production proxy routing');
     assert.ok(profile.includes('/buy?input=SOL'), 'public token metadata should default swapUrl to the embedded buy page');
-    assert.ok(productPages.includes('const METERFLOW_BUY_URL = "/buy?input=SOL"'), 'token page should not link primary buy action directly to Jupiter');
+    assert.ok(productShared.includes('METERFLOW_BUY_URL = "/buy?input=SOL"'), 'token fallback should not link primary buy action directly to Jupiter');
+    assert.ok(tokenPage.includes('Buy {symbol}') && !tokenPage.includes('jup.ag/swap'), 'token page should point primary action at the local buy flow');
     assert.ok(buyPage.includes('https://plugin.jup.ag/plugin-v1.js'), 'buy page should embed the Jupiter plugin');
     assert.ok(buyPage.includes('fixedMint: token.mint'), 'buy page should lock MFLOW as the output token');
   });

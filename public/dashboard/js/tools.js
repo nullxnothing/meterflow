@@ -104,9 +104,9 @@ export function renderToolResultCardHtml(tool, data) {
   if (tool === 'image_generate') {
     if (data.success && data.images && data.images.length > 0) {
       const imagesHtml = data.images.map(img => 
-        `<img src="data:${img.mimeType};base64,${img.data}" alt="Generated image" class="generated-image" style="max-width:100%;border-radius:8px;margin:8px 0;">`
+        `<img src="data:${img.mimeType};base64,${img.data}" alt="Generated image" class="generated-image u-generated-image">`
       ).join('');
-      return `<div class="tool-result-card image-result" style="max-width:512px;"><div class="trc-header"><span class="trc-icon"></span>GENERATED IMAGE</div>${imagesHtml}${data.text ? `<div class="trc-body" style="margin-top:8px;">${escapeHtml(data.text)}</div>` : ''}<div class="trc-meta"><span>${escapeHtml(data.prompt?.slice(0, 50) || '')}${(data.prompt?.length || 0) > 50 ? '...' : ''}</span></div></div>`;
+      return `<div class="tool-result-card image-result u-image-result"><div class="trc-header"><span class="trc-icon"></span>GENERATED IMAGE</div>${imagesHtml}${data.text ? `<div class="trc-body u-mt-2">${escapeHtml(data.text)}</div>` : ''}<div class="trc-meta"><span>${escapeHtml(data.prompt?.slice(0, 50) || '')}${(data.prompt?.length || 0) > 50 ? '...' : ''}</span></div></div>`;
     }
     return `<div class="tool-result-card"><div class="trc-header"><span class="trc-icon"></span>IMAGE GENERATION</div><div class="trc-error">${escapeHtml(data.message || data.error || 'Failed to generate image')}</div></div>`;
   }

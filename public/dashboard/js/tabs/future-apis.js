@@ -2,6 +2,8 @@
 // Meterflow Dashboard - Tab: Integrations
 // ═══════════════════════════════════════════
 
+import { renderEmptyState } from '../ui.js';
+
 // Real brand logos pulled from each company's official site
 const LOGO_DOMAINS = {
   helius: 'helius.dev',
@@ -63,14 +65,13 @@ export function renderFutureApis() {
         <button class="future-apis-tab ${selectedCategory === cat ? 'active' : ''}" onclick="filterApiCategory('${cat}')">${cat}</button>
       `).join('')}
     </div>
-    ${filtered.length === 0 ? `
-      <div class="empty-state">
-        <div class="empty-state-icon">∅</div>
-        <div class="empty-state-title">No integrations in <em>${selectedCategory}</em></div>
-        <div class="empty-state-desc">More providers coming soon. Reset the filter to see what's connected today.</div>
-        <button class="btn-sm primary" onclick="filterApiCategory('All')">Show all integrations</button>
-      </div>
-    ` : ''}
+    ${filtered.length === 0 ? renderEmptyState({
+      variant: 'integrations',
+      title: `No integrations in ${selectedCategory}`,
+      body: 'More providers are coming soon. Reset the filter to see what is connected today.',
+      ctaLabel: 'Show all integrations',
+      action: "filterApiCategory('All')",
+    }) : ''}
     <div class="future-apis-grid">
       ${filtered.map(item => `
         <div class="api-card">

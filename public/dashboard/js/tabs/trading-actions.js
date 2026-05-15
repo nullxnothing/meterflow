@@ -181,7 +181,7 @@ export async function lookupToken() {
   if (!address) return;
 
   const card = document.getElementById('tokenInfoCard');
-  if (card) card.innerHTML = '<div style="padding:12px;text-align:center;"><div class="image-spinner" style="margin:0 auto;"></div></div>';
+  if (card) card.innerHTML = '<div class="u-spinner-wrap"><div class="image-spinner"></div></div>';
 
   try {
     const info = await api(`/v1/trading/token/${address}`);
@@ -189,7 +189,7 @@ export async function lookupToken() {
     renderTokenInfoCard(info);
     sendTradingQuery(`Analyze this token in detail: ${info.name || 'Unknown'} (${info.symbol || '?'}) at address ${address}. Give me a full breakdown: risk level, liquidity analysis, price action assessment, and whether it looks like a good opportunity right now.`, address);
   } catch (err) {
-    if (card) card.innerHTML = `<div style="padding:12px;color:var(--red);font-family:var(--font-mono);font-size:11px;">Lookup failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
+    if (card) card.innerHTML = `<div class="u-lookup-error">Lookup failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
   }
 }
 
@@ -201,7 +201,7 @@ export function renderTokenInfoCard(info) {
   const changePrefix = (info.change24h || 0) >= 0 ? '+' : '';
 
   card.innerHTML = `
-    <div class="token-info-card" style="margin-top:12px;">
+    <div class="token-info-card u-mt-3">
       <div class="token-info-header">
         <span class="token-info-name">${escapeHtml(info.name || 'Unknown')}</span>
         <span class="token-info-symbol">$${escapeHtml(info.symbol || '?')}</span>

@@ -260,6 +260,10 @@ body.mf-nav-scrolled .mf-nav {
   transition: color 0.2s ease, background 0.2s ease;
 }
 .nav-social svg { width: 14px; height: 14px; }
+.nav-social svg.nav-social-icon--dexscreener {
+  width: 16px;
+  height: 16px;
+}
 .nav-social:hover {
   color: var(--text);
   background: rgba(var(--surface-2-rgb), 0.52);

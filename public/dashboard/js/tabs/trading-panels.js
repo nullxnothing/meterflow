@@ -27,11 +27,11 @@ export function renderBotPortfolio() {
     <h2>Holdings</h2>
     <div class="portfolio-holdings">
       <div class="portfolio-sol-row">
-        <div><div style="font-weight:600;">SOL</div><div class="token-mint">Native</div></div>
+        <div><div class="u-semibold">SOL</div><div class="token-mint">Native</div></div>
         <div class="token-amount">${sol.toFixed(4)}</div>
         <div class="token-value">$${solUsd.toFixed(2)}</div>
       </div>
-      ${holdings.length === 0 ? '<div class="bot-empty" style="padding:24px 0;">No token holdings</div>' : holdings.map(h => `
+      ${holdings.length === 0 ? '<div class="bot-empty u-center-section">No token holdings</div>' : holdings.map(h => `
         <div class="portfolio-row" onclick="copyText('${h.mint}')" title="Click to copy mint">
           <div><div>${h.mint.slice(0, 4)}...${h.mint.slice(-4)}</div><div class="token-mint">${h.mint}</div></div>
           <div class="token-amount">${formatCompact(h.amount)}</div>
@@ -58,7 +58,7 @@ export function renderBotOverview() {
           </div>
         </div>`).join('')}</div>`
     }
-    <h2 style="margin-top:24px;">Recent Trades</h2>
+    <h2 class="u-section-title-spaced">Recent Trades</h2>
     ${renderBotHistoryTable(TRADING.history.slice(-10))}
   </div>`;
 }
@@ -72,7 +72,7 @@ export function renderBotSwap() {
       <div class="bot-form-row"><label class="bot-form-label">Amount (lamports)</label><input class="bot-form-input" id="swapAmount" type="number" placeholder="e.g. 100000000 = 0.1 SOL"></div>
       <div class="bot-form-row"><label class="bot-form-label">Slippage (bps)</label><input class="bot-form-input" id="swapSlippage" type="number" value="300" placeholder="300 = 3%"></div>
       <button class="bot-form-submit" onclick="executeSwapForm()">Execute Swap</button>
-      <div id="swapResult" style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);"></div>
+      <div id="swapResult" class="u-text-mono-xs"></div>
     </div>
   </div>`;
 }
@@ -81,7 +81,7 @@ export function renderBotDCA() {
   const orders = TRADING.dcaOrders || [];
   return `<div>
     <h2>DCA Orders</h2>
-    <div class="bot-form" style="margin-bottom:24px;">
+    <div class="bot-form u-mb-6">
       <div class="bot-form-row"><label class="bot-form-label">Input Mint (from)</label><input class="bot-form-input" id="dcaInputMint" value="So11111111111111111111111111111111111111112"></div>
       <div class="bot-form-row"><label class="bot-form-label">Output Mint (to)</label><input class="bot-form-input" id="dcaOutputMint" placeholder="Token mint"></div>
       <div class="bot-form-row"><label class="bot-form-label">Total Amount (lamports)</label><input class="bot-form-input" id="dcaTotal" type="number" placeholder="e.g. 500000000 = 0.5 SOL"></div>
@@ -108,15 +108,15 @@ export function renderBotCopy() {
   const targets = TRADING.copyTargets || [];
   return `<div>
     <h2>Copy Trading</h2>
-    <div class="bot-form" style="margin-bottom:24px;">
+    <div class="bot-form u-mb-6">
       <div class="bot-form-row"><label class="bot-form-label">Wallet Address to Follow</label><input class="bot-form-input" id="copyAddress" placeholder="Solana wallet address"></div>
       <div class="bot-form-row"><label class="bot-form-label">Max Position (SOL)</label><input class="bot-form-input" id="copyMaxSol" type="number" value="0.5" step="0.1"></div>
       <div class="bot-form-row"><label class="bot-form-label">Multiplier</label><input class="bot-form-input" id="copyMultiplier" type="number" value="1.0" step="0.1"></div>
       <button class="bot-form-submit" onclick="followWallet()">Follow Wallet</button>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button class="bot-form-submit" onclick="startCopyTrading()" style="flex:1;background:var(--green);font-size:10px;padding:8px;">Start Monitoring</button>
-      <button class="bot-form-submit" onclick="stopCopyTrading()" style="flex:1;background:var(--red);font-size:10px;padding:8px;">Stop</button>
+    <div class="u-equal-actions">
+      <button class="bot-form-submit bot-form-submit--compact bot-form-submit--success" onclick="startCopyTrading()">Start Monitoring</button>
+      <button class="bot-form-submit bot-form-submit--compact bot-form-submit--danger" onclick="stopCopyTrading()">Stop</button>
     </div>
     <h2>Followed Wallets (${targets.length})</h2>
     <div class="bot-list">
@@ -137,7 +137,7 @@ export function renderBotTriggers() {
   const triggers = TRADING.triggers || [];
   return `<div>
     <h2>Conditional Orders (TP / SL / Sniper)</h2>
-    <div class="bot-form" style="margin-bottom:24px;">
+    <div class="bot-form u-mb-6">
       <div class="bot-form-row"><label class="bot-form-label">Token Mint</label><input class="bot-form-input" id="trigMint" placeholder="Token mint"></div>
       <div class="bot-form-row"><label class="bot-form-label">Condition Type</label>
         <select class="bot-form-input" id="trigCondType"><option value="price_above">Price Above (TP)</option><option value="price_below">Price Below (SL)</option><option value="price_cross">Price Cross</option></select>

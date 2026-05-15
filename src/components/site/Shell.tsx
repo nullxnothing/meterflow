@@ -1,9 +1,63 @@
 import { ArrowRight } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollSmoother } from "gsap/ScrollSmoother";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useLocation } from "wouter";
 import { ButtonLink } from "@/components/ui/button";
 import { FlickeringFooter } from "@/components/ui/flickering-footer";
+import { EtherealBackground } from "@/components/site/EtherealBackground";
+import { DEXSCREENER_URL, DexScreenerIcon } from "@/components/site/social-links";
 import { cn } from "@/lib/utils";
-import { EtherealBackground } from "@/src/components/site/EtherealBackground";
+
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+let smoothRefreshToken = 0;
+let smoothRefreshFrame = 0;
+let smoothRefreshSecondFrame = 0;
+
+function scheduleSmoothRefresh() {
+  const token = ++smoothRefreshToken;
+
+  if (smoothRefreshFrame) window.cancelAnimationFrame(smoothRefreshFrame);
+  if (smoothRefreshSecondFrame) window.cancelAnimationFrame(smoothRefreshSecondFrame);
+
+  smoothRefreshFrame = window.requestAnimationFrame(() => {
+    if (token !== smoothRefreshToken) return;
+    smoothRefreshFrame = 0;
+    smoothRefreshSecondFrame = window.requestAnimationFrame(() => {
+      if (token !== smoothRefreshToken) return;
+      smoothRefreshSecondFrame = 0;
+      ScrollSmoother.get()?.refresh();
+      ScrollTrigger.refresh();
+    });
+  });
+
+  return () => {
+    if (token !== smoothRefreshToken) return;
+    smoothRefreshToken += 1;
+    if (smoothRefreshFrame) window.cancelAnimationFrame(smoothRefreshFrame);
+    if (smoothRefreshSecondFrame) window.cancelAnimationFrame(smoothRefreshSecondFrame);
+    smoothRefreshFrame = 0;
+    smoothRefreshSecondFrame = 0;
+  };
+}
+
+function refreshSmoothScroll() {
+  let cancelled = false;
+  const cancelFrame = scheduleSmoothRefresh();
+
+  document.fonts?.ready
+    .then(() => {
+      if (!cancelled) scheduleSmoothRefresh();
+    })
+    .catch(() => undefined);
+
+  return () => {
+    cancelled = true;
+    cancelFrame();
+  };
+}
 
 const navItems = [
   { href: "/docs", label: "Docs" },
@@ -46,7 +100,52 @@ function WalletIcon() {
 export function Shell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pathname = window.location.pathname.replace(/\/$/, "") || "/";
+  const smoothWrapperRef = useRef<HTMLDivElement>(null);
+  const smoothContentRef = useRef<HTMLDivElement>(null);
+  const [location] = useLocation();
+  const pathname = location.replace(/\/$/, "") || "/";
+
+  useLayoutEffect(() => {
+    const wrapper = smoothWrapperRef.current;
+    const content = smoothContentRef.current;
+    if (!wrapper || !content) return undefined;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const canSmooth = window.matchMedia("(min-width: 1024px)").matches && !reducedMotion;
+    if (!canSmooth) {
+      ScrollTrigger.refresh();
+      return undefined;
+    }
+
+    ScrollSmoother.get()?.kill();
+    const smoother = ScrollSmoother.create({
+      wrapper,
+      content,
+      smooth: 0.65,
+      effects: "[data-speed], [data-lag]",
+      smoothTouch: false,
+    });
+
+    document.documentElement.classList.add("mf-scroll-smoother-ready");
+    const cancelRefresh = refreshSmoothScroll();
+
+    return () => {
+      cancelRefresh();
+      document.documentElement.classList.remove("mf-scroll-smoother-ready");
+      smoother.kill();
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    const smoother = ScrollSmoother.get();
+    if (smoother) {
+      smoother.scrollTo(0, false);
+    } else {
+      window.scrollTo(0, 0);
+    }
+
+    return refreshSmoothScroll();
+  }, [pathname]);
 
   useEffect(() => {
     let frame = 0;
@@ -129,15 +228,25 @@ export function Shell({ children }: { children: ReactNode }) {
             >
               <DiscordIcon />
             </a>
+            <a
+              href={DEXSCREENER_URL}
+              target="_blank"
+              rel="noopener"
+              className="mf-shell-nav-social"
+              aria-label="DEX Screener"
+            >
+              <DexScreenerIcon className="mf-shell-nav-icon mf-shell-nav-icon--dexscreener" />
+            </a>
           </div>
-          <a
+          <ButtonLink
             href="/dashboard"
             data-nav="dashboard"
             className={cn("mf-shell-login", isActive(pathname, "/dashboard") && "active")}
+            size="sm"
           >
             <WalletIcon />
             <span>Launch Dashboard</span>
-          </a>
+          </ButtonLink>
         </div>
 
         <button
@@ -166,11 +275,15 @@ export function Shell({ children }: { children: ReactNode }) {
         </a>
       </div>
 
-      <main id="main" className="mf-main">
-        {children}
-      </main>
+      <div id="smooth-wrapper" className="mf-smooth-wrapper" ref={smoothWrapperRef}>
+        <div id="smooth-content" className="mf-smooth-content" ref={smoothContentRef}>
+          <main id="main" className="mf-main">
+            {children}
+          </main>
 
-      <FlickeringFooter />
+          <FlickeringFooter />
+        </div>
+      </div>
     </div>
   );
 }

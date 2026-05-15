@@ -35,10 +35,10 @@ export function renderModels() {
       <div class="section-title">Model Routes</div>
       <div class="models-list">
         <div class="model-row model-header-row">
-          <div class="model-name" style="color:var(--text-muted);font-size:10px;letter-spacing:2px;">ROUTE</div>
-          <div class="model-provider" style="font-size:10px;letter-spacing:2px;">PROVIDER</div>
-          <div class="model-tier" style="font-size:10px;letter-spacing:2px;">ACCESS</div>
-          <div class="model-status" style="font-size:10px;letter-spacing:2px;">STATUS</div>
+          <div class="model-name u-control-label">ROUTE</div>
+          <div class="model-provider u-control-label">PROVIDER</div>
+          <div class="model-tier u-control-label">ACCESS</div>
+          <div class="model-status u-control-label">STATUS</div>
         </div>
         ${allModels.map(m => {
           const hasAccess = userModels.some(um => um.includes(m.name.split('-')[0]));

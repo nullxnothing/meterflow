@@ -18,7 +18,6 @@
       <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
     </filter>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800&amp;family=Inter+Tight:wght@700;800&amp;display=swap');
     </style>
   </defs>
   <rect width="1600" height="900" fill="url(#sky)"/>

@@ -48,9 +48,9 @@ export function renderConnections() {
         `;
       }).join('')}
     </div>
-    <div class="section" style="margin-top:32px;">
+    <div class="section u-mt-8">
       <div class="section-title">How it works</div>
-      <div class="dim" style="max-width:600px;line-height:1.6;">
+      <div class="dim u-copy-measure">
         When you connect an account, the AI chat can access your private data through that service's API.
         Your OAuth tokens are stored in-memory on the server and tied to your API key.
         You can disconnect at any time.

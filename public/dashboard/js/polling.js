@@ -5,6 +5,7 @@ import {
 } from './state.js';
 import { api } from './api.js';
 import { saveSession, clearSession } from './session.js';
+import { animateDashboardCounters, renderUsageSegments } from './ui.js';
 
 // ─── Status Polling ───
 
@@ -161,15 +162,15 @@ export function stopStatusPolling() {
 
 export function updateSidebarFooter() {
   const el = document.getElementById('sidebarFooterInfo');
-  if (el) el.textContent = `${STATE.tier || '\u2014'} Tier \u2014 ${(STATE.balance ?? 0).toLocaleString()} ${STATE.token?.symbol || 'MFLOW'}`;
+  if (el) el.textContent = STATE.isGuest ? 'Guest Access' : `${STATE.tier || '\u2014'} Tier`;
 
   const usageEl = document.getElementById('sidebarUsage');
   if (usageEl) {
     const pct = STATE.usage.limit > 0 ? Math.min((STATE.usage.today / STATE.usage.limit) * 100, 100) : 0;
     const barClass = pct > 90 ? 'danger' : pct > 70 ? 'warning' : '';
-    const fill = usageEl.querySelector('.sidebar-usage-fill');
+    const track = usageEl.querySelector('.sidebar-usage-track');
     const count = usageEl.querySelector('.sidebar-usage-count');
-    if (fill) { fill.style.width = `${pct}%`; fill.className = `sidebar-usage-fill ${barClass}`; }
+    if (track) track.outerHTML = renderUsageSegments(STATE.usage, pct, barClass);
     if (count) count.textContent = `${STATE.usage.remaining.toLocaleString()} left`;
 
     // Show/update rate limit warning
@@ -203,6 +204,7 @@ export function updateSidebarFooter() {
     dot.className = `status-dot ${STATE.apiKeyFull ? 'online' : 'offline'}`;
     dot.title = STATE.apiKeyFull ? 'Connected' : 'Disconnected';
   }
+  animateDashboardCounters(document);
 }
 
 function updateOverviewStats() {
@@ -234,4 +236,5 @@ function updateOverviewStats() {
   const counts = main.querySelectorAll('.usage-count');
   if (counts[0]) counts[0].innerHTML = `${STATE.usage.today.toLocaleString()} <span>/ ${STATE.usage.limit.toLocaleString()} metered calls</span>`;
   if (counts[1]) counts[1].textContent = `${Math.round(usagePct)}%`;
+  animateDashboardCounters(main);
 }

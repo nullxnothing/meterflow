@@ -7,6 +7,7 @@ import { getWalletProviders, connectWallet } from './wallet.js?v=v10-ledger';
 import { setTab } from './actions.js';
 import { bindCodeCopyButtons, bindCodeToggleButtons } from './tools.js';
 import { render } from './render.js';
+import { animateDashboardCounters } from './ui.js';
 
 export function bindEvents(scope = document) {
   // Navigation — only bind nav items within scope to avoid duplicates
@@ -35,6 +36,7 @@ export function bindEvents(scope = document) {
 
   bindCodeCopyButtons();
   bindCodeToggleButtons();
+  animateDashboardCounters(scope);
 
   // Mouse-tracking glow on cards
   scope.querySelectorAll('.stat-card, .tool-card, .connection-card, .recipe-card, .agent-card, .api-card').forEach(card => {
