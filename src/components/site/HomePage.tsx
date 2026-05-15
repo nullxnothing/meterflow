@@ -303,9 +303,9 @@ export function HomePage() {
         .to(surfaceSection, { autoAlpha: 0, y: -72, scale: 0.955, pointerEvents: "none", duration: 0.14, ease: "none" }, 0.38)
         .to(logoSection, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: "auto", duration: 0.18, ease: "none" }, 0.38)
         .to(stage, { scale: 1, y: 0, duration: 0.28, ease: "none" }, 0.4)
-        .to(logoSection, { "--mf-logo-scroll-turn": 1, duration: 0.16, ease: "none" }, 0.38)
-        .to(logoSection, { "--mf-logo-morph": 1, duration: 0.16, ease: "none" }, 0.52)
-        .to(logoSection, { "--mf-logo-scroll-turn": 2, duration: 0.22, ease: "none" }, 0.62)
+        .to(logoSection, { "--mf-logo-scroll-turn": 1, duration: 0.24, ease: "none" }, 0.42)
+        .to(logoSection, { "--mf-logo-morph": 1, duration: 0.34, ease: "none" }, 0.55)
+        .to(logoSection, { "--mf-logo-scroll-turn": 2, duration: 0.30, ease: "none" }, 0.66)
         .to(logoSection, { "--mf-x402-sweep": 1, duration: 0.46, ease: "none" }, 0.38)
         .to(copy, { autoAlpha: 1, y: 0, duration: 0.2, ease: "none" }, 0.42);
 

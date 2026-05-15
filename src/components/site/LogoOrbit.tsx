@@ -13,6 +13,16 @@ type DragState = {
   velocityY: number;
 };
 
+type OpacityTarget = {
+  material: THREE.Material;
+  baseOpacity: number;
+};
+
+type LogoOrbitProps = {
+  className?: string;
+  mode?: "scroll" | "recording";
+};
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -113,6 +123,7 @@ function assignStyledMaterials(model: THREE.Object3D, materialStore: Set<THREE.M
       const next = styledMaterial(material.name || "pearl");
       next.transparent = true;
       next.opacity = 1;
+      next.userData.baseOpacity = next.opacity;
       next.depthWrite = true;
       materialStore.add(next);
       return next;
@@ -128,6 +139,7 @@ function assignStyledMaterials(model: THREE.Object3D, materialStore: Set<THREE.M
 
     const blueEdge = mesh.clone(false);
     const blueMaterial = blueGlassMaterial(0.72);
+    blueMaterial.userData.baseOpacity = blueMaterial.opacity;
     blueEdge.name = `${mesh.name || "x402"}_blue_edge`;
     blueEdge.material = blueMaterial;
     blueEdge.geometry = mesh.geometry;
@@ -138,6 +150,7 @@ function assignStyledMaterials(model: THREE.Object3D, materialStore: Set<THREE.M
 
     const deepSide = mesh.clone(false);
     const sideMaterial = deepSideMaterial(0.86);
+    sideMaterial.userData.baseOpacity = sideMaterial.opacity;
     deepSide.name = `${mesh.name || "x402"}_deep_side`;
     deepSide.material = sideMaterial;
     deepSide.geometry = mesh.geometry;
@@ -162,21 +175,55 @@ function centerAndScale(model: THREE.Object3D, targetSize: number) {
   return scale;
 }
 
-function setModelOpacity(model: THREE.Object3D | null, opacity: number) {
-  if (!model) return;
-  model.visible = opacity > 0.01;
+function collectOpacityTargets(model: THREE.Object3D, targets: OpacityTarget[]) {
+  targets.length = 0;
   model.traverse((object) => {
     if (!isMesh(object)) return;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     materials.forEach((material) => {
-      material.opacity = opacity;
-      material.transparent = opacity < 0.995;
-      material.depthWrite = opacity > 0.72;
+      targets.push({
+        material,
+        baseOpacity: typeof material.userData.baseOpacity === "number" ? material.userData.baseOpacity : material.opacity,
+      });
     });
   });
 }
 
-export function LogoOrbit() {
+function setCachedModelOpacity(model: THREE.Object3D | null, targets: OpacityTarget[], opacity: number) {
+  if (!model) return;
+  model.visible = opacity > 0.01;
+  targets.forEach(({ material, baseOpacity }) => {
+    const nextOpacity = baseOpacity * opacity;
+    material.opacity = nextOpacity;
+    material.transparent = nextOpacity < 0.995;
+    material.depthWrite = nextOpacity > 0.72;
+  });
+}
+
+function timelineTween(progress: number, start: number, duration: number, from: number, to: number) {
+  const eased = smoothstep(0, 1, (progress - start) / duration);
+  return from + (to - from) * eased;
+}
+
+function recordingPlayhead(elapsed: number) {
+  const cycle = 11.2;
+  const phase = elapsed % cycle;
+  if (phase < 1.1) return 0;
+  if (phase < 4.7) return smoothstep(0, 1, (phase - 1.1) / 3.6);
+  if (phase < 6.2) return 1;
+  if (phase < 9.8) return 1 - smoothstep(0, 1, (phase - 6.2) / 3.6);
+  return 0;
+}
+
+function recordingMotion(elapsed: number) {
+  const progress = recordingPlayhead(elapsed);
+  return {
+    scrollTurn: timelineTween(progress, 0.42, 0.24, 0, 1) + timelineTween(progress, 0.66, 0.30, 0, 1),
+    morph: timelineTween(progress, 0.55, 0.34, 0, 1),
+  };
+}
+
+export function LogoOrbit({ className, mode = "scroll" }: LogoOrbitProps = {}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState>({ active: false, lastX: 0, lastY: 0, velocityX: 0, velocityY: 0 });
   const [inView, setInView] = useState(false);
@@ -240,6 +287,8 @@ export function LogoOrbit() {
 
     const loader = new GLTFLoader();
     const materials = new Set<THREE.Material>();
+    const primaryOpacityTargets: OpacityTarget[] = [];
+    const targetOpacityTargets: OpacityTarget[] = [];
     let primaryModel: THREE.Object3D | null = null;
     let targetModel: THREE.Object3D | null = null;
     let disposed = false;
@@ -263,13 +312,15 @@ export function LogoOrbit() {
     loadModel(PRIMARY_MODEL_URL, 4.2, (model) => {
         if (disposed) return;
         primaryModel = model;
+        collectOpacityTargets(model, primaryOpacityTargets);
       });
 
     loadModel(TARGET_MODEL_URL, 4.2, (model) => {
       if (disposed) return;
       targetModel = model;
       targetModel.rotation.y = -Math.PI * 0.10;
-      setModelOpacity(targetModel, 0);
+      collectOpacityTargets(model, targetOpacityTargets);
+      setCachedModelOpacity(targetModel, targetOpacityTargets, 0);
     }, { layeredTarget: true });
 
     const resize = () => {
@@ -322,6 +373,7 @@ export function LogoOrbit() {
     let raf = 0;
     let rendering = false;
     let last = performance.now();
+    const startedAt = performance.now();
     const tick = (now: number) => {
       if (!rendering) {
         raf = 0;
@@ -330,22 +382,30 @@ export function LogoOrbit() {
 
       const delta = Math.min(0.035, (now - last) / 1000);
       last = now;
-      const scrollTurn = Number.parseFloat(hostStyles.getPropertyValue("--mf-logo-scroll-turn")) || 0;
-      const morph = clamp(Number.parseFloat(hostStyles.getPropertyValue("--mf-logo-morph")) || 0, 0, 1);
+      const recordingElapsed = (now - startedAt) / 1000;
+      const motion = mode === "recording" ? recordingMotion(recordingElapsed) : undefined;
+      const scrollTurn = motion?.scrollTurn ?? (Number.parseFloat(hostStyles.getPropertyValue("--mf-logo-scroll-turn")) || 0);
+      const morph = motion?.morph ?? clamp(Number.parseFloat(hostStyles.getPropertyValue("--mf-logo-morph")) || 0, 0, 1);
       const scrollRotationY = scrollTurn * Math.PI * 2;
-      const targetReveal = smoothstep(0.10, 0.78, morph);
-      const primaryFade = smoothstep(0.28, 0.92, morph);
-      const overlapGlow = Math.sin(smoothstep(0.08, 0.90, morph) * Math.PI);
+      const scrollDriven = mode === "recording" || scrollTurn > 0.01 || morph > 0.01;
+      const primaryFade = smoothstep(0.22, 0.62, morph);
+      const targetReveal = smoothstep(0.58, 0.98, morph);
+      const handoff = smoothstep(0.48, 0.78, morph);
+      const overlapGlow = Math.sin(handoff * Math.PI);
 
-      setModelOpacity(primaryModel, 1 - primaryFade);
-      setModelOpacity(targetModel, targetReveal);
+      setCachedModelOpacity(primaryModel, primaryOpacityTargets, 1 - primaryFade);
+      setCachedModelOpacity(targetModel, targetOpacityTargets, targetReveal);
 
       if (primaryModel) {
         primaryModel.scale.setScalar(primaryModel.userData.baseScale * (1 - primaryFade * 0.12));
+        primaryModel.position.x = -primaryFade * 0.16;
+        primaryModel.position.z = -primaryFade * 0.06;
         primaryModel.rotation.z = primaryFade * 0.045;
       }
       if (targetModel) {
         targetModel.scale.setScalar(targetModel.userData.baseScale * (0.96 + targetReveal * 0.08));
+        targetModel.position.x = (1 - targetReveal) * 0.18;
+        targetModel.position.z = (1 - targetReveal) * -0.05;
         targetModel.rotation.y = -Math.PI * 0.10 * (1 - targetReveal);
         targetModel.rotation.z = -0.035 * (1 - targetReveal);
       }
@@ -354,17 +414,25 @@ export function LogoOrbit() {
       morphGlow.distance = 8 + overlapGlow * 3;
 
       if (!reducedMotion) {
-        if (!dragRef.current.active) {
-          const idleSpin = scrollTurn > 0.01 || morph > 0.01 ? 0 : 0.18;
+        if (!dragRef.current.active && !scrollDriven) {
+          const idleSpin = 0.18;
           targetRotation.y += (idleSpin + Math.abs(dragRef.current.velocityX) * 1.8) * delta;
           targetRotation.x += dragRef.current.velocityY * delta;
           dragRef.current.velocityX *= 0.92;
           dragRef.current.velocityY *= 0.90;
+        } else if (scrollDriven) {
+          dragRef.current.velocityX = 0;
+          dragRef.current.velocityY = 0;
         }
 
-        rig.rotation.x += (targetRotation.x - rig.rotation.x) * 0.12;
-        rig.rotation.y += (targetRotation.y + scrollRotationY - rig.rotation.y) * 0.12;
-        rig.rotation.z = Math.sin(now * 0.00045) * 0.045;
+        const lockedRotationX = -0.08;
+        const lockedRotationY = scrollRotationY;
+        const nextRotationX = scrollDriven ? lockedRotationX : targetRotation.x;
+        const nextRotationY = scrollDriven ? lockedRotationY : targetRotation.y + scrollRotationY;
+
+        rig.rotation.x += (nextRotationX - rig.rotation.x) * 0.12;
+        rig.rotation.y += (nextRotationY - rig.rotation.y) * 0.12;
+        rig.rotation.z = scrollDriven ? 0 : Math.sin(now * 0.00045) * 0.045;
       } else {
         rig.rotation.y = scrollRotationY;
       }
@@ -441,10 +509,10 @@ export function LogoOrbit() {
       });
       renderer.dispose();
     };
-  }, [inView]);
+  }, [inView, mode]);
 
   return (
-    <div className="mf-logo-orbit" ref={hostRef}>
+    <div className={["mf-logo-orbit", className].filter(Boolean).join(" ")} ref={hostRef}>
       {failed && <img src="/assets/brand/meterflow-mark.svg" alt="" className="mf-logo-orbit__fallback" />}
     </div>
   );

@@ -13,6 +13,8 @@
     { "source": "/registry.html", "destination": "/index.html" },
     { "source": "/roadmap", "destination": "/index.html" },
     { "source": "/token", "destination": "/index.html" },
+    { "source": "/logo-morph", "destination": "/index.html" },
+    { "source": "/logo-morph.html", "destination": "/index.html" },
     { "source": "/buy", "destination": "/site/buy.html" },
     { "source": "/apply", "destination": "/index.html" },
     { "source": "/apply/:path*", "destination": "/index.html" },
