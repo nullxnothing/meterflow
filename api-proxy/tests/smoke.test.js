@@ -5,7 +5,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -432,6 +432,8 @@ describe('Site link integrity', () => {
     assert.ok(home.includes('The control plane for'), 'landing page should lead with agent-commerce positioning');
     assert.ok(home.includes('MPP'), 'landing page should mention MPP payment adapters');
     assert.ok(home.includes('Provider') && home.includes('Apply as provider'), 'landing page provider CTAs should stay focused');
+    assert.ok(readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'HomePage.tsx'), 'utf-8').includes('/assets/brand/zauth-mark.svg'), 'landing page should reference the checked-in Zauth mark');
+    assert.ok(existsSync(resolve(projectRoot, 'public', 'assets', 'brand', 'zauth-mark.svg')), 'Zauth mark asset should be deployed with public assets');
     assert.ok(docs.includes('Wrap Your API In 10 Minutes'), 'docs should include hosted API wrapping guide');
     assert.ok(docs.includes('MPP Payment Rail'), 'docs should explain the MPP adapter layer');
     assert.ok(docs.includes('Agent Spend Control'), 'docs should explain enterprise agent spend controls');
