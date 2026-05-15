@@ -2,6 +2,8 @@ import { useLayoutEffect, useState } from "react";
 import { FlickeringFooter } from "@/components/ui/flickering-footer";
 
 const pageFiles: Record<string, string> = {
+  "/dashboard": "/dashboard/index.html",
+  "/dashboard/index.html": "/dashboard/index.html",
   "/status": "/site/status.html",
   "/buy": "/site/buy.html",
   "/apply": "/site/apply.html",
@@ -18,6 +20,7 @@ const activeNavByPath: Record<string, string> = {
   "/roadmap": "roadmap",
   "/apply": "apply",
   "/dashboard": "dashboard",
+  "/dashboard/index.html": "dashboard",
 };
 
 export function legacyPageForPath(pathname: string) {
@@ -39,7 +42,7 @@ function shouldSkipLegacyScript(src: string | null) {
 }
 
 function shouldSkipLegacyStylesheet(href: string) {
-  return href.includes("fonts.googleapis.com");
+  return /fonts[.]googleapis[.]com/.test(href);
 }
 
 export function LegacyPage({ src }: { src: string }) {

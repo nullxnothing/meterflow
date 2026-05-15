@@ -130,7 +130,7 @@ export function renderTrading() {
   const isTradingTier = STATE.tier === 'Operator' || STATE.tier === 'Architect' || STATE.tier === 'Alpha';
 
   if (!isTradingTier) {
-    return `<div class="bot-empty"><div class="bot-empty-icon">/</div><div>Trade Bot requires <strong>Operator</strong> tier or an approved agent budget.</div><div style="margin-top:8px;font-size:10px;color:var(--text-muted);">Trading routes are high-risk metered workflows with strict policy controls.</div></div>`;
+    return `<div class="bot-empty"><div class="bot-empty-icon">/</div><div>Trade Bot requires <strong>Operator</strong> tier or an approved agent budget.</div><div class="u-text-mono-xs u-mt-2">Trading routes are high-risk metered workflows with strict policy controls.</div></div>`;
   }
 
   setTimeout(() => startBotPolling(), 50);
@@ -151,7 +151,7 @@ export function renderTrading() {
         ${w ? `
           <div class="bot-card">
             <div class="bot-card-title">Wallet</div>
-            <div class="bot-wallet-addr" onclick="copyText('${w.publicKey}')" title="Click to copy address" style="cursor:pointer;">
+            <div class="bot-wallet-addr u-clickable" onclick="copyText('${w.publicKey}')" title="Click to copy address">
               ${w.publicKey.slice(0, 6)}...${w.publicKey.slice(-4)}
               <span class="copy-inline">COPY</span>
             </div>
@@ -165,8 +165,8 @@ export function renderTrading() {
         ` : `
           <div class="bot-card">
             <div class="bot-card-title">Wallet</div>
-            <div style="text-align:center;padding:12px 0;">
-              <button class="bot-form-submit" onclick="initTradingWallet()" style="font-size:10px;padding:10px 16px;">Create Burner Wallet</button>
+            <div class="u-center-compact">
+              <button class="bot-form-submit bot-form-submit--compact" onclick="initTradingWallet()">Create Burner Wallet</button>
             </div>
           </div>
         `}
@@ -201,7 +201,7 @@ export function renderTrading() {
         <div class="bot-card">
           <div class="bot-card-title">Safety <span class="badge ${isKilled ? 'badge-stopped' : 'badge-live'}">${isKilled ? 'STOPPED' : 'ACTIVE'}</span></div>
           <div class="bot-pnl ${pnlClass}">PnL: ${pnlStr} SOL</div>
-          <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-bottom:10px;">Trades today: ${safety?.dailyTrades || 0}</div>
+          <div class="u-text-mono-xs u-mb-2">Trades today: ${safety?.dailyTrades || 0}</div>
           ${isKilled
             ? `<button class="bot-resume-btn" onclick="botResume()">RESUME TRADING</button>`
             : `<button class="bot-kill-btn" onclick="botKill()">KILL SWITCH</button>`

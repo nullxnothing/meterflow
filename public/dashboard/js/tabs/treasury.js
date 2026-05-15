@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { STATE } from '../state.js';
+import { renderEmptyState, renderSkeletonCards, renderSkeletonTable } from '../ui.js';
 
 const HEALTH_TIERS = [
   { key: 'surplus',  label: 'Surplus',  multiplier: '1.5x', desc: 'Settlement buffer exceeds 60-day runway. Extra test capacity available.' },
@@ -11,11 +12,6 @@ const HEALTH_TIERS = [
   { key: 'critical', label: 'Critical', multiplier: '0.3x', desc: 'Runway below 14 days. Only core routes stay active.' },
   { key: 'empty', label: 'Empty', multiplier: '1.0x', desc: 'Settlement wallet is configured, but no USDC/SOL balance is visible on-chain.' },
 ];
-
-const STATUS_COLORS = {
-  surplus: 'var(--green)', healthy: 'var(--accent)', cautious: '#febc2e',
-  critical: 'var(--red)', empty: 'var(--text-muted)', unknown: 'var(--text-muted)',
-};
 
 function fmtSol(val) {
   return val > 0 ? val.toFixed(4) : '0';
@@ -32,10 +28,10 @@ function truncateWallet(addr) {
 
 export function renderTreasury() {
   const t = STATE.treasury;
-  const statusColor = STATUS_COLORS[t.healthStatus] || STATUS_COLORS.unknown;
   const wallet = t.wallet || '';
   const isFullWallet = wallet.length > 20;
   const solscanUrl = isFullWallet ? `https://solscan.io/account/${wallet}` : '#';
+  const isLoading = t.healthStatus === 'unknown' && !t.treasuryBalanceUsd && !t.treasuryBalanceSol && !t.treasuryBalanceUsdc;
 
   return `
     <div class="page-header">
@@ -43,15 +39,37 @@ export function renderTreasury() {
       <p class="page-sub">On-chain wallet context for settlement, provider funding, gateway costs, and control-plane operations.</p>
     </div>
 
-    ${renderBalanceCards(t, statusColor)}
-    ${renderFeeDistribution()}
-    ${renderWalletVerify(wallet, isFullWallet, solscanUrl)}
-    ${renderHealthTable(t, statusColor)}
-    ${renderMultiplierImpact(t)}
+    ${isLoading ? renderTreasuryLoading() : `
+      ${renderBalanceCards(t)}
+      ${renderFeeDistribution()}
+      ${renderWalletVerify(wallet, isFullWallet, solscanUrl)}
+      ${renderHealthTable(t)}
+      ${renderMultiplierImpact(t)}
+    `}
   `;
 }
 
-function renderBalanceCards(t, statusColor) {
+function renderTreasuryLoading() {
+  return `
+    <div class="stats-row">${renderSkeletonCards(6)}</div>
+    <div class="section">
+      <div class="section-title">On-Chain Verification</div>
+      ${renderEmptyState({
+        variant: 'treasury',
+        title: 'Settlement wallet is syncing',
+        body: 'Balances and route capacity appear here after the aggregate status request returns.',
+        ctaLabel: 'Refresh status',
+        action: 'location.reload()',
+      })}
+    </div>
+    <div class="section">
+      <div class="section-title">Buffer Status Tiers</div>
+      ${renderSkeletonTable(4, 5)}
+    </div>
+  `;
+}
+
+function renderBalanceCards(t) {
   const priceDisplay = t.solPrice > 0 ? '$' + t.solPrice.toFixed(2) : '—';
   return `
     <div class="stats-row">
@@ -67,7 +85,7 @@ function renderBalanceCards(t, statusColor) {
       </div>
       <div class="stat-card">
         <div class="label">Buffer Status</div>
-        <div class="value" style="color:${statusColor};text-transform:uppercase;">${t.healthStatus}</div>
+        <div class="value treasury-status-value treasury-status-value--${t.healthStatus || 'unknown'}">${t.healthStatus}</div>
         <div class="sub">multiplier: ${t.multiplier}x</div>
       </div>
       <div class="stat-card">
@@ -96,27 +114,27 @@ function renderFeeDistribution() {
       <div class="treasury-fee-card">
         <div class="fee-bar-container">
           <div class="fee-bar">
-            <div class="fee-segment treasury-seg" style="width:50%"><span>50%</span></div>
-            <div class="fee-segment dev-seg" style="width:40%"><span>40%</span></div>
-            <div class="fee-segment community-seg" style="width:10%"><span>10%</span></div>
+            <div class="fee-segment treasury-seg fee-segment--provider"><span>50%</span></div>
+            <div class="fee-segment dev-seg fee-segment--ops"><span>40%</span></div>
+            <div class="fee-segment community-seg fee-segment--builder"><span>10%</span></div>
           </div>
           <div class="fee-legend">
             <div class="fee-legend-item">
-              <div class="fee-legend-dot" style="background:var(--accent)"></div>
+              <div class="fee-legend-dot fee-legend-dot--provider"></div>
               <div>
                 <div class="fee-legend-label">Provider Costs</div>
                 <div class="fee-legend-desc">Funds provider routes, gateway verification, and upstream service costs</div>
               </div>
             </div>
             <div class="fee-legend-item">
-              <div class="fee-legend-dot" style="background:var(--text-dim)"></div>
+              <div class="fee-legend-dot fee-legend-dot--ops"></div>
               <div>
                 <div class="fee-legend-label">Meterflow Ops</div>
                 <div class="fee-legend-desc">Gateway infrastructure, receipt storage, monitoring, and maintenance</div>
               </div>
             </div>
             <div class="fee-legend-item">
-              <div class="fee-legend-dot" style="background:var(--green)"></div>
+              <div class="fee-legend-dot fee-legend-dot--builder"></div>
               <div>
                 <div class="fee-legend-label">Builder Programs</div>
                 <div class="fee-legend-desc">Credits, integrations, bounties, and endpoint onboarding</div>
@@ -148,12 +166,12 @@ function renderWalletVerify(wallet, isFullWallet, solscanUrl) {
   `;
 }
 
-function renderHealthTable(t, statusColor) {
+function renderHealthTable(t) {
   const rows = HEALTH_TIERS.map(h => {
     const isCurrent = h.key === t.healthStatus;
     return `
       <tr class="${isCurrent ? 'health-row-active' : ''}">
-        <td><span class="health-badge" style="background:${STATUS_COLORS[h.key]}">${h.label}</span></td>
+        <td><span class="health-badge health-badge--${h.key}">${h.label}</span></td>
         <td class="mono">${h.multiplier}</td>
         <td>${h.desc}</td>
         <td>${isCurrent ? '<span class="health-current">CURRENT</span>' : ''}</td>

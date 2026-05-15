@@ -30,6 +30,9 @@
 .treasury-seg { background: var(--accent); }
 .dev-seg { background: var(--text-dim); }
 .community-seg { background: var(--green); }
+.fee-segment--provider { width: 50%; }
+.fee-segment--ops { width: 40%; }
+.fee-segment--builder { width: 10%; }
 
 .fee-legend { display: flex; flex-direction: column; gap: 12px; }
 
@@ -46,6 +49,10 @@
   flex-shrink: 0;
   margin-top: 3px;
 }
+
+.fee-legend-dot--provider { background: var(--accent); }
+.fee-legend-dot--ops { background: var(--text-dim); }
+.fee-legend-dot--builder { background: var(--green); }
 
 .fee-legend-label {
   font-family: var(--font-mono);
@@ -460,6 +467,24 @@
   font-weight: 600;
   color: var(--bg);
 }
+
+.health-badge--surplus { background: var(--green); }
+.health-badge--healthy { background: var(--accent); }
+.health-badge--cautious { background: var(--warm-bright); }
+.health-badge--critical { background: var(--red); }
+.health-badge--empty,
+.health-badge--unknown { background: var(--text-muted); }
+
+.treasury-status-value {
+  text-transform: uppercase;
+}
+
+.treasury-status-value--surplus { color: var(--green) !important; }
+.treasury-status-value--healthy { color: var(--accent) !important; }
+.treasury-status-value--cautious { color: var(--warm-bright) !important; }
+.treasury-status-value--critical { color: var(--red) !important; }
+.treasury-status-value--empty,
+.treasury-status-value--unknown { color: var(--text-muted) !important; }
 
 .health-current {
   font-family: var(--font-mono);

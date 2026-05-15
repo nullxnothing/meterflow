@@ -5,7 +5,7 @@
 import { STATE, API_BASE } from './state.js';
 import { loadSession } from './session.js';
 import { startStatusPolling, fetchAggregate, fetchTreasury, fetchProviders, fetchOAuthStatus, fetchProviderStatuses } from './polling.js';
-import { render } from './render.js?v=agent-checkout';
+import { render } from './render.js?v=v20-storm-steel';
 import { showToast } from './actions.js';
 import { api } from './api.js';
 import { loadVotes } from './votes.js';

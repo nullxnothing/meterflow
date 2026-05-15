@@ -64,7 +64,7 @@ function renderHero() {
         <div class="holder-tier-name tier-signal">${formatUsd(checkout?.budgetUsd ?? 0.05)}</div>
         <div class="holder-tier-balance">${checkout ? `${formatUsd(checkout.spentUsd)} spent · ${formatUsd(checkout.remainingUsd)} left` : 'ready to spend on data'}</div>
         <div class="holder-progress-track">
-          <div class="holder-progress-fill" style="width:${checkout ? Math.min(100, (checkout.spentUsd / checkout.budgetUsd) * 100) : 0}%"></div>
+          <div class="holder-progress-fill" style="--progress-value:${checkout ? Math.min(100, (checkout.spentUsd / checkout.budgetUsd) * 100) : 0}%"></div>
         </div>
         <div class="holder-tier-next">USDC checkout · receipt per call</div>
       </div>

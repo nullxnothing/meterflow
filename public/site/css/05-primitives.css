@@ -192,6 +192,235 @@ textarea::placeholder {
   opacity: 1;
 }
 
+.u-hidden {
+  display: none !important;
+}
+
+.u-invisible {
+  visibility: hidden !important;
+}
+
+.u-center-section {
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+.u-center-compact {
+  padding-block: var(--space-3);
+  text-align: center;
+}
+
+.u-spinner-wrap {
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.u-spinner-wrap .image-spinner {
+  margin-inline: auto;
+}
+
+.u-lookup-error {
+  padding: var(--space-3);
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+}
+
+.u-full-width {
+  width: 100% !important;
+}
+
+.u-stack-xs {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.u-stack-sm {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pane-row.u-stack-sm {
+  display: grid;
+  align-items: stretch;
+}
+
+.u-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.u-inline-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.u-max-compact {
+  max-width: 200px;
+}
+
+.u-copy-measure {
+  max-width: 600px;
+  line-height: var(--leading-copy);
+}
+
+.u-mt-1 { margin-top: var(--space-1) !important; }
+.u-mt-2 { margin-top: var(--space-2) !important; }
+.u-mt-3 { margin-top: var(--space-3) !important; }
+.u-mt-4 { margin-top: var(--space-4) !important; }
+.u-mt-8 { margin-top: var(--space-8) !important; }
+.u-mb-6 { margin-bottom: var(--space-6) !important; }
+.u-mb-2 { margin-bottom: var(--space-2) !important; }
+.u-pt-0 { padding-top: 0 !important; }
+
+.u-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.u-text-warning {
+  color: var(--warm) !important;
+}
+
+.u-text-danger {
+  color: var(--red) !important;
+}
+
+.u-text-mono-sm {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  line-height: var(--leading-copy);
+}
+
+.u-text-mono-xs {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-xs);
+}
+
+.u-clickable {
+  cursor: pointer;
+}
+
+.u-overflow-x-auto {
+  overflow-x: auto;
+}
+
+.u-semibold {
+  font-weight: var(--weight-semibold);
+}
+
+.u-section-title-spaced {
+  margin-top: var(--space-6);
+}
+
+.u-equal-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.u-equal-actions > * {
+  flex: 1;
+}
+
+.u-control-label {
+  color: var(--text-muted) !important;
+  font-family: var(--font-mono);
+  font-size: var(--type-label) !important;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label) !important;
+  text-transform: uppercase;
+}
+
+.u-error-panel {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  padding: var(--space-6);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+}
+
+.u-provider-icon {
+  border-radius: var(--radius-xs);
+}
+
+.u-provider-icon-lg {
+  border-radius: var(--radius-sm);
+}
+
+.u-image-result {
+  max-width: 512px;
+}
+
+.u-generated-image {
+  max-width: 100%;
+  margin-block: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.u-action-full {
+  width: 100% !important;
+  padding: var(--space-3) !important;
+}
+
+.u-action-full-sm {
+  width: 100% !important;
+  padding: var(--space-2) !important;
+}
+
+.u-connect-button {
+  min-height: 52px;
+}
+
+.bot-form-submit--compact {
+  padding: var(--space-2) var(--space-4) !important;
+  font-size: var(--type-label) !important;
+}
+
+.bot-form-submit--success {
+  background: var(--green) !important;
+}
+
+.bot-form-submit--danger {
+  background: var(--red) !important;
+}
+
+.u-progress {
+  height: var(--space-1);
+  overflow: hidden;
+  border-radius: var(--radius-xs);
+  background: var(--divider);
+}
+
+.u-progress__fill {
+  display: block;
+  width: var(--progress-value, 0%);
+  height: 100%;
+  background: var(--gradient-progress);
+}
+
+.u-progress__fill--warning {
+  background: var(--warm);
+}
+
+.u-bar-chart {
+  display: flex;
+  height: 140px;
+  align-items: flex-end;
+  gap: 3px;
+  padding: 18px var(--space-4) var(--space-3);
+}
+
+.u-bar-chart__bar {
+  flex: 1;
+  height: var(--bar-value, 0%);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+}
+
 table {
   width: 100%;
   border-collapse: separate;

@@ -13,35 +13,35 @@
     const style = document.createElement('style');
     style.textContent = `
       /* ─── Section polish ─── */
-      .hero-headline,.section-title,.cta-title{letter-spacing:-.035em}
-      .hero-sub,.section-sub{color:rgba(225,228,236,.62)!important}
-      .mf-load{opacity:0;transform:translateY(18px);filter:blur(6px);transition:opacity .9s cubic-bezier(.2,.65,.3,1),transform .9s cubic-bezier(.2,.65,.3,1),filter .9s cubic-bezier(.2,.65,.3,1);will-change:transform,opacity,filter}
+      .hero-headline,.section-title,.cta-title{letter-spacing:var(--tracking-normal)}
+      .hero-sub,.section-sub{color:var(--text-dim)!important}
+      .mf-load{opacity:0;transform:translateY(var(--space-5));filter:blur(6px);transition:opacity var(--duration-enter) var(--ease-standard),transform var(--duration-enter) var(--ease-standard),filter var(--duration-enter) var(--ease-standard);will-change:transform,opacity,filter}
       .mf-load.mf-in{opacity:1;transform:none;filter:blur(0)}
 
       /* ─── Integration marquee ─── */
-      .integration-logo-marquee{position:relative;overflow:hidden;padding:46px 0 56px;border-top:1px solid rgba(255,255,255,.045);border-bottom:1px solid rgba(255,255,255,.045);background:radial-gradient(circle at 50% 0%,rgba(var(--accent-rgb),.08),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.006))}
+      .integration-logo-marquee{position:relative;overflow:hidden;padding:var(--space-12) 0 var(--space-16);border-top:1px solid var(--divider);border-bottom:1px solid var(--divider);background:radial-gradient(circle at 50% 0%,rgba(var(--accent-rgb),.08),transparent 42%),linear-gradient(180deg,rgba(var(--white-rgb),.018),rgba(var(--white-rgb),.006))}
       .integration-logo-marquee:before,.integration-logo-marquee:after{content:'';position:absolute;z-index:2;top:0;bottom:0;width:min(18vw,220px);pointer-events:none}
-      .integration-logo-marquee:before{left:0;background:linear-gradient(90deg,var(--bg,#08090b),transparent)}
-      .integration-logo-marquee:after{right:0;background:linear-gradient(270deg,var(--bg,#08090b),transparent)}
+      .integration-logo-marquee:before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+      .integration-logo-marquee:after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
       .integration-marquee-viewport{overflow:hidden;width:100%}
-      .integration-marquee-track{display:flex;align-items:center;gap:28px;width:max-content;animation:meterflowIntegrationMarquee 34s linear infinite;will-change:transform}
+      .integration-marquee-track{display:flex;align-items:center;gap:var(--space-7);width:max-content;animation:meterflowIntegrationMarquee 34s linear infinite;will-change:transform}
       .integration-logo-marquee:hover .integration-marquee-track{animation-play-state:paused}
-      .integration-tile{width:154px;min-width:154px;display:grid;justify-items:center;gap:14px;text-decoration:none;color:inherit;opacity:.72;transition:opacity .22s ease,transform .22s ease}
+      .integration-tile{width:154px;min-width:154px;display:grid;justify-items:center;gap:var(--space-3);text-decoration:none;color:inherit;opacity:.72;transition:opacity var(--duration-slow) ease,transform var(--duration-slow) ease}
       .integration-tile:hover{opacity:1;transform:translateY(-2px)}
-      .integration-icon-shell{width:74px;height:74px;display:grid;place-items:center;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018)),#15161b;border:1px solid rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 20px 48px rgba(0,0,0,.32)}
+      .integration-icon-shell{width:74px;height:74px;display:grid;place-items:center;border-radius:var(--radius-xl);background:var(--panel-bg);border:1px solid var(--panel-border);box-shadow:var(--shadow-card)}
       .integration-icon-shell img{width:42px;height:42px;object-fit:contain;border-radius:12px;filter:saturate(1.08) contrast(1.05)}
-      .integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text-muted,#7b8190);letter-spacing:-.01em}
+      .integration-name{max-width:154px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--type-sm);color:var(--text-muted);letter-spacing:var(--tracking-normal)}
       @keyframes meterflowIntegrationMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
       /* ─── Thesis section: fires the scramble once when in view, no scroll pinning ─── */
       .mf-text-reveal{position:relative;padding:clamp(80px,12vh,128px) 24px}
       .mf-text-reveal-sticky{margin:0 auto;width:100%;max-width:1080px;text-align:left}
-      .mf-reveal-eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--accent,#4f9cff);margin-bottom:28px;display:inline-flex;align-items:center;gap:10px}
+      .mf-reveal-eyebrow{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:var(--tracking-caps);font-size:var(--type-label);color:var(--accent);margin-bottom:var(--space-7);display:inline-flex;align-items:center;gap:var(--space-3)}
       .mf-reveal-eyebrow::before{content:'';width:24px;height:1px;background:currentColor;opacity:.6}
-      .mf-reveal-words{max-width:1040px;margin:0;font-family:var(--font-display);font-size:clamp(28px,4.6vw,60px);line-height:1.14;font-weight:600;letter-spacing:-.035em;color:rgba(255,255,255,.14)}
-      .mf-word{display:inline-block;margin:.02em .14em .02em 0;color:rgba(255,255,255,.14)}
-      .mf-text-reveal.mf-fallback .mf-word.lit{color:#fff}
-      .mf-text-reveal.mf-fallback .mf-word.accent.lit{color:var(--accent,#4f9cff);text-shadow:0 0 22px rgba(var(--accent-rgb),.45)}
+      .mf-reveal-words{max-width:1040px;margin:0;font-family:var(--font-display);font-size:var(--type-section-title);line-height:var(--leading-heading);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-normal);color:rgba(var(--white-rgb),.14)}
+      .mf-word{display:inline-block;margin:.02em .14em .02em 0;color:rgba(var(--white-rgb),.14)}
+      .mf-text-reveal.mf-fallback .mf-word.lit{color:var(--white)}
+      .mf-text-reveal.mf-fallback .mf-word.accent.lit{color:var(--accent);text-shadow:0 0 22px rgba(var(--accent-rgb),.45)}
       .mf-word em{font-family:var(--font-serif);font-style:italic;font-weight:400}
 
       @media(prefers-reduced-motion:reduce){.integration-marquee-track{animation:none;flex-wrap:wrap;justify-content:center;width:100%}.mf-load{opacity:1;transform:none;filter:none}.mf-launch-glow{animation:none}}
@@ -784,7 +784,7 @@
     const SHUTTER_INTERVAL_MS = 70;     // gap between flips
 
     function shutterToWhite(el, accentColor) {
-      const brightWordColor = 'rgba(255,255,255,1)';
+      const brightWordColor = 'var(--white)';
       let flip = 0;
       const tick = () => {
         flip++;
@@ -806,7 +806,7 @@
     }
 
     function fireScrambleSequence(wordEls, accentColor, accentGlow) {
-      const brightWordColor = 'rgba(255,255,255,1)';
+      const brightWordColor = 'var(--white)';
       wordEls.forEach((el, i) => {
         setTimeout(() => {
           const accent = el.classList.contains('accent');
@@ -837,20 +837,20 @@
 
       // Reduced-motion users: just show the words at full color, no scramble.
       if (reducedMotion) {
-        const accentFallback = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
+        const accentFallback = resolveCssColor('var(--accent)', 'var(--accent)');
         wordEls.forEach((el) => {
           const accent = el.classList.contains('accent');
-          el.style.color = accent ? accentFallback : 'rgba(255,255,255,1)';
+          el.style.color = accent ? accentFallback : 'var(--white)';
         });
         return;
       }
 
-      const accentColor = resolveCssColor('var(--accent, #4f9cff)', '#4f9cff');
+      const accentColor = resolveCssColor('var(--accent)', 'var(--accent)');
       const accentGlow = colorWithAlpha(accentColor, 0.45);
 
       // Words start dim and fully opaque — only the scramble + color flip animates.
       wordEls.forEach((el) => {
-        el.style.color = 'rgba(255,255,255,0.22)';
+        el.style.color = 'rgba(var(--white-rgb),0.22)';
         el.style.willChange = 'color';
       });
 

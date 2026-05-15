@@ -8,6 +8,7 @@ import { render } from '../render.js';
 import { showToast } from '../actions.js';
 import { escapeHtml } from '../utils.js';
 import { canManageMeterflow, renderPreviewNotice } from '../gate.js?v=preview-link-2';
+import { renderEmptyState, renderSkeletonCards, renderSkeletonGrid, renderSkeletonTable } from '../ui.js';
 
 const CP = {
   loaded: false,
@@ -18,6 +19,9 @@ const CP = {
   revenue: [],
   mcpTools: [],
   webhooks: [],
+  newReceiptIds: new Set(),
+  lastReceiptIds: new Set(),
+  pollInterval: null,
 };
 
 const PREVIEW_METERS = [
@@ -158,17 +162,42 @@ function renderPaidRoutePanel(locked) {
   `;
 }
 
+function field(label, control, className = '') {
+  return `
+    <label class="cp-field ${className}">
+      <span class="cp-field-label">${escapeHtml(label)}</span>
+      ${control}
+    </label>
+  `;
+}
+
+function pillSelector(label, name, items, className = '') {
+  return `
+    <div class="cp-field cp-pill-field ${className}">
+      <span class="cp-field-label">${escapeHtml(label)}</span>
+      <div class="cp-pill-list" role="group" aria-label="${escapeHtml(label)}">
+        ${items.map(item => `
+          <label class="cp-pill-option">
+            <input type="checkbox" name="${escapeHtml(name)}" value="${escapeHtml(item.value)}" ${item.checked ? 'checked' : ''}>
+            <span>${escapeHtml(item.label)}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderReceiptState(receipt) {
   const meta = receiptStateMeta(receipt);
   return `
-    <div class="receipt-state">
+    <div class="receipt-state" title="${escapeHtml(receipt.error || meta.detail)}">
       <span class="receipt-state-badge ${meta.tone}">${escapeHtml(meta.label)}</span>
       <span class="receipt-state-detail">${escapeHtml(receipt.error || meta.detail)}</span>
     </div>
   `;
 }
 
-function loadControlPlane(force = false) {
+function loadControlPlane(force = false, { silent = false } = {}) {
   if (!canManageMeterflow() || CP.loading || (CP.loaded && !force)) return;
   CP.loading = true;
   Promise.all([
@@ -179,34 +208,73 @@ function loadControlPlane(force = false) {
     api('/v1/mcp-tools'),
     api('/v1/webhooks'),
   ]).then(([meters, receipts, budgets, revenue, mcpTools, webhooks]) => {
+    const nextReceipts = receipts.receipts || [];
+    if (CP.loaded) {
+      const fresh = nextReceipts.filter(r => r.id && !CP.lastReceiptIds.has(r.id));
+      CP.newReceiptIds = new Set(fresh.map(r => r.id));
+      if (fresh.length) {
+        STATE.newReceiptCount += fresh.length;
+        syncReceiptBadge();
+      }
+    }
     CP.meters = meters.meters || [];
-    CP.receipts = receipts.receipts || [];
+    CP.receipts = nextReceipts;
     CP.budgets = budgets.budgets || [];
     CP.revenue = revenue.revenue || [];
     CP.mcpTools = mcpTools.tools || [];
     CP.webhooks = webhooks.webhooks || [];
+    CP.lastReceiptIds = new Set(CP.receipts.map(r => r.id).filter(Boolean));
     CP.loaded = true;
+    startControlPlanePolling();
   }).catch(err => {
     showToast(err.message || 'Could not load Meterflow control plane', true);
   }).finally(() => {
     CP.loading = false;
-    render();
+    if (!silent || STATE.activeTab === 'receipts') render();
   });
 }
 
 function renderLoading(title) {
+  const titleLower = title.toLowerCase();
+  const body = titleLower.includes('receipt')
+    ? renderSkeletonTable(9, 7)
+    : titleLower.includes('webhook') || titleLower.includes('mcp') || titleLower.includes('meter') || titleLower.includes('budget')
+      ? renderSkeletonGrid(titleLower.includes('webhook') ? 3 : 4)
+      : renderSkeletonTable(4, 5);
   return `
     <div class="page-header">
       <h1 class="page-title">${title}</h1>
-      <p class="page-sub">Loading Meterflow control-plane data...</p>
+      <p class="page-sub"><span class="skeleton-line skeleton-line--sentence"></span></p>
     </div>
     <div class="stats-row">
-      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
-      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
-      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
-      <div class="stat-card skeleton"><div class="label">Loading</div><div class="skeleton-value"></div><div class="sub">&nbsp;</div></div>
+      ${renderSkeletonCards(4)}
+    </div>
+    <div class="section">
+      <div class="section-title">${titleLower.includes('receipt') ? 'Payment Ledger' : 'Catalog'}</div>
+      ${body}
     </div>
   `;
+}
+
+function startControlPlanePolling() {
+  if (CP.pollInterval || !canManageMeterflow()) return;
+  CP.pollInterval = setInterval(() => loadControlPlane(true, { silent: true }), 15_000);
+}
+
+function syncReceiptBadge() {
+  document.querySelectorAll('.nav-item[data-tab="receipts"]').forEach(item => {
+    let badge = item.querySelector('.nav-new-count');
+    if (!STATE.newReceiptCount) {
+      badge?.remove();
+      return;
+    }
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'nav-new-count';
+      item.appendChild(badge);
+    }
+    badge.textContent = STATE.newReceiptCount > 9 ? '9+' : String(STATE.newReceiptCount);
+  });
 }
 
 function ensureLoaded(title) {
@@ -240,16 +308,16 @@ export function renderMeters() {
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Create Paid Endpoint</div>
       <div class="tool-config-box hosted-meter-form">
-        <input id="meterTargetUrl" class="bot-form-input" placeholder="https://api.example.com">
-        <input id="meterProviderName" class="bot-form-input" placeholder="Provider name">
-        <input id="meterRoute" class="bot-form-input" placeholder="/mcp/my-route (for local meters)">
-        <select id="meterMethod" class="bot-form-input"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select>
-        <input id="meterUnit" class="bot-form-input" placeholder="request">
-        <input id="meterPrice" class="bot-form-input" placeholder="0.006">
-        <select id="meterStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
-        <select id="meterAuthType" class="bot-form-input"><option value="">No upstream auth</option><option value="bearer">Bearer token</option><option value="header">Custom header</option></select>
-        <input id="meterAuthHeader" class="bot-form-input" placeholder="Header name">
-        <input id="meterAuthValue" class="bot-form-input" placeholder="Upstream auth secret">
+        ${field('Target URL', '<input id="meterTargetUrl" class="bot-form-input" placeholder="https://api.example.com">', 'cp-span-2')}
+        ${field('Provider', '<input id="meterProviderName" class="bot-form-input" placeholder="Provider name">', 'cp-span-2')}
+        ${field('Route', '<input id="meterRoute" class="bot-form-input" placeholder="/mcp/my-route">', 'cp-span-2')}
+        ${field('Method', '<select id="meterMethod" class="bot-form-input"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select>')}
+        ${field('Unit', '<input id="meterUnit" class="bot-form-input" placeholder="request">')}
+        ${field('Price', '<input id="meterPrice" class="bot-form-input" placeholder="0.006">')}
+        ${field('Status', '<select id="meterStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>')}
+        ${field('Auth', '<select id="meterAuthType" class="bot-form-input"><option value="">No upstream auth</option><option value="bearer">Bearer token</option><option value="header">Custom header</option></select>')}
+        ${field('Auth Header', '<input id="meterAuthHeader" class="bot-form-input" placeholder="Header name">')}
+        ${field('Auth Secret', '<input id="meterAuthValue" class="bot-form-input" placeholder="Upstream auth secret">', 'cp-span-2')}
         <button class="btn-sm primary" onclick="createMeterFromDashboard()">Create Hosted Meter</button>
       </div>
     </div>
@@ -257,7 +325,7 @@ export function renderMeters() {
     <div class="section">
       <div class="section-title">Endpoint Catalog</div>
       <div class="tools-grid">
-        ${data.meters.map(meter => {
+        ${data.meters.length ? data.meters.map(meter => {
           const revenue = data.revenue.find(row => row.meterId === meter.id);
           const gatewayUrl = hostedMeterUrl(meter);
           return `
@@ -276,7 +344,13 @@ export function renderMeters() {
               ${!locked && canDeleteMeter(meter) ? `<div class="tool-launch danger" onclick="deleteMeterFromDashboard('${meter.id}')">Delete</div>` : ''}
             </div>
           `;
-        }).join('')}
+        }).join('') : renderEmptyState({
+          variant: 'meters',
+          title: 'No paid endpoints yet',
+          body: 'Create your first meter to turn a route or MCP tool into a priced product.',
+          ctaLabel: 'Create meter',
+          action: "document.getElementById('meterTargetUrl')?.focus()",
+        })}
       </div>
     </div>
   `;
@@ -308,7 +382,7 @@ export function renderReceipts() {
       <div class="stat-card"><div class="label">Needs Review</div><div class="value">${failed + unsettled}</div><div class="sub">failed or unsettled states</div></div>
       <div class="stat-card"><div class="label">Gross</div><div class="value green">${money(gross)}</div><div class="sub">settled USDC</div></div>
     </div>
-    <div class="section">
+    <div class="section receipt-ledger-section">
       <div class="section-title">Payment Ledger</div>
       <div class="receipt-summary-strip">
         <div><span>${verified}</span> settled</div>
@@ -318,10 +392,21 @@ export function renderReceipts() {
       </div>
       <div class="tool-config-box receipt-table-wrap">
         <table class="treasury-table receipt-ledger-table">
+          <colgroup>
+            <col class="receipt-col-time">
+            <col class="receipt-col-state">
+            <col class="receipt-col-route">
+            <col class="receipt-col-payer">
+            <col class="receipt-col-amount">
+            <col class="receipt-col-tx">
+            <col class="receipt-col-response">
+            <col class="receipt-col-id">
+            <col class="receipt-col-action">
+          </colgroup>
           <thead><tr><th>Time</th><th>State</th><th>Route</th><th>Payer</th><th>Amount</th><th>Tx</th><th>Response</th><th>Receipt</th><th></th></tr></thead>
           <tbody>
             ${data.receipts.length ? data.receipts.map(r => `
-              <tr>
+              <tr class="${CP.newReceiptIds.has(r.id) ? 'receipt-row-new' : ''}">
                 <td>${escapeHtml((r.createdAt || '').slice(0, 19).replace('T', ' '))}</td>
                 <td>${renderReceiptState(r)}</td>
                 <td>${escapeHtml(r.route || '—')}</td>
@@ -332,11 +417,18 @@ export function renderReceipts() {
                 <td><span class="mono">${escapeHtml(shortHash(r.id, 8, 4))}</span></td>
                 <td><button class="receipt-row-action" onclick="${locked ? 'openTokenPurchase()' : `viewReceiptDetails('${r.id}')`}">View</button></td>
               </tr>
-            `).join('') : '<tr><td colspan="9">No receipts yet. Run a metered API call to populate this ledger.</td></tr>'}
+            `).join('') : ''}
           </tbody>
         </table>
       </div>
-      <div style="margin-top:12px;">
+      ${data.receipts.length ? '' : renderEmptyState({
+        variant: 'receipts',
+        title: 'No receipts recorded',
+        body: 'Run a metered API call to see payment state, route, payer, amount, and proof here.',
+        ctaLabel: locked ? 'Unlock receipts' : 'Create test quote',
+        action: locked ? 'openTokenPurchase()' : "setTab('meters')",
+      })}
+      <div class="receipt-ledger-actions">
         <button class="btn-sm primary" onclick="${locked ? 'openTokenPurchase()' : 'downloadReceiptsCsv()'}">${locked ? 'Unlock Export' : 'Export CSV'}</button>
       </div>
     </div>
@@ -366,16 +458,16 @@ export function renderWebhooks() {
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Create Webhook</div>
       <div class="tool-config-box webhook-form-grid">
-        <input id="webhookUrl" class="bot-form-input" placeholder="https://example.com/meterflow/events">
-        <select id="webhookEvents" class="bot-form-input" multiple>
-          <option value="receipt.verified" selected>receipt.verified</option>
-          <option value="payment.failed" selected>payment.failed</option>
-          <option value="budget.exhausted">budget.exhausted</option>
-          <option value="webhook.test">webhook.test</option>
-        </select>
-        <input id="webhookSecret" class="bot-form-input" placeholder="optional signing secret">
-        <select id="webhookStatus" class="bot-form-input"><option>active</option><option>paused</option></select>
-        <button class="btn-sm primary" onclick="createWebhookFromDashboard()">Create Webhook</button>
+        ${field('Endpoint URL', '<input id="webhookUrl" class="bot-form-input" placeholder="https://example.com/meterflow/events">', 'cp-span-2')}
+        ${pillSelector('Events', 'webhookEvent', [
+          { value: 'receipt.verified', label: 'receipt.verified', checked: true },
+          { value: 'payment.failed', label: 'payment.failed', checked: true },
+          { value: 'budget.exhausted', label: 'budget.exhausted' },
+          { value: 'webhook.test', label: 'webhook.test' },
+        ], 'cp-span-2')}
+        ${field('Signing Secret', '<input id="webhookSecret" class="bot-form-input" placeholder="optional signing secret">')}
+        ${field('Status', '<select id="webhookStatus" class="bot-form-input"><option>active</option><option>paused</option></select>')}
+        <div class="cp-form-actions"><button class="btn-sm primary" onclick="createWebhookFromDashboard()">Create Webhook</button></div>
       </div>
     </div>
     <div class="section">
@@ -393,7 +485,13 @@ export function renderWebhooks() {
             <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `testWebhookFromDashboard('${webhook.id}')`}">${locked ? 'Unlock' : 'Send Test'}</div>
             ${!locked ? `<div class="tool-launch danger" onclick="deleteWebhookFromDashboard('${webhook.id}')">Delete</div>` : ''}
           </div>
-        `).join('') : '<div class="tool-card"><div class="tool-name">No webhooks yet</div><div class="tool-desc">Create an endpoint to receive signed payment and budget events.</div></div>'}
+        `).join('') : renderEmptyState({
+          variant: 'webhooks',
+          title: 'No delivery endpoints',
+          body: 'Add a webhook to receive signed receipt, payment failure, and budget events.',
+          ctaLabel: 'Add webhook',
+          action: "document.getElementById('webhookUrl')?.focus()",
+        })}
       </div>
     </div>
   `;
@@ -423,13 +521,15 @@ export function renderBudgets() {
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Create Budget</div>
       <div class="tool-config-box budget-form-grid">
-        <input id="budgetName" class="bot-form-input cp-span-2" placeholder="market-research-bot">
-        <input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">
-        <input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">
-        <select id="budgetAllowedMeters" class="bot-form-input cp-span-2" multiple>
-          ${data.meters.map(m => `<option value="${m.id}" ${m.id === 'mtr_mcp_token_risk' ? 'selected' : ''}>${escapeHtml(m.route)}</option>`).join('')}
-        </select>
-        <button class="btn-sm primary cp-span-6" onclick="createBudgetFromDashboard()">Create Budget Policy</button>
+        ${field('Budget Name', '<input id="budgetName" class="bot-form-input" placeholder="market-research-bot">', 'cp-span-2')}
+        ${field('Daily Cap', '<input id="budgetDailyCap" class="bot-form-input" placeholder="12.00">')}
+        ${field('Per-Call Cap', '<input id="budgetPerCallCap" class="bot-form-input" placeholder="0.02">')}
+        ${pillSelector('Allowed Meters', 'budgetAllowedMeter', data.meters.map(m => ({
+          value: m.id,
+          label: m.route,
+          checked: m.id === 'mtr_mcp_token_risk',
+        })), 'cp-span-2')}
+        <div class="cp-form-actions"><button class="btn-sm primary" onclick="createBudgetFromDashboard()">Create Budget Policy</button></div>
       </div>
     </div>
 
@@ -448,7 +548,13 @@ export function renderBudgets() {
             </div>
             ${budget.status === 'active' ? `<div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `revokeBudgetFromDashboard('${budget.id}')`}">${locked ? 'Unlock' : 'Revoke'}</div>` : '<div class="tool-launch">Revoked</div>'}
           </div>
-        `).join('') : '<div class="tool-card"><div class="tool-name">No budgets yet</div><div class="tool-desc">Create a policy to cap agent spend and route access before automation runs.</div></div>'}
+        `).join('') : renderEmptyState({
+          variant: 'budgets',
+          title: 'No agent budgets yet',
+          body: 'Create a policy before automation runs so every agent has a clear spend ceiling.',
+          ctaLabel: 'Create budget',
+          action: "document.getElementById('budgetName')?.focus()",
+        })}
       </div>
     </div>
     <div class="compliance-notice">
@@ -475,10 +581,10 @@ export function renderMcpTools() {
     <div class="section ${locked ? 'preview-disabled' : ''}">
       <div class="section-title">Package Tool</div>
       <div class="tool-config-box mcp-form-grid">
-        <input id="mcpName" class="bot-form-input cp-span-2" placeholder="Token Risk Score">
-        <input id="mcpManifest" class="bot-form-input cp-span-2" placeholder="https://example.com/mcp/manifest.json">
-        <input id="mcpPrice" class="bot-form-input" placeholder="0.006">
-        <select id="mcpStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>
+        ${field('Tool Name', '<input id="mcpName" class="bot-form-input" placeholder="Token Risk Score">', 'cp-span-2')}
+        ${field('Manifest URL', '<input id="mcpManifest" class="bot-form-input" placeholder="https://example.com/mcp/manifest.json">', 'cp-span-2')}
+        ${field('Price', '<input id="mcpPrice" class="bot-form-input" placeholder="0.006">')}
+        ${field('Status', '<select id="mcpStatus" class="bot-form-input"><option>test</option><option>live</option><option>paused</option></select>')}
         <button class="btn-sm primary cp-span-6" onclick="createMcpToolFromDashboard()">Package MCP Tool</button>
       </div>
     </div>
@@ -497,7 +603,13 @@ export function renderMcpTools() {
             <div class="tool-launch" onclick="${locked ? 'openTokenPurchase()' : `copyText('https://meterflow.fun/proxy${escapeHtml(tool.route)}')`}">${locked ? 'Unlock' : 'Copy Gateway'}</div>
             ${!locked ? `<div class="tool-launch danger" onclick="deleteMcpToolFromDashboard('${tool.id}')">Delete</div>` : ''}
           </div>
-        `).join('') : '<div class="tool-card"><div class="tool-name">No MCP tools yet</div><div class="tool-desc">Package a tool to generate a priced hosted gateway path.</div></div>'}
+        `).join('') : renderEmptyState({
+          variant: 'mcp',
+          title: 'No MCP tools packaged',
+          body: 'Package a tool to generate a priced hosted gateway path with receipts and budgets.',
+          ctaLabel: 'Package tool',
+          action: "document.getElementById('mcpName')?.focus()",
+        })}
       </div>
     </div>
   `;
@@ -571,7 +683,8 @@ async function deleteMeterFromDashboard(meterId) {
 
 async function createBudgetFromDashboard() {
   const select = document.getElementById('budgetAllowedMeters');
-  const allowedMeterIds = select ? [...select.selectedOptions].map(opt => opt.value) : [];
+  const checkedMeters = [...document.querySelectorAll('input[name="budgetAllowedMeter"]:checked')].map(input => input.value);
+  const allowedMeterIds = checkedMeters.length ? checkedMeters : (select ? [...select.selectedOptions].map(opt => opt.value) : []);
   try {
     await api('/v1/budgets', {
       method: 'POST',
@@ -697,7 +810,8 @@ async function viewReceiptDetails(receiptId) {
 
 async function createWebhookFromDashboard() {
   const select = document.getElementById('webhookEvents');
-  const events = select ? [...select.selectedOptions].map(opt => opt.value) : [];
+  const checkedEvents = [...document.querySelectorAll('input[name="webhookEvent"]:checked')].map(input => input.value);
+  const events = checkedEvents.length ? checkedEvents : (select ? [...select.selectedOptions].map(opt => opt.value) : []);
   try {
     await api('/v1/webhooks', {
       method: 'POST',

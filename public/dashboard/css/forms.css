@@ -3,16 +3,16 @@
 .cp-form {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
   width: 100%;
 }
 
-.bot-form-row { display: flex; flex-direction: column; gap: 4px; }
+.bot-form-row { display: flex; flex-direction: column; gap: var(--space-1); }
 
 .hosted-meter-form {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
   white-space: normal;
 }
 
@@ -20,7 +20,7 @@
 .mcp-form-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
   white-space: normal;
 }
 
@@ -39,7 +39,7 @@
 
 .hosted-meter-form .btn-sm.primary {
   grid-column: span 6;
-  height: 44px;
+  height: var(--size-control-md);
 }
 
 @media (max-width: 900px) {
@@ -78,8 +78,8 @@
 
 .bot-form-label {
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 1.5px;
+  font-size: var(--type-xs);
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -92,12 +92,12 @@
 .section select:not(.btn),
 .section textarea:not(.btn) {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--type-sm);
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 11px 14px;
+  padding: var(--field-padding-y) var(--field-padding-x);
   outline: none;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
@@ -135,17 +135,17 @@
 .bot-form-input[multiple],
 select[multiple].bot-form-input,
 select[multiple].cp-select {
-  padding: 8px;
-  min-height: 84px;
+  padding: var(--space-2);
+  min-height: calc(var(--size-control-md) * 2);
 }
 
 .bot-form-input[multiple] option,
 select[multiple] option {
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xs);
   margin-bottom: 2px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--type-xs);
   color: var(--text-dim);
 }
 
@@ -162,16 +162,16 @@ select[multiple] option:checked {
 .hosted-meter-form .btn-sm.primary,
 .section .btn-sm.primary[style*="grid-column:span 6"],
 .section .btn-sm.primary[style*="grid-column: span 6"] {
-  height: 44px;
+  height: var(--size-control-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--type-xs);
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  background: linear-gradient(180deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-deep) 100%);
+  background: var(--gradient-button-primary);
   color: var(--text-inverse-soft);
   border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
@@ -193,15 +193,14 @@ select[multiple] option:checked {
 .section-title {
   font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: -0.01em;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--space-3);
+  font-size: var(--type-sm);
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-4);
 }
 .section-title::before {
   content: '';

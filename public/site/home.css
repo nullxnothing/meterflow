@@ -1069,7 +1069,7 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
 
 /* All cards share an absolute center-anchor; JS applies offset transforms */
 .fan-card {
-  --fc-rgb: var(--accent-rgb); /* default; overridden by inline style per card */
+  --fc-rgb: var(--accent-rgb);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1105,6 +1105,13 @@ body.free-access-active .hero { padding-top: clamp(168px, 18vh, 200px); }
   text-decoration: none;
   color: inherit;
 }
+
+.fan-card--blue { --fc-rgb: var(--accent-rgb); }
+.fan-card--cyan { --fc-rgb: var(--sky-rgb); }
+.fan-card--green { --fc-rgb: var(--green-rgb); }
+.fan-card--warm { --fc-rgb: var(--warm-rgb); }
+.fan-card--sky { --fc-rgb: var(--accent-2-rgb); }
+.fan-card--deep { --fc-rgb: var(--sky-rgb); }
 
 .fan-card::after {
   content: '';

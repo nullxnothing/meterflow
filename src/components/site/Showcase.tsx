@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useShowcaseMotion } from "@/components/site/ShowcaseMotion";
 
 /* ───────────────────────────── Data ───────────────────────────── */
 
@@ -306,6 +307,7 @@ export function Showcase({ className }: { className?: string }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<TabKey>("meters");
   const [updating, setUpdating] = useState(false);
+  const [inView, setInView] = useState(false);
 
   // Brief "updating" pulse when tab switches.
   useEffect(() => {
@@ -313,6 +315,23 @@ export function Showcase({ className }: { className?: string }) {
     const t = window.setTimeout(() => setUpdating(false), 620);
     return () => window.clearTimeout(t);
   }, [tab]);
+
+  // Gate motion to in-view to honor the perf budget.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setInView(true)),
+      { rootMargin: "120px 0px", threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useShowcaseMotion({ rootRef, tab, enabled: inView });
 
   const v = VARIANTS[tab];
 
@@ -323,6 +342,7 @@ export function Showcase({ className }: { className?: string }) {
         aria-label="Product surfaces"
         className="mf-showcase-tabs mf-showcase-tabs--wide"
       >
+        <span aria-hidden className="mf-showcase-tab-indicator" />
         {(Object.keys(VARIANTS) as TabKey[]).map((key) => {
           const variant = VARIANTS[key];
           const active = tab === key;
