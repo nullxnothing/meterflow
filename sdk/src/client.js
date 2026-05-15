@@ -164,6 +164,21 @@ export class MeterflowClient {
   }
 
   /**
+   * Inspect the active agent spend-control capabilities for this key.
+   */
+  async policyCapabilities() {
+    return this._get('/v1/policy/capabilities');
+  }
+
+  /**
+   * Evaluate a planned x402/MPP/API-key call before the agent spends.
+   * @param {import('./types.js').PolicyEvaluationRequest} params
+   */
+  async evaluatePolicy(params) {
+    return this._post('/v1/policy/evaluate', params);
+  }
+
+  /**
    * Package an MCP tool behind a Meterflow gateway.
    * @param {import('./types.js').McpToolRequest} params
    */
@@ -210,6 +225,39 @@ export class MeterflowClient {
    */
   async registryProvider(providerIdOrSlug) {
     return this._get(`/v1/registry/providers/${encodeURIComponent(providerIdOrSlug)}`);
+  }
+
+  /**
+   * List public resource packs such as the Xona agent resource catalog.
+   */
+  async resourcePacks() {
+    return this._get('/v1/resource-packs');
+  }
+
+  /**
+   * Read a resource pack by id or slug.
+   * @param {string} packIdOrSlug
+   */
+  async resourcePack(packIdOrSlug) {
+    return this._get(`/v1/resource-packs/${encodeURIComponent(packIdOrSlug)}`);
+  }
+
+  /**
+   * Build a policy template for a resource pack without persisting it.
+   * @param {string} packIdOrSlug
+   * @param {import('./types.js').ResourcePackPolicyRequest} params
+   */
+  async resourcePackPolicyTemplate(packIdOrSlug, params = {}) {
+    return this._post(`/v1/resource-packs/${encodeURIComponent(packIdOrSlug)}/policy-template`, params);
+  }
+
+  /**
+   * Create a spend-control budget from a resource pack preset.
+   * @param {string} packIdOrSlug
+   * @param {import('./types.js').ResourcePackPolicyRequest} params
+   */
+  async createResourcePackBudget(packIdOrSlug, params = {}) {
+    return this._post(`/v1/resource-packs/${encodeURIComponent(packIdOrSlug)}/budgets`, params);
   }
 
   /**

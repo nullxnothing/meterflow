@@ -49,6 +49,8 @@
     .mf-doc-sidebar {
       position: sticky;
       top: calc(var(--nav-height) + var(--space-6));
+      max-height: calc(100vh - var(--nav-height) - var(--space-12));
+      overflow-y: auto;
     }
 
     .mf-footer-art__grid {

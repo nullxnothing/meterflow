@@ -115,6 +115,46 @@
  * @property {number} [dailyCapUsd]
  * @property {number} [perCallCapUsd]
  * @property {string[]} [allowedMeterIds]
+ * @property {string[]} [allowedRoutes]
+ * @property {Array<'x402'|'mpp'|'meterflow'|'api-key'|'solana-pay'>} [allowedRails]
+ * @property {string[]} [deniedProviderIds]
+ * @property {'enforce'|'monitor'} [mode]
+ * @property {boolean} [piiGuard]
+ * @property {boolean} [requireReceipt]
+ * @property {number} [approvalThresholdUsd]
+ */
+
+/**
+ * @typedef {Object} PolicyEvaluationRequest
+ * @property {string} [meterId]
+ * @property {string} [route]
+ * @property {'GET'|'POST'|'PUT'|'PATCH'|'DELETE'} [method]
+ * @property {string} [agentId]
+ * @property {number} [amountUsd]
+ * @property {'x402'|'mpp'|'meterflow'|'api-key'|'solana-pay'} [paymentProtocol]
+ * @property {'request'|'session'|'stream'} [intent]
+ * @property {number} [expectedCalls]
+ * @property {string} [providerId]
+ * @property {string} [payerWallet]
+ * @property {boolean} [requiresCompliance]
+ * @property {boolean} [gasless]
+ * @property {Object} [metadata]
+ * @property {boolean} [record]
+ */
+
+/**
+ * @typedef {Object} ResourcePackPolicyRequest
+ * @property {string} [presetId]
+ * @property {string} [name]
+ * @property {string} [agentId]
+ * @property {string[]} [resourceIds]
+ * @property {number} [dailyCapUsd]
+ * @property {number} [perCallCapUsd]
+ * @property {Array<'x402'|'mpp'|'meterflow'|'api-key'|'solana-pay'>} [allowedRails]
+ * @property {'enforce'|'monitor'} [mode]
+ * @property {boolean} [piiGuard]
+ * @property {boolean} [requireReceipt]
+ * @property {number} [approvalThresholdUsd]
  */
 
 /**

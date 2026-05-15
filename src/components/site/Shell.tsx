@@ -112,7 +112,8 @@ export function Shell({ children }: { children: ReactNode }) {
     if (!wrapper || !content) return undefined;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const canSmooth = window.matchMedia("(min-width: 1024px)").matches && !reducedMotion;
+    const isDocsRoute = pathname === "/docs" || pathname === "/docs.html";
+    const canSmooth = window.matchMedia("(min-width: 1024px)").matches && !reducedMotion && !isDocsRoute;
     if (!canSmooth) {
       ScrollTrigger.refresh();
       return undefined;

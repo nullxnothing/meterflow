@@ -57,18 +57,22 @@ describe('Provider trust registry', () => {
   });
 
   it('ships seed registry data for public discovery', async () => {
-    const [summary, providers, tokenRisk] = await Promise.all([
+    const [summary, providers, tokenRisk, xona] = await Promise.all([
       getRegistrySummary(),
       listRegistryProviders({ rail: 'x402', minScore: 1 }),
       getRegistryProvider('meterflow-token-risk'),
+      getRegistryProvider('xona-agent-resources'),
     ]);
 
-    assert.ok(summary.providers >= 3);
+    assert.ok(summary.providers >= 4);
     assert.equal(summary.model.paymentAsset, 'USDC');
     assert.equal(summary.model.utilityAsset, 'MFLOW');
     assert.ok(summary.requiredMflow >= summary.committedMflow);
     assert.ok(providers.length >= 1);
     assert.equal(tokenRisk.slug, 'meterflow-token-risk');
+    assert.equal(xona.slug, 'xona-agent-resources');
+    assert.ok(xona.protocolRails.includes('x402'));
+    assert.ok(xona.protocolRails.includes('mpp'));
     assert.equal(tokenRisk.adminNotes, undefined);
   });
 

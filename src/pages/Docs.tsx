@@ -40,6 +40,9 @@ export function DocsPage() {
           <p className="mf-doc-sidebar__title">Docs</p>
           <a href="#concepts">Concepts</a>
           <a href="#payment-flow">Payment Flow</a>
+          <a href="#agent-spend-control">Agent Spend Control</a>
+          <a href="#xona-resource-pack">Xona Resource Pack</a>
+          <a href="#daemon-integration">DAEMON Integration</a>
           <a href="#wrap-api">Wrap Your API In 10 Minutes</a>
           <a href="#mpp">MPP Payment Rail</a>
           <a href="#registry">Provider Registry</a>
@@ -87,6 +90,184 @@ export function DocsPage() {
                 { label: "Paid retry", title: "The caller submits proof.", copy: "x402 and MPP proofs normalize into the same request context." },
                 { label: "Verification", title: "Policy and payment clear.", copy: "Budgets, route state, and payment details are recorded before forwarding." },
                 { label: "Receipt", title: "The response becomes observable.", copy: "Providers get revenue state, payer visibility, delivery status, latency, and webhook events." },
+              ]}
+            />
+          </Section>
+
+          <Section
+            id="agent-spend-control"
+            eyebrow="Enterprise Control"
+            title="Agent Spend Control"
+            lede="Meterflow turns x402 and MPP from protocol handshakes into enterprise-approved payment workflows: policy checks before spend, rail recommendations, metadata hashing, receipt requirements, and enforce or monitor modes."
+          >
+            <CardGrid
+              cards={[
+                {
+                  label: "Policy Firewall",
+                  title: "Stop unsafe agent spend before payment.",
+                  copy: "Enforce daily caps, per-call caps, route allowlists, meter allowlists, approved rails, denied providers, and approval thresholds.",
+                },
+                {
+                  label: "Rail Router",
+                  title: "Choose the right payment path.",
+                  copy: "Use x402 for exact one-shot calls, MPP for sessions or multi-call jobs, Kora for gasless Solana flows, and CDP-style routing when compliance screening matters.",
+                },
+                {
+                  label: "Audit Layer",
+                  title: "Hash private context and keep receipts.",
+                  copy: "PII-sensitive metadata is reduced to a hash in the policy response while optional audit receipts preserve the decision trail.",
+                },
+              ]}
+            />
+            <CodeBlock>{`
+const budget = await client.createBudget({
+  name: "research-agent",
+  agentId: "research-agent-1",
+  dailyCapUsd: 12,
+  perCallCapUsd: 0.02,
+  allowedRoutes: ["/mcp/token-risk", "/gateway/*"],
+  allowedRails: ["x402", "mpp"],
+  mode: "enforce",
+  piiGuard: true,
+});
+
+const decision = await client.evaluatePolicy({
+  route: "/mcp/token-risk",
+  method: "POST",
+  agentId: "research-agent-1",
+  paymentProtocol: "x402",
+  metadata: { purpose: "token risk check" },
+  record: true
+});
+            `}</CodeBlock>
+            <Checklist
+              items={[
+                "GET /v1/policy/capabilities returns supported controls, rails, and routing options.",
+                "POST /v1/policy/evaluate returns allow/deny state, economics, recommended rail, facilitator, budget projection, and metadata hash.",
+                "Live Meterflow gateway requests use the same policy engine before forwarding paid API or MCP calls.",
+                "Monitor mode lets enterprise teams observe would-block decisions before switching to enforcement.",
+              ]}
+            />
+          </Section>
+
+          <Section
+            id="xona-resource-pack"
+            eyebrow="Resource Pack"
+            title="Xona resources, governed by Meterflow."
+            lede="The clean partnership wedge is Meterflow x Xona first: Xona builds agent-accessible resources, and Meterflow gives those resources meters, budgets, receipts, revenue views, and policy controls so agents can safely pay per call."
+          >
+            <CardGrid
+              cards={[
+                {
+                  label: "Xona Supply",
+                  title: "Agent resources become callable products.",
+                  copy: "Creative generation, token intelligence, Solana market data, PumpFun movers, token news, and token signals can be exposed as paid resources for agents.",
+                },
+                {
+                  label: "Meterflow Control",
+                  title: "Every resource gets a meter and policy.",
+                  copy: "Meterflow wraps Xona-style resources with route pricing, budgets, receipts, provider revenue views, rail controls, and operator-safe spend limits.",
+                },
+                {
+                  label: "Catalog",
+                  title: "Expose Xona resources as a policy surface.",
+                  copy: "GET /v1/resource-packs/xona returns the resource list, categories, endpoints, prices, rails, and recommended presets.",
+                },
+                {
+                  label: "Presets",
+                  title: "Create budgets for common agent jobs.",
+                  copy: "Research, market, and creative presets generate route allowlists, rail allowlists, per-call caps, daily caps, and PII guard defaults.",
+                },
+              ]}
+            />
+            <CodeBlock>{`
+const pack = await client.resourcePack("xona");
+
+const policy = await client.createResourcePackBudget("xona", {
+  presetId: "xona-market-agent",
+  agentId: "market-agent-1",
+  dailyCapUsd: 12,
+  mode: "enforce"
+});
+
+await client.evaluatePolicy({
+  route: "/xona/token/pumpfun-movers",
+  method: "GET",
+  agentId: "market-agent-1",
+  paymentProtocol: "x402",
+  record: true
+});
+            `}</CodeBlock>
+            <Checklist
+              items={[
+                "Start with Meterflow x Xona: resources from Xona, metering and controls from Meterflow.",
+                "Give every resource an observable paid-call lifecycle: quote, policy decision, payment proof, response, receipt, provider revenue, and webhook event.",
+                "Use DAEMON as the next layer once the resource path is live: a workspace where builders discover, budget, call, and ship with those resources.",
+              ]}
+            />
+          </Section>
+
+          <Section
+            id="daemon-integration"
+            eyebrow="Workspace Next Step"
+            title="DAEMON becomes the workspace for governed agent resources."
+            lede="After the Meterflow x Xona path is live, DAEMON can become the builder workspace where teams discover Xona-style resources, assign budgets, let agents call them, and ship the resulting work with task receipts and settlement visibility."
+          >
+            <CardGrid
+              cards={[
+                {
+                  label: "Discover",
+                  title: "Builders find paid resources inside DAEMON.",
+                  copy: "DAEMON can surface Meterflow resource packs, registry entries, prices, rails, and provider trust signals where builders already run agents.",
+                },
+                {
+                  label: "Budget",
+                  title: "Agents get spend controls before they run.",
+                  copy: "Meterflow budgets define which Xona resources, MCP tools, and provider APIs a DAEMON agent can buy during a work session.",
+                },
+                {
+                  label: "Ship",
+                  title: "Task proofs and API receipts become one audit trail.",
+                  copy: "DAEMON hashes repo, prompt, acceptance, commit, diff, tests, and artifacts for on-chain task receipts; Meterflow adds payment receipts for the resources used during that run.",
+                },
+              ]}
+            />
+            <CodeBlock>{`
+const daemonBudget = await client.createBudget({
+  name: "daemon-operator-agent",
+  agentId: "daemon-agent-workbench",
+  dailyCapUsd: 60,
+  perCallCapUsd: 0.50,
+  allowedRoutes: [
+    "/xona/*",
+    "/mcp/*",
+    "/daemon/agent-work/*"
+  ],
+  allowedRails: ["x402", "mpp"],
+  mode: "enforce",
+  requireReceipt: true,
+  piiGuard: true
+});
+
+await client.evaluatePolicy({
+  route: "/xona/token/pumpfun-movers",
+  method: "GET",
+  agentId: "daemon-agent-workbench",
+  paymentProtocol: "x402",
+  metadata: {
+    daemonPlan: "operator",
+    daemonTaskId: "agent-work-task-123",
+    agentTask: "funded-work-receipt"
+  },
+  record: true
+});
+            `}</CodeBlock>
+            <Checklist
+              items={[
+                "Keep DAEMON's subscription gateway responsible for plan, holder, and AI JWT entitlement state.",
+                "Use Meterflow budgets for external paid resources a DAEMON agent may call during a session.",
+                "Map DAEMON requestId, taskId, agentId, plan, model lane, and receipt signature into Meterflow receipt metadata.",
+                "Keep Solana task escrow settlement in DAEMON's registry while Meterflow tracks paid API/resource settlement and provider revenue.",
               ]}
             />
           </Section>
