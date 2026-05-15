@@ -617,9 +617,26 @@ describe('Vercel routing', () => {
     assert.ok(sources.includes('/dashboard'), 'should rewrite /dashboard');
     assert.ok(sources.includes('/docs'), 'should rewrite /docs');
     assert.ok(sources.includes('/token'), 'should rewrite /token');
+    assert.ok(sources.includes('/buy'), 'should rewrite /buy');
     assert.ok(sources.includes('/how-it-works'), 'should rewrite /how-it-works');
     assert.ok(sources.includes('/privacy'), 'should rewrite /privacy');
     assert.ok(sources.includes('/terms'), 'should rewrite /terms');
+  });
+
+  it('MFLOW purchase routes stay on Meterflow and use Jupiter only as the embedded swap engine', () => {
+    const auth = readFileSync(resolve(root, 'routes', 'auth.js'), 'utf-8');
+    const profile = readFileSync(resolve(root, 'lib', 'token-profile.js'), 'utf-8');
+    const productPages = readFileSync(resolve(projectRoot, 'src', 'components', 'site', 'ProductPages.tsx'), 'utf-8');
+    const buyPage = readFileSync(resolve(projectRoot, 'public', 'site', 'buy.html'), 'utf-8');
+
+    assert.ok(auth.includes('/buy?input='), 'auth metadata should point buyers to the embedded /buy page');
+    assert.ok(auth.includes('open_meterflow_buy_flow_or_quote_jupiter'), 'agent instructions should prefer the Meterflow buy flow');
+    assert.ok(auth.includes('https://api.jup.ag/swap/v2/order'), 'server-side quote template should use the current Jupiter Swap API');
+    assert.ok(auth.includes('/proxy/auth/status'), 'agent verify URL should work through production proxy routing');
+    assert.ok(profile.includes('/buy?input=SOL'), 'public token metadata should default swapUrl to the embedded buy page');
+    assert.ok(productPages.includes('const METERFLOW_BUY_URL = "/buy?input=SOL"'), 'token page should not link primary buy action directly to Jupiter');
+    assert.ok(buyPage.includes('https://plugin.jup.ag/plugin-v1.js'), 'buy page should embed the Jupiter plugin');
+    assert.ok(buyPage.includes('fixedMint: token.mint'), 'buy page should lock MFLOW as the output token');
   });
 });
 

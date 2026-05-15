@@ -18,6 +18,7 @@ const CONFIG = {
   TOKEN_NAME: cleanEnv(process.env.METERFLOW_TOKEN_NAME) || 'Meterflow',
   TOKEN_SYMBOL: cleanEnv(process.env.METERFLOW_TOKEN_SYMBOL) || 'MFLOW',
   TOKEN_SWAP_URL: cleanEnv(process.env.METERFLOW_TOKEN_SWAP_URL),
+  PUBLIC_URL: (cleanEnv(process.env.METERFLOW_PUBLIC_URL) || 'https://meterflow.fun').replace(/\/+$/, ''),
   PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_PROTOCOL_FEE_BPS || '100', 10),
   HOLDER_PROTOCOL_FEE_BPS: parseInt(process.env.METERFLOW_HOLDER_PROTOCOL_FEE_BPS || '0', 10),
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',

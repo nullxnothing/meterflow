@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="description" content="Buy MFLOW from Meterflow with Jupiter routing.">
+<meta name="theme-color" content="#05080f">
+<link rel="canonical" href="https://meterflow.fun/buy">
+<meta property="og:title" content="Buy MFLOW - Meterflow">
+<meta property="og:description" content="Swap SOL or USDC into MFLOW without leaving Meterflow.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://meterflow.fun/buy">
+<meta property="og:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://meterflow.fun/assets/brand/og-meterflow.png">
+<title>Buy MFLOW - Meterflow</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/meterflow-mark.svg">
+<link rel="apple-touch-icon" href="/assets/brand/meterflow-mark-transparent.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site/shared.css">
+<script src="https://plugin.jup.ag/plugin-v1.js" data-preload defer></script>
+<style>
+:root {
+  --jupiter-plugin-primary: 79, 156, 255;
+  --jupiter-plugin-background: 3, 6, 12;
+  --jupiter-plugin-primaryText: 234, 242, 255;
+  --jupiter-plugin-warning: 251, 191, 36;
+  --jupiter-plugin-interactive: 14, 22, 34;
+  --jupiter-plugin-module: 10, 16, 24;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(79, 156, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #05080f 0%, #03060c 100%);
+}
+
+.buy-shell {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 128px 0 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(380px, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.buy-copy {
+  padding-top: 20px;
+}
+
+.buy-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(79, 156, 255, 0.22);
+  border-radius: var(--radius-pill);
+  color: var(--accent);
+  font: 700 11px/1 var(--font-mono);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  background: rgba(79, 156, 255, 0.08);
+}
+
+.buy-kicker::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 18px rgba(79, 156, 255, 0.8);
+}
+
+.buy-title {
+  margin-top: 28px;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, 84px);
+  line-height: 0.96;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.buy-title span {
+  color: var(--accent);
+}
+
+.buy-sub {
+  max-width: 560px;
+  margin-top: 22px;
+  color: var(--text-dim);
+  font-size: 17px;
+}
+
+.buy-meta {
+  margin-top: 28px;
+  display: grid;
+  gap: 10px;
+}
+
+.buy-meta-row {
+  width: min(100%, 560px);
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(79, 156, 255, 0.12);
+}
+
+.buy-meta-row span {
+  color: var(--text-muted);
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.buy-meta-row code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font: 500 12px/1.45 var(--font-mono);
+}
+
+.buy-actions {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.buy-action {
+  border: 1px solid rgba(79, 156, 255, 0.2);
+  background: rgba(79, 156, 255, 0.08);
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.buy-action.primary {
+  color: #06101e;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.buy-panel {
+  border: 1px solid rgba(79, 156, 255, 0.18);
+  border-radius: var(--radius-md);
+  background: rgba(5, 9, 16, 0.78);
+  box-shadow: var(--shadow-elev);
+  min-height: 640px;
+  padding: 16px;
+}
+
+.plugin-frame {
+  min-height: 600px;
+}
+
+.buy-status {
+  min-height: 24px;
+  margin-bottom: 12px;
+  color: var(--text-dim);
+  font: 600 12px/1.5 var(--font-mono);
+}
+
+.buy-status.error {
+  color: var(--red);
+}
+
+@media (max-width: 900px) {
+  .buy-shell {
+    width: min(100% - 28px, 640px);
+    grid-template-columns: 1fr;
+    padding-top: 104px;
+  }
+
+  .buy-panel {
+    min-height: 620px;
+    padding: 12px;
+  }
+
+  .plugin-frame {
+    min-height: 580px;
+  }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo"><img class="brand-mark" src="/assets/brand/meterflow-mark.svg" alt="">Meterflow</a>
+  <div class="nav-links">
+    <a href="/#tools">Platform</a>
+    <a href="/docs">Docs</a>
+    <a href="/roadmap">Roadmap</a>
+    <a class="nav-cta" href="/dashboard">Dashboard</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#tools" onclick="closeMobile()">Platform</a>
+  <a href="/docs" onclick="closeMobile()">Docs</a>
+  <a href="/roadmap" onclick="closeMobile()">Roadmap</a>
+  <a href="/dashboard" onclick="closeMobile()" style="color: var(--accent);">Dashboard</a>
+</div>
+
+<main class="buy-shell">
+  <section class="buy-copy">
+    <div class="buy-kicker">MFLOW Utility</div>
+    <h1 class="buy-title">Buy <span>MFLOW</span> on Meterflow.</h1>
+    <p class="buy-sub">Swap with Jupiter routing while MFLOW stays locked as the output token. Wallet signing and transaction status stay inside the embedded swap surface.</p>
+    <div class="buy-meta">
+      <div class="buy-meta-row"><span>Token</span><code id="tokenSymbol">MFLOW</code></div>
+      <div class="buy-meta-row"><span>Mint</span><code id="tokenMint">Loading...</code></div>
+      <div class="buy-meta-row"><span>Input</span><code id="inputMint">SOL</code></div>
+    </div>
+    <div class="buy-actions">
+      <a class="buy-action primary" href="/buy?input=SOL">Use SOL</a>
+      <a class="buy-action" href="/buy?input=USDC">Use USDC</a>
+      <a class="buy-action" href="/dashboard">Check Access</a>
+    </div>
+  </section>
+
+  <section class="buy-panel" aria-label="MFLOW swap">
+    <div class="buy-status" id="buyStatus">Loading MFLOW route...</div>
+    <div id="jupiter-plugin" class="plugin-frame"></div>
+  </section>
+</main>
+
+<script src="/site/shared.js"></script>
+<script>
+(function () {
+  const SOL_MINT = 'So11111111111111111111111111111111111111112';
+  const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+  const INPUT_LABELS = { SOL: SOL_MINT, USDC: USDC_MINT };
+  const params = new URLSearchParams(window.location.search);
+  const requestedInput = String(params.get('input') || 'SOL').toUpperCase();
+  const inputSymbol = requestedInput === 'USDC' ? 'USDC' : 'SOL';
+  const inputMint = INPUT_LABELS[inputSymbol];
+  const statusEl = document.getElementById('buyStatus');
+  const mintEl = document.getElementById('tokenMint');
+  const symbolEl = document.getElementById('tokenSymbol');
+  const inputEl = document.getElementById('inputMint');
+
+  function setStatus(message, isError) {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.classList.toggle('error', Boolean(isError));
+  }
+
+  function waitForJupiter() {
+    return new Promise((resolve, reject) => {
+      const started = Date.now();
+      const timer = setInterval(() => {
+        if (window.Jupiter && typeof window.Jupiter.init === 'function') {
+          clearInterval(timer);
+          resolve();
+        } else if (Date.now() - started > 10000) {
+          clearInterval(timer);
+          reject(new Error('Jupiter plugin did not load.'));
+        }
+      }, 100);
+    });
+  }
+
+  async function loadToken() {
+    const res = await fetch('/proxy/auth/tiers');
+    if (!res.ok) throw new Error('Could not load MFLOW metadata.');
+    const data = await res.json();
+    if (!data.token || !data.token.mint) throw new Error('MFLOW mint is not configured.');
+    return data.token;
+  }
+
+  async function init() {
+    inputEl.textContent = inputSymbol;
+    const token = await loadToken();
+    mintEl.textContent = token.mint;
+    symbolEl.textContent = token.symbol || 'MFLOW';
+    document.title = `Buy ${token.symbol || 'MFLOW'} - Meterflow`;
+
+    await waitForJupiter();
+    window.Jupiter.init({
+      displayMode: 'integrated',
+      integratedTargetId: 'jupiter-plugin',
+      formProps: {
+        initialInputMint: inputMint,
+        initialOutputMint: token.mint,
+        fixedMint: token.mint,
+        fixedAmount: false,
+      },
+      branding: {
+        name: 'Meterflow',
+        logoUri: `${window.location.origin}/assets/brand/meterflow-mark-transparent.png`,
+      },
+      onSuccess: function () {
+        setStatus('Swap submitted. Recheck your access from the dashboard.');
+      },
+      onSwapError: function () {
+        setStatus('Swap failed or was cancelled.', true);
+      },
+    });
+    setStatus(`${token.symbol || 'MFLOW'} selected. Connect a wallet in the swap panel.`);
+  }
+
+  init().catch((err) => setStatus(err.message || 'Buy page failed to load.', true));
+})();
+</script>
+</body>
+</html>

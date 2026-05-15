@@ -11,6 +11,7 @@
     { "source": "/status", "destination": "/index.html" },
     { "source": "/roadmap", "destination": "/index.html" },
     { "source": "/token", "destination": "/index.html" },
+    { "source": "/buy", "destination": "/site/buy.html" },
     { "source": "/apply", "destination": "/index.html" },
     { "source": "/apply/:path*", "destination": "/index.html" },
     { "source": "/admin/applications", "destination": "/site/admin-applications.html" },

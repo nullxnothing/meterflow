@@ -91,8 +91,9 @@ function validateChallengeMessage(message, wallet) {
 function buildTokenAccess({ balance = 0, feeRelief } = {}) {
   const minSignal = CONFIG.TIERS.signal?.min || 0;
   const isHolder = feeRelief ?? Number(balance || 0) >= minSignal;
-  const purchaseUrl = CONFIG.TOKEN_SWAP_URL || (CONFIG.TOKEN_MINT ? `https://jup.ag/swap/SOL-${CONFIG.TOKEN_MINT}` : null);
-  const usdcPurchaseUrl = CONFIG.TOKEN_MINT ? `https://jup.ag/swap/${USDC_MINT}-${CONFIG.TOKEN_MINT}` : null;
+  const buyUrl = (input = 'SOL') => CONFIG.TOKEN_MINT ? `${CONFIG.PUBLIC_URL}/buy?input=${encodeURIComponent(input)}` : null;
+  const purchaseUrl = CONFIG.TOKEN_SWAP_URL || buyUrl('SOL');
+  const usdcPurchaseUrl = buyUrl('USDC');
   const protocolFeeBps = isHolder ? CONFIG.HOLDER_PROTOCOL_FEE_BPS : CONFIG.PROTOCOL_FEE_BPS;
 
   return {
@@ -108,17 +109,17 @@ function buildTokenAccess({ balance = 0, feeRelief } = {}) {
     purchaseUrl,
     usdcPurchaseUrl,
     jupiterQuoteTemplate: CONFIG.TOKEN_MINT
-      ? `https://api.jup.ag/ultra/v1/order?inputMint=${WRAPPED_SOL_MINT}&outputMint=${CONFIG.TOKEN_MINT}&amount={lamports}&taker={wallet}`
+      ? `https://api.jup.ag/swap/v2/order?inputMint=${WRAPPED_SOL_MINT}&outputMint=${CONFIG.TOKEN_MINT}&amount={lamports}&taker={wallet}`
       : null,
     agentInstructions: CONFIG.TOKEN_MINT
       ? {
-          action: 'open_purchase_url_or_quote_jupiter',
+          action: 'open_meterflow_buy_flow_or_quote_jupiter',
           outputMint: CONFIG.TOKEN_MINT,
           defaultInputMint: WRAPPED_SOL_MINT,
           usdcInputMint: USDC_MINT,
-          verifyWith: '/auth/status',
+          verifyWith: `${CONFIG.PUBLIC_URL}/proxy/auth/status`,
         }
-      : { action: 'wait_for_token_launch', verifyWith: '/auth/tiers' },
+      : { action: 'wait_for_token_launch', verifyWith: `${CONFIG.PUBLIC_URL}/proxy/auth/tiers` },
   };
 }
 
